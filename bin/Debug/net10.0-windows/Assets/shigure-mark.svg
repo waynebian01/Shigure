@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Shigure mark</title>
+  <desc id="desc">A compact dark mechanical weapon mark for Shigure.</desc>
+  <defs>
+    <radialGradient id="markHalo" cx="50%" cy="35%" r="58%">
+      <stop offset="0" stop-color="#eef6f6" stop-opacity=".82"/>
+      <stop offset=".44" stop-color="#37515c" stop-opacity=".46"/>
+      <stop offset="1" stop-color="#020405" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="markSteel" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#34404a"/>
+      <stop offset=".5" stop-color="#111821"/>
+      <stop offset="1" stop-color="#05080c"/>
+    </linearGradient>
+    <linearGradient id="markAccent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#84f3e7"/>
+      <stop offset="1" stop-color="#2c7b8d"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="512" height="512" rx="112" fill="#030608"/>
+  <ellipse cx="248" cy="176" rx="238" ry="208" fill="url(#markHalo)"/>
+  <path d="M68 343c71-92 158-131 268-122 48 4 89 17 137 2v118H68z" fill="#07100f" opacity=".48"/>
+
+  <g transform="translate(61 132)">
+    <path d="M21 54h24l7 13-8 13H22L7 70V60z" fill="url(#markSteel)" stroke="#a7b3bb" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M48 58h184l31 19 97 2 10 13-9 13-106 4-22 17H82l-19-16H40l10-23z" fill="url(#markSteel)" stroke="#84919a" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M79 70h118" stroke="#d7e1e8" stroke-opacity=".56" stroke-width="7" stroke-linecap="round"/>
+    <path d="M95 88h72" stroke="url(#markAccent)" stroke-width="6" stroke-linecap="round"/>
+    <path d="M174 113l33 13-43 79c-5 9-16 13-25 8l-22-11 36-84z" fill="#070c12" stroke="#84919a" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M232 119l36 10-15 78c-2 10-12 16-22 13l-28-8z" fill="#05080c" stroke="#84919a" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M268 54l86-2 25 21-24 22-86-4 12-18z" fill="#080d13" stroke="#84919a" stroke-width="5" stroke-linejoin="round"/>
+    <circle cx="61" cy="68" r="8" fill="#05080c" stroke="#b5c1c8" stroke-width="4"/>
+    <circle cx="218" cy="91" r="9" fill="#05080c" stroke="#b5c1c8" stroke-width="4"/>
+    <path d="M28 111h42" stroke="url(#markAccent)" stroke-width="7" stroke-linecap="round"/>
+  </g>
+</svg>

@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>Shigure</AssemblyName>
+    <RootNamespace>Shigure</RootNamespace>
+    <ApplicationIcon>Assets\shigure-emblem-arasaka.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="Assets\*.ico" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Assets\*.png" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Assets\*.svg" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="config.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="keymap\*.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="module\**\*.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

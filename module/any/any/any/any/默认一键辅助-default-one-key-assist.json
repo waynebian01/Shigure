@@ -1,0 +1,15 @@
+{
+  "Id": "default-one-key-assist",
+  "Name": "默认一键辅助",
+  "Enabled": true,
+  "Match": {},
+  "Rules": [
+    {
+      "Enabled": true,
+      "Condition": "一键辅助 == 10",
+      "Unit": 0,
+      "Spell": "一键辅助",
+      "Step": "施放 一键辅助"
+    }
+  ]
+}

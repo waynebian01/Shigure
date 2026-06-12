@@ -92,7 +92,6 @@ C:\Users\bianw\OneDrive\VS Code\Shigure\artifacts\verify-build\Shigure.deps.json
 C:\Users\bianw\OneDrive\VS Code\Shigure\artifacts\verify-build\Shigure.runtimeconfig.json
 C:\Users\bianw\OneDrive\VS Code\Shigure\artifacts\verify-build\Shigure.dll
 C:\Users\bianw\OneDrive\VS Code\Shigure\artifacts\verify-build\Shigure.pdb
-C:\Users\bianw\OneDrive\VS Code\Shigure\bin\Debug\net10.0-windows\module\新模块1-新模块1-20260612100954681.json
 C:\Users\bianw\OneDrive\VS Code\Shigure\bin\Debug\net10.0-windows\Shigure.exe
 C:\Users\bianw\OneDrive\VS Code\Shigure\artifacts\verify-about\Assets\shigure-emblem-arasaka.ico
 C:\Users\bianw\OneDrive\VS Code\Shigure\artifacts\verify-about\Assets\shigure-emblem-arasaka.png
@@ -118,3 +117,4 @@ C:\Users\bianw\OneDrive\VS Code\Shigure\artifacts\verify-about\Shigure.deps.json
 C:\Users\bianw\OneDrive\VS Code\Shigure\artifacts\verify-about\Shigure.runtimeconfig.json
 C:\Users\bianw\OneDrive\VS Code\Shigure\artifacts\verify-about\Shigure.dll
 C:\Users\bianw\OneDrive\VS Code\Shigure\artifacts\verify-about\Shigure.pdb
+C:\Users\bianw\OneDrive\VS Code\Shigure\bin\Debug\net10.0-windows\module\戒律.json

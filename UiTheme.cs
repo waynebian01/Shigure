@@ -102,7 +102,7 @@ internal static class UiTheme
         }
 
         // Windows 10/older fallback: apply Acrylic blur behind the form background only.
-        if (!TryApplyAccentPolicy(form.Handle, AccentEnableAcrylicBlurBehind, Color.FromArgb(18, 21, 26), 170))
+        if (!TryApplyAccentPolicy(form.Handle, AccentEnableAcrylicBlurBehind, Color.FromArgb(18, 21, 26), 10))
         {
             _ = TryApplyAccentPolicy(form.Handle, AccentEnableBlurBehind, Color.FromArgb(18, 21, 26), 150);
         }

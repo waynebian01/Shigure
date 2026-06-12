@@ -39,7 +39,7 @@ public sealed class MainForm : Form, IMessageFilter
         Application.AddMessageFilter(this);
         InitializeComponent();
         _statusForm.AttachSettingsPanel(BuildSettingsPanel());
-        _statusForm.AttachModuleEditor(new ModuleEditorControl(_moduleStore, RestartRuntimeFromEditor));
+        _statusForm.AttachModuleEditor(new ModuleEditorControl(_moduleStore, RestartRuntimeFromEditor, AppContext.BaseDirectory));
         _statusForm.FormClosing += (_, _) =>
         {
             CancelToggleKeyCapture();

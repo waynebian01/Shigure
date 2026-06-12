@@ -6,6 +6,8 @@ public sealed class ModuleEditorControl : UserControl
 {
     private readonly ModuleStore _moduleStore;
     private readonly Action _runtimeRestartRequested;
+    private readonly ConditionFieldCatalog _fieldCatalog;
+    private readonly KeymapCatalog _keymapCatalog;
     private readonly ListBox _moduleList = new();
     private readonly TextBox _nameBox = new();
     private readonly CheckBox _enabledBox = new();
@@ -14,6 +16,8 @@ public sealed class ModuleEditorControl : UserControl
     private readonly ComboBox _partyTypeBox = new();
     private readonly ComboBox _heroTalentBox = new();
     private readonly DataGridView _rulesGrid = new();
+    private readonly DataGridViewComboBoxColumn _spellColumn = new();
+    private readonly DataGridViewComboBoxColumn _unitColumn = new();
     private readonly Label _pathLabel = new();
     private List<ModuleDefinition> _modules = new();
     private ModuleDefinition? _selectedModule;
@@ -26,10 +30,12 @@ public sealed class ModuleEditorControl : UserControl
     ];
     private static readonly MatchOption[] ClassOptions = BuildClassOptions();
 
-    public ModuleEditorControl(ModuleStore moduleStore, Action runtimeRestartRequested)
+    public ModuleEditorControl(ModuleStore moduleStore, Action runtimeRestartRequested, string baseDirectory)
     {
         _moduleStore = moduleStore;
         _runtimeRestartRequested = runtimeRestartRequested;
+        _fieldCatalog = ConditionFieldCatalog.Load(baseDirectory);
+        _keymapCatalog = KeymapCatalog.Load(baseDirectory);
         InitializeComponent();
         LoadModules();
     }
@@ -190,6 +196,7 @@ public sealed class ModuleEditorControl : UserControl
         {
             ResetSpecOptions(_specBox, ReadMatchCombo(_classBox));
             ResetHeroTalentOptions(_heroTalentBox, ReadMatchCombo(_classBox), ReadMatchCombo(_specBox));
+            RefreshKeymapColumns();
         };
         _specBox.SelectedIndexChanged += (_, _) =>
             ResetHeroTalentOptions(_heroTalentBox, ReadMatchCombo(_classBox), ReadMatchCombo(_specBox));
@@ -226,26 +233,114 @@ public sealed class ModuleEditorControl : UserControl
             HeaderText = "启用",
             FillWeight = 38
         });
-        _rulesGrid.Columns.Add(new DataGridViewTextBoxColumn
-        {
-            Name = "Spell",
-            HeaderText = "技能",
-            FillWeight = 120
-        });
-        _rulesGrid.Columns.Add(new DataGridViewTextBoxColumn
-        {
-            Name = "Unit",
-            HeaderText = "目标",
-            FillWeight = 48
-        });
+        _spellColumn.Name = "Spell";
+        _spellColumn.HeaderText = "技能";
+        _spellColumn.FillWeight = 120;
+        _spellColumn.FlatStyle = FlatStyle.Flat;
+        _rulesGrid.Columns.Add(_spellColumn);
+        _unitColumn.Name = "Unit";
+        _unitColumn.HeaderText = "目标";
+        _unitColumn.FillWeight = 48;
+        _unitColumn.FlatStyle = FlatStyle.Flat;
+        _rulesGrid.Columns.Add(_unitColumn);
         _rulesGrid.Columns.Add(new DataGridViewTextBoxColumn
         {
             Name = "Condition",
-            HeaderText = "条件",
-            FillWeight = 180
+            HeaderText = "条件 (点击编辑)",
+            FillWeight = 180,
+            ReadOnly = true
         });
+        _rulesGrid.CellClick += OnRulesGridCellClick;
+        // 下拉单元格遇到不在选项里的值时不弹异常框, 由 RefreshKeymapColumns 负责补录旧值。
+        _rulesGrid.DataError += (_, e) => e.ThrowException = false;
+        RefreshKeymapColumns();
 
         return _rulesGrid;
+    }
+
+    /// <summary>
+    /// 按当前选中职业的 keymap 重建“技能/目标”下拉选项。
+    /// 技能去重(同名技能只出现一次), unit 去重升序; 首项留空表示不填。
+    /// 已有行里不在 keymap 中的旧值会补录为额外选项, 避免数据丢失。
+    /// </summary>
+    private void RefreshKeymapColumns()
+    {
+        var classId = ReadMatchCombo(_classBox);
+
+        _spellColumn.Items.Clear();
+        _spellColumn.Items.Add(string.Empty);
+        foreach (var spell in _keymapCatalog.GetSpells(classId))
+        {
+            _spellColumn.Items.Add(spell);
+        }
+
+        _unitColumn.Items.Clear();
+        _unitColumn.Items.Add(string.Empty);
+        foreach (var unit in _keymapCatalog.GetUnits(classId))
+        {
+            _unitColumn.Items.Add(unit.ToString());
+        }
+
+        foreach (DataGridViewRow row in _rulesGrid.Rows)
+        {
+            if (row.IsNewRow)
+            {
+                continue;
+            }
+
+            EnsureComboItem(_spellColumn, row.Cells["Spell"].Value);
+            EnsureComboItem(_unitColumn, row.Cells["Unit"].Value);
+        }
+    }
+
+    private static void EnsureComboItem(DataGridViewComboBoxColumn column, object? value)
+    {
+        var text = value?.ToString();
+        if (!string.IsNullOrEmpty(text) && !column.Items.Contains(text))
+        {
+            column.Items.Add(text);
+        }
+    }
+
+    private void OnRulesGridCellClick(object? sender, DataGridViewCellEventArgs e)
+    {
+        if (e.RowIndex < 0 || e.ColumnIndex < 0)
+        {
+            return;
+        }
+
+        if (_rulesGrid.Columns[e.ColumnIndex].Name != "Condition")
+        {
+            return;
+        }
+
+        OpenConditionEditor(e.RowIndex);
+    }
+
+    private void OpenConditionEditor(int rowIndex)
+    {
+        var row = _rulesGrid.Rows[rowIndex];
+        var current = row.IsNewRow ? string.Empty : CellText(row, "Condition");
+        var fields = _fieldCatalog.GetFields(ReadMatchCombo(_classBox), ReadMatchCombo(_specBox));
+
+        using var editor = new ConditionEditorForm(fields, current);
+        if (editor.ShowDialog(FindForm()) != DialogResult.OK)
+        {
+            return;
+        }
+
+        if (row.IsNewRow)
+        {
+            // 新行占位符不能直接赋值, 改为追加一行。
+            if (!string.IsNullOrWhiteSpace(editor.ConditionText))
+            {
+                _rulesGrid.Rows.Add(true, string.Empty, string.Empty, editor.ConditionText);
+            }
+
+            return;
+        }
+
+        row.Cells["Condition"].Value = editor.ConditionText;
     }
 
     private Control BuildActionRow()
@@ -262,7 +357,7 @@ public sealed class ModuleEditorControl : UserControl
 
         var hint = new Label
         {
-            Text = "条件示例: 生命值 < 50 && spells.圣疗术 == 0；目标留空表示默认目标",
+            Text = "技能/目标下拉来自当前职业的 keymap，留空表示默认；点击“条件”列打开可视化编辑器",
             Dock = DockStyle.Fill,
             ForeColor = UiTheme.Muted,
             TextAlign = ContentAlignment.MiddleLeft,
@@ -336,10 +431,15 @@ public sealed class ModuleEditorControl : UserControl
         SelectHeroTalent(module.Match.HeroTalent);
         _pathLabel.Text = module.FilePath ?? "尚未保存";
         _rulesGrid.Rows.Clear();
+        // SelectClass 只在选项变化时触发刷新, 这里显式刷新一次并补录旧值, 保证行值都在下拉选项里。
+        RefreshKeymapColumns();
 
         foreach (var rule in module.Rules)
         {
-            _rulesGrid.Rows.Add(rule.Enabled, rule.Spell, rule.Unit?.ToString() ?? string.Empty, rule.Condition);
+            var unitText = rule.Unit?.ToString() ?? string.Empty;
+            EnsureComboItem(_spellColumn, rule.Spell);
+            EnsureComboItem(_unitColumn, unitText);
+            _rulesGrid.Rows.Add(rule.Enabled, rule.Spell, unitText, rule.Condition);
         }
     }
 

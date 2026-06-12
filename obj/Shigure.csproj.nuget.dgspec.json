@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\bianw\\OneDrive\\VS Code\\Shigure\\Shigure.csproj": {}
+    "c:\\Users\\bianw\\OneDrive\\VS Code\\Shigure\\Shigure.csproj": {}
   },
   "projects": {
-    "C:\\Users\\bianw\\OneDrive\\VS Code\\Shigure\\Shigure.csproj": {
+    "c:\\Users\\bianw\\OneDrive\\VS Code\\Shigure\\Shigure.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\bianw\\OneDrive\\VS Code\\Shigure\\Shigure.csproj",
+        "projectUniqueName": "c:\\Users\\bianw\\OneDrive\\VS Code\\Shigure\\Shigure.csproj",
         "projectName": "Shigure",
-        "projectPath": "C:\\Users\\bianw\\OneDrive\\VS Code\\Shigure\\Shigure.csproj",
+        "projectPath": "c:\\Users\\bianw\\OneDrive\\VS Code\\Shigure\\Shigure.csproj",
         "packagesPath": "C:\\Users\\bianw\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\bianw\\OneDrive\\VS Code\\Shigure\\obj\\",
+        "outputPath": "c:\\Users\\bianw\\OneDrive\\VS Code\\Shigure\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

@@ -292,9 +292,15 @@ public sealed class ModuleStore
             }
         }
 
+        if (File.Exists(path)
+            && (string.IsNullOrWhiteSpace(oldPath) || !PathsEqual(oldPath, path)))
+        {
+            throw new InvalidOperationException($"模块文件“{Path.GetFileName(path)}”已存在，请使用其他名称。");
+        }
+
         if (!string.IsNullOrWhiteSpace(oldPath)
             && IsInsideModuleDirectory(oldPath)
-            && !string.Equals(Path.GetFullPath(oldPath), Path.GetFullPath(path), StringComparison.OrdinalIgnoreCase)
+            && !PathsEqual(oldPath, path)
             && File.Exists(oldPath))
         {
             File.Delete(oldPath);
@@ -364,8 +370,13 @@ public sealed class ModuleStore
 
     private string BuildModulePath(ModuleDefinition module)
     {
-        var fileName = $"{SanitizeFileName(module.Name)}-{SanitizeFileName(module.Id)}.json";
+        var fileName = $"{SanitizeFileName(module.Name)}.json";
         return Path.Combine(ModuleDirectory, fileName);
+    }
+
+    private static bool PathsEqual(string left, string right)
+    {
+        return string.Equals(Path.GetFullPath(left), Path.GetFullPath(right), StringComparison.OrdinalIgnoreCase);
     }
 
     private static void Normalize(ModuleDefinition module)

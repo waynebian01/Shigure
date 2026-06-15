@@ -23,4 +23,13 @@
     <None Include="module\**\*.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
+  <!-- 安装器是本项目的子目录，必须排除在主项目的默认文件 glob 之外，
+       否则主项目会把 Shigure.Installer 的源码与 obj 生成文件一并编译，导致重复入口点/重复特性(CS0579)错误。 -->
+  <ItemGroup>
+    <Compile Remove="Shigure.Installer\**" />
+    <EmbeddedResource Remove="Shigure.Installer\**" />
+    <None Remove="Shigure.Installer\**" />
+    <Content Remove="Shigure.Installer\**" />
+  </ItemGroup>
+
 </Project>

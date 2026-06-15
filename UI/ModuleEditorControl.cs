@@ -1222,7 +1222,7 @@ public sealed class ModuleEditorControl : UserControl
         Count
     }
 
-    private sealed record RuleRowValues(bool Enabled, string Spell, string UnitText, string Condition);
+    private sealed record RuleRowValues(bool Enabled, string Spell, string UnitText, string Condition, IReadOnlyList<string> SubConditions);
 
     private void ApplyColumnWidths(Dictionary<string, int>? widths)
     {
@@ -1323,13 +1323,33 @@ public sealed class ModuleEditorControl : UserControl
             return;
         }
 
-        if (_rulesGrid.Columns[e.ColumnIndex].Name != "RuleNumber")
+        var columnName = _rulesGrid.Columns[e.ColumnIndex].Name;
+        var row = _rulesGrid.Rows[e.RowIndex];
+        if (columnName == "RuleNumber")
         {
+            e.Value = row.IsNewRow ? string.Empty : (e.RowIndex + 1).ToString();
+            e.FormattingApplied = true;
             return;
         }
 
-        e.Value = _rulesGrid.Rows[e.RowIndex].IsNewRow ? string.Empty : (e.RowIndex + 1).ToString();
-        e.FormattingApplied = true;
+        // 「条件」列在有子条件时显示成 "主条件 且任一(子1 | 子2)"; 仅改显示, 底层值仍是主条件, 不影响 ReadRules 存盘。
+        if (columnName == "Condition" && !row.IsNewRow)
+        {
+            e.Value = DecorateCondition(e.Value?.ToString() ?? string.Empty, row.Tag as List<string>);
+            e.FormattingApplied = true;
+        }
+    }
+
+    // 把主条件与子条件合成可读文本(与 ModuleRule.DescribeCondition / 弹窗预览同形)。无子条件时原样返回。
+    private static string DecorateCondition(string main, List<string>? subs)
+    {
+        if (subs is not { Count: > 0 })
+        {
+            return main;
+        }
+
+        var any = string.Join(" | ", subs);
+        return main.Length == 0 ? $"任一({any})" : $"{main}  且任一({any})";
     }
 
     private void OnRulesGridCellPainting(object? sender, DataGridViewCellPaintingEventArgs e)
@@ -1427,10 +1447,16 @@ public sealed class ModuleEditorControl : UserControl
             return string.Empty;
         }
 
-        var text = CellText(_rulesGrid.Rows[rowIndex], columnName);
-        if (columnName == "Condition" && text.Length == 0)
+        var row = _rulesGrid.Rows[rowIndex];
+        var text = CellText(row, columnName);
+        if (columnName == "Condition")
         {
-            return "点击编辑条件 (当前: 始终命中)";
+            // 提示与裁剪检测都用合成后的完整文本(含子条件), 与单元格显示一致。
+            text = DecorateCondition(text, row.Tag as List<string>);
+            if (text.Length == 0)
+            {
+                return "点击编辑条件 (当前: 始终命中)";
+            }
         }
 
         return IsCellTextClipped(text, columnIndex) ? text : string.Empty;
@@ -1762,7 +1788,7 @@ public sealed class ModuleEditorControl : UserControl
             return;
         }
 
-        InsertRuleAfter(rowIndex, new RuleRowValues(true, string.Empty, string.Empty, string.Empty));
+        InsertRuleAfter(rowIndex, new RuleRowValues(true, string.Empty, string.Empty, string.Empty, Array.Empty<string>()));
     }
 
     private void InsertRuleAfter(int rowIndex, RuleRowValues values)
@@ -1971,7 +1997,9 @@ public sealed class ModuleEditorControl : UserControl
             CellBool(row, "Enabled", defaultValue: true),
             CellText(row, "Spell"),
             CellText(row, "Unit"),
-            CellText(row, "Condition"));
+            CellText(row, "Condition"),
+            // 子条件挂在 row.Tag, 随行一起被移动/拖拽/复制搬运。
+            row.Tag as List<string> ?? new List<string>());
     }
 
     private void WriteRuleRow(DataGridViewRow row, RuleRowValues values)
@@ -1980,6 +2008,7 @@ public sealed class ModuleEditorControl : UserControl
         EnsureComboItem(_spellColumn, values.Spell);
         row.Cells["Spell"].Value = values.Spell;
         row.Cells["Condition"].Value = values.Condition;
+        row.Tag = new List<string>(values.SubConditions);
         RebuildUnitCell(row, values.UnitText);
     }
 
@@ -1987,26 +2016,32 @@ public sealed class ModuleEditorControl : UserControl
     {
         var row = _rulesGrid.Rows[rowIndex];
         var current = row.IsNewRow ? string.Empty : CellText(row, "Condition");
+        var currentSubs = row.IsNewRow ? null : row.Tag as List<string>;
         var fields = BuildConditionFields();
 
-        using var editor = new ConditionEditorForm(fields, current);
+        using var editor = new ConditionEditorForm(fields, current, currentSubs, allowSubConditions: true);
         if (editor.ShowDialog(FindForm()) != DialogResult.OK)
         {
             return;
         }
 
+        var subs = new List<string>(editor.SubConditions);
         if (row.IsNewRow)
         {
-            // 新行占位符不能直接赋值, 改为追加一行。
-            if (!string.IsNullOrWhiteSpace(editor.ConditionText))
+            // 新行占位符不能直接赋值, 改为追加一行(主条件或子条件任一非空即可)。
+            if (!string.IsNullOrWhiteSpace(editor.ConditionText) || subs.Count > 0)
             {
-                _rulesGrid.Rows.Add(true, string.Empty, string.Empty, editor.ConditionText);
+                var index = _rulesGrid.Rows.Add(true, string.Empty, string.Empty, editor.ConditionText);
+                _rulesGrid.Rows[index].Tag = subs;
             }
 
             return;
         }
 
         row.Cells["Condition"].Value = editor.ConditionText;
+        row.Tag = subs;
+        // 让「条件」列的装饰显示(主条件 且任一(…))立即刷新。
+        _rulesGrid.InvalidateRow(rowIndex);
     }
 
     // 条件字段 = 状态/技能字段 + 每个动态单位的裸名(存在)和值名称 + 每个数量名。
@@ -2186,6 +2221,9 @@ public sealed class ModuleEditorControl : UserControl
             EnsureComboItem(_spellColumn, rule.Spell);
             // 先加行(目标先留空), 再按技能重建目标选项并写回目标值, 避免值不在选项内被吞掉。
             var index = _rulesGrid.Rows.Add(rule.Enabled, rule.Spell, string.Empty, rule.Condition);
+            _rulesGrid.Rows[index].Tag = rule.SubConditions is null
+                ? new List<string>()
+                : new List<string>(rule.SubConditions);
             RebuildUnitCell(_rulesGrid.Rows[index], unitText);
         }
     }
@@ -2434,6 +2472,10 @@ public sealed class ModuleEditorControl : UserControl
 
             // 目标文本命中已定义动态单位名 → UnitName; 否则按数字 → Unit; 都不是则留空。
             var isDynamic = unitNames.Contains(unitText);
+            var subs = (row.Tag as List<string>)?
+                .Select(sub => sub?.Trim() ?? string.Empty)
+                .Where(sub => sub.Length > 0)
+                .ToList();
             rules.Add(new ModuleRule
             {
                 Enabled = CellBool(row, "Enabled", defaultValue: true),
@@ -2442,7 +2484,8 @@ public sealed class ModuleEditorControl : UserControl
                 UnitName = isDynamic ? unitText : null,
                 Spell = spell,
                 Hotkey = string.Empty,
-                Step = string.Empty
+                Step = string.Empty,
+                SubConditions = subs is { Count: > 0 } ? subs : null
             });
         }
 

@@ -183,6 +183,11 @@ public sealed class ModuleRule
     public string Hotkey { get; set; } = string.Empty;
     public string Step { get; set; } = string.Empty;
 
+    // 子条件: 与主条件是「且」关系, 子条件之间是「或」关系。
+    // 命中 = 主条件成立 && (无子条件 || 任一子条件成立)。用于表达求值器写不出的 主 && (A || B)。
+    // 旧模块无此字段 → 反序列化为 null; 序列化时 null 会被 WhenWritingNull 忽略。
+    public List<string>? SubConditions { get; set; }
+
     public ModuleRule Clone()
     {
         return new ModuleRule
@@ -193,8 +198,23 @@ public sealed class ModuleRule
             UnitName = UnitName,
             Spell = Spell,
             Hotkey = Hotkey,
-            Step = Step
+            Step = Step,
+            SubConditions = SubConditions is null ? null : new List<string>(SubConditions)
         };
+    }
+
+    // 供求值日志与规则表显示复用的可读描述, 避免在 UI 里另写一份。
+    public string DescribeCondition()
+    {
+        if (SubConditions is not { Count: > 0 })
+        {
+            return Condition;
+        }
+
+        var any = string.Join(" | ", SubConditions);
+        return string.IsNullOrWhiteSpace(Condition)
+            ? $"任一({any})"
+            : $"{Condition}  且任一({any})";
     }
 }
 
@@ -478,6 +498,23 @@ public sealed class ModuleStore
         }
 
         module.Rules ??= new List<ModuleRule>();
+        foreach (var rule in module.Rules)
+        {
+            if (rule.SubConditions is null)
+            {
+                continue;
+            }
+
+            // 去空白、丢空项; 整组为空则回到 null, 保持文件干净且求值不见空子条件。
+            rule.SubConditions = rule.SubConditions
+                .Select(sub => sub?.Trim() ?? string.Empty)
+                .Where(sub => sub.Length > 0)
+                .ToList();
+            if (rule.SubConditions.Count == 0)
+            {
+                rule.SubConditions = null;
+            }
+        }
     }
 
     private bool IsInsideModuleDirectory(string path)
@@ -552,10 +589,10 @@ public static class ModuleLogic
 
         foreach (var rule in module.Rules.Where(rule => rule.Enabled))
         {
-            if (!ModuleConditionEvaluator.TryEvaluate(rule.Condition, state, out var conditionMatched, out var error, failedSpells))
+            if (!ModuleConditionEvaluator.TryEvaluateRule(rule, state, out var conditionMatched, out var error, failedSpells))
             {
                 info["条件错误"] = error;
-                info["规则条件"] = rule.Condition;
+                info["规则条件"] = rule.DescribeCondition();
                 return new LogicDecision(null, $"{module.Name}: 条件错误", info, module.Name);
             }
 
@@ -566,7 +603,7 @@ public static class ModuleLogic
 
             if (ModuleSpecialActions.IsPauseSpell(rule.Spell))
             {
-                info["命中条件"] = string.IsNullOrWhiteSpace(rule.Condition) ? "始终" : rule.Condition;
+                info["命中条件"] = string.IsNullOrWhiteSpace(rule.DescribeCondition()) ? "始终" : rule.DescribeCondition();
                 info["动作技能"] = ModuleSpecialActions.PauseSpell;
                 info["动作按键"] = "-";
                 info["动作单位"] = "-";
@@ -953,6 +990,49 @@ public static class ModuleConditionEvaluator
             }
 
             if (allAndMatched)
+            {
+                matched = true;
+                return true;
+            }
+        }
+
+        matched = false;
+        return true;
+    }
+
+    // 整条规则的命中判定: 主条件成立 且 (无子条件 || 任一子条件成立)。
+    // 子条件之间是「或」, 与主条件是「且」; 任一子条件求值出错都按错误返回。
+    public static bool TryEvaluateRule(
+        ModuleRule rule,
+        GameState state,
+        out bool matched,
+        out string? error,
+        IReadOnlyDictionary<int, string>? failedSpells = null)
+    {
+        if (!TryEvaluate(rule.Condition, state, out matched, out error, failedSpells))
+        {
+            return false;
+        }
+
+        if (!matched || rule.SubConditions is not { Count: > 0 })
+        {
+            return true;
+        }
+
+        foreach (var sub in rule.SubConditions)
+        {
+            if (string.IsNullOrWhiteSpace(sub))
+            {
+                continue;
+            }
+
+            if (!TryEvaluate(sub, state, out var subMatched, out error, failedSpells))
+            {
+                matched = false;
+                return false;
+            }
+
+            if (subMatched)
             {
                 matched = true;
                 return true;

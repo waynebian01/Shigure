@@ -159,17 +159,36 @@ public sealed class ConditionEditorForm : Form
 
     private readonly IReadOnlyList<ConditionField> _fields;
     private readonly string _originalCondition;
+    private readonly bool _allowSubConditions;
     private readonly FlowLayoutPanel _rowsPanel = new();
     private readonly Label _previewLabel = new();
     private readonly ToolTip _previewToolTip = new();
     private readonly List<ConditionRow> _rows = new();
+    private readonly List<string> _subConditions = new();
+    private readonly ListBox _subList = new();
 
     public string ConditionText { get; private set; } = string.Empty;
 
-    public ConditionEditorForm(IReadOnlyList<ConditionField> fields, string? condition)
+    // 子条件: 与主条件是「且」、子条件彼此是「或」。allowSubConditions=false(默认)时不显示该区,
+    // 也用于子条件自身的嵌套编辑弹窗防止无限递归。
+    public IReadOnlyList<string> SubConditions => _subConditions;
+
+    public ConditionEditorForm(
+        IReadOnlyList<ConditionField> fields,
+        string? condition,
+        IEnumerable<string>? subConditions = null,
+        bool allowSubConditions = false)
     {
         _fields = fields;
         _originalCondition = condition ?? string.Empty;
+        _allowSubConditions = allowSubConditions;
+        if (subConditions is not null)
+        {
+            _subConditions.AddRange(subConditions
+                .Select(sub => sub?.Trim() ?? string.Empty)
+                .Where(sub => sub.Length > 0));
+        }
+
         InitializeComponent();
 
         foreach (var term in ConditionExpression.Parse(condition))
@@ -200,7 +219,9 @@ public sealed class ConditionEditorForm : Form
         BackColor = UiTheme.Background;
         ForeColor = UiTheme.Text;
         // 加一个滚动条宽度, 避免行数多时垂直滚动条盖住每行的 ✕ 删除按钮。
-        ClientSize = new Size(RowTotalWidth + 50 + SystemInformation.VerticalScrollBarWidth, 460);
+        // 子条件区会额外占高度, 允许时把窗口加高, 给主条件行留出空间。
+        var initialHeight = _allowSubConditions ? 650 : 460;
+        ClientSize = new Size(RowTotalWidth + 50 + SystemInformation.VerticalScrollBarWidth, initialHeight);
         FormBorderStyle = FormBorderStyle.Sizable;
         MaximizeBox = false;
         MinimizeBox = false;
@@ -214,16 +235,13 @@ public sealed class ConditionEditorForm : Form
             Dock = DockStyle.Fill,
             BackColor = UiTheme.Background,
             Padding = new Padding(12, 10, 12, 10),
-            ColumnCount = 1,
-            RowCount = 4
+            ColumnCount = 1
         };
-        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 26));
-        root.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 28));
-        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 40));
         Controls.Add(root);
 
-        root.Controls.Add(BuildHeaderRow(), 0, 0);
+        var rowIndex = 0;
+        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 26));
+        root.Controls.Add(BuildHeaderRow(), 0, rowIndex++);
 
         _rowsPanel.Dock = DockStyle.Fill;
         _rowsPanel.BackColor = UiTheme.SurfaceRaised;
@@ -232,16 +250,168 @@ public sealed class ConditionEditorForm : Form
         _rowsPanel.AutoScroll = true;
         _rowsPanel.Margin = new Padding(0, 4, 0, 6);
         _rowsPanel.Padding = new Padding(8, 6, 8, 6);
-        root.Controls.Add(_rowsPanel, 0, 1);
+        root.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        root.Controls.Add(_rowsPanel, 0, rowIndex++);
+
+        // 「添加条件」紧贴主条件行下方, 明确它作用于上面的主条件(而非子条件)。
+        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 38));
+        root.Controls.Add(BuildAddConditionRow(), 0, rowIndex++);
+
+        if (_allowSubConditions)
+        {
+            root.RowStyles.Add(new RowStyle(SizeType.Absolute, 172));
+            root.Controls.Add(BuildSubConditionsPanel(), 0, rowIndex++);
+        }
 
         _previewLabel.Dock = DockStyle.Fill;
         _previewLabel.ForeColor = UiTheme.Muted;
         _previewLabel.TextAlign = ContentAlignment.MiddleLeft;
         _previewLabel.AutoEllipsis = true;
         _previewLabel.Margin = new Padding(0);
-        root.Controls.Add(_previewLabel, 0, 2);
+        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 28));
+        root.Controls.Add(_previewLabel, 0, rowIndex++);
 
-        root.Controls.Add(BuildActionRow(), 0, 3);
+        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 40));
+        root.Controls.Add(BuildActionRow(), 0, rowIndex++);
+        root.RowCount = rowIndex;
+    }
+
+    // 子条件区: 标题 + 暗色列表 + 添加/编辑/删除。每条子条件本身也是一条完整条件,
+    // 通过嵌套的(无子条件区的)条件编辑弹窗来编辑。
+    private Control BuildSubConditionsPanel()
+    {
+        var panel = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            BackColor = UiTheme.Background,
+            Margin = new Padding(0, 4, 0, 4),
+            ColumnCount = 2,
+            RowCount = 2
+        };
+        panel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        panel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 116));
+        panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 22));
+        panel.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+
+        var title = new Label
+        {
+            Text = "子条件 (满足任一即可, 与主条件为「且」关系)",
+            Dock = DockStyle.Fill,
+            ForeColor = UiTheme.Muted,
+            TextAlign = ContentAlignment.MiddleLeft,
+            Margin = new Padding(0)
+        };
+        panel.Controls.Add(title, 0, 0);
+        panel.SetColumnSpan(title, 2);
+
+        _subList.Dock = DockStyle.Fill;
+        _subList.BackColor = UiTheme.Field;
+        _subList.ForeColor = UiTheme.Text;
+        _subList.BorderStyle = BorderStyle.FixedSingle;
+        _subList.IntegralHeight = false;
+        _subList.Margin = new Padding(0, 0, 8, 0);
+        _subList.DoubleClick += (_, _) => EditSelectedSubCondition();
+        panel.Controls.Add(_subList, 0, 1);
+
+        var buttons = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            FlowDirection = FlowDirection.TopDown,
+            WrapContents = false,
+            BackColor = UiTheme.Background,
+            Margin = new Padding(0)
+        };
+        buttons.Controls.Add(CreateSubButton("添加子条件", UiTheme.Text, AddSubCondition));
+        buttons.Controls.Add(CreateSubButton("编辑", UiTheme.Text, EditSelectedSubCondition));
+        buttons.Controls.Add(CreateSubButton("删除", UiTheme.Danger, DeleteSelectedSubCondition));
+        panel.Controls.Add(buttons, 1, 1);
+
+        RefreshSubList();
+        return panel;
+    }
+
+    private static Button CreateSubButton(string text, Color foreColor, Action onClick)
+    {
+        var button = UiTheme.CreateButton(text, UiTheme.Field, foreColor);
+        button.Width = 108;
+        button.Height = 30;
+        button.Margin = new Padding(0, 0, 0, 6);
+        button.Click += (_, _) => onClick();
+        return button;
+    }
+
+    private void AddSubCondition()
+    {
+        var text = PromptSubCondition(string.Empty);
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return;
+        }
+
+        _subConditions.Add(text.Trim());
+        RefreshSubList();
+        _subList.SelectedIndex = _subConditions.Count - 1;
+        UpdatePreview();
+    }
+
+    private void EditSelectedSubCondition()
+    {
+        var index = _subList.SelectedIndex;
+        if (index < 0 || index >= _subConditions.Count)
+        {
+            return;
+        }
+
+        var text = PromptSubCondition(_subConditions[index]);
+        if (text is null)
+        {
+            return;
+        }
+
+        // 编辑后清空 = 删除该子条件。
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            _subConditions.RemoveAt(index);
+        }
+        else
+        {
+            _subConditions[index] = text.Trim();
+        }
+
+        RefreshSubList();
+        UpdatePreview();
+    }
+
+    private void DeleteSelectedSubCondition()
+    {
+        var index = _subList.SelectedIndex;
+        if (index < 0 || index >= _subConditions.Count)
+        {
+            return;
+        }
+
+        _subConditions.RemoveAt(index);
+        RefreshSubList();
+        UpdatePreview();
+    }
+
+    // 返回 null = 用户取消; 空串 = 用户清空了条件(编辑时表示删除)。
+    private string? PromptSubCondition(string current)
+    {
+        using var editor = new ConditionEditorForm(_fields, current);
+        return editor.ShowDialog(this) == DialogResult.OK ? editor.ConditionText : null;
+    }
+
+    private void RefreshSubList()
+    {
+        _subList.BeginUpdate();
+        _subList.Items.Clear();
+        foreach (var sub in _subConditions)
+        {
+            _subList.Items.Add(sub);
+        }
+
+        _subList.EndUpdate();
     }
 
     private Control BuildHeaderRow()
@@ -271,6 +441,34 @@ public sealed class ConditionEditorForm : Form
         return header;
     }
 
+    // 「添加条件」按钮单独成行, 放在主条件行下方、子条件区上方。
+    private Control BuildAddConditionRow()
+    {
+        var panel = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            FlowDirection = FlowDirection.LeftToRight,
+            WrapContents = false,
+            BackColor = UiTheme.Background,
+            Margin = new Padding(0, 2, 0, 2)
+        };
+
+        var addButton = UiTheme.CreateButton("添加条件", UiTheme.Field, UiTheme.Text);
+        addButton.Width = 96;
+        addButton.Height = 30;
+        addButton.Margin = new Padding(0, 2, 0, 0);
+        addButton.Click += (_, _) =>
+        {
+            var row = AddRow(null);
+            RefreshConnectors();
+            UpdatePreview();
+            _rowsPanel.ScrollControlIntoView(row.Panel);
+            row.CategoryBox.Focus();
+        };
+        panel.Controls.Add(addButton);
+        return panel;
+    }
+
     private Control BuildActionRow()
     {
         var row = new TableLayoutPanel
@@ -283,29 +481,6 @@ public sealed class ConditionEditorForm : Form
         };
         row.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
         row.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 170));
-
-        var leftButtons = new FlowLayoutPanel
-        {
-            Dock = DockStyle.Fill,
-            FlowDirection = FlowDirection.LeftToRight,
-            WrapContents = false,
-            BackColor = UiTheme.Background,
-            Margin = new Padding(0)
-        };
-        var addButton = UiTheme.CreateButton("添加条件", UiTheme.Field, UiTheme.Text);
-        addButton.Width = 96;
-        addButton.Height = 30;
-        addButton.Margin = new Padding(0, 4, 0, 0);
-        addButton.Click += (_, _) =>
-        {
-            var row = AddRow(null);
-            RefreshConnectors();
-            UpdatePreview();
-            _rowsPanel.ScrollControlIntoView(row.Panel);
-            row.CategoryBox.Focus();
-        };
-        leftButtons.Controls.Add(addButton);
-        row.Controls.Add(leftButtons, 0, 0);
 
         var rightButtons = new FlowLayoutPanel
         {
@@ -352,8 +527,9 @@ public sealed class ConditionEditorForm : Form
         }
 
         var text = ConditionExpression.Build(CollectTerms());
-        // 仅当原本有条件、现在变空时才提醒(避免把已有规则误清成"始终命中")。
+        // 仅当原本有条件、现在主条件与子条件都为空时才提醒(避免把已有规则误清成"始终命中")。
         if (text.Length == 0
+            && _subConditions.Count == 0
             && !string.IsNullOrWhiteSpace(_originalCondition)
             && MessageBox.Show(
                 "当前条件为空, 将清除该规则的条件(始终命中)。继续？",
@@ -708,10 +884,22 @@ public sealed class ConditionEditorForm : Form
 
     private void UpdatePreview()
     {
-        var text = ConditionExpression.Build(CollectTerms());
-        _previewLabel.Text = text.Length == 0 ? "预览: (无条件, 始终命中)" : $"预览: {text}";
+        var full = ComposePreview(ConditionExpression.Build(CollectTerms()));
+        _previewLabel.Text = full.Length == 0 ? "预览: (无条件, 始终命中)" : $"预览: {full}";
         // 单行预览会被省略号截断, 悬停看完整表达式。
-        _previewToolTip.SetToolTip(_previewLabel, text.Length == 0 ? string.Empty : text);
+        _previewToolTip.SetToolTip(_previewLabel, full.Length == 0 ? string.Empty : full);
+    }
+
+    // 把主条件文本与子条件合成为可读的整体表达式(与 ModuleRule.DescribeCondition 同形)。
+    private string ComposePreview(string mainText)
+    {
+        if (_subConditions.Count == 0)
+        {
+            return mainText;
+        }
+
+        var any = string.Join(" | ", _subConditions);
+        return mainText.Length == 0 ? $"任一({any})" : $"{mainText}  且任一({any})";
     }
 
     private static bool IsFalseText(string? value)

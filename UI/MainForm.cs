@@ -5,7 +5,7 @@ namespace Shigure;
 public sealed class MainForm : Form, IMessageFilter
 {
     private const int ResizeGripSize = 8;
-    private const string HeaderIconResourceName = "Shigure.Assets.arasaka-icon-transparent.png";
+    private const string HeaderIconResourcePath = "Assets.arasaka-icon-transparent.png";
     private static readonly Color DefaultHeaderIconColor = Color.White;
     private static readonly IReadOnlyDictionary<int, Color> ClassIconColors = new Dictionary<int, Color>
     {
@@ -290,7 +290,7 @@ public sealed class MainForm : Form, IMessageFilter
 
     private static Bitmap? LoadHeaderIconMask()
     {
-        using var stream = typeof(MainForm).Assembly.GetManifestResourceStream(HeaderIconResourceName);
+        using var stream = typeof(MainForm).Assembly.GetManifestResourceStream(GetHeaderIconResourceName());
         if (stream is null)
         {
             return null;
@@ -299,6 +299,9 @@ public sealed class MainForm : Form, IMessageFilter
         using var image = Image.FromStream(stream);
         return new Bitmap(image);
     }
+
+    private static string GetHeaderIconResourceName() =>
+        $"{typeof(MainForm).Namespace}.{HeaderIconResourcePath}";
 
     private static Bitmap TintHeaderIcon(Bitmap mask, Color color)
     {

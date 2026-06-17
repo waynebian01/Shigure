@@ -4,8 +4,7 @@
   "Enabled": true,
   "Match": {
     "ClassId": 2,
-    "SpecId": 1,
-    "PartyType": "46"
+    "SpecId": 1
   },
   "Units": [
     {
@@ -72,14 +71,6 @@
       "Enabled": true,
       "Condition": "引导 > 0 || spells.延迟 > 0",
       "Spell": "暂停",
-      "Hotkey": "",
-      "Step": ""
-    },
-    {
-      "Enabled": true,
-      "Condition": "法术失败 == 7 && spells.圣洁鸣钟 == 0",
-      "Unit": 1,
-      "Spell": "圣洁鸣钟",
       "Hotkey": "",
       "Step": ""
     },
@@ -213,7 +204,7 @@
     },
     {
       "Enabled": true,
-      "Condition": "神圣能量 == 5 && 战斗时间 > 0 && 目标类型 in (1, 2, 3) && 目标距离 <= 5 && auras.圣光灌注 > 0 || 神圣能量 == 5 && 战斗时间 > 0 && 目标类型 in (1, 2, 3) && 目标距离 <= 5 && auras.圣光灌注 > 0 || 神圣能量 == 5 && 战斗时间 > 0 && 目标类型 in (1, 2, 3) && 目标距离 <= 5 && spells.神圣震击 == 0 && spells.震击充能 == 0",
+      "Condition": "神圣能量 == 5 && 战斗时间 > 0 && 目标类型 in (1, 2, 3) && 目标距离 <= 5 && auras.圣光灌注 > 0 || 神圣能量 == 5 && 战斗时间 > 0 && 目标类型 in (1, 2, 3) && 目标距离 <= 5 && auras.圣光灌注 > 0 || 神圣能量 == 5 && 战斗时间 > 0 && 目标类型 in (1, 2, 3) && 目标距离 <= 5 && spells.神圣震击 == 0",
       "Unit": 0,
       "Spell": "正义盾击",
       "Hotkey": "",

@@ -1,0 +1,33 @@
+{
+  "Id": "新模块1-20260617233524797",
+  "Name": "官方一键",
+  "Enabled": true,
+  "Match": {},
+  "Units": [],
+  "Counts": [],
+  "ValueAdjustments": [],
+  "Rules": [
+    {
+      "Enabled": true,
+      "Condition": "引导 > 0",
+      "Spell": "暂停",
+      "Hotkey": "",
+      "Step": ""
+    },
+    {
+      "Enabled": true,
+      "Condition": "",
+      "Spell": "插入法术",
+      "Hotkey": "",
+      "Step": ""
+    },
+    {
+      "Enabled": true,
+      "Condition": "",
+      "Unit": 0,
+      "Spell": "一键法术",
+      "Hotkey": "",
+      "Step": ""
+    }
+  ]
+}

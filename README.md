@@ -1,6 +1,8 @@
 # Shigure
 
-Shigure 是一个 Windows WinForms 桌面程序，用于扫描目标窗口状态、根据职业 keymap 选择按键，并把实时状态、队伍信息、逻辑输出和运行日志集中显示在 UI 中。
+Shigure 是 荒坂公司 (Arasaka Corporation) 开发的冲锋枪，有时人们只想把子弹全打出去，在硝烟过后品味眼前的一片狼藉。
+
+### 它需要配合 冬月电子（Fuyutsuki Electronics）的 [Fuyutsui](https://github.com/waynebian01/Fuyutsui)使用。
 
 # 免责声明 (Disclaimer)
 
@@ -23,6 +25,10 @@ Shigure 是一个 Windows WinForms 桌面程序，用于扫描目标窗口状态
 5. **使用即表示接受**
 
    一旦开始使用本软件，即视为用户已阅读、理解并同意本免责声明及 MIT License 的全部内容。若不同意，请立即停止使用并删除本软件及其副本。
+
+## 真实作用
+
+Shigure 是一个 Windows WinForms 桌面程序，用于扫描目标窗口状态、根据职业 keymap 选择按键，并把实时状态、队伍信息、逻辑输出和运行日志集中显示在 UI 中。
 
 ## 当前界面
 

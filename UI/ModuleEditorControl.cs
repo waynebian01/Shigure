@@ -20,6 +20,7 @@ public sealed class ModuleEditorControl : UserControl
     private readonly DataGridViewComboBoxColumn _spellColumn = new();
     private readonly DataGridViewComboBoxColumn _unitColumn = new();
     private readonly DataGridViewComboBoxColumn _adjustmentFieldColumn = new();
+    private readonly DataGridViewComboBoxColumn _adjustmentTypeColumn = new();
     private readonly ListView _unitsList = new();
     private readonly Label _pathLabel = new();
     private readonly Label _unitsEmptyHint = new();
@@ -42,6 +43,8 @@ public sealed class ModuleEditorControl : UserControl
     // 程序化恢复列宽时置真, 避免 ColumnWidthChanged 把默认值回写覆盖用户保存的宽度。
     private bool _suppressColumnSave;
     private bool _suppressUnitsColumnResize;
+    // 载入时程序化写入"类型"单元格会触发 CellValueChanged; 置真以跳过"按类型清空数值"的联动。
+    private bool _suppressAdjustmentTypeChange;
     // 规则行拖拽重排: 拖动起始行, 以及拖动中的插入指示位置(显示一条强调线)。
     private int _dragSourceRow = -1;
     private int _dragIndicatorRow = -1;
@@ -61,6 +64,14 @@ public sealed class ModuleEditorControl : UserControl
         "职责",
         "驱散"
     };
+    // 条件动态数值"类型"下拉: 决定"数值"可选项的过滤类别, 顺序与界面一致。
+    private static readonly (string Text, ConditionFieldCategory Category)[] AdjustmentTypeOptions =
+    [
+        ("状态", ConditionFieldCategory.State),
+        ("技能", ConditionFieldCategory.Spell),
+        ("光环", ConditionFieldCategory.Aura),
+        ("动态单位", ConditionFieldCategory.DynamicUnit)
+    ];
 
     public ModuleEditorControl(ModuleStore moduleStore, Action runtimeRestartRequested, string baseDirectory)
     {
@@ -527,9 +538,24 @@ public sealed class ModuleEditorControl : UserControl
             ReadOnly = true
         });
         AddDeleteColumn(_adjustmentsGrid);
+
+        // "类型"列加在集合末尾以保留 Rows.Add 的位置参数(启用/数值/调整/条件), 再用 DisplayIndex 显示到"数值"前。
+        _adjustmentTypeColumn.Name = "Type";
+        _adjustmentTypeColumn.HeaderText = "类型";
+        _adjustmentTypeColumn.Width = 84;
+        _adjustmentTypeColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+        _adjustmentTypeColumn.FlatStyle = FlatStyle.Flat;
+        foreach (var option in AdjustmentTypeOptions)
+        {
+            _adjustmentTypeColumn.Items.Add(option.Text);
+        }
+        _adjustmentsGrid.Columns.Add(_adjustmentTypeColumn);
+        _adjustmentTypeColumn.DisplayIndex = 1;
+
         _adjustmentsGrid.CellClick += OnAdjustmentsGridCellClick;
         _adjustmentsGrid.CellPainting += OnAdjustmentsGridCellPainting;
         _adjustmentsGrid.CellValidating += OnAdjustmentsGridCellValidating;
+        _adjustmentsGrid.CellValueChanged += OnAdjustmentsGridCellValueChanged;
         _adjustmentsGrid.DataError += (_, e) => e.ThrowException = false;
         _adjustmentsGrid.EditingControlShowing += OnAdjustmentsGridEditingControlShowing;
         _adjustmentsGrid.CurrentCellDirtyStateChanged += (_, _) =>
@@ -899,6 +925,8 @@ public sealed class ModuleEditorControl : UserControl
             if (!row.IsNewRow)
             {
                 EnsureComboItem(_adjustmentFieldColumn, row.Cells["Field"].Value);
+                // 字段集合可能因职业/专精/动态单位变化, 按该行"类型"重建过滤后的单元格选项。
+                RebuildAdjustmentFieldCell(row, row.Cells["Field"].Value?.ToString(), keepCustom: true);
             }
         }
 
@@ -911,15 +939,146 @@ public sealed class ModuleEditorControl : UserControl
         }
     }
 
+    // 按该行选中的"类型"重建"数值"单元格的可选项 = 该类别下的字段。
+    // desiredValue 为 null 时取单元格现值; 命中过滤后选项则保留, 否则: keepCustom 时补录为自定义项(载入旧数据), 反之清空(用户切换类型)。
+    private void RebuildAdjustmentFieldCell(DataGridViewRow row, string? desiredValue, bool keepCustom)
+    {
+        if (row.IsNewRow || row.Cells["Field"] is not DataGridViewComboBoxCell cell)
+        {
+            return;
+        }
+
+        desiredValue ??= cell.Value?.ToString();
+        var category = ReadAdjustmentType(row);
+
+        cell.Items.Clear();
+        cell.Items.Add(string.Empty);
+        foreach (var field in BuildAdjustmentFields())
+        {
+            if ((category is null || field.Category == category) && !cell.Items.Contains(field.Name))
+            {
+                cell.Items.Add(field.Name);
+            }
+        }
+
+        if (!string.IsNullOrEmpty(desiredValue) && cell.Items.Contains(desiredValue))
+        {
+            cell.Value = desiredValue;
+        }
+        else if (!string.IsNullOrEmpty(desiredValue) && keepCustom)
+        {
+            cell.Items.Add(desiredValue);
+            cell.Value = desiredValue;
+        }
+        else
+        {
+            cell.Value = string.Empty;
+        }
+    }
+
+    // 载入旧数据时: 由字段名推断类别, 写入"类型"单元格并重建"数值"选项(保留原值, 含自定义)。
+    private void ApplyAdjustmentRowType(DataGridViewRow row, string field)
+    {
+        _suppressAdjustmentTypeChange = true;
+        try
+        {
+            row.Cells["Type"].Value = AdjustmentTypeText(ResolveAdjustmentCategory(field));
+        }
+        finally
+        {
+            _suppressAdjustmentTypeChange = false;
+        }
+
+        RebuildAdjustmentFieldCell(row, field, keepCustom: true);
+    }
+
+    private static ConditionFieldCategory? ReadAdjustmentType(DataGridViewRow row)
+    {
+        var text = CellText(row, "Type");
+        foreach (var option in AdjustmentTypeOptions)
+        {
+            if (string.Equals(option.Text, text, StringComparison.Ordinal))
+            {
+                return option.Category;
+            }
+        }
+
+        // 未选类型 = 不过滤, 显示全部字段。
+        return null;
+    }
+
+    private static string AdjustmentTypeText(ConditionFieldCategory category)
+    {
+        foreach (var option in AdjustmentTypeOptions)
+        {
+            if (option.Category == category)
+            {
+                return option.Text;
+            }
+        }
+
+        return AdjustmentTypeOptions[0].Text;
+    }
+
+    // 优先按目录里的字段类别判定; 目录外的自定义字段按 auras./spells. 前缀兜底, 其余归为状态。
+    private ConditionFieldCategory ResolveAdjustmentCategory(string field)
+    {
+        var name = field?.Trim() ?? string.Empty;
+        if (name.Length == 0)
+        {
+            return ConditionFieldCategory.State;
+        }
+
+        var match = BuildAdjustmentFields()
+            .FirstOrDefault(candidate => string.Equals(candidate.Name, name, StringComparison.Ordinal));
+        if (match is not null)
+        {
+            return match.Category;
+        }
+
+        if (name.StartsWith("auras.", StringComparison.OrdinalIgnoreCase)
+            || name.StartsWith("aura.", StringComparison.OrdinalIgnoreCase))
+        {
+            return ConditionFieldCategory.Aura;
+        }
+
+        if (name.StartsWith("spells.", StringComparison.OrdinalIgnoreCase)
+            || name.StartsWith("spell.", StringComparison.OrdinalIgnoreCase))
+        {
+            return ConditionFieldCategory.Spell;
+        }
+
+        return ConditionFieldCategory.State;
+    }
+
+    private void OnAdjustmentsGridCellValueChanged(object? sender, DataGridViewCellEventArgs e)
+    {
+        if (_suppressAdjustmentTypeChange || e.RowIndex < 0 || e.ColumnIndex < 0)
+        {
+            return;
+        }
+
+        // 用户切换"类型": 重建"数值"选项, 仅保留仍属于该类型的现值, 否则清空让其重选。
+        if (_adjustmentsGrid.Columns[e.ColumnIndex].Name == "Type")
+        {
+            RebuildAdjustmentFieldCell(_adjustmentsGrid.Rows[e.RowIndex], null, keepCustom: false);
+        }
+    }
+
     private IReadOnlyList<ConditionField> BuildAdjustmentFields()
     {
         var fields = new List<ConditionField>();
         var seen = new HashSet<string>(StringComparer.Ordinal);
         foreach (var field in _fieldCatalog.GetFields(ReadMatchCombo(_classBox), ReadMatchCombo(_specBox)))
         {
+            // 状态仅取可加减的整数字段; 技能/光环原样收录, 供"类型"筛选。
             if (field.Category == ConditionFieldCategory.State && field.Type == ConditionFieldType.Int)
             {
                 AddAdjustmentField(fields, seen, field.Name, field.DisplayName, ConditionFieldCategory.State);
+            }
+            else if (field.Category is ConditionFieldCategory.Spell or ConditionFieldCategory.Aura)
+            {
+                AddAdjustmentField(fields, seen, field.Name, field.DisplayName, field.Category);
             }
         }
 
@@ -1152,7 +1311,9 @@ public sealed class ModuleEditorControl : UserControl
 
     private IReadOnlyList<string> GetThresholdFields()
     {
+        // 阈值字段仅取状态/动态单位(可加减数值), 排除新加入"数值"选项的技能/光环字段。
         return BuildAdjustmentFields()
+            .Where(field => field.Category is ConditionFieldCategory.State or ConditionFieldCategory.DynamicUnit)
             .Select(field => field.Name)
             .Where(name => !string.IsNullOrWhiteSpace(name))
             .ToList();
@@ -1649,14 +1810,28 @@ public sealed class ModuleEditorControl : UserControl
 
     private void OnAdjustmentsGridEditingControlShowing(object? sender, DataGridViewEditingControlShowingEventArgs e)
     {
-        if (_adjustmentsGrid.CurrentCell?.OwningColumn?.Name != "Field" || e.Control is not ComboBox comboBox)
+        var columnName = _adjustmentsGrid.CurrentCell?.OwningColumn?.Name;
+        if (e.Control is not ComboBox comboBox)
         {
             return;
         }
 
-        comboBox.DropDownStyle = ComboBoxStyle.DropDown;
-        comboBox.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
-        comboBox.AutoCompleteSource = AutoCompleteSource.ListItems;
+        if (columnName == "Field")
+        {
+            comboBox.DropDownStyle = ComboBoxStyle.DropDown;
+            comboBox.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
+            comboBox.AutoCompleteSource = AutoCompleteSource.ListItems;
+        }
+        else if (columnName == "Type")
+        {
+            // 类型为固定列表, 不允许自由输入。
+            comboBox.DropDownStyle = ComboBoxStyle.DropDownList;
+        }
+        else
+        {
+            return;
+        }
+
         // 可输入下拉默认是系统白底, 与暗色表格冲突; 显式套用暗色。
         comboBox.FlatStyle = FlatStyle.Flat;
         comboBox.BackColor = UiTheme.Field;
@@ -1670,9 +1845,20 @@ public sealed class ModuleEditorControl : UserControl
             return;
         }
 
-        if (_adjustmentsGrid.Columns[e.ColumnIndex].Name == "Field")
+        if (_adjustmentsGrid.Columns[e.ColumnIndex].Name != "Field")
         {
-            EnsureComboItem(_adjustmentFieldColumn, e.FormattedValue);
+            return;
+        }
+
+        var text = e.FormattedValue?.ToString();
+        EnsureComboItem(_adjustmentFieldColumn, text);
+        // 该行若已按"类型"设了单元格级选项, 自定义输入也要补进单元格, 否则会被组合框拒绝丢失。
+        if (!string.IsNullOrEmpty(text)
+            && _adjustmentsGrid.Rows[e.RowIndex].Cells["Field"] is DataGridViewComboBoxCell cell
+            && cell.Items.Count > 0
+            && !cell.Items.Contains(text))
+        {
+            cell.Items.Add(text);
         }
     }
 
@@ -2052,14 +2238,6 @@ public sealed class ModuleEditorControl : UserControl
         var fields = new List<ConditionField>(_fieldCatalog.GetFields(classId, specId));
         var seen = new HashSet<string>(fields.Select(field => field.Name), StringComparer.Ordinal);
 
-        foreach (var fieldName in GetAdjustmentTargetFields())
-        {
-            if (seen.Add(fieldName))
-            {
-                fields.Add(new ConditionField(fieldName, $"{fieldName} (动态数值)", ConditionFieldType.Int, ConditionFieldCategory.State));
-            }
-        }
-
         foreach (var unit in _units)
         {
             if (string.IsNullOrWhiteSpace(unit.Name))
@@ -2195,7 +2373,9 @@ public sealed class ModuleEditorControl : UserControl
             if (string.IsNullOrWhiteSpace(adjustment.Formula))
             {
                 EnsureComboItem(_adjustmentFieldColumn, adjustment.Field);
-                _adjustmentsGrid.Rows.Add(adjustment.Enabled, adjustment.Field, adjustment.Delta, adjustment.Condition);
+                var index = _adjustmentsGrid.Rows.Add(adjustment.Enabled, adjustment.Field, adjustment.Delta, adjustment.Condition);
+                // 由字段名回填"类型", 并按类型重建该行"数值"的可选项。
+                ApplyAdjustmentRowType(_adjustmentsGrid.Rows[index], adjustment.Field);
             }
             else
             {

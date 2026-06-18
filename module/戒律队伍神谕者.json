@@ -1,6 +1,8 @@
 {
   "Id": "新模块1-20260612100954681",
-  "Name": "戒律队伍神谕者 by Wayne",
+  "Name": "戒律队伍神谕者",
+  "Author": "Wayne",
+  "Version": "1.1.0",
   "Enabled": true,
   "Match": {
     "ClassId": 5,

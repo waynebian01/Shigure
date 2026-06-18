@@ -1,6 +1,8 @@
 {
   "Id": "新模块1-20260614234025366",
   "Name": "官方一键 DH 复仇",
+  "Author": "",
+  "Version": "1.1.0",
   "Enabled": true,
   "Match": {
     "ClassId": 12,

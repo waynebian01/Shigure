@@ -10,6 +10,7 @@ public sealed class ModuleEditorControl : UserControl
     private readonly KeymapCatalog _keymapCatalog;
     private readonly ListBox _moduleList = new();
     private readonly TextBox _nameBox = new();
+    private readonly TextBox _authorBox = new();
     private readonly ComboBox _classBox = new();
     private readonly ComboBox _specBox = new();
     private readonly ComboBox _partyTypeBox = new();
@@ -23,6 +24,7 @@ public sealed class ModuleEditorControl : UserControl
     private readonly DataGridViewComboBoxColumn _adjustmentTypeColumn = new();
     private readonly ListView _unitsList = new();
     private readonly Label _pathLabel = new();
+    private readonly Label _versionLabel = new();
     private readonly Label _unitsEmptyHint = new();
     private readonly Label _editorEmptyHint = new();
     private Button _saveButton = null!;
@@ -433,13 +435,16 @@ public sealed class ModuleEditorControl : UserControl
         {
             Dock = DockStyle.Fill,
             BackColor = UiTheme.SurfaceRaised,
-            ColumnCount = 2,
+            ColumnCount = 4,
             RowCount = 2,
             Padding = new Padding(10, 8, 10, 2),
             Margin = new Padding(0, 0, 0, 8)
         };
+        // 名称/作者各占剩余宽度的一半, 两个输入框等宽并铺满窗口。
         row.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 58));
-        row.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        row.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
+        row.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 58));
+        row.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
         row.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
         row.RowStyles.Add(new RowStyle(SizeType.Absolute, 24));
 
@@ -448,12 +453,26 @@ public sealed class ModuleEditorControl : UserControl
         _nameBox.Dock = DockStyle.Fill;
         row.Controls.Add(_nameBox, 1, 0);
 
+        var authorLabel = CreateLabel("作者");
+        authorLabel.Margin = new Padding(10, 0, 0, 0);
+        row.Controls.Add(authorLabel, 2, 0);
+        UiTheme.StyleTextBox(_authorBox);
+        _authorBox.Dock = DockStyle.Fill;
+        row.Controls.Add(_authorBox, 3, 0);
+
         _pathLabel.Dock = DockStyle.Fill;
         _pathLabel.ForeColor = UiTheme.Muted;
         _pathLabel.TextAlign = ContentAlignment.MiddleLeft;
         _pathLabel.AutoEllipsis = true;
         row.Controls.Add(_pathLabel, 0, 1);
-        row.SetColumnSpan(_pathLabel, 2);
+        row.SetColumnSpan(_pathLabel, 3);
+
+        // 版本号紧贴窗口右侧, 右对齐显示在"路径"同一行。
+        _versionLabel.Dock = DockStyle.Fill;
+        _versionLabel.ForeColor = UiTheme.Muted;
+        _versionLabel.TextAlign = ContentAlignment.MiddleRight;
+        _versionLabel.AutoEllipsis = true;
+        row.Controls.Add(_versionLabel, 3, 1);
 
         return row;
     }
@@ -2353,6 +2372,7 @@ public sealed class ModuleEditorControl : UserControl
     private void FillEditor(ModuleDefinition module)
     {
         _nameBox.Text = module.Name;
+        _authorBox.Text = module.Author;
         SetEditorEnabled(hasModule: true);
         // 先填充动态单位/数量, 后续目标下拉与条件字段都依赖它们。
         _units.Clear();
@@ -2367,6 +2387,7 @@ public sealed class ModuleEditorControl : UserControl
         SelectPartyType(module.Match.PartyType);
         SelectHeroTalent(module.Match.HeroTalent);
         _pathLabel.Text = module.FilePath ?? "尚未保存";
+        _versionLabel.Text = string.IsNullOrWhiteSpace(module.Version) ? "版本 未知" : $"版本 {module.Version}";
         _adjustmentsGrid.Rows.Clear();
         _formulaAdjustmentsGrid.Rows.Clear();
         RefreshAdjustmentFieldColumn();
@@ -2414,6 +2435,7 @@ public sealed class ModuleEditorControl : UserControl
     {
         _selectedModule = null;
         _nameBox.Clear();
+        _authorBox.Clear();
         _units.Clear();
         _counts.Clear();
         _valueAdjustments.Clear();
@@ -2423,6 +2445,7 @@ public sealed class ModuleEditorControl : UserControl
         SelectPartyType(null);
         SelectHeroTalent(null);
         _pathLabel.Text = "无模块";
+        _versionLabel.Text = string.Empty;
         _adjustmentsGrid.Rows.Clear();
         _formulaAdjustmentsGrid.Rows.Clear();
         RefreshAdjustmentFieldColumn();
@@ -2524,6 +2547,9 @@ public sealed class ModuleEditorControl : UserControl
     {
         module = _selectedModule!.Clone();
         module.Name = string.IsNullOrWhiteSpace(_nameBox.Text) ? "新模块" : _nameBox.Text.Trim();
+        module.Author = _authorBox.Text.Trim();
+        // 保存时记录当前 Shigure 版本。
+        module.Version = AppInfo.Version;
         module.Match = new ModuleMatch
         {
             ClassId = ReadMatchCombo(_classBox),

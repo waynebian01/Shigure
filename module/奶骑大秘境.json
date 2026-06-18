@@ -1,0 +1,288 @@
+{
+  "Id": "奶骑大秘境-20260614103400001",
+  "Name": "奶骑大秘境",
+  "Author": "Laoer",
+  "Version": "1.1.0",
+  "Enabled": true,
+  "Match": {
+    "ClassId": 2,
+    "SpecId": 1
+  },
+  "Units": [
+    {
+      "Name": "最低单位",
+      "HealthName": "最低血量",
+      "Kind": "LowestHealth",
+      "HealthThreshold": 100,
+      "Reverse": false
+    },
+    {
+      "Name": "无火最低",
+      "HealthName": "无火血量",
+      "Kind": "LowestHealthWithoutAura",
+      "HealthThreshold": 101,
+      "Reverse": false,
+      "AuraNames": [
+        "永恒之火"
+      ]
+    },
+    {
+      "Name": "驱散-魔法",
+      "Kind": "UnitWithDispelType",
+      "Reverse": false,
+      "DispelType": 1
+    },
+    {
+      "Name": "驱散-疾病",
+      "Kind": "UnitWithDispelType",
+      "Reverse": false,
+      "DispelType": 3
+    },
+    {
+      "Name": "驱散-中毒",
+      "Kind": "UnitWithDispelType",
+      "Reverse": false,
+      "DispelType": 4
+    }
+  ],
+  "Counts": [
+    {
+      "Name": "HP90",
+      "Kind": "UnitsBelowHealth",
+      "HealthThreshold": 90
+    },
+    {
+      "Name": "HP80",
+      "Kind": "UnitsBelowHealth",
+      "HealthThreshold": 80
+    },
+    {
+      "Name": "HP75",
+      "Kind": "UnitsBelowHealth",
+      "HealthThreshold": 75
+    },
+    {
+      "Name": "HP60",
+      "Kind": "UnitsBelowHealth",
+      "HealthThreshold": 60
+    }
+  ],
+  "ValueAdjustments": [],
+  "Rules": [
+    {
+      "Enabled": true,
+      "Condition": "引导 > 0 || spells.延迟 > 0",
+      "Spell": "暂停",
+      "Hotkey": "",
+      "Step": ""
+    },
+    {
+      "Enabled": true,
+      "Condition": "",
+      "Unit": 0,
+      "Spell": "插入法术",
+      "Hotkey": "",
+      "Step": ""
+    },
+    {
+      "Enabled": true,
+      "Condition": "spells.清洁术 == 0 && 驱散-魔法 && 首领战 != 64",
+      "UnitName": "驱散-魔法",
+      "Spell": "清毒术",
+      "Hotkey": "",
+      "Step": ""
+    },
+    {
+      "Enabled": true,
+      "Condition": "spells.清洁术 == 0 && 驱散-疾病",
+      "UnitName": "驱散-疾病",
+      "Spell": "清毒术",
+      "Hotkey": "",
+      "Step": ""
+    },
+    {
+      "Enabled": true,
+      "Condition": "spells.清洁术 == 0 && 驱散-中毒",
+      "UnitName": "驱散-中毒",
+      "Spell": "清毒术",
+      "Hotkey": "",
+      "Step": ""
+    },
+    {
+      "Enabled": true,
+      "Condition": "spells.清洁术 == 0 && 目标类型 in (12, 13, 15)",
+      "Unit": 0,
+      "Spell": "清毒术",
+      "Hotkey": "",
+      "Step": ""
+    },
+    {
+      "Enabled": true,
+      "Condition": "spells.大红冷却 == 0 && 生命值 < 30",
+      "Unit": 0,
+      "Spell": "银月城生命药水",
+      "Hotkey": "",
+      "Step": ""
+    },
+    {
+      "Enabled": true,
+      "Condition": "spells.圣疗术 == 0 && spells.大红冷却 > 1 && 生命值 < 25",
+      "Unit": 1,
+      "Spell": "圣疗术",
+      "Hotkey": "",
+      "Step": ""
+    },
+    {
+      "Enabled": true,
+      "Condition": "spells.圣疗术 == 0 && spells.大红冷却 == 0 && 最低血量 < 20",
+      "UnitName": "最低单位",
+      "Spell": "圣疗术",
+      "Hotkey": "",
+      "Step": ""
+    },
+    {
+      "Enabled": true,
+      "Condition": "spells.美德道标 == 0 && HP75 >= 3 && 爆发开关 == 1",
+      "Unit": 0,
+      "Spell": "美德道标",
+      "Hotkey": "",
+      "Step": ""
+    },
+    {
+      "Enabled": true,
+      "Condition": "施法 == 0 && auras.神性层数 > 0 && 最低血量 < 50",
+      "UnitName": "最低单位",
+      "Spell": "圣光术",
+      "Hotkey": "",
+      "Step": ""
+    },
+    {
+      "Enabled": true,
+      "Condition": "auras.美德道标 > 0 && spells.圣洁鸣钟 == 0 && 神圣能量 <= 2 && HP80 >= 3",
+      "Unit": 1,
+      "Spell": "圣洁鸣钟",
+      "Hotkey": "",
+      "Step": ""
+    },
+    {
+      "Enabled": true,
+      "Condition": "auras.美德道标 == 0 && spells.圣洁鸣钟 == 0 && 神圣能量 <= 2 && HP75 >= 3",
+      "Unit": 1,
+      "Spell": "圣洁鸣钟",
+      "Hotkey": "",
+      "Step": ""
+    },
+    {
+      "Enabled": true,
+      "Condition": "spells.圣洁鸣钟 == 0 && 神圣能量 < 2 && HP60 >= 2",
+      "Unit": 1,
+      "Spell": "圣洁鸣钟",
+      "Hotkey": "",
+      "Step": ""
+    },
+    {
+      "Enabled": true,
+      "Condition": "神圣能量 >= 3 && 无火血量 <= 80 || auras.神圣意志 > 0 && 无火血量 <= 80",
+      "UnitName": "无火最低",
+      "Spell": "荣耀圣令",
+      "Hotkey": "",
+      "Step": ""
+    },
+    {
+      "Enabled": true,
+      "Condition": "神圣能量 >= 3 && 最低血量 <= 75 || auras.神圣意志 > 0 && 最低血量 <= 75",
+      "UnitName": "最低单位",
+      "Spell": "荣耀圣令",
+      "Hotkey": "",
+      "Step": ""
+    },
+    {
+      "Enabled": true,
+      "Condition": "神圣能量 >= 3 && HP90 >= 3 || auras.神圣意志 > 0 && HP90 >= 3",
+      "Unit": 0,
+      "Spell": "黎明之光",
+      "Hotkey": "",
+      "Step": ""
+    },
+    {
+      "Enabled": true,
+      "Condition": "神圣能量 == 5 && 战斗时间 > 0 && 目标类型 in (1, 2, 3) && 目标距离 <= 5 && auras.圣光灌注 > 0 || 神圣能量 == 5 && 战斗时间 > 0 && 目标类型 in (1, 2, 3) && 目标距离 <= 5 && auras.圣光灌注 > 0 || 神圣能量 == 5 && 战斗时间 > 0 && 目标类型 in (1, 2, 3) && 目标距离 <= 5 && spells.神圣震击 == 0",
+      "Unit": 0,
+      "Spell": "正义盾击",
+      "Hotkey": "",
+      "Step": ""
+    },
+    {
+      "Enabled": true,
+      "Condition": "神圣能量 <= 4 && auras.神圣意志 == 0 && 施法 == 0 && 移动 == false && 最低血量 < 50 && 能量值 >= 60 && 神圣能量 <= 1 || 神圣能量 <= 4 && auras.神圣意志 == 0 && 施法 == false && 移动 == false && 最低血量 < 50 && 能量值 >= 60 && 神圣能量 == 2 && spells.审判 >= 1",
+      "UnitName": "最低单位",
+      "Spell": "圣光术",
+      "Hotkey": "",
+      "Step": ""
+    },
+    {
+      "Enabled": true,
+      "Condition": "神圣能量 <= 4 && auras.神圣意志 == 0 && 施法 == false && auras.圣光灌注 > 0 && 最低血量 <= 90",
+      "UnitName": "最低单位",
+      "Spell": "圣光闪现",
+      "Hotkey": "",
+      "Step": ""
+    },
+    {
+      "Enabled": true,
+      "Condition": "神圣能量 <= 4 && auras.神圣意志 == 0 && spells.神圣震击 == 0 && 施法 == false && auras.圣光灌注 == 0 && 最低血量 < 90",
+      "UnitName": "最低单位",
+      "Spell": "神圣震击",
+      "Hotkey": "",
+      "Step": ""
+    },
+    {
+      "Enabled": true,
+      "Condition": "神圣能量 <= 4 && auras.神圣意志 == 0 && 施法 == false && 移动 == false && 最低血量 < 50 && 能量值 >= 60",
+      "UnitName": "最低单位",
+      "Spell": "圣光术",
+      "Hotkey": "",
+      "Step": ""
+    },
+    {
+      "Enabled": true,
+      "Condition": "神圣能量 <= 4 && auras.神圣意志 == 0 && 战斗时间 > 0 && 目标类型 in (1, 2, 3) && 神圣能量 == 2 && spells.审判 == 0",
+      "Unit": 0,
+      "Spell": "审判",
+      "Hotkey": "",
+      "Step": ""
+    },
+    {
+      "Enabled": true,
+      "Condition": "神圣能量 <= 4 && auras.神圣意志 == 0 && 施法 == false && 移动 == false && 最低血量 <= 90 && auras.圣光灌注 == 0",
+      "UnitName": "最低单位",
+      "Spell": "圣光闪现",
+      "Hotkey": "",
+      "Step": ""
+    },
+    {
+      "Enabled": true,
+      "Condition": "战斗时间 > 0 && 目标类型 in (1, 2, 3) && 神圣能量 <= 4 && spells.审判 == 0",
+      "Unit": 0,
+      "Spell": "审判",
+      "Hotkey": "",
+      "Step": ""
+    },
+    {
+      "Enabled": true,
+      "Condition": "战斗时间 > 0 && 目标类型 in (1, 2, 3) && 神圣能量 <= 4 && 施法 == 0 && spells.神圣震击 == 0 && 神圣能量 >= 2",
+      "Unit": 0,
+      "Spell": "神圣震击",
+      "Hotkey": "",
+      "Step": ""
+    },
+    {
+      "Enabled": true,
+      "Condition": "战斗时间 > 0 && 目标类型 in (1, 2, 3) && 神圣能量 <= 4 && 施法 == 0 && spells.神圣震击 == 0 && spells.震击充能 == 0",
+      "Unit": 0,
+      "Spell": "神圣震击",
+      "Hotkey": "",
+      "Step": ""
+    }
+  ]
+}

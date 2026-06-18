@@ -1,6 +1,8 @@
 {
   "Id": "新模块2-20260616213400001",
-  "Name": "惩戒骑 By zyx1",
+  "Name": "惩戒骑",
+  "Author": "zyx1",
+  "Version": "1.1.0",
   "Enabled": true,
   "Match": {
     "ClassId": 2,

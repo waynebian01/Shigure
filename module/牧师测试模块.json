@@ -1,6 +1,8 @@
 {
   "Id": "新模块1-20260617152514709",
   "Name": "牧师测试模块",
+  "Author": "",
+  "Version": "1.1.0",
   "Enabled": true,
   "Match": {
     "ClassId": 5,

@@ -1,6 +1,8 @@
 {
-  "Id": "新模块1-20260618110034803",
-  "Name": "奶萨-团队-图腾 By abcdefg",
+  "Id": "新模块1-20260618002420140",
+  "Name": "奶萨-队伍-图腾",
+  "Author": "abcdefg",
+  "Version": "1.1.0",
   "Enabled": true,
   "Match": {
     "ClassId": 7,
@@ -153,7 +155,7 @@
     },
     {
       "Enabled": true,
-      "Condition": "spells.净化灵魂 == 0 && 魔法单位 == true && 首领战 in (4, 5)",
+      "Condition": "spells.净化灵魂 == 0 && 魔法单位 == true",
       "UnitName": "魔法单位",
       "Spell": "净化灵魂",
       "Hotkey": "",
@@ -169,7 +171,7 @@
     },
     {
       "Enabled": true,
-      "Condition": "战斗时间 > 0 && auras.风暴涌流 > 0",
+      "Condition": "战斗时间 > 0 && auras.风暴涌流 > 0 && auras.风暴涌流 < 10 && auras.涌流层数 == 2",
       "Unit": 0,
       "Spell": "治疗之泉图腾",
       "Hotkey": "",
@@ -177,7 +179,7 @@
     },
     {
       "Enabled": true,
-      "Condition": "spells.治疗之泉图腾层数 == 2 && C90 >= 2 && spells.治疗之泉图腾充能 <= 6",
+      "Condition": "auras.风暴涌流 == 0 && spells.治疗之泉图腾层数 == 2 && C90 >= 2 && spells.治疗之泉图腾充能 <= 6",
       "Unit": 0,
       "Spell": "治疗之泉图腾",
       "Hotkey": "",
@@ -185,11 +187,24 @@
     },
     {
       "Enabled": true,
-      "Condition": "spells.治疗之泉图腾层数 == 1 && C80 >= 3",
+      "Condition": "auras.风暴涌流 == 0 && spells.治疗之泉图腾层数 == 1 && C80 >= 3",
       "Unit": 0,
       "Spell": "治疗之泉图腾",
       "Hotkey": "",
       "Step": ""
+    },
+    {
+      "Enabled": true,
+      "Condition": "auras.风暴涌流 > 0",
+      "Unit": 0,
+      "Spell": "治疗之泉图腾",
+      "Hotkey": "",
+      "Step": "",
+      "SubConditions": [
+        "C90 >= 2 && auras.涌流图腾时间 == 0",
+        "C80 >= 3",
+        "战斗时间 > 0 && auras.风暴涌流 < 10"
+      ]
     },
     {
       "Enabled": true,
@@ -205,7 +220,19 @@
     },
     {
       "Enabled": true,
-      "Condition": "spells.生命释放 == 0 && 群疗限值数量 >= 3",
+      "Condition": "C70 >= 3",
+      "UnitName": "最低单位",
+      "Spell": "治疗链",
+      "Hotkey": "",
+      "Step": "",
+      "SubConditions": [
+        "auras.生命释放 > 0",
+        "spells.自然迅捷 == 254"
+      ]
+    },
+    {
+      "Enabled": true,
+      "Condition": "最低单位值 <= 85 && spells.生命释放 == 0",
       "UnitName": "最低单位",
       "Spell": "生命释放",
       "Hotkey": "",
@@ -213,19 +240,7 @@
     },
     {
       "Enabled": true,
-      "Condition": "C90 >= 3",
-      "UnitName": "最低单位",
-      "Spell": "治疗链",
-      "Hotkey": "",
-      "Step": "",
-      "SubConditions": [
-        "auras.升腾 > 0",
-        "spells.升腾 >= 162"
-      ]
-    },
-    {
-      "Enabled": true,
-      "Condition": "spells.自然迅捷 == 0 && auras.生命释放 == 0 && C80 >= 4",
+      "Condition": "最低单位值 <= 60 && spells.自然迅捷 == 0",
       "Unit": 0,
       "Spell": "自然迅捷",
       "Hotkey": "",
@@ -233,17 +248,25 @@
     },
     {
       "Enabled": true,
-      "Condition": "群疗限值数量 >= 3",
+      "Condition": "最低单位值 <= 60",
       "UnitName": "最低单位",
-      "Spell": "治疗链",
+      "Spell": "治疗波",
       "Hotkey": "",
       "Step": ""
     },
     {
       "Enabled": true,
-      "Condition": "群疗限值数量 <= 2",
-      "UnitName": "最低单位",
-      "Spell": "治疗波",
+      "Condition": "无盾坦克 == true",
+      "UnitName": "无盾坦克",
+      "Spell": "大地之盾",
+      "Hotkey": "",
+      "Step": ""
+    },
+    {
+      "Enabled": true,
+      "Condition": "无盾治疗 == true",
+      "UnitName": "无盾治疗",
+      "Spell": "大地之盾",
       "Hotkey": "",
       "Step": ""
     },

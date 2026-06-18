@@ -1,6 +1,8 @@
 {
   "Id": "新模块1-20260615104504550",
-  "Name": "邪DK By Wayne",
+  "Name": "邪DK",
+  "Author": "Wayne",
+  "Version": "1.1.0",
   "Enabled": true,
   "Match": {
     "ClassId": 6,

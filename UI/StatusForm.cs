@@ -317,7 +317,7 @@ public sealed class StatusForm : Form
         panel.Controls.Add(title, 0, 0);
 
         var assembly = Assembly.GetExecutingAssembly();
-        var version = assembly.GetName().Version?.ToString() ?? "未知";
+        var version = AppInfo.Version;
         var company = assembly.GetCustomAttribute<AssemblyCompanyAttribute>()?.Company;
         company = string.IsNullOrWhiteSpace(company) ? "Arasaka Corporation" : company;
         var details = new TableLayoutPanel

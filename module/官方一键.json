@@ -1,6 +1,8 @@
 {
   "Id": "新模块1-20260614114605703",
   "Name": "官方一键",
+  "Author": "",
+  "Version": "1.1.0",
   "Enabled": true,
   "Match": {},
   "Units": [],

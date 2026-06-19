@@ -14,7 +14,8 @@ public enum ConditionFieldCategory
     State,
     Aura,
     Spell,
-    DynamicUnit
+    DynamicUnit,
+    RecognizedAura
 }
 
 public sealed record ConditionField(

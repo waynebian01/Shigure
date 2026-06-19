@@ -18,6 +18,7 @@ public sealed class ShigureRuntime
     private string? _moduleName;
     private string _currentStep = "等待启动";
     private IReadOnlyDictionary<string, object?> _unitInfo = new Dictionary<string, object?>();
+    private IReadOnlyList<RecognizedAuraInfo> _recognizedAuras = Array.Empty<RecognizedAuraInfo>();
     private bool _enabled;
     private bool _clickPending;
 
@@ -35,6 +36,18 @@ public sealed class ShigureRuntime
     public event Action<RenderSnapshot>? SnapshotUpdated;
 
     public AppOptions Options => _options;
+
+    public void SetRecognizedAuras(IReadOnlyList<RecognizedAuraInfo> auras)
+    {
+        _recognizedAuras = auras.Count == 0
+            ? Array.Empty<RecognizedAuraInfo>()
+            : auras.ToArray();
+
+        if (_state is not null)
+        {
+            ApplyRecognizedAuras(_state);
+        }
+    }
 
     public void SetEnabled(bool enabled)
     {
@@ -154,6 +167,7 @@ public sealed class ShigureRuntime
         }
 
         _state = _stateBuilder.Build(scan.RowData, scan.BarData);
+        ApplyRecognizedAuras(_state);
         _classId = _state.GetInt("职业");
         _specId = _state.GetInt("专精");
         (_className, _specName) = ClassNames.GetClassAndSpecName(_classId, _specId);
@@ -213,6 +227,11 @@ public sealed class ShigureRuntime
             BuildDynamicValues(_state)));
     }
 
+    private void ApplyRecognizedAuras(GameState state)
+    {
+        state.Values[RecognizedAuraFields.StateKey] = RecognizedAuraFields.BuildValueMap(_recognizedAuras);
+    }
+
     private static IReadOnlyList<DynamicValueSnapshot> BuildDynamicValues(GameState? state)
     {
         if (state is null)
@@ -254,6 +273,15 @@ public sealed class ShigureRuntime
             foreach (var (name, value) in dynamicValues.OrderBy(kv => kv.Key, StringComparer.CurrentCultureIgnoreCase))
             {
                 values.Add(new DynamicValueSnapshot("动态值", name, FormatSnapshotValue(value)));
+            }
+        }
+
+        if (state.Values.TryGetValue(RecognizedAuraFields.StateKey, out var recognizedObj)
+            && recognizedObj is IReadOnlyDictionary<string, object?> recognizedAuras)
+        {
+            foreach (var (name, value) in recognizedAuras.OrderBy(kv => kv.Key, StringComparer.CurrentCultureIgnoreCase))
+            {
+                values.Add(new DynamicValueSnapshot("识别光环", name, FormatSnapshotValue(value)));
             }
         }
 

@@ -19,6 +19,11 @@ public sealed class GameState
             ? auras
             : new Dictionary<string, object?>();
 
+    public IReadOnlyDictionary<string, object?> RecognizedAuras =>
+        Values.TryGetValue(RecognizedAuraFields.StateKey, out var value) && value is IReadOnlyDictionary<string, object?> auras
+            ? auras
+            : new Dictionary<string, object?>();
+
     public IReadOnlyDictionary<string, IReadOnlyDictionary<string, object?>> Group =>
         Values.TryGetValue("group", out var value) && value is IReadOnlyDictionary<string, IReadOnlyDictionary<string, object?>> group
             ? group
@@ -86,6 +91,11 @@ public sealed class GameState
         if (normalized.StartsWith("aura.", StringComparison.OrdinalIgnoreCase))
         {
             return Auras.TryGetValue(normalized["aura.".Length..], out var value) ? value : null;
+        }
+
+        if (RecognizedAuraFields.TryGetName(normalized, out var recognizedAuraName))
+        {
+            return RecognizedAuras.TryGetValue(recognizedAuraName, out var value) ? value : 0;
         }
 
         return Values.TryGetValue(normalized, out var directValue) ? directValue : null;

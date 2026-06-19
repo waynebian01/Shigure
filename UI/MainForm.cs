@@ -48,9 +48,11 @@ public sealed class MainForm : Form, IMessageFilter
 
     private readonly StatusForm _statusForm;
     private readonly ModuleStore _moduleStore;
+    private readonly ModuleEditorControl _moduleEditor;
     private readonly AppOptions _initialOptions;
     private readonly UiCacheState _uiCache;
     private readonly System.Windows.Forms.Timer _roundedCornerResizeTimer;
+    private IReadOnlyList<RecognizedAuraInfo> _recognizedAuras = Array.Empty<RecognizedAuraInfo>();
     private ShigureRuntime? _runtime;
     private CancellationTokenSource? _runtimeCts;
     private Task? _runtimeTask;
@@ -82,7 +84,13 @@ public sealed class MainForm : Form, IMessageFilter
         Application.AddMessageFilter(this);
         InitializeComponent();
         _statusForm.AttachSettingsPanel(BuildSettingsPanel());
-        _statusForm.AttachModuleEditor(new ModuleEditorControl(_moduleStore, RestartRuntimeFromEditor, AppPaths.BaseDirectory));
+        _moduleEditor = new ModuleEditorControl(_moduleStore, RestartRuntimeFromEditor, AppPaths.BaseDirectory);
+        _statusForm.AttachModuleEditor(_moduleEditor);
+        var auraRecognitionPanel = new AuraRecognitionSettingsControl(
+            _initialOptions.WindowTitle,
+            () => (_lastSnapshot?.ClassId, _lastSnapshot?.SpecId));
+        auraRecognitionPanel.RecognizedAurasChanged += HandleRecognizedAurasChanged;
+        _statusForm.AttachAuraRecognitionPanel(auraRecognitionPanel);
         _statusForm.FormClosing += (_, _) =>
         {
             CancelToggleKeyCapture();
@@ -553,6 +561,7 @@ public sealed class MainForm : Form, IMessageFilter
             _moduleStore.Reload();
             _runtime = new ShigureRuntime(AppPaths.BaseDirectory, options, _moduleStore);
             _runtime.SnapshotUpdated += HandleSnapshotUpdated;
+            _runtime.SetRecognizedAuras(_recognizedAuras);
             _runtimeTask = Task.Run(() => RunRuntimeAsync(_runtime, _runtimeCts.Token));
         }
         catch (Exception ex)
@@ -676,6 +685,16 @@ public sealed class MainForm : Form, IMessageFilter
     private void HandleSnapshotUpdated(RenderSnapshot snapshot)
     {
         PostToUi(() => ApplySnapshot(snapshot));
+    }
+
+    private void HandleRecognizedAurasChanged(IReadOnlyList<RecognizedAuraInfo> auras)
+    {
+        _recognizedAuras = auras.Count == 0
+            ? Array.Empty<RecognizedAuraInfo>()
+            : auras.ToArray();
+        _statusForm.SetRecognizedAuras(_recognizedAuras);
+        _moduleEditor.SetRecognizedAuras(_recognizedAuras);
+        _runtime?.SetRecognizedAuras(_recognizedAuras);
     }
 
     private void ApplySnapshot(RenderSnapshot snapshot)

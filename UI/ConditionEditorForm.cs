@@ -149,6 +149,7 @@ public sealed class ConditionEditorForm : Form
     private static readonly string[] AllOperators = ["==", "!=", ">", ">=", "<", "<=", "in", "not in"];
     private static readonly string[] TextOperators = ["==", "!=", "in", "not in"];
     private static readonly string[] BoolOperators = ["==", "!="];
+    private static readonly CategoryItem RecognizedAuraCategory = new("识别光环", ConditionFieldCategory.RecognizedAura);
     private static readonly CategoryItem[] CategoryItems =
     [
         new("状态", ConditionFieldCategory.State),
@@ -580,6 +581,7 @@ public sealed class ConditionEditorForm : Form
         var categoryBox = new ComboBox();
         UiTheme.StyleComboBox(categoryBox);
         categoryBox.Items.AddRange(CategoryItems);
+        categoryBox.Items.Add(RecognizedAuraCategory);
         categoryBox.Dock = DockStyle.Fill;
         categoryBox.Margin = new Padding(0, 2, 8, 2);
 
@@ -587,6 +589,8 @@ public sealed class ConditionEditorForm : Form
         UiTheme.StyleComboBox(fieldBox);
         fieldBox.Dock = DockStyle.Fill;
         fieldBox.Margin = new Padding(0, 2, 8, 2);
+        fieldBox.AutoCompleteSource = AutoCompleteSource.ListItems;
+        fieldBox.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
 
         var opBox = new ComboBox();
         UiTheme.StyleComboBox(opBox);
@@ -603,7 +607,7 @@ public sealed class ConditionEditorForm : Form
         var deleteButton = UiTheme.CreateButton("✕", UiTheme.Field, UiTheme.Danger);
         deleteButton.AutoSize = false;
         deleteButton.Width = DeleteWidth - 6;
-        deleteButton.Height = 26;
+        deleteButton.Height = 30;
         deleteButton.Margin = new Padding(0, 2, 0, 2);
         deleteButton.Padding = new Padding(0);
 
@@ -631,6 +635,14 @@ public sealed class ConditionEditorForm : Form
         {
             OnFieldChanged(row);
             UpdatePreview();
+        };
+        fieldBox.TextChanged += (_, _) =>
+        {
+            if (row.SelectedCategory?.Category == ConditionFieldCategory.RecognizedAura)
+            {
+                OnFieldChanged(row);
+                UpdatePreview();
+            }
         };
         opBox.SelectedIndexChanged += (_, _) =>
         {
@@ -665,6 +677,8 @@ public sealed class ConditionEditorForm : Form
     {
         var fieldBox = row.FieldBox;
         var category = row.SelectedCategory?.Category ?? ConditionFieldCategory.State;
+        var isRecognizedAura = category == ConditionFieldCategory.RecognizedAura;
+        fieldBox.DropDownStyle = isRecognizedAura ? ComboBoxStyle.DropDown : ComboBoxStyle.DropDownList;
         fieldBox.Items.Clear();
         foreach (var field in _fields.Where(field => field.Category == category))
         {
@@ -673,11 +687,24 @@ public sealed class ConditionEditorForm : Form
 
         if (!string.IsNullOrWhiteSpace(currentField))
         {
+            if (isRecognizedAura)
+            {
+                currentField = RecognizedAuraFields.ToFieldName(currentField);
+            }
+
             var index = FindFieldIndex(fieldBox, currentField);
             if (index < 0)
             {
                 // 目录里没有的字段(如 group.* 或手写字段)保留为自定义项, 避免丢失原条件。
-                fieldBox.Items.Add(new FieldItem(currentField, $"{currentField} (自定义)", ConditionFieldType.Int, category, IsCustom: true));
+                if (isRecognizedAura && RecognizedAuraFields.TryGetName(currentField, out var auraName))
+                {
+                    fieldBox.Items.Add(new FieldItem(currentField, auraName, ConditionFieldType.Int, category, IsCustom: false));
+                }
+                else
+                {
+                    fieldBox.Items.Add(new FieldItem(currentField, $"{currentField} (自定义)", ConditionFieldType.Int, category, IsCustom: true));
+                }
+
                 index = fieldBox.Items.Count - 1;
             }
 
@@ -688,6 +715,10 @@ public sealed class ConditionEditorForm : Form
         if (fieldBox.Items.Count > 0)
         {
             fieldBox.SelectedIndex = 0;
+        }
+        else if (isRecognizedAura)
+        {
+            fieldBox.Text = RecognizedAuraFields.Prefix;
         }
     }
 
@@ -715,6 +746,11 @@ public sealed class ConditionEditorForm : Form
             || fieldName.StartsWith("spell.", StringComparison.OrdinalIgnoreCase))
         {
             return ConditionFieldCategory.Spell;
+        }
+
+        if (RecognizedAuraFields.TryGetName(fieldName, out _))
+        {
+            return ConditionFieldCategory.RecognizedAura;
         }
 
         return ConditionFieldCategory.State;
@@ -966,6 +1002,56 @@ public sealed class ConditionEditorForm : Form
         public Control? ValueControl { get; set; }
 
         public CategoryItem? SelectedCategory => CategoryBox.SelectedItem as CategoryItem;
-        public FieldItem? SelectedField => FieldBox.SelectedItem as FieldItem;
+        public FieldItem? SelectedField
+        {
+            get
+            {
+                if (SelectedCategory?.Category == ConditionFieldCategory.RecognizedAura)
+                {
+                    if (FieldBox.SelectedItem is FieldItem selected
+                        && (string.Equals(FieldBox.Text.Trim(), selected.Display, StringComparison.Ordinal)
+                            || string.Equals(FieldBox.Text.Trim(), selected.Name, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        return selected with
+                        {
+                            Name = RecognizedAuraFields.ToFieldName(selected.Name),
+                            Type = ConditionFieldType.Int,
+                            Category = ConditionFieldCategory.RecognizedAura,
+                            IsCustom = false
+                        };
+                    }
+
+                    var text = FieldBox.Text.Trim();
+                    var name = RecognizedAuraFields.TryGetName(text, out var parsedName)
+                        ? parsedName.Trim()
+                        : text;
+                    if (name.Length == 0 || RecognizedAuraFields.IsBarePrefix(name))
+                    {
+                        return null;
+                    }
+
+                    var fieldName = RecognizedAuraFields.ToFieldName(name);
+                    var isCustom = true;
+                    foreach (var candidateObject in FieldBox.Items)
+                    {
+                        if (candidateObject is FieldItem candidate
+                            && string.Equals(candidate.Name, fieldName, StringComparison.OrdinalIgnoreCase))
+                        {
+                            isCustom = candidate.IsCustom;
+                            break;
+                        }
+                    }
+
+                    return new FieldItem(
+                        fieldName,
+                        name,
+                        ConditionFieldType.Int,
+                        ConditionFieldCategory.RecognizedAura,
+                        IsCustom: false);
+                }
+
+                return FieldBox.SelectedItem as FieldItem;
+            }
+        }
     }
 }

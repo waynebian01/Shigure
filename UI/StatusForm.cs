@@ -6,6 +6,8 @@ namespace Shigure;
 public sealed class StatusForm : Form
 {
     private readonly List<(Button Button, Control View)> _navItems = new();
+    private IReadOnlyList<RecognizedAuraInfo> _recognizedAuras = Array.Empty<RecognizedAuraInfo>();
+    private RenderSnapshot? _lastSnapshot;
     private bool _hasKnownBounds;
 
     private ListView _stateList = null!;
@@ -18,6 +20,7 @@ public sealed class StatusForm : Form
     private Panel _contentHost = null!;
     private Panel _settingsHost = null!;
     private Panel _moduleHost = null!;
+    private Panel _auraRecognitionHost = null!;
     private Panel _aboutHost = null!;
 
     public StatusForm()
@@ -71,6 +74,7 @@ public sealed class StatusForm : Form
 
         _settingsHost = CreatePageHost();
         _moduleHost = CreatePageHost();
+        _auraRecognitionHost = CreatePageHost();
         _aboutHost = CreatePageHost();
 
         _stateList = UiTheme.CreateListView(Font, ("#", 56), ("名称", 150), ("值", 130));
@@ -111,6 +115,7 @@ public sealed class StatusForm : Form
 
         AddNavItem(nav, "通用", _settingsHost);
         AddNavItem(nav, "模块", _moduleHost);
+        AddNavItem(nav, "光环识别", _auraRecognitionHost);
         AddNavItem(nav, "状态", BuildStatusPage());
         AddNavItem(nav, "队伍", BuildSection("队伍", _partyList, "当前队伍单位与扫描到的字段摘要"));
         AddNavItem(nav, "逻辑", BuildSection("逻辑", _unitInfoList, "运行时推荐目标与调试值"));
@@ -209,6 +214,12 @@ public sealed class StatusForm : Form
     {
         panel.Dock = DockStyle.Fill;
         _moduleHost.Controls.Add(panel);
+    }
+
+    public void AttachAuraRecognitionPanel(Control panel)
+    {
+        panel.Dock = DockStyle.Fill;
+        _auraRecognitionHost.Controls.Add(panel);
     }
 
     internal WindowBounds GetCachedBounds()
@@ -394,6 +405,7 @@ public sealed class StatusForm : Form
     {
         if (snapshot is not null)
         {
+            _lastSnapshot = snapshot;
             UpdateLists(snapshot);
         }
 
@@ -436,12 +448,25 @@ public sealed class StatusForm : Form
 
     public void ApplySnapshot(RenderSnapshot snapshot)
     {
+        _lastSnapshot = snapshot;
         if (!Visible)
         {
             return;
         }
 
         UpdateLists(snapshot);
+    }
+
+    public void SetRecognizedAuras(IReadOnlyList<RecognizedAuraInfo> auras)
+    {
+        _recognizedAuras = auras.Count == 0
+            ? Array.Empty<RecognizedAuraInfo>()
+            : auras.ToArray();
+
+        if (Visible)
+        {
+            UpdateAuraList(_lastSnapshot);
+        }
     }
 
     public void AppendLog(string message)
@@ -503,21 +528,37 @@ public sealed class StatusForm : Form
         ReplaceItems(_stateList, items);
     }
 
-    private void UpdateAuraList(RenderSnapshot snapshot)
+    private void UpdateAuraList(RenderSnapshot? snapshot)
     {
         var items = new List<ListViewItem>();
-        if (snapshot.State is null || snapshot.State.Auras.Count == 0)
+        var index = 0;
+        if (snapshot?.State is not null)
         {
-            items.Add(new ListViewItem(new[] { "-", "光环", "无数据" }));
-        }
-        else
-        {
-            var index = 0;
             foreach (var (key, value) in snapshot.State.Auras)
             {
                 index++;
                 items.Add(new ListViewItem(new[] { index.ToString(), key, UiTheme.FormatValue(value) }));
             }
+        }
+
+        foreach (var aura in _recognizedAuras)
+        {
+            index++;
+            var item = new ListViewItem(new[]
+            {
+                index.ToString(),
+                $"[识别] {aura.Name}",
+                UiTheme.FormatValue(aura.Value)
+            })
+            {
+                ToolTipText = FormatRecognizedAuraToolTip(aura)
+            };
+            items.Add(item);
+        }
+
+        if (items.Count == 0)
+        {
+            items.Add(new ListViewItem(new[] { "-", "光环", "无数据" }));
         }
 
         ReplaceItems(_auraList, items);
@@ -610,13 +651,22 @@ public sealed class StatusForm : Form
         ReplaceItems(_unitInfoList, items);
     }
 
+    private static string FormatRecognizedAuraToolTip(RecognizedAuraInfo aura)
+    {
+        var template = aura.TemplateScore is null ? "-" : aura.TemplateScore.Value.ToString("0.000");
+        return $"识别光环  {aura.Row} #{aura.Index}  值: {aura.Value}  dHash: {aura.Hash}  距离: {aura.HashDistance?.ToString() ?? "-"}  相似度: {template}";
+    }
+
     private static void ReplaceItems(ListView listView, IReadOnlyList<ListViewItem> items)
     {
         foreach (var item in items)
         {
-            item.ToolTipText = string.Join(
-                "  ",
-                item.SubItems.Cast<ListViewItem.ListViewSubItem>().Select(subItem => subItem.Text));
+            if (string.IsNullOrWhiteSpace(item.ToolTipText))
+            {
+                item.ToolTipText = string.Join(
+                    "  ",
+                    item.SubItems.Cast<ListViewItem.ListViewSubItem>().Select(subItem => subItem.Text));
+            }
         }
 
         if (HasSameItems(listView, items))

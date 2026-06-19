@@ -42,6 +42,7 @@ public sealed class ModuleEditorControl : UserControl
     private readonly List<ModuleUnit> _units = new();
     private readonly List<ModuleCountField> _counts = new();
     private readonly List<ModuleValueAdjustment> _valueAdjustments = new();
+    private IReadOnlyList<RecognizedAuraInfo> _recognizedAuras = Array.Empty<RecognizedAuraInfo>();
     // 程序化恢复列宽时置真, 避免 ColumnWidthChanged 把默认值回写覆盖用户保存的宽度。
     private bool _suppressColumnSave;
     private bool _suppressUnitsColumnResize;
@@ -83,6 +84,13 @@ public sealed class ModuleEditorControl : UserControl
         _keymapCatalog = KeymapCatalog.Load(baseDirectory);
         InitializeComponent();
         LoadModules();
+    }
+
+    public void SetRecognizedAuras(IReadOnlyList<RecognizedAuraInfo> auras)
+    {
+        _recognizedAuras = auras.Count == 0
+            ? Array.Empty<RecognizedAuraInfo>()
+            : auras.ToArray();
     }
 
     private void InitializeComponent()
@@ -674,7 +682,8 @@ public sealed class ModuleEditorControl : UserControl
             HeaderText = "条件 (点击编辑)",
             AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill,
             MinimumWidth = 220,
-            ReadOnly = true
+            ReadOnly = true,
+            SortMode = DataGridViewColumnSortMode.NotSortable
         });
         AddRuleIconColumn("MoveUp", "▲", "上移");
         AddRuleIconColumn("MoveDown", "▼", "下移");
@@ -2284,6 +2293,21 @@ public sealed class ModuleEditorControl : UserControl
             if (!string.IsNullOrWhiteSpace(count.Name) && seen.Add(count.Name))
             {
                 fields.Add(new ConditionField(count.Name, $"人数: {count.Name}", ConditionFieldType.Int, ConditionFieldCategory.DynamicUnit));
+            }
+        }
+
+        foreach (var aura in _recognizedAuras)
+        {
+            var name = aura.Name.Trim();
+            if (name.Length == 0 || name == "-")
+            {
+                continue;
+            }
+
+            var fieldName = RecognizedAuraFields.ToFieldName(name);
+            if (seen.Add(fieldName))
+            {
+                fields.Add(new ConditionField(fieldName, name, ConditionFieldType.Int, ConditionFieldCategory.RecognizedAura));
             }
         }
 

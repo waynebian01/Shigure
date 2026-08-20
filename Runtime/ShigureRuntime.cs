@@ -4,6 +4,11 @@ namespace Shigure;
 
 public sealed class ShigureRuntime
 {
+    private const string BurstKeyName = "XBUTTON1";
+    private const string BurstStateKey = "爆发开关";
+    private static readonly TimeSpan BurstDuration = TimeSpan.FromSeconds(30);
+    private static readonly TimeSpan BurstDebounce = TimeSpan.FromMilliseconds(120);
+
     private readonly AppOptions _options;
     private readonly IRuntimeScreenScanner _scanner;
     private readonly IRuntimeStateBuilder _stateBuilder;
@@ -23,6 +28,8 @@ public sealed class ShigureRuntime
     private string _currentStep = "等待启动";
     private IReadOnlyDictionary<string, object?> _unitInfo = new Dictionary<string, object?>();
     private bool _enabled;
+    private bool _burstActive;
+    private DateTimeOffset _burstUntil = DateTimeOffset.MinValue;
     private bool _clickPending;
     private readonly Dictionary<string, DateTimeOffset> _lastRuleSentAt = new(StringComparer.Ordinal);
     private DateTimeOffset _logicPausedUntil = DateTimeOffset.MinValue;
@@ -59,6 +66,16 @@ public sealed class ShigureRuntime
         _pendingCommands.Enqueue(RuntimeCommand.ToggleEnabled());
     }
 
+    public void ActivateBurst()
+    {
+        _pendingCommands.Enqueue(RuntimeCommand.ActivateBurst());
+    }
+
+    public void ToggleBurst()
+    {
+        _pendingCommands.Enqueue(RuntimeCommand.ToggleBurst());
+    }
+
     private void ApplyEnabled(bool enabled)
     {
         _enabled = enabled;
@@ -73,6 +90,68 @@ public sealed class ShigureRuntime
         PublishSnapshot();
     }
 
+    private void ApplyBurst(bool active)
+    {
+        var now = _timeProvider.GetUtcNow();
+        if (active)
+        {
+            StartBurst(now);
+        }
+        else
+        {
+            ClearBurst("爆发关闭");
+        }
+
+        if (_state is not null)
+        {
+            WriteBurstState(_state);
+        }
+
+        PublishSnapshot();
+    }
+
+    private void ClearBurst(string step)
+    {
+        if (!_burstActive && _burstUntil == DateTimeOffset.MinValue)
+        {
+            return;
+        }
+
+        _burstActive = false;
+        _burstUntil = DateTimeOffset.MinValue;
+        _currentStep = step;
+    }
+
+    private void StartBurst(DateTimeOffset now)
+    {
+        _burstActive = true;
+        _burstUntil = _options.BurstAutoOff
+            ? now.Add(BurstDuration)
+            : DateTimeOffset.MaxValue;
+        _currentStep = "爆发开启";
+    }
+
+    private void WriteBurstState(GameState state)
+    {
+        state.Values[BurstStateKey] = _burstActive ? 1 : 0;
+    }
+
+    private int GetBurstRemainingSeconds(DateTimeOffset now)
+    {
+        if (!_burstActive || !_options.BurstAutoOff)
+        {
+            return 0;
+        }
+
+        var remaining = _burstUntil - now;
+        if (remaining <= TimeSpan.Zero)
+        {
+            return 0;
+        }
+
+        return (int)Math.Ceiling(remaining.TotalSeconds);
+    }
+
     private void DrainPendingCommands()
     {
         while (_pendingCommands.TryDequeue(out var command))
@@ -84,6 +163,12 @@ public sealed class ShigureRuntime
                     break;
                 case RuntimeCommandKind.ToggleEnabled:
                     ApplyEnabled(!_enabled);
+                    break;
+                case RuntimeCommandKind.ActivateBurst:
+                    ApplyBurst(true);
+                    break;
+                case RuntimeCommandKind.ToggleBurst:
+                    ApplyBurst(!_burstActive);
                     break;
             }
         }
@@ -99,10 +184,15 @@ public sealed class ShigureRuntime
             return;
         }
 
+        var burstVk = _triggerKeyState.ResolveVirtualKey(BurstKeyName);
+        var burstSharesToggleKey = burstVk is not null && burstVk.Value == toggleVk.Value;
+
         var previousPressed = false;
+        var previousBurstPressed = false;
         var lastLogicAt = DateTimeOffset.MinValue;
         var lastRenderAt = DateTimeOffset.MinValue;
         var lastToggleAt = DateTimeOffset.MinValue;
+        var lastBurstAt = DateTimeOffset.MinValue;
         _currentStep = "已启动";
         PublishSnapshot();
 
@@ -135,6 +225,27 @@ public sealed class ShigureRuntime
 
                 previousPressed = pressed;
 
+                if (!burstSharesToggleKey && burstVk is not null)
+                {
+                    var burstPressed = _triggerKeyState.IsPressed(burstVk.Value);
+                    var burstRising = burstPressed
+                        && !previousBurstPressed
+                        && now - lastBurstAt >= BurstDebounce;
+                    if (burstRising)
+                    {
+                        lastBurstAt = now;
+                        ApplyBurst(!_burstActive);
+                    }
+
+                    previousBurstPressed = burstPressed;
+                }
+
+                if (_options.BurstAutoOff && _burstActive && now >= _burstUntil)
+                {
+                    ClearBurst("爆发超时关闭");
+                    PublishSnapshot();
+                }
+
                 if (now - lastLogicAt >= _options.LogicInterval)
                 {
                     lastLogicAt = now;
@@ -156,6 +267,8 @@ public sealed class ShigureRuntime
         finally
         {
             _enabled = false;
+            _burstActive = false;
+            _burstUntil = DateTimeOffset.MinValue;
             _clickPending = false;
             _logicPausedUntil = DateTimeOffset.MinValue;
             _currentStep = "已停止";
@@ -213,6 +326,7 @@ public sealed class ShigureRuntime
         }
 
         _state = _stateBuilder.Build(scan.RowData, scan.BarData, scan.HealAbsorbData);
+        WriteBurstState(_state);
         _classId = _state.GetInt("职业");
         _specId = _state.GetInt("专精");
         (_className, _specName) = ClassNames.GetClassAndSpecName(_classId, _specId);
@@ -329,8 +443,11 @@ public sealed class ShigureRuntime
 
     private void PublishSnapshot()
     {
+        var now = _timeProvider.GetUtcNow();
         SnapshotUpdated?.Invoke(new RenderSnapshot(
             _enabled,
+            _burstActive,
+            GetBurstRemainingSeconds(now),
             _className,
             _specName,
             _classId,
@@ -419,7 +536,9 @@ public sealed class ShigureRuntime
     private enum RuntimeCommandKind
     {
         SetEnabled,
-        ToggleEnabled
+        ToggleEnabled,
+        ActivateBurst,
+        ToggleBurst
     }
 
     private readonly record struct RuntimeCommand(RuntimeCommandKind Kind, bool Enabled)
@@ -429,5 +548,11 @@ public sealed class ShigureRuntime
 
         public static RuntimeCommand ToggleEnabled()
             => new(RuntimeCommandKind.ToggleEnabled, false);
+
+        public static RuntimeCommand ActivateBurst()
+            => new(RuntimeCommandKind.ActivateBurst, true);
+
+        public static RuntimeCommand ToggleBurst()
+            => new(RuntimeCommandKind.ToggleBurst, false);
     }
 }

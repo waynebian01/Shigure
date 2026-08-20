@@ -14,6 +14,9 @@ public sealed class MainForm : Form, IMessageFilter
     private const int RoundedCornerResizeDebounceMs = 80;
     private const string HeaderIconResourcePath = "Assets.arasaka-icon-transparent.png";
     private const string ModuleWebsiteUrl = "https://www.shigure.club";
+    private const double DefaultMainBarOpacity = 0.62;
+    private const double MinMainBarOpacity = 0.30;
+    private const double MaxMainBarOpacity = 1.00;
     private static readonly Color DefaultHeaderIconColor = Color.White;
     private static readonly IReadOnlyDictionary<int, Color> ClassIconColors = new Dictionary<int, Color>
     {
@@ -34,6 +37,9 @@ public sealed class MainForm : Form, IMessageFilter
 
     private Button _toggleKeyButton = null!;
     private ComboBox _modeComboBox = null!;
+    private CheckBox _burstAutoOffCheckBox = null!;
+    private TrackBar _opacityTrackBar = null!;
+    private Label _opacityValueLabel = null!;
     private ComboBox _moduleComboBox = null!;
     private Label _moduleFilterLabel = null!;
     private Label _moduleCountLabel = null!;
@@ -51,6 +57,8 @@ public sealed class MainForm : Form, IMessageFilter
 
     private readonly List<Button> _enableButtons = [];
     private Button _verticalEnableButton = null!;
+    private readonly List<Button> _burstButtons = [];
+    private Button _verticalBurstButton = null!;
     private readonly List<PictureBox> _headerIcons = [];
     private readonly List<Label> _titleLabels = [];
     private readonly List<Label> _runtimeStatusLabels = [];
@@ -81,6 +89,7 @@ public sealed class MainForm : Form, IMessageFilter
     private string? _lastLoggedClass;
     private string? _lastLoggedModule;
     private bool? _lastLoggedEnabled;
+    private bool? _lastLoggedBurst;
     private readonly object _configUpdateSync = new();
     private readonly SemaphoreSlim _moduleImportGate = new(1, 1);
     private Task _configUpdateTail = Task.CompletedTask;
@@ -582,6 +591,13 @@ public sealed class MainForm : Form, IMessageFilter
 
         var enableButton = CreateTopBarButton(vertical ? "开\r\n启" : "开关", UiTheme.Field, UiTheme.Text, vertical);
         enableButton.Click += (_, _) => ToggleEnabled();
+        var burstButton = CreateTopBarButton(vertical ? "爆\r\n发" : "爆发", UiTheme.Field, UiTheme.Text, vertical);
+        if (!vertical)
+        {
+            burstButton.Size = new Size(100, 36);
+        }
+
+        burstButton.Click += (_, _) => ToggleBurst();
         var settingsButton = CreateTopBarButton(vertical ? "设\r\n置" : "设置", UiTheme.Field, UiTheme.Text, vertical);
         settingsButton.Click += (_, _) => ShowSettingsView();
         var closeButton = CreateTopBarButton(vertical ? "X" : "✕", UiTheme.Field, UiTheme.Muted, vertical);
@@ -590,11 +606,13 @@ public sealed class MainForm : Form, IMessageFilter
         closeButton.Click += (_, _) => Close();
 
         _enableButtons.Add(enableButton);
+        _burstButtons.Add(burstButton);
         if (vertical)
         {
             _verticalEnableButton = enableButton;
+            _verticalBurstButton = burstButton;
         }
-        buttons.Controls.AddRange([enableButton, settingsButton, closeButton]);
+        buttons.Controls.AddRange([enableButton, burstButton, settingsButton, closeButton]);
         return buttons;
     }
 
@@ -747,7 +765,7 @@ public sealed class MainForm : Form, IMessageFilter
         {
             Dock = DockStyle.Fill,
             ColumnCount = 2,
-            RowCount = 4,
+            RowCount = 6,
             Padding = new Padding(18),
             Margin = new Padding(0, 0, 7, 14)
         };
@@ -757,9 +775,11 @@ public sealed class MainForm : Form, IMessageFilter
         inputCard.RowStyles.Add(new RowStyle(SizeType.Absolute, 38));
         inputCard.RowStyles.Add(new RowStyle(SizeType.Absolute, settingsActionButtonHeight + 8));
         inputCard.RowStyles.Add(new RowStyle(SizeType.Absolute, settingsActionButtonHeight + 8));
+        inputCard.RowStyles.Add(new RowStyle(SizeType.Absolute, settingsActionButtonHeight + 8));
+        inputCard.RowStyles.Add(new RowStyle(SizeType.Absolute, settingsActionButtonHeight + 8));
         inputCard.Controls.Add(CreateTitle("输入与运行"), 0, 0);
         inputCard.SetColumnSpan(inputCard.GetControlFromPosition(0, 0)!, 2);
-        inputCard.Controls.Add(CreateDescription("设置触发方式；修改后运行循环会自动重启"), 0, 1);
+        inputCard.Controls.Add(CreateDescription("设置触发方式、爆发与悬浮条透明度"), 0, 1);
         inputCard.SetColumnSpan(inputCard.GetControlFromPosition(0, 1)!, 2);
 
         _toggleKeyButton = UiTheme.CreateButton("XBUTTON2", UiTheme.ButtonKind.Secondary);
@@ -783,6 +803,56 @@ public sealed class MainForm : Form, IMessageFilter
         _settingsToolTip.SetToolTip(_modeComboBox, "开关：按一次切换；单击：每次触发发送一次；按住：持续按下时运行");
         inputCard.Controls.Add(CreateSettingLabel("发送模式"), 0, 3);
         inputCard.Controls.Add(_modeComboBox, 1, 3);
+
+        _burstAutoOffCheckBox = new CheckBox
+        {
+            Text = "开启后 30 秒自动关闭",
+            AutoSize = true,
+            Anchor = AnchorStyles.Left,
+            ForeColor = UiTheme.Text,
+            Margin = new Padding(0),
+            Checked = true
+        };
+        _settingsToolTip.SetToolTip(_burstAutoOffCheckBox, "关闭后爆发需手动关闭；鼠标4可切换爆发开/关");
+        inputCard.Controls.Add(CreateSettingLabel("爆发自动关"), 0, 4);
+        inputCard.Controls.Add(_burstAutoOffCheckBox, 1, 4);
+
+        var opacityHost = new FlowLayoutPanel
+        {
+            AutoSize = true,
+            Anchor = AnchorStyles.Left,
+            FlowDirection = FlowDirection.LeftToRight,
+            WrapContents = false,
+            BackColor = Color.Transparent,
+            Margin = new Padding(0),
+            Padding = new Padding(0)
+        };
+        _opacityTrackBar = new TrackBar
+        {
+            Minimum = 30,
+            Maximum = 100,
+            TickFrequency = 10,
+            SmallChange = 5,
+            LargeChange = 10,
+            Width = 150,
+            Height = settingsActionButtonHeight,
+            Margin = new Padding(0, 0, 8, 0),
+            AutoSize = false,
+            TickStyle = TickStyle.None
+        };
+        _opacityValueLabel = new Label
+        {
+            AutoSize = true,
+            Anchor = AnchorStyles.Left,
+            ForeColor = UiTheme.Muted,
+            Margin = new Padding(0, 8, 0, 0),
+            Text = "62%"
+        };
+        _settingsToolTip.SetToolTip(_opacityTrackBar, "降低悬浮条不透明度，减少挡视野");
+        opacityHost.Controls.Add(_opacityTrackBar);
+        opacityHost.Controls.Add(_opacityValueLabel);
+        inputCard.Controls.Add(CreateSettingLabel("悬浮透明"), 0, 5);
+        inputCard.Controls.Add(opacityHost, 1, 5);
 
         var configCard = new UiCardPanel
         {
@@ -1340,13 +1410,62 @@ public sealed class MainForm : Form, IMessageFilter
             SendMode.Hold => 2,
             _ => 0
         };
+        _burstAutoOffCheckBox.Checked = _uiCache.BurstAutoOff ?? _initialOptions.BurstAutoOff;
+        ApplyOpacityToControls(ResolveCachedOpacity(), save: false);
         RefreshModuleSelector(_lastSnapshot, forceRefresh: false);
     }
 
     private void WireSettingEvents()
     {
         _modeComboBox.SelectedIndexChanged += HandleSettingCommitted;
+        _burstAutoOffCheckBox.CheckedChanged += HandleBurstAutoOffChanged;
+        _opacityTrackBar.ValueChanged += HandleOpacityChanged;
         _moduleComboBox.SelectedIndexChanged += HandleModuleSelectionChanged;
+    }
+
+    private async void HandleBurstAutoOffChanged(object? sender, EventArgs e)
+    {
+        SaveUiCache();
+        await RestartRuntimeAfterSettingChangeAsync();
+    }
+
+    private void HandleOpacityChanged(object? sender, EventArgs e)
+    {
+        var opacity = ClampOpacity(_opacityTrackBar.Value / 100.0);
+        ApplyOpacityToControls(opacity, save: true);
+    }
+
+    private void ApplyOpacityToControls(double opacity, bool save)
+    {
+        opacity = ClampOpacity(opacity);
+        var percent = (int)Math.Round(opacity * 100);
+        if (_opacityTrackBar.Value != percent)
+        {
+            _opacityTrackBar.Value = percent;
+        }
+
+        _opacityValueLabel.Text = $"{percent}%";
+        Opacity = opacity;
+        if (save)
+        {
+            _uiCache.MainBarOpacity = opacity;
+            SaveUiCache();
+        }
+    }
+
+    private double ResolveCachedOpacity()
+    {
+        return ClampOpacity(_uiCache.MainBarOpacity ?? DefaultMainBarOpacity);
+    }
+
+    private static double ClampOpacity(double opacity)
+    {
+        if (double.IsNaN(opacity) || double.IsInfinity(opacity))
+        {
+            return DefaultMainBarOpacity;
+        }
+
+        return Math.Clamp(opacity, MinMainBarOpacity, MaxMainBarOpacity);
     }
 
     private async void HandleSettingCommitted(object? sender, EventArgs e)
@@ -1457,6 +1576,7 @@ public sealed class MainForm : Form, IMessageFilter
         _lastLoggedClass = null;
         _lastLoggedModule = null;
         _lastLoggedEnabled = null;
+        _lastLoggedBurst = null;
     }
 
     private async Task RestartRuntimeFromEditorAsync()
@@ -1481,13 +1601,29 @@ public sealed class MainForm : Form, IMessageFilter
         _runtimeSession.ToggleEnabled();
     }
 
+    private void ToggleBurst()
+    {
+        if (!_runtimeSession.IsRunning)
+        {
+            return;
+        }
+
+        _runtimeSession.ToggleBurst();
+    }
+
     private AppOptions BuildOptions()
     {
         var toggleKey = string.IsNullOrWhiteSpace(_toggleKeyName)
             ? "XBUTTON2"
             : _toggleKeyName.Trim();
 
-        return _initialOptions with { ToggleKey = toggleKey, Mode = ReadMode(), ModuleId = _selectedModuleId };
+        return _initialOptions with
+        {
+            ToggleKey = toggleKey,
+            Mode = ReadMode(),
+            ModuleId = _selectedModuleId,
+            BurstAutoOff = _burstAutoOffCheckBox.Checked
+        };
     }
 
     private SendMode ReadMode()
@@ -1551,6 +1687,24 @@ public sealed class MainForm : Form, IMessageFilter
             enableButton.Text = enableButton == _verticalEnableButton
                 ? snapshot.Enabled ? "关\r\n闭" : "开\r\n启"
                 : snapshot.Enabled ? "关闭" : "开启";
+        }
+
+        foreach (var burstButton in _burstButtons)
+        {
+            if (burstButton == _verticalBurstButton)
+            {
+                burstButton.Text = snapshot.BurstActive ? "爆\r\n发" : "爆\r\n发";
+            }
+            else
+            {
+                burstButton.Text = snapshot.BurstActive
+                    ? (snapshot.BurstRemainingSeconds > 0
+                        ? $"爆发 {snapshot.BurstRemainingSeconds}s"
+                        : "爆发中")
+                    : "爆发";
+            }
+
+            burstButton.ForeColor = snapshot.BurstActive ? UiTheme.Accent : UiTheme.Text;
         }
 
         RefreshModuleSelector(snapshot, forceRefresh: false);
@@ -1721,6 +1875,16 @@ public sealed class MainForm : Form, IMessageFilter
             AppendLog(snapshot.Enabled ? "逻辑已开启" : "逻辑已关闭");
         }
 
+        if (_lastLoggedBurst != snapshot.BurstActive)
+        {
+            _lastLoggedBurst = snapshot.BurstActive;
+            AppendLog(snapshot.BurstActive
+                ? (snapshot.BurstRemainingSeconds > 0
+                    ? $"爆发已开启（{snapshot.BurstRemainingSeconds}s）"
+                    : "爆发已开启")
+                : "爆发已关闭");
+        }
+
         if (snapshot.ModuleName != _lastLoggedModule)
         {
             _lastLoggedModule = snapshot.ModuleName;
@@ -1783,6 +1947,16 @@ public sealed class MainForm : Form, IMessageFilter
         foreach (var enableButton in _enableButtons)
         {
             enableButton.Enabled = running;
+        }
+
+        foreach (var burstButton in _burstButtons)
+        {
+            burstButton.Enabled = running;
+            if (!running)
+            {
+                burstButton.Text = burstButton == _verticalBurstButton ? "爆\r\n发" : "爆发";
+                burstButton.ForeColor = UiTheme.Text;
+            }
         }
     }
 
@@ -1975,6 +2149,8 @@ public sealed class MainForm : Form, IMessageFilter
 
         _uiCache.MainWindowLayout = _mainWindowLayout.ToString();
         _uiCache.ToggleKey = _toggleKeyName;
+        _uiCache.BurstAutoOff = _burstAutoOffCheckBox.Checked;
+        _uiCache.MainBarOpacity = ClampOpacity(_opacityTrackBar.Value / 100.0);
         _uiCache.SelectedModuleId = _selectedModuleId;
         UiCacheStore.Save(_uiCache);
     }

@@ -2,6 +2,8 @@ namespace Shigure;
 
 public sealed record RenderSnapshot(
     bool Enabled,
+    bool BurstActive,
+    int BurstRemainingSeconds,
     string? ClassName,
     string? SpecName,
     int? ClassId,

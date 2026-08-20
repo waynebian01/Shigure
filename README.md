@@ -44,18 +44,20 @@ Shigure 是一个 Windows WinForms 桌面程序。它从目标窗口读取 Fuyut
 
 ## 界面
 
-- 置顶浮动条：显示程序名、当前职业图标颜色和逻辑状态，提供 `开启/关闭`、`设置`、`✕` 按钮。窗口可拖动和缩放，显示后自动启动运行循环。
-- `通用`：设置触发键和发送模式；从项目 Fuyutsui 更新配置并同步游戏插件；按实时环境筛选、自动选择或手动指定模块。
+- 置顶浮动条：显示程序名、当前职业图标颜色和逻辑状态，提供 `开启/关闭`、`爆发`、`设置`、`✕` 按钮。窗口可拖动和缩放，显示后自动启动运行循环。
+- `通用`：设置触发键、发送模式、爆发自动关和悬浮条透明度；从项目 Fuyutsui 更新配置并同步游戏插件；按实时环境筛选、自动选择或手动指定模块。
 - `配置`：直接编辑项目 `Fuyutsui/class/*.lua` 中的 `ClassBlocks`，包括状态、光环、法术和队伍字段；技能列表页可编辑 `Fuyutsui.spellsList` 中索引 1–100 的法术 ID、索引和名称，也可输入 spellId 与名称并自动分配空闲索引。旧版稀疏索引格式只读，需先迁移到 `states/auras/spells/group` 格式。
 - `宏`：编辑项目 `Fuyutsui/core/classmacros.lua` 中各职业的动态宏、静态宏和特殊宏。动态宏每项占用 30 个团队点名槽位。
 - `模块`：新建、编辑、删除本地模块，维护作者、推荐天赋、匹配条件、动态字段和有序规则。规则支持拖拽、上移、下移、复制与插入。
 - `状态`：分栏显示基础状态、`auras`、`spells` 和模块计算出的动态单位/数值。
 - `队伍`：显示 `group` 中当前队伍成员及扫描字段摘要。
 - `逻辑`：显示命中模块、目标、按键和调试值。
-- `日志`：记录启动、停止、职业识别、模块匹配、逻辑状态、施放步骤、配置同步和异常。
+- `日志`：记录启动、停止、职业识别、模块匹配、逻辑状态、爆发开关、施放步骤、配置同步和异常。
 - `关于`：显示产品、公司、版本、模块目录和配置目录。
 
-触发键、发送模式、模块选择、模块保存以及配置同步都会按需重启运行循环。窗口位置、大小、主界面横纵布局（两个方向分别保存窗口位置）、模块选择和表格列宽等 UI 状态保存在我的文档目录 `{MyDocuments}/Shigure/cache/window-state.json`；模块保存在 `{MyDocuments}/Shigure/module`。`cache/` 与模块数据都是本地数据，默认不提交到 Git。
+触发键、发送模式、爆发自动关、模块选择、模块保存以及配置同步都会按需重启运行循环。窗口位置、大小、主界面横纵布局（两个方向分别保存窗口位置）、模块选择、爆发自动关、悬浮条透明度和表格列宽等 UI 状态保存在我的文档目录 `{MyDocuments}/Shigure/cache/window-state.json`；模块保存在 `{MyDocuments}/Shigure/module`。`cache/` 与模块数据都是本地数据，默认不提交到 Git。
+
+悬浮条 `爆发` 或鼠标侧键 4（`XBUTTON1`）可切换爆发。开启后若勾选「爆发自动关」，默认 30 秒后关闭。运行时会把状态字段 `爆发开关` 写成 `1` 或 `0`，模块条件可直接使用 `爆发开关 == 1`；关闭爆发时即使插件像素仍为开启，也会强制写成 `0`。若触发键本身就是 `XBUTTON1`，则不再用同一按键切换爆发。
 
 ## 环境要求
 
@@ -74,7 +76,7 @@ dotnet run --project .\Shigure.csproj
 可选启动参数：
 
 ```powershell
-dotnet run --project .\Shigure.csproj -- --toggle XBUTTON2 --mode switch --logic-ms 100 --render-ms 100
+dotnet run --project .\Shigure.csproj -- --toggle XBUTTON2 --mode switch --logic-ms 100 --render-ms 100 --burst-auto-off true
 ```
 
 - `wow_process.txt`：每行一个目标进程名（可带或不带 `.exe`）。程序使用 Windows Z 顺序中最靠前的候选进程可见顶层窗口，切换窗口后会自动跟随。
@@ -82,6 +84,7 @@ dotnet run --project .\Shigure.csproj -- --toggle XBUTTON2 --mode switch --logic
 - `--mode`：发送模式，支持 `switch`、`click`、`hold`。
 - `--logic-ms`：逻辑循环间隔，默认 `100` ms，最小 `50` ms。
 - `--render-ms`：UI 刷新间隔，默认 `100` ms，最小 `100` ms。
+- `--burst-auto-off`：爆发是否 30 秒后自动关闭，默认 `true`。
 
 发送模式：
 

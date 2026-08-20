@@ -64,6 +64,9 @@ internal sealed class UiCacheState
     public string? SelectedSettingsPage { get; set; }
     public string? MainWindowLayout { get; set; }
     public string? ToggleKey { get; set; }
+    public bool? BurstAutoOff { get; set; }
+    /// <summary>悬浮条不透明度，0.30～1.00；空则使用默认。</summary>
+    public double? MainBarOpacity { get; set; }
     public string? SelectedModuleId { get; set; }
     public Dictionary<string, int>? ModuleRulesGridColumns { get; set; }
 }

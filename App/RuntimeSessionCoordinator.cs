@@ -84,6 +84,24 @@ internal sealed class RuntimeSessionCoordinator : IAsyncDisposable
         }
     }
 
+    public void ActivateBurst()
+    {
+        var session = Volatile.Read(ref _current);
+        if (session is { RunTask.IsCompleted: false })
+        {
+            session.Runtime.ActivateBurst();
+        }
+    }
+
+    public void ToggleBurst()
+    {
+        var session = Volatile.Read(ref _current);
+        if (session is { RunTask.IsCompleted: false })
+        {
+            session.Runtime.ToggleBurst();
+        }
+    }
+
     public async ValueTask DisposeAsync()
     {
         await _lifecycleGate.WaitAsync().ConfigureAwait(false);

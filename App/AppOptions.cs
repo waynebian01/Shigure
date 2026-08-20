@@ -12,7 +12,8 @@ public sealed record AppOptions(
     SendMode Mode,
     string? ModuleId,
     TimeSpan LogicInterval,
-    TimeSpan RenderInterval)
+    TimeSpan RenderInterval,
+    bool BurstAutoOff = true)
 {
     public static AppOptions FromArgs(string[] args)
     {
@@ -21,6 +22,7 @@ public sealed record AppOptions(
         string? moduleId = null;
         var logicInterval = TimeSpan.FromMilliseconds(100);
         var renderInterval = TimeSpan.FromMilliseconds(100);
+        var burstAutoOff = true;
 
         for (var i = 0; i < args.Length; i++)
         {
@@ -48,10 +50,14 @@ public sealed record AppOptions(
                     renderInterval = TimeSpan.FromMilliseconds(Math.Max(100, renderMs));
                     i++;
                     break;
+                case "--burst-auto-off" when value is not null:
+                    burstAutoOff = ParseBool(value, defaultValue: true);
+                    i++;
+                    break;
             }
         }
 
-        return new AppOptions(toggleKey, mode, moduleId, logicInterval, renderInterval);
+        return new AppOptions(toggleKey, mode, moduleId, logicInterval, renderInterval, burstAutoOff);
     }
 
     private static SendMode ParseMode(string value)
@@ -61,6 +67,16 @@ public sealed record AppOptions(
             "click" => SendMode.Click,
             "hold" => SendMode.Hold,
             _ => SendMode.Switch
+        };
+    }
+
+    private static bool ParseBool(string value, bool defaultValue)
+    {
+        return value.Trim().ToLowerInvariant() switch
+        {
+            "1" or "true" or "yes" or "on" or "是" => true,
+            "0" or "false" or "no" or "off" or "否" => false,
+            _ => defaultValue
         };
     }
 }

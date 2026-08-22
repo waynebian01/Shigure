@@ -727,7 +727,11 @@ local function RebindContainerSpellFilters(container, unit)
             return (a.index or 0) < (b.index or 0)
         end)
         for _, slot in ipairs(container.fuyutsuiBarSlots) do
-            container:SetAuraSlotCandidateFilters(slot.key, AuraSlotFilters(slot.includeSpellIDs))
+            if IsAuraFilterAllowedForUnit(bindUnit or "player", slot.filter or "HELPFUL") then
+                container:SetAuraSlotCandidateFilters(slot.key, AuraSlotFilters(slot.includeSpellIDs))
+            else
+                container:SetAuraSlotCandidateFilters(slot.key, AURA_MATCH_NONE_FILTERS)
+            end
         end
     end
     if container.fuyutsuiSpellIdSlots then
@@ -848,9 +852,9 @@ local function MakeBarSlotInitializer(slotInfo)
     end
 end
 
-local function CollectPlayerAuraAppSlots()
+local function CollectAuraAppSlots()
     local appSlots = {}
-    for _, info in ipairs(CollectAuraSpellSlots("player")) do
+    for _, info in ipairs(CollectAuraSpellSlots()) do
         if info.maxApps then
             tinsert(appSlots, info)
         end
@@ -865,7 +869,7 @@ local function ReclaimAuraBarLayoutSpace()
     UpdateHorizontalBarEndMarker()
 end
 
-local function ReanchorPlayerAuraBarSlots(container)
+local function ReanchorAuraBarSlots(container)
     local slots = container and container.fuyutsuiBarSlots
     if not slots then
         return
@@ -900,7 +904,12 @@ function Fuyutsui:ReleaseUnitAuraContainers()
         ReleaseFrame(Fuyutsui[key])
         Fuyutsui[key] = nil
     end
-    ReleaseFrame(Fuyutsui.PlayerAuraBarContainer)
+    if Fuyutsui.UnitAuraBarContainers then
+        for _, container in pairs(Fuyutsui.UnitAuraBarContainers) do
+            ReleaseFrame(container)
+        end
+    end
+    Fuyutsui.UnitAuraBarContainers = nil
     Fuyutsui.PlayerAuraBarContainer = nil
     ReclaimAuraBarLayoutSpace()
 end
@@ -1004,6 +1013,8 @@ function Fuyutsui:UpdateUnitAuraContainer(unit)
         return
     end
     RebindContainerSpellFilters(Fuyutsui[key], unit)
+    local barContainers = Fuyutsui.UnitAuraBarContainers
+    RebindContainerSpellFilters(barContainers and barContainers[unit], unit)
 end
 
 -- 兼容旧名
@@ -1011,32 +1022,43 @@ function Fuyutsui:RefreshPlayerAuraContainers()
     self:RefreshUnitAuraContainers()
 end
 
---- 在计数条之后排布层数条，最后放置 BAR_END_COLOR（仅玩家光环 maxApps）
---- 按 auras 索引升序固定条序；若容器已存在但槽位集合变化则整表重建
+--- 在计数条之后排布层数条，最后放置 BAR_END_COLOR。
+--- 每个 unit 使用独立 AuraContainer，支持 player/target/focus 的 maxApps。
 function Fuyutsui:LayoutAuraApplicationBars()
-    local appSlots = CollectPlayerAuraAppSlots()
-    local barSlots = Fuyutsui.PlayerAuraBarContainer
-    if barSlots and barSlots.fuyutsuiBarSlots then
-        local existing = barSlots.fuyutsuiBarSlots
-        local same = auraBarLaidOut and #existing == #appSlots
+    local appSlots = CollectAuraAppSlots()
+    local containers = Fuyutsui.UnitAuraBarContainers
+    if containers then
+        local existingByIndex = {}
+        local existingCount = 0
+        for unit, container in pairs(containers) do
+            for _, slot in ipairs(container.fuyutsuiBarSlots or {}) do
+                slot.unit = slot.unit or unit
+                existingByIndex[slot.index] = slot
+                existingCount = existingCount + 1
+            end
+        end
+        local same = auraBarLaidOut and existingCount == #appSlots
         if same then
-            for i, info in ipairs(appSlots) do
-                local slot = existing[i]
-                if not slot or slot.index ~= info.index or slot.maxApps ~= info.maxApps then
+            for _, info in ipairs(appSlots) do
+                local slot = existingByIndex[info.index]
+                if not slot or slot.maxApps ~= info.maxApps or slot.unit ~= info.unit then
                     same = false
                     break
                 end
             end
         end
         if not same then
-            ReleaseFrame(barSlots)
+            for _, container in pairs(containers) do
+                ReleaseFrame(container)
+            end
+            Fuyutsui.UnitAuraBarContainers = nil
             Fuyutsui.PlayerAuraBarContainer = nil
             ReclaimAuraBarLayoutSpace()
-            barSlots = nil
+            containers = nil
         end
     end
 
-    if auraBarLaidOut and Fuyutsui.PlayerAuraBarContainer then
+    if auraBarLaidOut and Fuyutsui.UnitAuraBarContainers then
         return
     end
 
@@ -1046,45 +1068,52 @@ function Fuyutsui:LayoutAuraApplicationBars()
 
     if #appSlots > 0 then
         EnsureAuraContainerLoaded()
+        containers = {}
+        Fuyutsui.UnitAuraBarContainers = containers
 
-        if not barSlots then
-            barSlots = CreateFrame("AuraContainer", "FuyutsuiPlayerAuraBarSlots", countBars,
-                                   "CustomAuraContainerTemplate")
-            barSlots:SetPoint("TOPLEFT", countBars, "TOPLEFT", 0, 0)
-            barSlots:SetUnit("player")
-            barSlots:SetEnabled(true)
-            barSlots:SetFrameStrata(AURA_BAR_STRATA)
-            barSlots:SetFrameLevel(AURA_BAR_LEVEL)
-            Fuyutsui.PlayerAuraBarContainer = barSlots
-            barSlots.fuyutsuiBarSlots = {}
-
-            for _, info in ipairs(appSlots) do
-                local startIndex = ReserveHorizontalBarUnits(
-                    info.maxApps,
-                    "警告: Fuyutsui_CountBars 光环层数条空间不足!"
-                )
-                if not startIndex then
-                    break
-                end
-                CreateHorizontalBarBackgrounds(startIndex, info.maxApps)
-                local slotKey = "bar_index_" .. info.index
-                local slotInfo = {
-                    key = slotKey,
-                    index = info.index,
-                    maxApps = info.maxApps,
-                    startIndex = startIndex,
-                    includeSpellIDs = info.includeSpellIDs,
-                }
-                barSlots:AddAuraSlot(slotKey, info.filter or "HELPFUL", {
-                    candidateFilters = AuraSlotFilters(info.includeSpellIDs),
-                    sortMethod = AuraContainerSortMethod.Expiration,
-                    sortDirection = AuraContainerSortDirection.Normal,
-                    initializeFrame = MakeBarSlotInitializer(slotInfo),
-                })
-                tinsert(barSlots.fuyutsuiBarSlots, slotInfo)
+        for _, info in ipairs(appSlots) do
+            local unit = info.unit or "player"
+            local barSlots = containers[unit]
+            if not barSlots then
+                barSlots = CreateFrame("AuraContainer", nil, countBars, "CustomAuraContainerTemplate")
+                barSlots:SetPoint("TOPLEFT", countBars, "TOPLEFT", 0, 0)
+                barSlots:SetUnit(unit)
+                barSlots:SetEnabled(true)
+                barSlots:SetFrameStrata(AURA_BAR_STRATA)
+                barSlots:SetFrameLevel(AURA_BAR_LEVEL)
+                barSlots.fuyutsuiBarSlots = {}
+                barSlots.fuyutsuiUnit = unit
+                containers[unit] = barSlots
             end
-            barSlots.fuyutsuiUnit = "player"
+
+            local startIndex = ReserveHorizontalBarUnits(
+                info.maxApps,
+                "警告: Fuyutsui_CountBars 光环层数条空间不足!"
+            )
+            if not startIndex then
+                break
+            end
+            CreateHorizontalBarBackgrounds(startIndex, info.maxApps)
+            local slotKey = "bar_index_" .. info.index
+            local slotInfo = {
+                key = slotKey,
+                index = info.index,
+                maxApps = info.maxApps,
+                startIndex = startIndex,
+                includeSpellIDs = info.includeSpellIDs,
+                filter = info.filter,
+                unit = unit,
+            }
+            barSlots:AddAuraSlot(slotKey, info.filter or "HELPFUL", {
+                candidateFilters = AuraSlotFilters(info.includeSpellIDs),
+                sortMethod = AuraContainerSortMethod.Expiration,
+                sortDirection = AuraContainerSortDirection.Normal,
+                initializeFrame = MakeBarSlotInitializer(slotInfo),
+            })
+            tinsert(barSlots.fuyutsuiBarSlots, slotInfo)
         end
+
+        Fuyutsui.PlayerAuraBarContainer = containers.player
     end
 
     UpdateHorizontalBarEndMarker()
@@ -1355,17 +1384,23 @@ function Fuyutsui:RebindAuraSpellFilters()
 
     -- 层数条：按 auras 索引同步槽位；集合变化时整表重建，并重锚保证条序
     self:LayoutAuraApplicationBars()
-    local barContainer = Fuyutsui.PlayerAuraBarContainer
-    if barContainer and barContainer.fuyutsuiBarSlots then
-        local appSlots = CollectPlayerAuraAppSlots()
-        for i, slot in ipairs(barContainer.fuyutsuiBarSlots) do
-            local info = appSlots[i]
-            if info then
-                slot.includeSpellIDs = info.includeSpellIDs
+    local appSlots = CollectAuraAppSlots()
+    local infoByIndex = {}
+    for _, info in ipairs(appSlots) do
+        infoByIndex[info.index] = info
+    end
+    for unit, barContainer in pairs(Fuyutsui.UnitAuraBarContainers or {}) do
+        if barContainer.fuyutsuiBarSlots then
+            for _, slot in ipairs(barContainer.fuyutsuiBarSlots) do
+                local info = infoByIndex[slot.index]
+                if info then
+                    slot.includeSpellIDs = info.includeSpellIDs
+                    slot.filter = info.filter
+                end
             end
+            RebindContainerSpellFilters(barContainer, unit)
+            ReanchorAuraBarSlots(barContainer)
         end
-        RebindContainerSpellFilters(barContainer, "player")
-        ReanchorPlayerAuraBarSlots(barContainer)
     end
 
     RefreshAllCreatedBars()

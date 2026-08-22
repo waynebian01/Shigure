@@ -11,7 +11,20 @@ namespace Shigure;
 internal static class SpellIconCatalog
 {
     private static readonly Dictionary<long, Image?> Icons = new();
+    private static readonly Dictionary<string, Image?> NamedIcons = new(StringComparer.Ordinal);
     private static readonly Dictionary<string, long> SpellIdsByName = LoadSpellIdsByName();
+    private static readonly Dictionary<string, string> NamedIconResources = new(StringComparer.Ordinal)
+    {
+        ["银月城生命药水"] = $"{typeof(SpellIconCatalog).Namespace}.Assets.Spell.silvermoon-city-health-potion.png",
+        [ModuleSpecialActions.OneKeySpell] = $"{typeof(SpellIconCatalog).Namespace}.Assets.Spell.one-key-spell.png",
+        [ModuleSpecialActions.PauseSpell] = $"{typeof(SpellIconCatalog).Namespace}.Assets.Spell.pause.png",
+        [ModuleSpecialActions.FailedSpell] = $"{typeof(SpellIconCatalog).Namespace}.Assets.Spell.auto-insert-spell.png",
+        ["鲁莽药水"] = $"{typeof(SpellIconCatalog).Namespace}.Assets.Spell.recklessness-potion.jpg",
+        ["圣光潜力"] = $"{typeof(SpellIconCatalog).Namespace}.Assets.Spell.lights-potential.jpg",
+        ["光注法力药水"] = $"{typeof(SpellIconCatalog).Namespace}.Assets.Spell.light-infused-mana-potion.jpg"
+    };
+    private static readonly string LastRuleRowIconResource =
+        $"{typeof(SpellIconCatalog).Namespace}.Assets.Spell.last-rule-row.png";
 
     public static Image? Get(long spellId)
     {
@@ -35,7 +48,43 @@ internal static class SpellIconCatalog
     }
 
     public static Image? Get(string? spellName)
-        => TryResolveId(spellName, out var spellId) ? Get(spellId) : null;
+    {
+        var normalized = spellName?.Trim();
+        if (string.IsNullOrWhiteSpace(normalized))
+        {
+            return null;
+        }
+
+        if (NamedIconResources.TryGetValue(normalized, out var resourceName))
+        {
+            return GetNamedIcon(normalized, resourceName);
+        }
+
+        return TryResolveId(normalized, out var spellId) ? Get(spellId) : null;
+    }
+
+    public static Image? GetLastRuleRowIcon()
+        => GetNamedIcon("last-rule-row", LastRuleRowIconResource);
+
+    private static Image? GetNamedIcon(string cacheKey, string resourceName)
+    {
+        if (NamedIcons.TryGetValue(cacheKey, out var cached))
+        {
+            return cached;
+        }
+
+        using var stream = typeof(SpellIconCatalog).Assembly.GetManifestResourceStream(resourceName);
+        if (stream is null)
+        {
+            NamedIcons[cacheKey] = null;
+            return null;
+        }
+
+        using var source = Image.FromStream(stream);
+        var icon = new Bitmap(source);
+        NamedIcons[cacheKey] = icon;
+        return icon;
+    }
 
     private static bool TryResolveId(string? spellName, out long spellId)
     {

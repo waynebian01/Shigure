@@ -1928,6 +1928,13 @@ public sealed class ModuleEditorControl : UserControl
 
         var columnName = _rulesGrid.Columns[e.ColumnIndex].Name;
         var row = _rulesGrid.Rows[e.RowIndex];
+        if (columnName == "SpellIcon" && row.IsNewRow)
+        {
+            e.Value = SpellIconCatalog.GetLastRuleRowIcon();
+            e.FormattingApplied = true;
+            return;
+        }
+
         if (!row.IsNewRow && GetMissingConditionFields(row).Count > 0)
         {
             // 缺失字段会让条件静默不命中；用整行红色状态在保存前就提醒用户修复配置。

@@ -1,6 +1,7 @@
 local addon, ns = ...
 -- 命名宏体：出现在 staticSpells/specialSpells 中的名称若在此表，则用表内文本创建宏
 Fuyutsui.MacroBodies = {
+    ["光注法力药水"] = "item:241300\n/cast item:241301",
     ["鲁莽药水"] = "item:241288\n/cast item:241289",
     ["圣光潜力"] = "item:241308\n/cast item:241309",
     ["银月城生命药水"] = "item:241304\n/cast item:241305\n/cast item:271884\n/cast item:271885",

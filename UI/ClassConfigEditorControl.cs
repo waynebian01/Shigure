@@ -690,7 +690,14 @@ public sealed class ClassConfigEditorControl : UserControl
 
         ConfigureGrid(_spellsListGrid);
         _spellsListGrid.AllowUserToAddRows = false;
-        _spellsListGrid.CellValueChanged += (_, _) => MarkDirty();
+        _spellsListGrid.CellValueChanged += (_, e) =>
+        {
+            MarkDirty();
+            if (e.RowIndex >= 0 && e.RowIndex < _spellsListGrid.Rows.Count)
+            {
+                UpdateSpellGridIcon(_spellsListGrid.Rows[e.RowIndex]);
+            }
+        };
         _spellsListGrid.Columns.Add(new DataGridViewTextBoxColumn
         {
             Name = "SpellId",
@@ -705,6 +712,7 @@ public sealed class ClassConfigEditorControl : UserControl
             Width = 120,
             SortMode = DataGridViewColumnSortMode.NotSortable
         });
+        _spellsListGrid.Columns.Add(CreateSpellIconColumn());
         _spellsListGrid.Columns.Add(new DataGridViewTextBoxColumn
         {
             Name = "Name",
@@ -1500,17 +1508,20 @@ public sealed class ClassConfigEditorControl : UserControl
 
     private static void UpdateSpellGridIcon(DataGridViewRow row)
     {
-        if (row.IsNewRow || !long.TryParse(
-                row.Cells["SpellId"].Value?.ToString(),
-                NumberStyles.Integer,
-                CultureInfo.InvariantCulture,
-                out var spellId))
+        if (row.IsNewRow)
         {
             row.Cells["Icon"].Value = null;
             return;
         }
 
-        row.Cells["Icon"].Value = SpellIconCatalog.Get(spellId);
+        var icon = long.TryParse(
+            row.Cells["SpellId"].Value?.ToString(),
+            NumberStyles.Integer,
+            CultureInfo.InvariantCulture,
+            out var spellId)
+            ? SpellIconCatalog.Get(spellId)
+            : null;
+        row.Cells["Icon"].Value = icon ?? SpellIconCatalog.Get(row.Cells["Name"].Value?.ToString());
     }
 
     private void FillSpellsListGrid()
@@ -1528,6 +1539,7 @@ public sealed class ClassConfigEditorControl : UserControl
             var rowIndex = _spellsListGrid.Rows.Add(
                 spell.SpellId.ToString(CultureInfo.InvariantCulture),
                 spell.Index.ToString(CultureInfo.InvariantCulture),
+                (SpellIconCatalog.Get(spell.SpellId) ?? SpellIconCatalog.Get(spell.Name))!,
                 spell.Name);
             _spellsListGrid.Rows[rowIndex].Tag = spell;
         }
@@ -1718,6 +1730,7 @@ public sealed class ClassConfigEditorControl : UserControl
         var rowIndex = _spellsListGrid.Rows.Add(
             spellId.ToString(CultureInfo.InvariantCulture),
             nextIndex.ToString(CultureInfo.InvariantCulture),
+            (SpellIconCatalog.Get(spellId) ?? SpellIconCatalog.Get(name))!,
             name);
         var row = _spellsListGrid.Rows[rowIndex];
         row.Tag = entry;

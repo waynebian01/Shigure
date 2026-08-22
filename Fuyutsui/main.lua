@@ -100,7 +100,7 @@ function Fuyutsui:LoadPlayerBlocks(specIndex)
                         spellIds = aura.spellIds,
                         maxApps = aura.maxApps,
                         unit = unit,
-                        filter = filter,
+                        filter = aura.filter or filter,
                     }
                     index = index + 1
                 else

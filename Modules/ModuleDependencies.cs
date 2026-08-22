@@ -73,13 +73,15 @@ public sealed class ModuleAuraSnapshot
     public long? SpellId { get; set; }
     public List<long> SpellIds { get; set; } = new();
     public int? MaxApps { get; set; }
+    public string? Filter { get; set; }
 
     public ModuleAuraSnapshot Clone() => new()
     {
         Name = Name,
         SpellId = SpellId,
         SpellIds = new List<long>(SpellIds ?? []),
-        MaxApps = MaxApps
+        MaxApps = MaxApps,
+        Filter = Filter
     };
 }
 

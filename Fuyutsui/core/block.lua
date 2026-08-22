@@ -567,7 +567,7 @@ local function IsAuraFilterAllowedForUnit(unit, filter)
     if filter == "HELPFUL" or filter == "HELPFUL|PLAYER" then
         return UnitCanAssist("player", unit) and true or false
     end
-    if filter == "HARMFUL" then
+    if filter == "HARMFUL" or filter == "HARMFUL|PLAYER" then
         return UnitCanAttack("player", unit) and not UnitCanAssist("player", unit)
     end
     return true

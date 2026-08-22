@@ -138,27 +138,27 @@ public sealed class StatusForm : Form
         _moduleHost = CreatePageHost();
         _aboutHost = CreatePageHost();
 
-        _stateList = UiTheme.CreateListView(Font,
+        _stateList = UiTheme.CreateListView(Font, "status-state",
             new UiTheme.ListColumn("#", 48, 48, FixedWidth: true),
             new UiTheme.ListColumn("名称", 110, 260),
             new UiTheme.ListColumn("值", 100, 900, FillRemaining: true));
-        _auraList = UiTheme.CreateListView(Font,
+        _auraList = UiTheme.CreateListView(Font, "status-aura",
             new UiTheme.ListColumn("#", 48, 48, FixedWidth: true),
             new UiTheme.ListColumn("光环", 120, 300),
             new UiTheme.ListColumn("值", 96, 900, FillRemaining: true));
-        _dynamicUnitList = UiTheme.CreateListView(Font,
+        _dynamicUnitList = UiTheme.CreateListView(Font, "status-dynamic-unit",
             new UiTheme.ListColumn("类型", 72, 160),
             new UiTheme.ListColumn("名称", 92, 280),
             new UiTheme.ListColumn("值", 96, 900, FillRemaining: true));
-        _spellList = UiTheme.CreateListView(Font,
+        _spellList = UiTheme.CreateListView(Font, "status-spell",
             new UiTheme.ListColumn("#", 48, 48, FixedWidth: true),
             new UiTheme.ListColumn("技能", 120, 300),
             new UiTheme.ListColumn("状态", 100, 900, FillRemaining: true));
 
-        _partyList = UiTheme.CreateListView(Font,
+        _partyList = UiTheme.CreateListView(Font, "status-party",
             new UiTheme.ListColumn("单位", 120, 180, FixedWidth: true),
             new UiTheme.ListColumn("摘要", 320, 1600, FillRemaining: true));
-        _unitInfoList = UiTheme.CreateListView(Font,
+        _unitInfoList = UiTheme.CreateListView(Font, "status-unit-info",
             new UiTheme.ListColumn("名称", 180, 320),
             new UiTheme.ListColumn("值", 320, 1400, FillRemaining: true));
         _logTextBox = new TextBox

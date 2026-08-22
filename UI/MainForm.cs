@@ -2042,6 +2042,7 @@ public sealed class MainForm : Form, IMessageFilter
     {
         var latestCache = UiCacheStore.Load();
         _uiCache.ModuleRulesGridColumns = latestCache.ModuleRulesGridColumns;
+        _uiCache.ColumnWidths = latestCache.ColumnWidths;
 
         var currentBounds = CaptureMainWindowBounds();
         _uiCache.MainWindowBounds = currentBounds;

@@ -951,6 +951,23 @@ internal static class UiTheme
     public static ListView CreateListView(Font font, params ListColumn[] columns)
     {
         var listView = new ListView();
+        ConfigureListViewColumns(listView, font, null, columns);
+        return listView;
+    }
+
+    public static ListView CreateListView(Font font, string cacheKey, params ListColumn[] columns)
+    {
+        var listView = new ListView();
+        ConfigureListViewColumns(listView, font, cacheKey, columns);
+        return listView;
+    }
+
+    public static void ConfigureListViewColumns(
+        ListView listView,
+        Font font,
+        string? cacheKey,
+        params ListColumn[] columns)
+    {
         StyleListView(listView, font);
 
         foreach (var column in columns)
@@ -972,7 +989,130 @@ internal static class UiTheme
                 }
             });
         };
-        return listView;
+
+        if (!string.IsNullOrWhiteSpace(cacheKey))
+        {
+            CacheListViewColumnWidths(listView, cacheKey);
+        }
+    }
+
+    public static void CacheDataGridViewColumnWidths(DataGridView grid, string cacheKey)
+    {
+        var isApplying = false;
+        var isInitializing = true;
+
+        void ApplyCachedWidths()
+        {
+            var widths = UiCacheStore.LoadColumnWidths(cacheKey);
+            if (widths is null || widths.Count == 0)
+            {
+                return;
+            }
+
+            isApplying = true;
+            try
+            {
+                foreach (DataGridViewColumn column in grid.Columns)
+                {
+                    if (column.AutoSizeMode == DataGridViewAutoSizeColumnMode.Fill
+                        || !widths.TryGetValue(column.Name, out var width)
+                        || width <= 0)
+                    {
+                        continue;
+                    }
+
+                    column.Width = Math.Max(column.MinimumWidth, width);
+                }
+            }
+            finally
+            {
+                isApplying = false;
+            }
+        }
+
+        grid.ColumnWidthChanged += (_, e) =>
+        {
+            if (isInitializing
+                || isApplying
+                || e.Column.AutoSizeMode == DataGridViewAutoSizeColumnMode.Fill
+                || string.IsNullOrWhiteSpace(e.Column.Name))
+            {
+                return;
+            }
+
+            UiCacheStore.SaveColumnWidth(cacheKey, e.Column.Name, e.Column.Width);
+        };
+        grid.HandleCreated += (_, _) =>
+        {
+            ApplyCachedWidths();
+            isInitializing = false;
+        };
+        ApplyCachedWidths();
+        if (grid.IsHandleCreated)
+        {
+            isInitializing = false;
+        }
+    }
+
+    public static void CacheListViewColumnWidths(ListView listView, string cacheKey)
+    {
+        if (!ListColumnLayouts.TryGetValue(listView, out var state)
+            || state.Columns.Count != listView.Columns.Count
+            || listView.Columns.Count == 0)
+        {
+            return;
+        }
+
+        state.CachedWidths = UiCacheStore.LoadColumnWidths(cacheKey)
+            ?? new Dictionary<string, int>(StringComparer.Ordinal);
+
+        void ApplyCachedWidths()
+        {
+            state.IsApplyingCachedWidths = true;
+            try
+            {
+                for (var columnIndex = 0; columnIndex < state.Columns.Count; columnIndex++)
+                {
+                    var layout = state.Columns[columnIndex];
+                    if (layout.FillRemaining
+                        || !state.CachedWidths.TryGetValue(layout.Text, out var width)
+                        || width <= 0)
+                    {
+                        continue;
+                    }
+
+                    var minimum = Scale(listView, layout.MinimumWidth);
+                    var maximum = Scale(listView, Math.Max(layout.MinimumWidth, layout.MaximumWidth));
+                    listView.Columns[columnIndex].Width = Math.Clamp(width, minimum, maximum);
+                }
+            }
+            finally
+            {
+                state.IsApplyingCachedWidths = false;
+            }
+        }
+
+        listView.ColumnWidthChanged += (_, e) =>
+        {
+            if (state.IsApplyingCachedWidths
+                || state.IsFitting
+                || e.ColumnIndex < 0
+                || e.ColumnIndex >= state.Columns.Count)
+            {
+                return;
+            }
+
+            var layout = state.Columns[e.ColumnIndex];
+            if (layout.FillRemaining)
+            {
+                return;
+            }
+
+            state.CachedWidths[layout.Text] = listView.Columns[e.ColumnIndex].Width;
+            UiCacheStore.SaveColumnWidth(cacheKey, layout.Text, listView.Columns[e.ColumnIndex].Width);
+        };
+
+        ApplyCachedWidths();
     }
 
     public static void FitListViewColumns(ListView listView)
@@ -985,46 +1125,60 @@ internal static class UiTheme
             return;
         }
 
-        var availableWidth = Math.Max(0, listView.ClientSize.Width - Scale(listView, 2));
-        var widths = new int[state.Columns.Count];
-        var fillIndexes = new List<int>();
-        var usedWidth = 0;
-
-        for (var columnIndex = 0; columnIndex < state.Columns.Count; columnIndex++)
+        state.IsFitting = true;
+        try
         {
-            var layout = state.Columns[columnIndex];
-            var minimum = Scale(listView, layout.MinimumWidth);
-            var maximum = Scale(listView, Math.Max(layout.MinimumWidth, layout.MaximumWidth));
-            var measured = MeasureListColumn(listView, columnIndex, layout.Text);
-            var width = layout.FixedWidth ? minimum : Math.Clamp(measured, minimum, maximum);
-            widths[columnIndex] = width;
-            if (layout.FillRemaining)
+            var availableWidth = Math.Max(0, listView.ClientSize.Width - Scale(listView, 2));
+            var widths = new int[state.Columns.Count];
+            var fillIndexes = new List<int>();
+            var usedWidth = 0;
+
+            for (var columnIndex = 0; columnIndex < state.Columns.Count; columnIndex++)
             {
-                fillIndexes.Add(columnIndex);
+                var layout = state.Columns[columnIndex];
+                var minimum = Scale(listView, layout.MinimumWidth);
+                var maximum = Scale(listView, Math.Max(layout.MinimumWidth, layout.MaximumWidth));
+                var cachedWidth = 0;
+                var hasCachedWidth = !layout.FillRemaining
+                    && state.CachedWidths is not null
+                    && state.CachedWidths.TryGetValue(layout.Text, out cachedWidth);
+                var measured = MeasureListColumn(listView, columnIndex, layout.Text);
+                var width = hasCachedWidth
+                    ? Math.Clamp(cachedWidth, minimum, maximum)
+                    : layout.FixedWidth ? minimum : Math.Clamp(measured, minimum, maximum);
+                widths[columnIndex] = width;
+                if (layout.FillRemaining)
+                {
+                    fillIndexes.Add(columnIndex);
+                }
+                else
+                {
+                    usedWidth += width;
+                }
             }
-            else
+
+            if (fillIndexes.Count > 0)
             {
-                usedWidth += width;
+                var remaining = Math.Max(0, availableWidth - usedWidth);
+                var share = remaining / fillIndexes.Count;
+                foreach (var index in fillIndexes)
+                {
+                    var layout = state.Columns[index];
+                    widths[index] = Math.Clamp(
+                        share,
+                        Scale(listView, layout.MinimumWidth),
+                        Scale(listView, Math.Max(layout.MinimumWidth, layout.MaximumWidth)));
+                }
+            }
+
+            for (var i = 0; i < widths.Length; i++)
+            {
+                listView.Columns[i].Width = widths[i];
             }
         }
-
-        if (fillIndexes.Count > 0)
+        finally
         {
-            var remaining = Math.Max(0, availableWidth - usedWidth);
-            var share = remaining / fillIndexes.Count;
-            foreach (var index in fillIndexes)
-            {
-                var layout = state.Columns[index];
-                widths[index] = Math.Clamp(
-                    share,
-                    Scale(listView, layout.MinimumWidth),
-                    Scale(listView, Math.Max(layout.MinimumWidth, layout.MaximumWidth)));
-            }
-        }
-
-        for (var i = 0; i < widths.Length; i++)
-        {
-            listView.Columns[i].Width = widths[i];
+            state.IsFitting = false;
         }
     }
 
@@ -1094,6 +1248,9 @@ internal static class UiTheme
     private sealed class ListColumnLayoutState(IReadOnlyList<ListColumn> columns)
     {
         public IReadOnlyList<ListColumn> Columns { get; } = columns;
+        public Dictionary<string, int>? CachedWidths { get; set; }
+        public bool IsApplyingCachedWidths { get; set; }
+        public bool IsFitting { get; set; }
     }
 
     public static string FormatValue(object? value)

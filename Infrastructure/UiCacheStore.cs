@@ -52,6 +52,49 @@ internal static class UiCacheStore
 
         return Screen.AllScreens.Any(screen => screen.WorkingArea.IntersectsWith(bounds));
     }
+
+    public static Dictionary<string, int>? LoadColumnWidths(string cacheKey)
+    {
+        var state = Load();
+        if (state.ColumnWidths?.TryGetValue(cacheKey, out var widths) == true)
+        {
+            return new Dictionary<string, int>(widths, StringComparer.Ordinal);
+        }
+
+        // 兼容旧版本只保存模块逻辑编辑列宽的字段。
+        if (string.Equals(cacheKey, "module-rules", StringComparison.Ordinal)
+            && state.ModuleRulesGridColumns is { Count: > 0 } legacyWidths)
+        {
+            return new Dictionary<string, int>(legacyWidths, StringComparer.Ordinal);
+        }
+
+        return null;
+    }
+
+    public static void SaveColumnWidth(string cacheKey, string columnKey, int width)
+    {
+        if (string.IsNullOrWhiteSpace(cacheKey) || string.IsNullOrWhiteSpace(columnKey) || width <= 0)
+        {
+            return;
+        }
+
+        var state = Load();
+        state.ColumnWidths ??= new Dictionary<string, Dictionary<string, int>>(StringComparer.Ordinal);
+        if (!state.ColumnWidths.TryGetValue(cacheKey, out var widths))
+        {
+            widths = LoadColumnWidths(cacheKey) ?? new Dictionary<string, int>(StringComparer.Ordinal);
+            state.ColumnWidths[cacheKey] = widths;
+        }
+
+        widths[columnKey] = width;
+        if (string.Equals(cacheKey, "module-rules", StringComparison.Ordinal))
+        {
+            state.ModuleRulesGridColumns ??= new Dictionary<string, int>(StringComparer.Ordinal);
+            state.ModuleRulesGridColumns[columnKey] = width;
+        }
+
+        Save(state);
+    }
 }
 
 internal sealed class UiCacheState
@@ -67,6 +110,7 @@ internal sealed class UiCacheState
     public string? ToggleKey { get; set; }
     public string? SelectedModuleId { get; set; }
     public Dictionary<string, int>? ModuleRulesGridColumns { get; set; }
+    public Dictionary<string, Dictionary<string, int>>? ColumnWidths { get; set; }
 }
 
 internal sealed class WindowLocation

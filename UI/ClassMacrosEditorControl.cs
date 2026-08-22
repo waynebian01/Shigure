@@ -259,8 +259,8 @@ public sealed class ClassMacrosEditorControl : UserControl
         var pages = new Control[]
         {
             BuildDynamicPage(),
-            BuildArrayPage(_staticGrid, "完整宏", "注释", showParsedMacro: true),
-            BuildArrayPage(_specialGrid, "完整宏", "注释", showParsedMacro: true)
+            BuildArrayPage(_staticGrid, "class-macros-static", "完整宏", "注释", showParsedMacro: true),
+            BuildArrayPage(_specialGrid, "class-macros-special", "完整宏", "注释", showParsedMacro: true)
         };
         foreach (var page in pages)
         {
@@ -334,7 +334,7 @@ public sealed class ClassMacrosEditorControl : UserControl
         editor.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
         editor.RowStyles.Add(new RowStyle(SizeType.Absolute, 44));
 
-        ConfigureGrid(_dynamicGrid);
+        ConfigureGrid(_dynamicGrid, "class-macros-dynamic");
         _dynamicGrid.Columns.Add(new DataGridViewTextBoxColumn
         {
             Name = "Name",
@@ -396,6 +396,7 @@ public sealed class ClassMacrosEditorControl : UserControl
 
     private Control BuildArrayPage(
         DataGridView grid,
+        string cacheKey,
         string textHeader,
         string commentHeader,
         bool showParsedMacro)
@@ -410,7 +411,7 @@ public sealed class ClassMacrosEditorControl : UserControl
         panel.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
         panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 44));
 
-        ConfigureGrid(grid);
+        ConfigureGrid(grid, cacheKey);
         grid.Columns.Add(new DataGridViewTextBoxColumn
         {
             Name = "Index",
@@ -519,9 +520,10 @@ public sealed class ClassMacrosEditorControl : UserControl
         return bar;
     }
 
-    private static void ConfigureGrid(DataGridView grid)
+    private static void ConfigureGrid(DataGridView grid, string cacheKey)
     {
         UiTheme.StyleDataGridView(grid);
+        UiTheme.CacheDataGridViewColumnWidths(grid, cacheKey);
         grid.AllowUserToAddRows = true;
         grid.AllowUserToDeleteRows = false;
         grid.RowHeadersVisible = false;

@@ -386,7 +386,7 @@ public sealed class ClassConfigEditorControl : UserControl
 
         panel.Controls.Add(BuildStateCategoryTabs(), 0, 0);
 
-        ConfigureGrid(_statesGrid);
+        ConfigureGrid(_statesGrid, "class-config-states");
         _stateNameColumn.Name = "Name";
         _stateNameColumn.HeaderText = "状态名";
         _stateNameColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
@@ -476,7 +476,7 @@ public sealed class ClassConfigEditorControl : UserControl
 
         panel.Controls.Add(BuildAuraBucketTabs(), 0, 0);
 
-        ConfigureGrid(_aurasGrid);
+        ConfigureGrid(_aurasGrid, "class-config-auras");
         _aurasGrid.Columns.Add(new DataGridViewTextBoxColumn { Name = "Name", HeaderText = "名称", Width = 160 });
         _aurasGrid.Columns.Add(new DataGridViewTextBoxColumn { Name = "SpellId", HeaderText = "spellId", Width = 110 });
         _aurasGrid.Columns.Add(new DataGridViewTextBoxColumn
@@ -573,7 +573,7 @@ public sealed class ClassConfigEditorControl : UserControl
         textureOrderHint.Padding = new Padding(8, 0, 0, 0);
         panel.Controls.Add(textureOrderHint, 0, 0);
 
-        ConfigureGrid(_spellsGrid);
+        ConfigureGrid(_spellsGrid, "class-config-spells");
         _spellsGrid.Columns.Add(CreateSpellIconColumn());
         _spellsGrid.Columns.Add(CreateSpellTextColumn("Name", "名称", 24, 160));
         _spellsGrid.Columns.Add(CreateSpellTextColumn("SpellId", "法术 ID", 14, 120));
@@ -688,7 +688,7 @@ public sealed class ClassConfigEditorControl : UserControl
         hint.Padding = new Padding(8, 0, 0, 0);
         panel.Controls.Add(hint, 0, 1);
 
-        ConfigureGrid(_spellsListGrid);
+        ConfigureGrid(_spellsListGrid, "class-config-spells-list");
         _spellsListGrid.AllowUserToAddRows = false;
         _spellsListGrid.CellValueChanged += (_, e) =>
         {
@@ -787,7 +787,7 @@ public sealed class ClassConfigEditorControl : UserControl
         fields.HandleCreated += (_, _) => FitGroupCards();
         panel.Controls.Add(fields, 0, 0);
 
-        ConfigureGrid(_groupAurasGrid);
+        ConfigureGrid(_groupAurasGrid, "class-config-group-auras");
         _groupAurasGrid.Columns.Add(new DataGridViewTextBoxColumn { Name = "Offset", HeaderText = "偏移", Width = 70 });
         _groupAurasGrid.Columns.Add(new DataGridViewTextBoxColumn { Name = "Name", HeaderText = "名称", Width = 160 });
         _groupAurasGrid.Columns.Add(new DataGridViewTextBoxColumn { Name = "SpellId", HeaderText = "spellId", Width = 110 });
@@ -951,9 +951,10 @@ public sealed class ClassConfigEditorControl : UserControl
         return bar;
     }
 
-    private static void ConfigureGrid(DataGridView grid)
+    private static void ConfigureGrid(DataGridView grid, string cacheKey)
     {
         UiTheme.StyleDataGridView(grid);
+        UiTheme.CacheDataGridViewColumnWidths(grid, cacheKey);
         grid.AllowUserToAddRows = true;
         grid.AllowUserToDeleteRows = false;
         grid.RowHeadersVisible = false;

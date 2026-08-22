@@ -13,15 +13,11 @@ internal static class UiTheme
     private static readonly ConditionalWeakTable<ListView, ListColumnLayoutState> ListColumnLayouts = new();
 
     private const int DwmwaUseImmersiveDarkMode = 20;
-    private const int DwmwaMicaEffect = 1029;
     private const int DwmwaSystemBackdropType = 38;
     private const int DwmwaWindowCornerPreference = 33;
     private const int DwmwcpRound = 2;
     private const int DwmsbtMainWindow = 2;
     private const int DwmsbtTransientWindow = 3;
-    private const int WcaAccentPolicy = 19;
-    private const int AccentEnableBlurBehind = 3;
-    private const int AccentEnableAcrylicBlurBehind = 4;
 
     public static readonly Color Background = Color.FromArgb(12, 15, 19);
     public static readonly Color Surface = Color.FromArgb(23, 28, 35);
@@ -31,7 +27,8 @@ internal static class UiTheme
     public static readonly Color Pressed = Color.FromArgb(50, 63, 74);
     public static readonly Color Border = Color.FromArgb(48, 58, 69);
     public static readonly Color RowAlt = Color.FromArgb(26, 32, 39);
-    public static readonly Color Text = Color.FromArgb(231, 237, 243);
+    // 纯白以保证在深色背景(如 Color.FromArgb(18, 21, 26))上启动时清晰可见，对比度约 21:1。
+    public static readonly Color Text = Color.White;
     public static readonly Color Muted = Color.FromArgb(152, 164, 178);
     public static readonly Color Accent = Color.FromArgb(82, 224, 209);
     public static readonly Color AccentSoft = Color.FromArgb(24, 63, 64);
@@ -57,43 +54,11 @@ internal static class UiTheme
     [DllImport("dwmapi.dll")]
     private static extern int DwmSetWindowAttribute(nint hwnd, int attribute, ref int value, int size);
 
-    [DllImport("dwmapi.dll")]
-    private static extern int DwmExtendFrameIntoClientArea(nint hwnd, ref Margins margins);
-
     [DllImport("gdi32.dll")]
     private static extern nint CreateRoundRectRgn(int left, int top, int right, int bottom, int widthEllipse, int heightEllipse);
 
     [DllImport("gdi32.dll")]
     private static extern bool DeleteObject(nint hObject);
-
-    [DllImport("user32.dll")]
-    private static extern int SetWindowCompositionAttribute(nint hwnd, ref WindowCompositionAttributeData data);
-
-    [StructLayout(LayoutKind.Sequential)]
-    private struct Margins
-    {
-        public int LeftWidth;
-        public int RightWidth;
-        public int TopHeight;
-        public int BottomHeight;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    private struct AccentPolicy
-    {
-        public int AccentState;
-        public int AccentFlags;
-        public int GradientColor;
-        public int AnimationId;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    private struct WindowCompositionAttributeData
-    {
-        public int Attribute;
-        public nint Data;
-        public int SizeOfData;
-    }
 
     public static void ApplyDarkTitleBar(Form form)
     {
@@ -140,70 +105,19 @@ internal static class UiTheme
 
     public static void ApplyTranslucentBackground(Form form)
     {
+        // 不透明深色背景，确保标题/按钮等子控件在所有 Windows 版本上都能正常绘制合成。
         form.BackColor = Color.FromArgb(18, 21, 26);
 
-        var margins = new Margins
-        {
-            LeftWidth = -1,
-            RightWidth = -1,
-            TopHeight = -1,
-            BottomHeight = -1
-        };
-        _ = DwmExtendFrameIntoClientArea(form.Handle, ref margins);
-
-        // Windows 11: transient backdrop is Acrylic-like and does not affect child control opacity.
+        // 仅在 Windows 11 上尝试系统 Mica/Acrylic 背景 (DWMWA_SYSTEMBACKDROP_TYPE)。
+        // 该 API 不会像旧版 SetWindowCompositionAttribute(AccentPolicy) 或
+        // DwmExtendFrameIntoClientArea 那样破坏子控件的 GDI 绘制，因此标题、开启/关闭、
+        // 设置、关闭按钮都能正常显示。不支持时(如 Windows 10)自动退回纯不透明背景。
         var backdrop = DwmsbtTransientWindow;
-        var hr = DwmSetWindowAttribute(form.Handle, DwmwaSystemBackdropType, ref backdrop, sizeof(int));
-        if (hr != 0)
+        if (DwmSetWindowAttribute(form.Handle, DwmwaSystemBackdropType, ref backdrop, sizeof(int)) != 0)
         {
             backdrop = DwmsbtMainWindow;
             _ = DwmSetWindowAttribute(form.Handle, DwmwaSystemBackdropType, ref backdrop, sizeof(int));
         }
-
-        // Windows 10/older fallback: apply Acrylic blur behind the form background only.
-        if (!TryApplyAccentPolicy(form.Handle, AccentEnableAcrylicBlurBehind, Color.FromArgb(18, 21, 26), 10))
-        {
-            _ = TryApplyAccentPolicy(form.Handle, AccentEnableBlurBehind, Color.FromArgb(18, 21, 26), 150);
-        }
-
-        // Fallback for older Windows 11 builds where system backdrop exists but acrylic fails.
-        var enable = 1;
-        _ = DwmSetWindowAttribute(form.Handle, DwmwaMicaEffect, ref enable, sizeof(int));
-    }
-
-    private static bool TryApplyAccentPolicy(nint hwnd, int accentState, Color tint, byte alpha)
-    {
-        var policy = new AccentPolicy
-        {
-            AccentState = accentState,
-            AccentFlags = 2,
-            GradientColor = ToAbgr(tint, alpha),
-            AnimationId = 0
-        };
-
-        var policySize = Marshal.SizeOf<AccentPolicy>();
-        var policyPointer = Marshal.AllocHGlobal(policySize);
-        try
-        {
-            Marshal.StructureToPtr(policy, policyPointer, false);
-            var data = new WindowCompositionAttributeData
-            {
-                Attribute = WcaAccentPolicy,
-                Data = policyPointer,
-                SizeOfData = policySize
-            };
-
-            return SetWindowCompositionAttribute(hwnd, ref data) != 0;
-        }
-        finally
-        {
-            Marshal.FreeHGlobal(policyPointer);
-        }
-    }
-
-    private static int ToAbgr(Color color, byte alpha)
-    {
-        return unchecked((int)(((uint)alpha << 24) | ((uint)color.B << 16) | ((uint)color.G << 8) | color.R));
     }
 
     public static Button CreateButton(string text, Color backColor, Color foreColor)

@@ -73,6 +73,7 @@ internal static class ClassBlocksStore
         public long? SpellId { get; set; }
         public List<long> SpellIds { get; } = new();
         public int? MaxApps { get; set; }
+        public string? Filter { get; set; }
     }
 
     public sealed class SpellEntry
@@ -480,7 +481,8 @@ internal static class ClassBlocksStore
             var entry = new AuraEntry
             {
                 Name = aura.GetString("name")?.Trim() ?? string.Empty,
-                MaxApps = aura.GetNumber("maxApps") is { } maxApps ? (int)maxApps : null
+                MaxApps = aura.GetNumber("maxApps") is { } maxApps ? (int)maxApps : null,
+                Filter = aura.GetString("filter")?.Trim()
             };
             if (aura.GetNumber("spellId") is { } sid)
             {
@@ -719,6 +721,10 @@ internal static class ClassBlocksStore
         if (aura.MaxApps is { } maxApps)
         {
             sb.Append(" maxApps = ").Append(maxApps).Append(',');
+        }
+        if (!string.IsNullOrWhiteSpace(aura.Filter))
+        {
+            sb.Append(" filter = \"").Append(Escape(aura.Filter)).Append("\",");
         }
 
         sb.AppendLine(" },");

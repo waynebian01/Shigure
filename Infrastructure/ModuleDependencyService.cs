@@ -247,7 +247,8 @@ internal sealed class ModuleDependencyService
         Name = entry.Name,
         SpellId = entry.SpellId,
         SpellIds = new List<long>(entry.SpellIds),
-        MaxApps = entry.MaxApps
+        MaxApps = entry.MaxApps,
+        Filter = entry.Filter
     };
 
     private static ModuleMacroEntrySnapshot CaptureMacro(ClassMacrosStore.ArrayEntry entry) => new()
@@ -334,7 +335,8 @@ internal sealed class ModuleDependencyService
             {
                 Name = entry.Name,
                 SpellId = entry.SpellId,
-                MaxApps = entry.MaxApps
+                MaxApps = entry.MaxApps,
+                Filter = entry.Filter
             };
             added.SpellIds.AddRange(entry.SpellIds);
             local.Add(added);
@@ -675,6 +677,7 @@ internal sealed class ModuleDependencyService
     private static bool AuraEquals(ClassBlocksStore.AuraEntry left, ModuleAuraSnapshot right)
         => left.SpellId == right.SpellId
            && left.MaxApps == right.MaxApps
+           && string.Equals(left.Filter, right.Filter, StringComparison.Ordinal)
            && left.SpellIds.SequenceEqual(right.SpellIds);
 
     private static bool SpellEquals(ClassBlocksStore.SpellEntry left, ModuleSpellSnapshot right)

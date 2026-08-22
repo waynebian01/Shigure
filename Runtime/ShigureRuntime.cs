@@ -112,8 +112,12 @@ public sealed class ShigureRuntime
             {
                 DrainPendingCommands();
                 var now = _timeProvider.GetUtcNow();
-                var pressed = _triggerKeyState.IsPressed(toggleVk.Value);
-                var rising = pressed && !previousPressed && now - lastToggleAt >= TimeSpan.FromMilliseconds(120);
+                var keySample = _triggerKeyState.Read(toggleVk.Value);
+                var pressed = keySample.IsDown;
+                // 低位表示自上次查询以来曾经按下过。它能捕获短促的侧键点击，
+                // 即使按下和松开都发生在本循环的采样间隔内。
+                var rising = (pressed && !previousPressed || keySample.WasPressed)
+                    && now - lastToggleAt >= TimeSpan.FromMilliseconds(120);
                 var falling = !pressed && previousPressed;
 
                 if (rising)

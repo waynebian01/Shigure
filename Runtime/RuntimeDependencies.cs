@@ -50,5 +50,7 @@ internal interface ITriggerKeyState
 {
     int? ResolveVirtualKey(string keyName);
 
-    bool IsPressed(int virtualKey);
+    TriggerKeySample Read(int virtualKey);
 }
+
+internal readonly record struct TriggerKeySample(bool IsDown, bool WasPressed);

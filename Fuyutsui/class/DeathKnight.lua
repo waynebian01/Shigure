@@ -152,11 +152,15 @@ Fuyutsui.ClassBlocks = {
         },
         auras = {
             player = {
-                { name = "白霜", spellId = 59057, },
+                { name = "白霜", spellIds = { 59057, 59052 }, },
                 { name = "冰霜之柱", spellId = 51271, },
-                { name = "杀戮机器", spellId = 51128, },
-                { name = "冰龙吐息", spellId = 12449658, },
+                { name = "杀戮机器", spellIds = { 51128, 51124 }, },
+                { name = "冰龙吐息", spellId = 1249658, },
                 { name = "黑暗援助", spellId = 101568, },
+                { name = "霜巢之眷", spellId = 1265639, },
+                { name = "破灭", spellIds = { 441426, 447954, 441424, 441416, 441378, 447954 }, },
+                { name = "冷酷严冬", spellId = 1233152, },
+                { name = "强效打击", spellId = 1269300, },
             },
         },
         spells = {
@@ -326,7 +330,7 @@ Fuyutsui.spellsList = {
     [49143]   = { index = 30, name = "冰霜打击" },
     [49184]   = { index = 31, name = "凛风冲击" },
     [207230]  = { index = 32, name = "冰霜之镰" },
-    [1249685] = { index = 33, name = "冰龙吐息" },
+    [1249658] = { index = 33, name = "冰龙吐息" },
     [49020]   = { index = 34, name = "湮灭" },
     [47568]   = { index = 35, name = "符文武器增效" },
     [316239]  = { index = 36, name = "符文打击" },

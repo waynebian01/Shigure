@@ -272,6 +272,18 @@ def apply_path_renames(
         completed_renames.append((old_path, new_path))
 
 
+def copy_to_build_environment(root: Path, script_path: Path, build_root: Path) -> None:
+    resolved_root = root.resolve()
+
+    def ignore_files(directory: str, names: list[str]) -> set[str]:
+        ignored = {name for name in names if name in SKIP_DIRS}
+        if Path(directory).resolve() == resolved_root:
+            ignored.add(script_path.name)
+        return ignored
+
+    shutil.copytree(root, build_root, ignore=ignore_files, dirs_exist_ok=True)
+
+
 def get_required_dotnet_sdk(project_path: Path) -> tuple[str, int]:
     result = read_text(project_path)
     if result is None:
@@ -400,7 +412,13 @@ def ensure_dotnet_sdk(project_path: Path) -> str:
     return dotnet_command
 
 
-def publish(root: Path, new_name: str, dotnet_command: str) -> None:
+def publish(
+    build_root: Path,
+    new_name: str,
+    dotnet_command: str,
+    output_dir: Path,
+) -> None:
+    output_dir.mkdir(parents=True, exist_ok=True)
     command = [
         dotnet_command,
         "publish",
@@ -414,13 +432,13 @@ def publish(root: Path, new_name: str, dotnet_command: str) -> None:
         "-p:PublishSingleFile=true",
         "-p:EnableCompressionInSingleFile=true",
         "-o",
-        ".\\artifacts\\publish\\win-x64",
+        str(output_dir),
     ]
 
     print()
     print("开始执行发布命令:")
     print(subprocess.list2cmdline(command))
-    subprocess.run(command, cwd=root, check=True)
+    subprocess.run(command, cwd=build_root, check=True)
 
 
 def open_publish_folder(root: Path) -> None:
@@ -446,11 +464,10 @@ def main() -> int:
         return 1
 
     if should_rename:
-        backups = collect_replacements(root, script_path)
-        preview_files = list(backups)
-        rename_plan = collect_path_renames(root, script_path, new_name)
+        preview_files = list(collect_replacements(root, script_path))
+        preview_rename_plan = collect_path_renames(root, script_path, new_name)
         try:
-            validate_path_renames(root, rename_plan)
+            validate_path_renames(root, preview_rename_plan)
         except (FileExistsError, ValueError) as exc:
             print(exc)
             return 1
@@ -460,19 +477,18 @@ def main() -> int:
             f"将把文本和路径中的 {OLD_NAME}、{ADDON_OLD_NAME} 按原文大小写形式 "
             f"替换为 {new_name}，并把 /fu 替换为 /{new_name[:2].lower()}。"
         )
-        print(f"预计永久修改 {len(preview_files)} 个文本文件，打包结束后不会恢复。")
+        print(f"将在隔离副本中修改 {len(preview_files)} 个文本文件。")
         for path in preview_files:
             print(f"- {path.relative_to(root)}")
-        print(f"预计永久重命名 {len(rename_plan)} 个文件或目录，打包结束后不会恢复。")
-        for old_path, new_path in rename_plan:
+        print(f"将在隔离副本中重命名 {len(preview_rename_plan)} 个文件或目录。")
+        for old_path, new_path in preview_rename_plan:
             print(f"- {old_path.relative_to(root)} -> {new_path.relative_to(root)}")
     else:
-        backups = {}
-        rename_plan = []
         print()
-        print(f"新名称和原名称相同，将直接使用 {OLD_NAME}.csproj 打包。")
+        print(f"新名称和原名称相同，将在隔离副本中使用 {OLD_NAME}.csproj 打包。")
 
     print(f"公司名称将设置为: {company_name}")
+    print("所有名称修改仅发生在临时构建环境，不会修改当前项目源码。")
 
     confirm = input("确认继续？输入 Y/y 继续，其它任意内容取消: ").strip()
     if confirm.casefold() != "y":
@@ -483,37 +499,51 @@ def main() -> int:
         dotnet_command = ensure_dotnet_sdk(source_csproj)
     except BaseException as exc:
         if isinstance(exc, KeyboardInterrupt):
-            print("依赖安装已中断，项目名称尚未修改。")
+            print("依赖安装已中断，当前项目未被修改。")
         else:
-            print(f"依赖检测或安装失败，项目名称尚未修改: {exc}")
+            print(f"依赖检测或安装失败，当前项目未被修改: {exc}")
         return 1
 
-    completed_renames: list[tuple[Path, Path]] = []
     try:
-        if should_rename:
-            apply_replacements(backups, new_name)
-            apply_path_renames(rename_plan, completed_renames)
-
+        with tempfile.TemporaryDirectory(prefix="shigure-build-") as temp_dir:
+            build_root = Path(temp_dir) / "project"
             print()
-            print(f"名称替换完成，已永久修改 {len(backups)} 个文本文件。")
-            print(f"已重命名 {len(completed_renames)} 个文件或目录。")
+            print(f"正在创建临时构建环境: {build_root}")
+            copy_to_build_environment(root, script_path, build_root)
 
-        project_path = root / f"{new_name}.csproj"
-        update_company_name(project_path, company_name)
-        print(f"公司名称修改完成: {company_name}")
+            build_script_path = build_root / script_path.name
+            if should_rename:
+                build_backups = collect_replacements(build_root, build_script_path)
+                build_rename_plan = collect_path_renames(
+                    build_root,
+                    build_script_path,
+                    new_name,
+                )
+                validate_path_renames(build_root, build_rename_plan)
 
-        publish(root, new_name, dotnet_command)
+                completed_renames: list[tuple[Path, Path]] = []
+                apply_replacements(build_backups, new_name)
+                apply_path_renames(build_rename_plan, completed_renames)
+
+                print(f"隔离副本中已修改 {len(build_backups)} 个文本文件。")
+                print(f"隔离副本中已重命名 {len(completed_renames)} 个文件或目录。")
+
+            project_path = build_root / f"{new_name}.csproj"
+            update_company_name(project_path, company_name)
+            print(f"隔离副本中的公司名称已设置为: {company_name}")
+
+            output_dir = root / "artifacts" / "publish" / "win-x64"
+            publish(build_root, new_name, dotnet_command, output_dir)
     except BaseException as exc:
         if isinstance(exc, KeyboardInterrupt):
             print("执行已中断。")
         else:
             print(f"执行失败: {exc}")
-        if should_rename:
-            print("名称替换已保留，不会恢复。")
+        print("临时构建环境已清理，当前项目源码未被修改。")
         return 1
 
     print()
-    print("打包完成。")
+    print("打包完成，临时构建环境已自动清理，当前项目源码未被修改。")
     open_publish_folder(root)
     return 0
 

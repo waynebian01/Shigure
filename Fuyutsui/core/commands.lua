@@ -52,15 +52,6 @@ function Fuyutsui:SwitchAoeMode()
     )
 end
 
-function Fuyutsui:SwitchDpsMode()
-    self:SwitchCharFlag(
-        "dpsMode",
-        "|cff00ff00[Fuyutsui]|r 输出模式已修改为|cff00ff00官方一键辅助|r",
-        "|cff00ff00[Fuyutsui]|r 输出模式已修改为|cff00ff00手动编写逻辑|r",
-        "输出模式"
-    )
-end
-
 function Fuyutsui:SwitchPotion()
     self:SwitchCharFlag(
         "potion",
@@ -233,18 +224,6 @@ function Fuyutsui:SlashCommand(input, editbox)
         if not c then return end
         c.aoeMode = 1
         self:SwitchAoeMode()
-    elseif command == "dpsmode" then
-        if not c then return end
-        c.dpsMode = (c.dpsMode == 0) and 1 or 0
-        self:SwitchDpsMode()
-    elseif command == "dpsmode manual" then
-        if not c then return end
-        c.dpsMode = 1
-        self:SwitchDpsMode()
-    elseif command == "dpsmode assistant" then
-        if not c then return end
-        c.dpsMode = 0
-        self:SwitchDpsMode()
     elseif command == "potion" then
         if not c then return end
         c.potion = (c.potion == 0) and 1 or 0
@@ -309,9 +288,6 @@ function Fuyutsui:SlashCommand(input, editbox)
         print("切换AOE模式: /fu aoemode")    
         print("切换AOE为|cff00ff00自动|r: /fu aoemode auto")
         print("切换AOE为|cff00ff00单体|r: /fu aoemode aoe")
-        print("切换输出模式: /fu dpsmode")
-        print("切换输出模式为|cff00ff00手写逻辑|r: /fu dpsmode manual")
-        print("切换输出模式为|cff00ff00一键辅助|r: /fu dpsmode assistant")
         print("爆发药水开关: /fu potion")
         print("|cff00ff00开启|r药水: /fu potion on")
         print("|cffff0000关闭|r药水: /fu potion off")

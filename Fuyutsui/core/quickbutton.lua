@@ -8,10 +8,10 @@
     内缩填充。上层为爆发计时条 barLayer：轨道全透明、填充 SliderLeft 蓝，纯进度条无文字，
     显示值 clamp(BurstTime-now, 0, 15) 按比例收缩、归零隐藏（Hide 而非 SetWidth(0)，防 1px
     残段）；点击静默、按按键分派：左键 +15 秒 / 右键取消（now-1）/ 中键 +3600 秒长计时 /
-    其余按键 +15 秒，并同步写 c.cooldowns；悬停显示三行按键说明 Tooltip。下层为三个等宽切换
-    按钮（自动↔单体 / 手动↔官方 / 不喝药↔爆发药，BUTTON_BORDER=1 边框 + 内缩填充，悬停边框
+    其余按键 +15 秒，并同步写 c.cooldowns；悬停显示三行按键说明 Tooltip。下层为两个等宽切换
+    按钮（自动↔单体 / 不喝药↔爆发药，BUTTON_BORDER=1 边框 + 内缩填充，悬停边框
     亮、按下填充暗，GameFontHighlightSmall 取字体文件/阴影、字号 12），点击 = 翻转配置属性 +
-    SwitchAoeMode/SwitchDpsMode/SwitchPotion（打印提示 + 刷新 stateblock 像素），按钮显示态
+    SwitchAoeMode/SwitchPotion（打印提示 + 刷新 stateblock 像素），按钮显示态
     完全由 RefreshQuickToggleAppearance 按 GetCharConfig() 派生（不引入 local isOn 机制）。
     爆发状态模型：Fuyutsui.BurstTime（GetTime 纪元时间戳）为命名空间级唯一真相、初始 0 = 未
     开启；独立匿名 driver frame（UIParent 顶层常驻，与面板可见性解耦——/fu hide 隐藏面板期间
@@ -311,15 +311,6 @@ function Fuyutsui:InitQuickToggleButton()
             end,
         },
         {
-            offText = "手 动", offColor = StateGreen,
-            onText = "官 方", onColor = StateBlue,
-            isOn = function(c) return (c.dpsMode or 0) == 0 end,
-            applyClick = function(c)
-                c.dpsMode = (c.dpsMode == 0) and 1 or 0
-                if Fuyutsui.SwitchDpsMode then Fuyutsui:SwitchDpsMode() end
-            end,
-        },
-        {
             offText = "不喝药", offColor = StateYellow,
             onText = "爆发药", onColor = StateGreen,
             isOn = function(c) return (c.potion or 0) == 1 end,
@@ -331,7 +322,7 @@ function Fuyutsui:InitQuickToggleButton()
     }
 
     local prevButton -- 上一枚创建的按钮：用于把后续按钮依次锚在其右侧
-    local buttons = {} -- 三按钮数组（aoe/dps/potion 顺序），RefreshQuickToggleAppearance 逐项刷新显示态
+    local buttons = {} -- 两按钮数组（aoe/potion 顺序），RefreshQuickToggleAppearance 逐项刷新显示态
     for i, def in ipairs(buttonDefs) do
         local button = CreateFrame("Button", nil, buttonRow)
 

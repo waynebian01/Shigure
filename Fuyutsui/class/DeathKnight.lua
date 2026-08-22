@@ -326,7 +326,7 @@ Fuyutsui.spellsList = {
     [49143]   = { index = 30, name = "冰霜打击" },
     [49184]   = { index = 31, name = "凛风冲击" },
     [207230]  = { index = 32, name = "冰霜之镰" },
-    [1249685] = { index = 33, name = "冰龙吐息" },
+    [1249658] = { index = 33, name = "冰龙吐息" },
     [49020]   = { index = 34, name = "湮灭" },
     [47568]   = { index = 35, name = "符文武器增效" },
     [316239]  = { index = 36, name = "符文打击" },

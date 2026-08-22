@@ -832,6 +832,16 @@
         "step": "bar",
         "bar": 2,
         "type": "int"
+      },
+      "目标惊魂幻象层数": {
+        "step": "bar",
+        "bar": 3,
+        "type": "int"
+      },
+      "焦点惊魂幻象层数": {
+        "step": "bar",
+        "bar": 4,
+        "type": "int"
       }
     },
     "spells": {

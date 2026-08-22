@@ -242,7 +242,7 @@ internal static class FuyutsuiConfigConverter
         var aurasObject = new JsonObject();
         var playerAuraBarNames = new List<string>();
 
-        // auras：主色块按 player → target → focus；层数条仅 player.maxApps，且排在 spell 条之后
+        // auras：主色块按 player → target → focus；层数条按 player → target harmful → focus harmful，排在 spell 条之后
         if (spec.GetTable("auras") is { } auras)
         {
             var nested = auras.GetTable("player") is not null
@@ -251,22 +251,22 @@ internal static class FuyutsuiConfigConverter
 
             if (nested)
             {
-                AppendAuraList(auras.GetTable("player"), "player", aurasObject, ref index, playerAuraBarNames, warnings, label);
+                AppendAuraList(auras.GetTable("player"), "player", true, aurasObject, ref index, playerAuraBarNames, warnings, label);
                 if (auras.GetTable("target") is { } target)
                 {
-                    AppendAuraList(target.GetTable("harmful"), "target", aurasObject, ref index, playerAuraBarNames, warnings, label);
-                    AppendAuraList(target.GetTable("helpful"), "target", aurasObject, ref index, playerAuraBarNames, warnings, label);
+                    AppendAuraList(target.GetTable("harmful"), "target", true, aurasObject, ref index, playerAuraBarNames, warnings, label);
+                    AppendAuraList(target.GetTable("helpful"), "target", false, aurasObject, ref index, playerAuraBarNames, warnings, label);
                 }
 
                 if (auras.GetTable("focus") is { } focus)
                 {
-                    AppendAuraList(focus.GetTable("harmful"), "focus", aurasObject, ref index, playerAuraBarNames, warnings, label);
-                    AppendAuraList(focus.GetTable("helpful"), "focus", aurasObject, ref index, playerAuraBarNames, warnings, label);
+                    AppendAuraList(focus.GetTable("harmful"), "focus", true, aurasObject, ref index, playerAuraBarNames, warnings, label);
+                    AppendAuraList(focus.GetTable("helpful"), "focus", false, aurasObject, ref index, playerAuraBarNames, warnings, label);
                 }
             }
             else
             {
-                AppendAuraList(auras, "player", aurasObject, ref index, playerAuraBarNames, warnings, label);
+                AppendAuraList(auras, "player", true, aurasObject, ref index, playerAuraBarNames, warnings, label);
             }
         }
 
@@ -394,6 +394,7 @@ internal static class FuyutsuiConfigConverter
     private static void AppendAuraList(
         TableValue? list,
         string unit,
+        bool includeApplicationBars,
         JsonObject aurasObject,
         ref int index,
         List<string> playerAuraBarNames,
@@ -434,9 +435,9 @@ internal static class FuyutsuiConfigConverter
             aurasObject[fieldName] = Field(index, "int");
             index++;
 
-            if (aura.GetNumber("maxApps") is not null && unit == "player")
+            if (aura.GetNumber("maxApps") is not null && includeApplicationBars)
             {
-                playerAuraBarNames.Add(EnsureSuffix(name, "层数"));
+                playerAuraBarNames.Add(EnsureSuffix(fieldName, "层数"));
             }
         }
     }

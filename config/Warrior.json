@@ -354,6 +354,16 @@
         "step": "bar",
         "bar": 14,
         "type": "int"
+      },
+      "目标崩毁层数": {
+        "step": "bar",
+        "bar": 15,
+        "type": "int"
+      },
+      "焦点崩毁层数": {
+        "step": "bar",
+        "bar": 16,
+        "type": "int"
       }
     },
     "spells": {

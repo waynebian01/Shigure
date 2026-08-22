@@ -111,17 +111,17 @@ function Fuyutsui:LoadPlayerBlocks(specIndex)
 
         local nested = t.auras.player or t.auras.target or t.auras.focus
         if nested then
-            AppendAuraList(t.auras.player, "player", "HELPFUL")
+            AppendAuraList(t.auras.player, "player", "HELPFUL|PLAYER")
             if type(t.auras.target) == "table" then
-                AppendAuraList(t.auras.target.harmful, "target", "HARMFUL")
-                AppendAuraList(t.auras.target.helpful, "target", "HELPFUL")
+                AppendAuraList(t.auras.target.harmful, "target", "HARMFUL|PLAYER")
+                AppendAuraList(t.auras.target.helpful, "target", "HELPFUL|PLAYER")
             end
             if type(t.auras.focus) == "table" then
-                AppendAuraList(t.auras.focus.harmful, "focus", "HARMFUL")
-                AppendAuraList(t.auras.focus.helpful, "focus", "HELPFUL")
+                AppendAuraList(t.auras.focus.harmful, "focus", "HARMFUL|PLAYER")
+                AppendAuraList(t.auras.focus.helpful, "focus", "HELPFUL|PLAYER")
             end
         else
-            AppendAuraList(t.auras, "player", "HELPFUL")
+            AppendAuraList(t.auras, "player", "HELPFUL|PLAYER")
         end
     end
 

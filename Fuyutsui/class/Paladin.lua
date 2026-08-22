@@ -352,4 +352,5 @@ Fuyutsui.spellsList = {
     [6940]    = { index = 27, name = "牺牲祝福" },
     [391054]  = { index = 28, name = "代祷" },
     [633]     = { index = 29, name = "圣疗术" },
+    [35395]   = { index = 30, name = "十字军打击" }
 }

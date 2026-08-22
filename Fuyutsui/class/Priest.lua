@@ -385,4 +385,5 @@ Fuyutsui.spellsList = {
     [1262763] = { index = 33, name = "祈福" },
     [186263]  = { index = 34, name = "暗影愈合" },
     [472433]  = { index = 35, name = "福音" },
+    [528]     = { index = 36, name = "驱散魔法" },
 }

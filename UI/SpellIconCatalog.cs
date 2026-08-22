@@ -13,6 +13,10 @@ internal static class SpellIconCatalog
     private static readonly Dictionary<long, Image?> Icons = new();
     private static readonly Dictionary<string, Image?> NamedIcons = new(StringComparer.Ordinal);
     private static readonly Dictionary<string, long> SpellIdsByName = LoadSpellIdsByName();
+    private static readonly Dictionary<long, string> SpellIdIconResources = new()
+    {
+        [35395] = $"{typeof(SpellIconCatalog).Namespace}.Assets.Spell.crusader-strike.png"
+    };
     private static readonly Dictionary<string, string> NamedIconResources = new(StringComparer.Ordinal)
     {
         ["银月城生命药水"] = $"{typeof(SpellIconCatalog).Namespace}.Assets.Spell.silvermoon-city-health-potion.png",
@@ -21,7 +25,8 @@ internal static class SpellIconCatalog
         [ModuleSpecialActions.FailedSpell] = $"{typeof(SpellIconCatalog).Namespace}.Assets.Spell.auto-insert-spell.png",
         ["鲁莽药水"] = $"{typeof(SpellIconCatalog).Namespace}.Assets.Spell.recklessness-potion.jpg",
         ["圣光潜力"] = $"{typeof(SpellIconCatalog).Namespace}.Assets.Spell.lights-potential.jpg",
-        ["光注法力药水"] = $"{typeof(SpellIconCatalog).Namespace}.Assets.Spell.light-infused-mana-potion.jpg"
+        ["光注法力药水"] = $"{typeof(SpellIconCatalog).Namespace}.Assets.Spell.light-infused-mana-potion.jpg",
+        ["十字军打击"] = $"{typeof(SpellIconCatalog).Namespace}.Assets.Spell.crusader-strike.png"
     };
     private static readonly string LastRuleRowIconResource =
         $"{typeof(SpellIconCatalog).Namespace}.Assets.Spell.last-rule-row.png";
@@ -33,7 +38,8 @@ internal static class SpellIconCatalog
             return cached;
         }
 
-        var resourceName = $"{typeof(SpellIconCatalog).Namespace}.Assets.Spell.spell-{spellId}.jpg";
+        var resourceName = SpellIdIconResources.GetValueOrDefault(spellId)
+            ?? $"{typeof(SpellIconCatalog).Namespace}.Assets.Spell.spell-{spellId}.jpg";
         using var stream = typeof(SpellIconCatalog).Assembly.GetManifestResourceStream(resourceName);
         if (stream is null)
         {

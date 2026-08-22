@@ -102,14 +102,20 @@
                        "icon":  "spell_nature_removecurse",
                        "target":  "Spell/spell-475.jpg"
                    },
-                   {
-                       "spellId":  527,
-                       "name":  "纯净术",
-                       "icon":  "spell_holy_dispelmagic",
-                       "target":  "Spell/spell-527.jpg"
-                   },
-                   {
-                       "spellId":  585,
+                    {
+                        "spellId":  527,
+                        "name":  "纯净术",
+                        "icon":  "spell_holy_dispelmagic",
+                        "target":  "Spell/spell-527.jpg"
+                    },
+                    {
+                        "spellId":  528,
+                        "name":  "驱散魔法",
+                        "icon":  "spell_nature_nullifydisease",
+                        "target":  "Spell/spell-528.jpg"
+                    },
+                    {
+                        "spellId":  585,
                        "name":  "惩击",
                        "icon":  "spell_holy_holysmite",
                        "target":  "Spell/spell-585.jpg"

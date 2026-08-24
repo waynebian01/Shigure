@@ -37,6 +37,11 @@ public sealed class StatusForm : Form
     private const int AboutWatermarkSize = 440;
     private const int AboutWatermarkTopMargin = 16;
     private const float AboutWatermarkOpacity = 0.08F;
+    private const int LogicalMinimumWidth = 1040;
+    private const int LogicalMinimumHeight = 640;
+    private const int LogicalDefaultWidth = 1280;
+    private const int LogicalDefaultHeight = 800;
+    private const int LogicalWindowMargin = 80;
 
     private readonly List<(SettingsNavButton Button, Control View, SettingsPage Page)> _navItems = new();
     private readonly Dictionary<ListView, Label> _listCounts = new();
@@ -71,20 +76,25 @@ public sealed class StatusForm : Form
     protected override void OnHandleCreated(EventArgs e)
     {
         base.OnHandleCreated(e);
+        UpdateScaledWindowMetrics();
         UiTheme.ApplyDarkTitleBar(this);
     }
 
     protected override void OnLoad(EventArgs e)
     {
         base.OnLoad(e);
+        UpdateScaledWindowMetrics();
         if (_hasKnownBounds)
         {
             return;
         }
 
+        var defaultSize = GetScaledLogicalSize(LogicalDefaultWidth, LogicalDefaultHeight);
+        var margin = ScaleLogicalPixels(LogicalWindowMargin);
         var workingArea = Screen.FromControl(this).WorkingArea;
-        var targetWidth = Math.Min(1280, Math.Max(MinimumSize.Width, workingArea.Width - 80));
-        var targetHeight = Math.Min(800, Math.Max(MinimumSize.Height, workingArea.Height - 80));
+        var effectiveMinimum = GetScaledLogicalSize(LogicalMinimumWidth, LogicalMinimumHeight);
+        var targetWidth = Math.Min(defaultSize.Width, Math.Max(effectiveMinimum.Width, workingArea.Width - margin));
+        var targetHeight = Math.Min(defaultSize.Height, Math.Max(effectiveMinimum.Height, workingArea.Height - margin));
         Size = new Size(targetWidth, targetHeight);
         Location = new Point(
             workingArea.Left + Math.Max(0, (workingArea.Width - Width) / 2),
@@ -103,14 +113,38 @@ public sealed class StatusForm : Form
         base.OnFormClosing(e);
     }
 
+    protected override void OnVisibleChanged(EventArgs e)
+    {
+        base.OnVisibleChanged(e);
+        if (Visible)
+        {
+            EnsureBoundsInWorkingArea(centerIfNotVisible: true);
+        }
+    }
+
+    protected override void OnDpiChanged(DpiChangedEventArgs e)
+    {
+        base.OnDpiChanged(e);
+        UpdateScaledWindowMetrics();
+
+        if (WindowState == FormWindowState.Normal)
+        {
+            Bounds = e.SuggestedRectangle;
+            EnsureBoundsInWorkingArea(centerIfNotVisible: false);
+        }
+
+        PerformLayout();
+        Invalidate(true);
+    }
+
     private void InitializeComponent()
     {
         SuspendLayout();
 
         Text = "设置";
         StartPosition = FormStartPosition.CenterScreen;
-        MinimumSize = new Size(1040, 640);
-        Size = new Size(1280, 800);
+        MinimumSize = new Size(LogicalMinimumWidth, LogicalMinimumHeight);
+        Size = new Size(LogicalDefaultWidth, LogicalDefaultHeight);
         BackColor = UiTheme.Background;
         ForeColor = UiTheme.Text;
         ShowInTaskbar = false;
@@ -548,8 +582,9 @@ public sealed class StatusForm : Form
         }
 
         var workingArea = Screen.FromRectangle(requestedBounds).WorkingArea;
-        var width = Math.Min(Math.Max(MinimumSize.Width, bounds.Width), workingArea.Width);
-        var height = Math.Min(Math.Max(MinimumSize.Height, bounds.Height), workingArea.Height);
+        var effectiveMinimum = GetScaledLogicalSize(LogicalMinimumWidth, LogicalMinimumHeight);
+        var width = Math.Min(Math.Max(effectiveMinimum.Width, bounds.Width), workingArea.Width);
+        var height = Math.Min(Math.Max(effectiveMinimum.Height, bounds.Height), workingArea.Height);
         var restoredBounds = new Rectangle(
             Math.Clamp(bounds.X, workingArea.Left, workingArea.Right - width),
             Math.Clamp(bounds.Y, workingArea.Top, workingArea.Bottom - height),
@@ -560,6 +595,55 @@ public sealed class StatusForm : Form
         Bounds = restoredBounds;
         _hasKnownBounds = true;
     }
+
+    private void EnsureBoundsInWorkingArea(bool centerIfNotVisible)
+    {
+        if (!IsHandleCreated || WindowState != FormWindowState.Normal)
+        {
+            return;
+        }
+
+        var currentBounds = Bounds;
+        var workingArea = Screen.FromRectangle(currentBounds).WorkingArea;
+        var effectiveMinimum = GetScaledLogicalSize(LogicalMinimumWidth, LogicalMinimumHeight);
+        var width = Math.Min(Math.Max(effectiveMinimum.Width, currentBounds.Width), workingArea.Width);
+        var height = Math.Min(Math.Max(effectiveMinimum.Height, currentBounds.Height), workingArea.Height);
+        var adjustedBounds = new Rectangle(currentBounds.X, currentBounds.Y, width, height);
+
+        if (centerIfNotVisible && !UiCacheStore.IsBoundsVisible(adjustedBounds))
+        {
+            adjustedBounds.X = workingArea.Left + Math.Max(0, (workingArea.Width - width) / 2);
+            adjustedBounds.Y = workingArea.Top + Math.Max(0, (workingArea.Height - height) / 2);
+        }
+        else
+        {
+            adjustedBounds.X = Math.Clamp(adjustedBounds.X, workingArea.Left, workingArea.Right - width);
+            adjustedBounds.Y = Math.Clamp(adjustedBounds.Y, workingArea.Top, workingArea.Bottom - height);
+        }
+
+        if (Bounds != adjustedBounds)
+        {
+            Bounds = adjustedBounds;
+        }
+    }
+
+    private void UpdateScaledWindowMetrics()
+    {
+        var scaledMinimum = GetScaledLogicalSize(LogicalMinimumWidth, LogicalMinimumHeight);
+        if (MinimumSize != scaledMinimum)
+        {
+            MinimumSize = scaledMinimum;
+        }
+    }
+
+    private int ScaleLogicalPixels(int logicalPixels)
+    {
+        var dpi = DeviceDpi > 0 ? DeviceDpi : 96;
+        return Math.Max(1, (int)Math.Round(logicalPixels * dpi / 96F));
+    }
+
+    private Size GetScaledLogicalSize(int logicalWidth, int logicalHeight)
+        => new(ScaleLogicalPixels(logicalWidth), ScaleLogicalPixels(logicalHeight));
 
     internal bool HasKnownBounds => _hasKnownBounds || Visible;
 

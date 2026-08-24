@@ -1,4 +1,4 @@
-﻿using System.Drawing;
+using System.Drawing;
 
 namespace Shigure;
 
@@ -188,12 +188,33 @@ public sealed class MainForm : Form, IMessageFilter
     protected override async void OnShown(EventArgs e)
     {
         base.OnShown(e);
+
+        // 亚克力背景首次合成时，子控件(标题/开启关闭/设置/关闭按钮)可能未被绘制，
+        // 表现为只有图标(PictureBox)可见、其余控件需截图触发重绘后才出现。
+        // 此处强制一次全量重绘以修正初始空白。
+        ForceRepaintAfterShown();
+
         var dependenciesUpdated = await ImportModuleDependenciesAsync(reloadStore: true, showFeedback: true);
         if (!dependenciesUpdated)
         {
             await SynchronizeAddonAtStartupAsync();
         }
         await StartRuntimeAsync();
+        ForceRepaintAfterShown();
+    }
+
+    private void ForceRepaintAfterShown()
+    {
+        if (!IsHandleCreated)
+        {
+            return;
+        }
+
+        BeginInvoke(() =>
+        {
+            Invalidate(true);
+            Update();
+        });
     }
 
     private Task ReloadModulesWithDependenciesAsync()
@@ -435,6 +456,7 @@ public sealed class MainForm : Form, IMessageFilter
         BackColor = Color.FromArgb(18, 21, 26);
         ForeColor = UiTheme.Text;
         Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
+        DoubleBuffered = true;
 
         var root = new Panel
         {

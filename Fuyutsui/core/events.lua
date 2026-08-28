@@ -27,7 +27,7 @@ function Fuyutsui:PLAYER_ENTERING_WORLD()
     state.mapID = C_Map.GetBestMapForUnit("player") or 0
     self:UpdateHolyArmaments(375576)
     self:UpdateReaverGlaive(204157)
-    self:UpdateVampiricStrike(55090,nil)
+    self:UpdateVampiricStrike(55090, C_Spell.GetOverrideSpell(55090))
     self:UpdateHeroTalent()
     self:GetMountsInfo()
     self:UpdateChargedComboPoints()

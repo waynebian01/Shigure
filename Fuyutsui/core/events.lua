@@ -27,6 +27,7 @@ function Fuyutsui:PLAYER_ENTERING_WORLD()
     state.mapID = C_Map.GetBestMapForUnit("player") or 0
     self:UpdateHolyArmaments(375576)
     self:UpdateReaverGlaive(204157)
+    self:UpdateVampiricStrike(55090,nil)
     self:UpdateHeroTalent()
     self:GetMountsInfo()
     self:UpdateChargedComboPoints()
@@ -321,6 +322,12 @@ function Fuyutsui:SPELL_UPDATE_ICON(_, spellID)
     self:UpdateHolyArmaments(spellID)
     self:UpdateReaverGlaive(spellID)
     self:UpdateHeroicStrike(spellID)
+end
+
+
+function Fuyutsui:COOLDOWN_VIEWER_SPELL_OVERRIDE_UPDATED(_, baseSpellID, overrideSpellID)
+    if issecretvalue(overrideSpellID) then return end
+    self:UpdateVampiricStrike(baseSpellID, overrideSpellID)
 end
 
 local rosterTimer

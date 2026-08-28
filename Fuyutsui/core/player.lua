@@ -328,6 +328,17 @@ function Fuyutsui:UpdateReaverGlaive(spellID) -- 收割者战刃
     end
 end
 
+function Fuyutsui:UpdateVampiricStrike(baseSpellID, overrideSpellID) -- 吸血鬼打击
+    if not baseSpellID or baseSpellID ~= 55090 then return end
+    if overrideSpellID == 433895 then
+        state.vampiricStrike = 1 / 255
+        self:UpdateStateBlock("状态", "吸血鬼打击")
+    else
+        state.vampiricStrike = 0
+        self:UpdateStateBlock("状态", "吸血鬼打击")
+    end
+end
+
 local heroicStrikeTimer = nil
 
 function Fuyutsui:UpdateHeroicStrike(spellID) -- 英勇打击

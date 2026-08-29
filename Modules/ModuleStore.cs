@@ -838,6 +838,12 @@ public static class ModuleLogic
             }
 
             var step = BuildStep(module, rule, hotkey, actionSpell);
+            // SimC：if 命中之后还要 ready()；放不出（没键/冷却/充能）就看下一行，绝不空按占住循环。
+            if (!ActionReadiness.CanExecute(state, actionSpell, hotkey))
+            {
+                continue;
+            }
+
             info["命中条件"] = string.IsNullOrWhiteSpace(rule.Condition) ? "始终" : rule.Condition;
             info["动作技能"] = string.IsNullOrWhiteSpace(actionSpell) ? "-" : actionSpell;
             info["宏条件"] = string.IsNullOrWhiteSpace(resolvedMacroCondition)

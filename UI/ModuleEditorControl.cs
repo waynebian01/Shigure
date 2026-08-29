@@ -107,7 +107,7 @@ public sealed class ModuleEditorControl : UserControl
         _fieldCatalog = ConditionFieldCatalog.Load(baseDirectory);
         _keymapCatalog = KeymapCatalog.Load(baseDirectory);
         InitializeComponent();
-        SpellIconCatalog.IconAvailable += OnSpellIconAvailable;
+        SpellIconCatalog.CatalogChanged += OnSpellIconCatalogChanged;
         LoadModules();
     }
 
@@ -117,7 +117,7 @@ public sealed class ModuleEditorControl : UserControl
         {
             CloseRulesComboDropDown();
             CloseAdjustmentComboDropDown();
-            SpellIconCatalog.IconAvailable -= OnSpellIconAvailable;
+            SpellIconCatalog.CatalogChanged -= OnSpellIconCatalogChanged;
         }
 
         base.Dispose(disposing);
@@ -184,7 +184,12 @@ public sealed class ModuleEditorControl : UserControl
             Font,
             index => index >= 0 && index < _modules.Count
                 ? (_modules[index].Match.ClassId, _modules[index].Match.SpecId)
-                : (null, null));
+                : (null, null),
+            itemForeColorSelector: index => index >= 0
+                                               && index < _modules.Count
+                                               && _moduleStore.HasImportIssue(_modules[index].Id)
+                ? UiTheme.Danger
+                : null);
         _moduleList.BackColor = UiTheme.SurfaceRaised;
         _moduleList.SelectedIndexChanged += (_, _) => SelectModule(_moduleList.SelectedIndex);
         sidebar.Controls.Add(_moduleList, 0, 0);
@@ -1168,22 +1173,21 @@ public sealed class ModuleEditorControl : UserControl
         }
     }
 
-    private void OnSpellIconAvailable(long spellId)
+    private void OnSpellIconCatalogChanged()
     {
         if (IsDisposed || Disposing || !IsHandleCreated)
         {
             return;
         }
 
-        BeginInvoke((Action)(() =>
+        if (InvokeRequired)
         {
-            if (IsDisposed || Disposing)
-            {
-                return;
-            }
+            BeginInvoke(OnSpellIconCatalogChanged);
+            return;
+        }
 
-            RefreshRuleSpellIcons();
-        }));
+        RefreshRuleSpellIcons();
+        _rulesGrid.Invalidate();
     }
 
     private void ReloadCurrentClassSpellIds()
@@ -3172,7 +3176,7 @@ public sealed class ModuleEditorControl : UserControl
         {
             _moduleStore.Reload();
         }
-        _modules = _moduleStore.GetModules().ToList();
+        _modules = _moduleStore.GetModulesForDisplay().ToList();
         _moduleList.Items.Clear();
         foreach (var module in _modules)
         {

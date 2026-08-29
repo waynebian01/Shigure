@@ -132,6 +132,7 @@ local stateBlockGetters = {
         ["敌人数-有仇恨"] = function() return state.threatEnemyCount or 0 end,
         ["酒池"] = function() return state.staggerPercent or 0 end,
         ["神圣军备"] = function() return state.holyArmaments or 0 end,
+        ["吸血鬼打击"] = function() return state.VampiricStrike or 0 end,
         ["收割者战刃"] = function() return state.reaverGlaive or 0 end,
         ["英勇打击"] = function() return state.heroicStrike or 0 end,
         ["吸血鬼打击"] = function() return state.vampiricStrike or 0 end,

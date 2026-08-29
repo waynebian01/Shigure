@@ -145,13 +145,13 @@ end
 
 function Fuyutsui:UpdateUnitCastingOrChannelingInfo(unit)
     local obj = unitZHMap[unit]
-    if not obj then return end
-
-    self:UpdateStateBlock(obj, "施法(倒计时)")
-    self:UpdateStateBlock(obj, "施法(正计时)")
-    self:UpdateStateBlock(obj, "施法可打断")
-    self:UpdateStateBlock(obj, "引导")
-    self:UpdateStateBlock(obj, "引导可打断")
+    if obj then
+        self:UpdateStateBlock(obj, "施法(倒计时)")
+        self:UpdateStateBlock(obj, "施法(正计时)")
+        self:UpdateStateBlock(obj, "施法可打断")
+        self:UpdateStateBlock(obj, "引导")
+        self:UpdateStateBlock(obj, "引导可打断")
+    end
 end
 
 function Fuyutsui:UpdateUnitDeathStatus(unit)

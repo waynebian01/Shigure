@@ -120,9 +120,8 @@ Fuyutsui.ClassBlocks = {
             role = 2,
             dispel = 3,
             aura = {
-                [4] = { name = "救赎之魂", spellId = 27827, },
-                [5] = { name = "圣光道标", spellIds = { 53563, 156910, 1244893 }, },
-                [6] = { name = "永恒之火", spellId = 156322, },
+                [4] = { name = "圣光道标", spellIds = { 53563, 156910, 1244893 }, },
+                [5] = { name = "永恒之火", spellId = 156322, },
             },
         },
     },

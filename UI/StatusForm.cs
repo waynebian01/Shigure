@@ -353,7 +353,7 @@ public sealed class StatusForm : Form
         };
 
         AddNavGroup(nav, "常用");
-        AddNavItem(nav, SettingsPage.General, SettingsNavIcon.General, "通用", CreatePageShell("通用", "运行控制、配置同步与模块选择", _settingsHost));
+        AddNavItem(nav, SettingsPage.General, SettingsNavIcon.General, "通用", CreatePageShell("通用", "运行控制、配置同步、数据包与模块选择", _settingsHost));
         AddNavGroup(nav, "编辑");
         AddNavItem(nav, SettingsPage.Config, SettingsNavIcon.Config, "配置", CreatePageShell("配置", "编辑职业、专精和扫描字段", _configHost));
         AddNavItem(nav, SettingsPage.Macros, SettingsNavIcon.Macros, "宏", CreatePageShell("宏", "维护职业动态宏、静态宏与特殊宏", _macrosHost));
@@ -1194,7 +1194,7 @@ public sealed class StatusForm : Form
                 "队伍类型", "队伍人数", "首领战", "难度", "英雄天赋", "施法目标",
                 "施法技能", "敌人数量", "敌人数-无仇恨", "敌人数-有仇恨",
                 "施法(正计时)", "施法(倒计时)", "引导", "蓄力", "蓄力层数",
-                "酒池", "符文", "姿态", "神圣军备", "自律", "英勇打击", "收割者战刃"
+                "酒池", "符文", "姿态", "神圣军备", "自律", "英勇打击", "吸血鬼打击", "收割者战刃"
             ],
             150), 0, 0);
         fields.Controls.Add(CreateCommonFieldCard(

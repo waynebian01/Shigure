@@ -76,7 +76,7 @@ public sealed class ClassConfigEditorControl : UserControl
         _reloadButton = UiTheme.CreateButton("刷新", UiTheme.ButtonKind.Secondary);
         _saveButton = UiTheme.CreateButton("保存", UiTheme.ButtonKind.Primary);
         InitializeComponent();
-        SpellIconCatalog.IconAvailable += OnSpellIconAvailable;
+        SpellIconCatalog.CatalogChanged += OnSpellIconCatalogChanged;
         ReloadFromAddon();
     }
 
@@ -86,7 +86,7 @@ public sealed class ClassConfigEditorControl : UserControl
         {
             CloseStateComboDropDown();
             CloseSpellSuggestions();
-            SpellIconCatalog.IconAvailable -= OnSpellIconAvailable;
+            SpellIconCatalog.CatalogChanged -= OnSpellIconCatalogChanged;
         }
 
         base.Dispose(disposing);
@@ -2113,66 +2113,41 @@ public sealed class ClassConfigEditorControl : UserControl
         MarkDirty();
     }
 
-    private void OnSpellIconAvailable(long spellId)
+    private void OnSpellIconCatalogChanged()
     {
         if (IsDisposed || Disposing || !IsHandleCreated)
         {
             return;
         }
 
-        BeginInvoke((Action)(() =>
+        if (InvokeRequired)
         {
-            if (IsDisposed || Disposing)
+            BeginInvoke(OnSpellIconCatalogChanged);
+            return;
+        }
+
+        CloseSpellSuggestions();
+        foreach (var grid in new[] { _spellsGrid, _spellsListGrid })
+        {
+            foreach (DataGridViewRow row in grid.Rows)
             {
-                return;
+                if (!row.IsNewRow)
+                {
+                    UpdateSpellGridIcon(row);
+                }
             }
 
-            RefreshDownloadedIcons(_spellsGrid, spellId);
-            RefreshDownloadedIcons(_spellsListGrid, spellId);
-            RefreshDownloadedAuraIcons(spellId);
-        }));
-    }
+            grid.Invalidate();
+        }
 
-    private void RefreshDownloadedAuraIcons(long spellId)
-    {
         foreach (var grid in new[] { _aurasGrid, _groupAurasGrid })
         {
             foreach (DataGridViewRow row in grid.Rows)
             {
-                if (!row.IsNewRow && AuraRowUsesSpellId(row, spellId))
-                {
-                    UpdateAuraGridIcon(row);
-                }
+                UpdateAuraGridIcon(row);
             }
-        }
-    }
 
-    private static bool AuraRowUsesSpellId(DataGridViewRow row, long spellId)
-    {
-        if (long.TryParse(
-                row.Cells["SpellId"].Value?.ToString(),
-                NumberStyles.Integer,
-                CultureInfo.InvariantCulture,
-                out var primarySpellId)
-            && primarySpellId == spellId)
-        {
-            return true;
-        }
-
-        return ParseIdList(row.Cells["SpellIds"].Value?.ToString() ?? "").Contains(spellId);
-    }
-
-    private static void RefreshDownloadedIcons(DataGridView grid, long spellId)
-    {
-        foreach (DataGridViewRow row in grid.Rows)
-        {
-            if (!row.IsNewRow
-                && long.TryParse(row.Cells["SpellId"].Value?.ToString(), NumberStyles.Integer,
-                    CultureInfo.InvariantCulture, out var rowSpellId)
-                && rowSpellId == spellId)
-            {
-                UpdateSpellGridIcon(row);
-            }
+            grid.Invalidate();
         }
     }
 

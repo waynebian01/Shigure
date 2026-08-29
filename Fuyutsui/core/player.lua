@@ -315,11 +315,26 @@ function Fuyutsui:UpdateHolyArmaments(spellID) -- 神圣军备
     end
 end
 
+function Fuyutsui:UpdateVampiricStrike(spellID) -- 吸血鬼打击
+    if spellID == 206930 or spellID == 55090 then
+        local overrideSpellID1 = C_Spell.GetOverrideSpell(206930)
+        local overrideSpellID2 = C_Spell.GetOverrideSpell(55090)
+
+        if overrideSpellID1 == 433895 or overrideSpellID2 == 433895 then
+            state.VampiricStrike = 1 / 255
+            self:UpdateStateBlock("状态", "吸血鬼打击")
+        else
+            state.VampiricStrike = 0
+            self:UpdateStateBlock("状态", "吸血鬼打击")
+        end
+    end
+end
+
 function Fuyutsui:UpdateReaverGlaive(spellID) -- 收割者战刃
-    if not spellID or spellID ~= 204157 then return end
+    if not spellID or spellID ~= 206930 then return end
     local overrideSpellID = C_Spell.GetOverrideSpell(204157)
 
-    if overrideSpellID == 1283344 then
+    if overrideSpellID == 433895 then
         state.reaverGlaive = 1 / 255
         self:UpdateStateBlock("状态", "收割者战刃")
     else

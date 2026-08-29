@@ -3,9 +3,6 @@ from __future__ import annotations
 import os
 import re
 import shutil
-import hashlib
-import json
-import struct
 import subprocess
 import sys
 import tempfile
@@ -19,6 +16,7 @@ ADDON_OLD_NAME = "Fuyutsui"
 OLD_NAMES = (OLD_NAME, ADDON_OLD_NAME)
 PROTECTED_TEXTS = (
     "https://www.shigure.club",
+    "https://api.github.com/repos/waynebian01/Shigure/releases/latest",
     "访问 Shigure 官网，浏览并获取可用模块",
 )
 
@@ -75,14 +73,6 @@ TARGET_FRAMEWORK_PATTERN = re.compile(
     re.IGNORECASE,
 )
 DOTNET_INSTALL_SCRIPT_URL = "https://dot.net/v1/dotnet-install.ps1"
-SPELL_ICON_PACKAGE_MAGIC = b"SHGICN1\0"
-SPELL_ICON_PACKAGE_VERSION = 1
-SPELL_ICON_PACKAGE_HEADER = struct.Struct("<8sIIIIqqqq")
-SPELL_ICON_PACKAGE_SPELL_RECORD = struct.Struct("<qI")
-SPELL_ICON_PACKAGE_ICON_RECORD = struct.Struct("<qI")
-SPELL_ICON_PACKAGE_NAME_RECORD = struct.Struct("<qI")
-
-
 def configure_console() -> None:
     for stream in (sys.stdout, sys.stderr):
         if hasattr(stream, "reconfigure"):
@@ -287,149 +277,17 @@ def copy_to_build_environment(root: Path, script_path: Path, build_root: Path) -
 
     def ignore_files(directory: str, names: list[str]) -> set[str]:
         ignored = {name for name in names if name in SKIP_DIRS}
-        if Path(directory).resolve() == resolved_root:
+        resolved_directory = Path(directory).resolve()
+        if resolved_directory == resolved_root:
             ignored.add(script_path.name)
+        if resolved_directory == resolved_root / "Assets":
+            ignored.add("SpellIconManifest.json")
+            ignored.add("SpellIcons.shgpack")
+        if resolved_directory == resolved_root / "Assets" / "Spell":
+            ignored.update(name for name in names if name.startswith("icon-") and name.endswith(".jpg"))
         return ignored
 
     shutil.copytree(root, build_root, ignore=ignore_files, dirs_exist_ok=True)
-
-
-def build_spell_icon_package(build_root: Path) -> Path:
-    asset_root = (build_root / "Assets").resolve()
-    spell_root = (asset_root / "Spell").resolve()
-    manifest_path = asset_root / "SpellIconManifest.json"
-    output_path = asset_root / "SpellIcons.shgpack"
-
-    if not manifest_path.is_file():
-        raise FileNotFoundError(f"找不到法术图标清单: {manifest_path}")
-    if not spell_root.is_dir():
-        raise FileNotFoundError(f"找不到法术图标目录: {spell_root}")
-
-    with manifest_path.open("r", encoding="utf-8") as stream:
-        manifest = json.load(stream)
-
-    rows = manifest.get("spells")
-    if not isinstance(rows, list):
-        raise ValueError("法术图标清单缺少 spells 数组。")
-
-    spells: list[tuple[int, str, str]] = []
-    for row in rows:
-        if not isinstance(row, dict):
-            continue
-        spell_id = int(row.get("spellId", 0))
-        target = str(row.get("target", "")).strip().replace("\\", "/")
-        name = str(row.get("name", "")).strip()
-        if spell_id > 0 and target:
-            spells.append((spell_id, target, name))
-
-    spells.sort(key=lambda item: item[0])
-    if len(spells) < 100_000:
-        raise ValueError(f"法术图标清单记录过少: {len(spells)}")
-    if any(spells[index - 1][0] == spells[index][0] for index in range(1, len(spells))):
-        raise ValueError("法术图标清单包含重复 spellId。")
-
-    targets = sorted({target for _, target, _ in spells}, key=str.casefold)
-    if len(targets) < 10_000:
-        raise ValueError(f"法术图标数量过少: {len(targets)}")
-    target_indices = {target: index for index, target in enumerate(targets)}
-
-    icon_paths: list[Path] = []
-    for target in targets:
-        icon_path = (asset_root / target).resolve()
-        if (
-            icon_path.parent != spell_root
-            or not icon_path.name.startswith("icon-")
-            or icon_path.suffix.casefold() != ".jpg"
-            or not icon_path.is_file()
-        ):
-            raise ValueError(f"无效或缺失的法术图标: {target}")
-        icon_paths.append(icon_path)
-
-    name_records: list[tuple[int, bytes]] = []
-    for spell_id, _, name in spells:
-        if not name:
-            continue
-        encoded = name.encode("utf-8")
-        if len(encoded) > 4096:
-            raise ValueError(f"法术名称异常过长: {spell_id}")
-        name_records.append((spell_id, encoded))
-
-    spell_map_offset = SPELL_ICON_PACKAGE_HEADER.size
-    icon_index_offset = (
-        spell_map_offset + len(spells) * SPELL_ICON_PACKAGE_SPELL_RECORD.size
-    )
-    name_index_offset = (
-        icon_index_offset + len(icon_paths) * SPELL_ICON_PACKAGE_ICON_RECORD.size
-    )
-    data_offset = name_index_offset + sum(
-        SPELL_ICON_PACKAGE_NAME_RECORD.size + len(name)
-        for _, name in name_records
-    )
-
-    icon_records: list[tuple[int, int]] = []
-    next_offset = data_offset
-    for icon_path in icon_paths:
-        length = icon_path.stat().st_size
-        if length < 512 or length > 10 * 1024 * 1024:
-            raise ValueError(f"图标文件大小异常: {icon_path.name} ({length})")
-        icon_records.append((next_offset, length))
-        next_offset += length
-
-    descriptor, temporary_name = tempfile.mkstemp(
-        prefix=f".{output_path.name}.",
-        suffix=".building",
-        dir=output_path.parent,
-    )
-    os.close(descriptor)
-    temporary_path = Path(temporary_name)
-    try:
-        with temporary_path.open("wb") as output:
-            output.write(SPELL_ICON_PACKAGE_HEADER.pack(
-                SPELL_ICON_PACKAGE_MAGIC,
-                SPELL_ICON_PACKAGE_VERSION,
-                len(spells),
-                len(icon_paths),
-                len(name_records),
-                spell_map_offset,
-                icon_index_offset,
-                name_index_offset,
-                data_offset,
-            ))
-            for spell_id, target, _ in spells:
-                output.write(SPELL_ICON_PACKAGE_SPELL_RECORD.pack(
-                    spell_id,
-                    target_indices[target],
-                ))
-            for offset, length in icon_records:
-                output.write(SPELL_ICON_PACKAGE_ICON_RECORD.pack(offset, length))
-            for spell_id, name in name_records:
-                output.write(SPELL_ICON_PACKAGE_NAME_RECORD.pack(spell_id, len(name)))
-                output.write(name)
-            for icon_path in icon_paths:
-                with icon_path.open("rb") as icon:
-                    shutil.copyfileobj(icon, output, length=1024 * 1024)
-
-        if temporary_path.stat().st_size != next_offset:
-            raise IOError(
-                f"法术图标数据包大小不一致: 预计 {next_offset}，"
-                f"实际 {temporary_path.stat().st_size}"
-            )
-        os.replace(temporary_path, output_path)
-    finally:
-        temporary_path.unlink(missing_ok=True)
-
-    digest = hashlib.sha256()
-    with output_path.open("rb") as package:
-        while chunk := package.read(1024 * 1024):
-            digest.update(chunk)
-
-    print(
-        "法术图标数据包生成完成: "
-        f"spellId={len(spells)}，图标={len(icon_paths)}，名称={len(name_records)}，"
-        f"大小={output_path.stat().st_size / 1024 / 1024:.2f} MiB，"
-        f"SHA-256={digest.hexdigest()}"
-    )
-    return output_path
 
 
 def get_required_dotnet_sdk(project_path: Path) -> tuple[str, int]:
@@ -681,9 +539,6 @@ def main() -> int:
             project_path = build_root / f"{new_name}.csproj"
             update_company_name(project_path, company_name)
             print(f"隔离副本中的公司名称已设置为: {company_name}")
-
-            print("正在生成只读法术图标数据包……")
-            build_spell_icon_package(build_root)
 
             output_dir = root / "artifacts" / "publish" / "win-x64"
             publish(build_root, new_name, dotnet_command, output_dir)

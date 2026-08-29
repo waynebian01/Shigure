@@ -26,6 +26,7 @@ end
 function Fuyutsui:PLAYER_ENTERING_WORLD()
     state.mapID = C_Map.GetBestMapForUnit("player") or 0
     self:UpdateHolyArmaments(375576)
+    self:UpdateVampiricStrike(206930)
     self:UpdateReaverGlaive(204157)
     self:UpdateVampiricStrike(55090, C_Spell.GetOverrideSpell(55090))
     self:UpdateHeroTalent()
@@ -241,6 +242,10 @@ function Fuyutsui:UNIT_HEALTH(_, unit)
         self:UpdatePlayerHealth()
         self:UpdatePlayerStagger()
     end
+    if self.group[unit] then
+        self:UpdateUnitHealthInfo(unit)
+        self:UpdateUnitDeath(unit, "health")
+    end
     if unit == "target" then
         self:UpdateTargetHealth()
     end
@@ -256,14 +261,15 @@ function Fuyutsui:UNIT_HEALTH(_, unit)
     if unit and unit:match("^boss[1-5]$") then
         self:UpdateUnitHealthBlock(unit)
     end
-    if self.group[unit] then
-        self:UpdateUnitDeath(unit, "health")
-    end
 end
 
 function Fuyutsui:UNIT_MAXHEALTH(_, unit)
     if unit == "player" then
         self:UpdatePlayerHealth()
+    end
+    if self.group[unit] then
+        self:UpdateUnitHealthInfo(unit)
+        self:UpdateUnitDeath(unit, "health")
     end
     if unit == "mouseover" then
         self:UpdateMouseoverHealth()
@@ -274,9 +280,6 @@ function Fuyutsui:UNIT_MAXHEALTH(_, unit)
     if unit and unit:match("^boss[1-5]$") then
         self:UpdateUnitHealthBlock(unit)
     end
-    if self.group[unit] then
-        self:UpdateUnitDeath(unit, "health")
-    end
 end
 
 function Fuyutsui:UNIT_HEAL_ABSORB_AMOUNT_CHANGED(_, unit)
@@ -284,6 +287,7 @@ function Fuyutsui:UNIT_HEAL_ABSORB_AMOUNT_CHANGED(_, unit)
         self:UpdatePlayerHealth()
     end
     if self.group[unit] then
+        self:UpdateUnitHealthInfo(unit)
         self:UpdateUnitDeath(unit, "health")
     end
 end
@@ -293,6 +297,7 @@ function Fuyutsui:UNIT_HEAL_PREDICTION(_, unit)
         self:UpdatePlayerHealth()
     end
     if self.group[unit] then
+        self:UpdateUnitHealthInfo(unit)
         self:UpdateUnitDeath(unit, "health")
     end
 end
@@ -320,6 +325,7 @@ end
 function Fuyutsui:SPELL_UPDATE_ICON(_, spellID)
     if issecretvalue(spellID) then return end
     self:UpdateHolyArmaments(spellID)
+    self:UpdateVampiricStrike(spellID)
     self:UpdateReaverGlaive(spellID)
     self:UpdateHeroicStrike(spellID)
 end
@@ -477,13 +483,6 @@ Fuyutsui.timeElapsed = 0
 Fuyutsui.timeElapsed1 = 0
 
 function Fuyutsui:OnUpdate(elapsed)
-    self:UpdatePlayerCastBlocks()
-    self:UpdateUnitCastingOrChannelingInfo("target")
-    self:UpdateUnitCastingOrChannelingInfo("focus")
-    self:UpdateUnitCastingOrChannelingInfo("mouseover")
-    for index = 1, 5 do
-        self:UpdateUnitCastingOrChannelingInfo("boss" .. index)
-    end
     self:UpdateGroupInRangeAndHealth()
 
     self.timeElapsed = self.timeElapsed + elapsed
@@ -505,5 +504,13 @@ function Fuyutsui:OnUpdate(elapsed)
         self:UpdatePlayerCombatTime()
         self:UpdateKnightStatusCount()
         self.timeElapsed1 = 0
+    end
+
+    self:UpdatePlayerCastBlocks()
+    self:UpdateUnitCastingOrChannelingInfo("target")
+    self:UpdateUnitCastingOrChannelingInfo("focus")
+    self:UpdateUnitCastingOrChannelingInfo("mouseover")
+    for index = 1, 5 do
+        self:UpdateUnitCastingOrChannelingInfo("boss" .. index)
     end
 end

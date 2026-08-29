@@ -26,7 +26,7 @@ Fuyutsui.ClassBlocks = {
                 "施法技能",
                 "施法目标",
                 "敌人数量",
-                
+
             },
             ["能量"] = {
                 "法力值",
@@ -47,7 +47,7 @@ Fuyutsui.ClassBlocks = {
                 "施法(正计时)",
                 "施法可打断",
                 "驱散类型",
-                
+
             },
             ["鼠标"] = {
                 "类型",
@@ -145,7 +145,7 @@ Fuyutsui.ClassBlocks = {
                 "难度",
                 "施法技能",
                 "施法目标",
-                
+
                 "救赎之魂1",
                 "救赎之魂2",
             },
@@ -165,7 +165,7 @@ Fuyutsui.ClassBlocks = {
                 "施法(正计时)",
                 "施法可打断",
                 "驱散类型",
-                
+
             },
             ["鼠标"] = {
                 "类型",
@@ -233,14 +233,13 @@ Fuyutsui.ClassBlocks = {
             { spellId = 528, name = "驱散魔法" },
         },
         group = {
-            num = 6,
+            num = 5,
             healthPercent = 1,
             role = 2,
             dispel = 3,
             aura = {
                 [4] = { name = "恢复", spellId = 139, },
                 [5] = { name = "愈合祷言", spellId = 41635, },
-                [6] = { name = "救赎之魂", spellId = 27827, },
             },
         },
     },
@@ -269,7 +268,7 @@ Fuyutsui.ClassBlocks = {
                 "敌人数量",
                 "施法技能",
                 "姿态",
-                
+
             },
             ["能量"] = {
                 "狂乱值",
@@ -289,7 +288,7 @@ Fuyutsui.ClassBlocks = {
                 "施法可打断",
                 "引导",
                 "引导可打断",
-                
+
             },
             ["焦点"] = {
                 "施法(倒计时)",
@@ -297,7 +296,7 @@ Fuyutsui.ClassBlocks = {
                 "施法可打断",
                 "引导",
                 "引导可打断",
-                
+
             },
             ["鼠标"] = {
                 "类型",

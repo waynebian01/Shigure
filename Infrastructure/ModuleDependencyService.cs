@@ -164,6 +164,10 @@ internal sealed class ModuleDependencyService
         if (!counters.HasConfigChanges && counters.MacrosAdded == 0)
         {
             result.Conflicts.AddRange(counters.Conflicts.Select(message => $"{module.Name}: {message}"));
+            if (counters.Conflicts.Count > 0)
+            {
+                result.ConflictedModuleIds.Add(module.Id);
+            }
             return;
         }
 
@@ -173,6 +177,10 @@ internal sealed class ModuleDependencyService
         result.MacrosAdded += counters.MacrosAdded;
         result.ChangedModules.Add(module.Name);
         result.Conflicts.AddRange(counters.Conflicts.Select(message => $"{module.Name}: {message}"));
+        if (counters.Conflicts.Count > 0)
+        {
+            result.ConflictedModuleIds.Add(module.Id);
+        }
     }
 
     private static void ValidateSnapshot(ModuleDefinition module, ModuleDependencySnapshot snapshot)
@@ -1049,6 +1057,7 @@ internal sealed class ModuleDependencyImportResult
     public int MacrosAdded { get; set; }
     public List<string> ChangedModules { get; } = new();
     public List<string> Conflicts { get; } = new();
+    public HashSet<string> ConflictedModuleIds { get; } = new(StringComparer.OrdinalIgnoreCase);
     public List<RejectedModuleDependency> Rejected { get; } = new();
     public bool HasChanges => ConfigAdded > 0 || ConfigUpdated > 0 || MacrosAdded > 0;
 }

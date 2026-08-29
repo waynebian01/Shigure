@@ -1,34 +1,19 @@
 using System.Drawing;
-using System.Net.Http.Headers;
-using System.Text.Json;
 
 namespace Shigure;
 
 internal sealed record SpellSuggestion(long SpellId, string Name);
 
 /// <summary>
-/// 技能名称/ID 到技能图标的目录。优先读取自定义嵌入资源和发布数据包，开发环境
-/// 回退到 Assets/Spell；未知 ID 会在后台从 Wowhead 下载并按图标资源名缓存。
+/// 技能名称/ID 到技能图标的只读目录。完整目录只来自外置数据包；数据包缺失或
+/// 损坏时，技能图标与 spellId 联想均不可用。
 /// </summary>
 internal static class SpellIconCatalog
 {
     private static readonly object SyncRoot = new();
     private static readonly Dictionary<long, Image> Icons = new();
     private static readonly Dictionary<string, Image?> NamedIcons = new(StringComparer.Ordinal);
-    private static readonly HashSet<long> PendingDownloads = new();
-    private static readonly Dictionary<long, DateTime> RetryAfter = new();
-    private static readonly SpellIconPackage? PackagedCatalog = SpellIconPackage.TryOpen();
-    private static readonly CatalogData Catalog = LoadCatalog();
-    private static readonly Dictionary<string, long> SpellIdsByName = LoadSpellIdsByName();
-    private static readonly SpellSuggestion[] SuggestionsBySpellId = LoadSpellSuggestions();
-    private static readonly Dictionary<long, string> IconTargetsBySpellId = Catalog.TargetsBySpellId;
-    private static readonly string RuntimeCacheDirectory = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "Shigure",
-        "SpellIcons");
-    private static readonly string RuntimeIndexPath = Path.Combine(RuntimeCacheDirectory, "index.json");
-    private static readonly Dictionary<long, string> RuntimeIconsBySpellId = LoadRuntimeIndex();
-    private static readonly HttpClient HttpClient = CreateHttpClient();
+    private static readonly Dictionary<string, long> RegisteredSpellIdsByName = new(StringComparer.Ordinal);
 
     private static readonly Dictionary<long, string> SpellIdIconResources = new()
     {
@@ -51,7 +36,33 @@ internal static class SpellIconCatalog
     private static readonly string LastRuleRowIconResource =
         $"{typeof(SpellIconCatalog).Namespace}.Assets.Spell.last-rule-row.png";
 
-    internal static event Action<long>? IconAvailable;
+    private static SpellIconPackage? _package;
+    private static Dictionary<string, long> _spellIdsByName = new(StringComparer.Ordinal);
+    private static SpellSuggestion[] _suggestionsBySpellId = [];
+
+    static SpellIconCatalog()
+    {
+        _package = SpellIconPackage.TryOpen(PackagePath);
+        RebuildIndexesLocked();
+    }
+
+    internal static event Action? CatalogChanged;
+
+    internal static string PackagePath => Path.Combine(
+        AppContext.BaseDirectory,
+        "data",
+        "SpellIcons.shgpack");
+
+    internal static bool IsPackageAvailable
+    {
+        get
+        {
+            lock (SyncRoot)
+            {
+                return _package is not null;
+            }
+        }
+    }
 
     public static Image? Get(long spellId)
     {
@@ -62,35 +73,25 @@ internal static class SpellIconCatalog
 
         lock (SyncRoot)
         {
+            if (_package is null)
+            {
+                return null;
+            }
+
             if (Icons.TryGetValue(spellId, out var cached))
             {
                 return cached;
             }
-        }
 
-        var local = LoadCatalogIcon(spellId);
-        if (local is not null)
-        {
-            return Cache(spellId, local);
-        }
-
-        string? runtimeIcon;
-        lock (SyncRoot)
-        {
-            RuntimeIconsBySpellId.TryGetValue(spellId, out runtimeIcon);
-        }
-
-        if (!string.IsNullOrWhiteSpace(runtimeIcon))
-        {
-            var diskIcon = LoadImageFile(GetRuntimeIconPath(runtimeIcon));
-            if (diskIcon is not null)
+            Image? icon = null;
+            if (SpellIdIconResources.TryGetValue(spellId, out var resourceName))
             {
-                return Cache(spellId, diskIcon);
+                icon = LoadResource(resourceName);
             }
-        }
 
-        QueueDownload(spellId);
-        return null;
+            icon ??= _package.LoadIcon(spellId);
+            return icon is null ? null : CacheLocked(spellId, icon);
+        }
     }
 
     public static Image? Get(string? spellName)
@@ -101,21 +102,22 @@ internal static class SpellIconCatalog
             return null;
         }
 
-        if (NamedIconResources.TryGetValue(normalized, out var resourceName))
-        {
-            return GetNamedIcon(normalized, resourceName);
-        }
-
-        long spellId;
         lock (SyncRoot)
         {
-            if (!SpellIdsByName.TryGetValue(normalized, out spellId))
+            if (_package is null)
             {
                 return null;
             }
-        }
 
-        return Get(spellId);
+            if (NamedIconResources.TryGetValue(normalized, out var resourceName))
+            {
+                return GetNamedIconLocked(normalized, resourceName);
+            }
+
+            return _spellIdsByName.TryGetValue(normalized, out var spellId)
+                ? Get(spellId)
+                : null;
+        }
     }
 
     public static void Register(long spellId, string? spellName)
@@ -128,103 +130,203 @@ internal static class SpellIconCatalog
 
         lock (SyncRoot)
         {
-            SpellIdsByName[normalized] = spellId;
+            RegisteredSpellIdsByName[normalized] = spellId;
+            _spellIdsByName[normalized] = spellId;
         }
     }
 
     internal static IReadOnlyList<SpellSuggestion> SearchByIdPrefix(string? prefix, int limit)
     {
-        var normalized = prefix;
-        if (limit <= 0
-            || string.IsNullOrEmpty(normalized)
-            || normalized.Length > 19
-            || normalized[0] == '0'
-            || SuggestionsBySpellId.Length == 0)
+        lock (SyncRoot)
         {
-            return Array.Empty<SpellSuggestion>();
-        }
-
-        long prefixValue = 0;
-        foreach (var character in normalized)
-        {
-            if (character is < '0' or > '9')
+            var normalized = prefix;
+            if (_package is null
+                || limit <= 0
+                || string.IsNullOrEmpty(normalized)
+                || normalized.Length > 19
+                || normalized[0] == '0'
+                || _suggestionsBySpellId.Length == 0)
             {
                 return Array.Empty<SpellSuggestion>();
             }
 
-            var digit = character - '0';
-            if (prefixValue > (long.MaxValue - digit) / 10)
+            long prefixValue = 0;
+            foreach (var character in normalized)
             {
-                return Array.Empty<SpellSuggestion>();
-            }
-
-            prefixValue = prefixValue * 10 + digit;
-        }
-
-        if (prefixValue <= 0)
-        {
-            return Array.Empty<SpellSuggestion>();
-        }
-
-        var maximumSpellId = SuggestionsBySpellId[^1].SpellId;
-        var maximumDigits = 1;
-        for (var remaining = maximumSpellId; remaining >= 10; remaining /= 10)
-        {
-            maximumDigits++;
-        }
-
-        var maximumSuffixDigits = maximumDigits - normalized.Length;
-        if (maximumSuffixDigits < 0)
-        {
-            return Array.Empty<SpellSuggestion>();
-        }
-
-        var matches = new List<SpellSuggestion>(Math.Min(limit, 8));
-        long scale = 1;
-        for (var suffixDigits = 0; suffixDigits <= maximumSuffixDigits; suffixDigits++)
-        {
-            if (prefixValue > long.MaxValue / scale)
-            {
-                break;
-            }
-
-            var start = prefixValue * scale;
-            var intervalLength = scale - 1;
-            var end = intervalLength > long.MaxValue - start
-                ? long.MaxValue
-                : start + intervalLength;
-            var index = LowerBoundSuggestion(start);
-            while (index < SuggestionsBySpellId.Length
-                   && SuggestionsBySpellId[index].SpellId <= end)
-            {
-                matches.Add(SuggestionsBySpellId[index]);
-                if (matches.Count >= limit)
+                if (character is < '0' or > '9')
                 {
-                    return matches;
+                    return Array.Empty<SpellSuggestion>();
                 }
 
-                index++;
+                var digit = character - '0';
+                if (prefixValue > (long.MaxValue - digit) / 10)
+                {
+                    return Array.Empty<SpellSuggestion>();
+                }
+
+                prefixValue = prefixValue * 10 + digit;
             }
 
-            if (scale > long.MaxValue / 10)
+            if (prefixValue <= 0)
             {
-                break;
+                return Array.Empty<SpellSuggestion>();
             }
 
-            scale *= 10;
-        }
+            var maximumSpellId = _suggestionsBySpellId[^1].SpellId;
+            var maximumDigits = 1;
+            for (var remaining = maximumSpellId; remaining >= 10; remaining /= 10)
+            {
+                maximumDigits++;
+            }
 
-        return matches;
+            var maximumSuffixDigits = maximumDigits - normalized.Length;
+            if (maximumSuffixDigits < 0)
+            {
+                return Array.Empty<SpellSuggestion>();
+            }
+
+            var matches = new List<SpellSuggestion>(Math.Min(limit, 8));
+            long scale = 1;
+            for (var suffixDigits = 0; suffixDigits <= maximumSuffixDigits; suffixDigits++)
+            {
+                if (prefixValue > long.MaxValue / scale)
+                {
+                    break;
+                }
+
+                var start = prefixValue * scale;
+                var intervalLength = scale - 1;
+                var end = intervalLength > long.MaxValue - start
+                    ? long.MaxValue
+                    : start + intervalLength;
+                var index = LowerBoundSuggestionLocked(start);
+                while (index < _suggestionsBySpellId.Length
+                       && _suggestionsBySpellId[index].SpellId <= end)
+                {
+                    matches.Add(_suggestionsBySpellId[index]);
+                    if (matches.Count >= limit)
+                    {
+                        return matches;
+                    }
+
+                    index++;
+                }
+
+                if (scale > long.MaxValue / 10)
+                {
+                    break;
+                }
+
+                scale *= 10;
+            }
+
+            return matches;
+        }
     }
 
-    private static int LowerBoundSuggestion(long spellId)
+    public static Image? GetLastRuleRowIcon()
+    {
+        lock (SyncRoot)
+        {
+            return _package is null
+                ? null
+                : GetNamedIconLocked("last-rule-row", LastRuleRowIconResource);
+        }
+    }
+
+    internal static void ValidatePackage(string path)
+    {
+        using var package = SpellIconPackage.Open(path);
+    }
+
+    internal static void InstallPackage(string downloadedPath)
+    {
+        ValidatePackage(downloadedPath);
+
+        var targetPath = PackagePath;
+        var targetExisted = File.Exists(targetPath);
+        var backupPath = $"{targetPath}.{Guid.NewGuid():N}.backup";
+        Exception? failure = null;
+
+        lock (SyncRoot)
+        {
+            var oldPackage = _package;
+            _package = null;
+            oldPackage?.Dispose();
+            DisposeImageCachesLocked();
+
+            try
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(targetPath)!);
+                if (targetExisted)
+                {
+                    File.Replace(downloadedPath, targetPath, backupPath, ignoreMetadataErrors: true);
+                }
+                else
+                {
+                    File.Move(downloadedPath, targetPath);
+                }
+
+                _package = SpellIconPackage.Open(targetPath);
+                RebuildIndexesLocked();
+            }
+            catch (Exception ex)
+            {
+                failure = ex;
+                TryRestorePreviousPackage(targetPath, backupPath, targetExisted);
+                _package = SpellIconPackage.TryOpen(targetPath);
+                RebuildIndexesLocked();
+            }
+        }
+
+        TryDeleteFile(backupPath);
+        CatalogChanged?.Invoke();
+
+        if (failure is not null)
+        {
+            throw new IOException("安装技能图标数据包失败，已尝试恢复原数据包。", failure);
+        }
+    }
+
+    private static void TryRestorePreviousPackage(string targetPath, string backupPath, bool targetExisted)
+    {
+        try
+        {
+            if (targetExisted && File.Exists(backupPath))
+            {
+                File.Move(backupPath, targetPath, overwrite: true);
+            }
+            else if (!targetExisted)
+            {
+                TryDeleteFile(targetPath);
+            }
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            // 后续重新打开会把无法恢复的状态视为“未安装”。
+        }
+    }
+
+    private static void TryDeleteFile(string path)
+    {
+        try
+        {
+            File.Delete(path);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            // 临时/备份文件清理失败不覆盖主要操作结果。
+        }
+    }
+
+    private static int LowerBoundSuggestionLocked(long spellId)
     {
         var low = 0;
-        var high = SuggestionsBySpellId.Length;
+        var high = _suggestionsBySpellId.Length;
         while (low < high)
         {
             var middle = low + (high - low) / 2;
-            if (SuggestionsBySpellId[middle].SpellId < spellId)
+            if (_suggestionsBySpellId[middle].SpellId < spellId)
             {
                 low = middle + 1;
             }
@@ -237,86 +339,27 @@ internal static class SpellIconCatalog
         return low;
     }
 
-    public static Image? GetLastRuleRowIcon()
-        => GetNamedIcon("last-rule-row", LastRuleRowIconResource);
-
-    private static Image? LoadCatalogIcon(long spellId)
+    private static Image CacheLocked(long spellId, Image icon)
     {
-        string? resourceName;
-        lock (SyncRoot)
+        if (Icons.TryGetValue(spellId, out var cached))
         {
-            resourceName = SpellIdIconResources.GetValueOrDefault(spellId);
+            icon.Dispose();
+            return cached;
         }
 
-        if (resourceName is not null)
-        {
-            return LoadResource(resourceName);
-        }
-
-        var packaged = PackagedCatalog?.LoadIcon(spellId);
-        if (packaged is not null)
-        {
-            return packaged;
-        }
-
-        string? target;
-        lock (SyncRoot)
-        {
-            target = IconTargetsBySpellId.GetValueOrDefault(spellId);
-        }
-
-        if (!string.IsNullOrWhiteSpace(target))
-        {
-            var assetRoot = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "Assets"));
-            var iconPath = Path.GetFullPath(Path.Combine(assetRoot, target.Replace('/', Path.DirectorySeparatorChar)));
-            var spellRoot = Path.GetFullPath(Path.Combine(assetRoot, "Spell"));
-            if (string.Equals(Path.GetDirectoryName(iconPath), spellRoot, StringComparison.OrdinalIgnoreCase)
-                && string.Equals(Path.GetExtension(iconPath), ".jpg", StringComparison.OrdinalIgnoreCase))
-            {
-                var icon = LoadImageFile(iconPath);
-                if (icon is not null)
-                {
-                    return icon;
-                }
-            }
-        }
-
-        // Compatibility with the earlier per-spell embedded resource layout.
-        resourceName = $"{typeof(SpellIconCatalog).Namespace}.Assets.Spell.spell-{spellId}.jpg";
-        return LoadResource(resourceName);
+        Icons[spellId] = icon;
+        return icon;
     }
 
-    private static Image Cache(long spellId, Image icon)
+    private static Image? GetNamedIconLocked(string cacheKey, string resourceName)
     {
-        lock (SyncRoot)
+        if (NamedIcons.TryGetValue(cacheKey, out var cached))
         {
-            if (Icons.TryGetValue(spellId, out var cached))
-            {
-                icon.Dispose();
-                return cached;
-            }
-
-            Icons[spellId] = icon;
-            return icon;
-        }
-    }
-
-    private static Image? GetNamedIcon(string cacheKey, string resourceName)
-    {
-        lock (SyncRoot)
-        {
-            if (NamedIcons.TryGetValue(cacheKey, out var cached))
-            {
-                return cached;
-            }
+            return cached;
         }
 
         var icon = LoadResource(resourceName);
-        lock (SyncRoot)
-        {
-            NamedIcons[cacheKey] = icon;
-        }
-
+        NamedIcons[cacheKey] = icon;
         return icon;
     }
 
@@ -339,253 +382,44 @@ internal static class SpellIconCatalog
         }
     }
 
-    private static Image? LoadImageFile(string path)
+    private static void RebuildIndexesLocked()
     {
-        if (!File.Exists(path))
+        _spellIdsByName = new Dictionary<string, long>(RegisteredSpellIdsByName, StringComparer.Ordinal);
+        if (_package is null)
         {
-            return null;
+            _suggestionsBySpellId = [];
+            return;
         }
 
-        try
+        foreach (var (name, spellId) in _package.SpellIdsByName)
         {
-            using var source = Image.FromFile(path);
-            return new Bitmap(source);
-        }
-        catch (Exception ex) when (ex is ArgumentException or IOException)
-        {
-            return null;
-        }
-    }
-
-    private static void QueueDownload(long spellId)
-    {
-        lock (SyncRoot)
-        {
-            if (PendingDownloads.Contains(spellId)
-                || RetryAfter.TryGetValue(spellId, out var retryAfter) && retryAfter > DateTime.UtcNow)
-            {
-                return;
-            }
-
-            PendingDownloads.Add(spellId);
+            _spellIdsByName.TryAdd(name, spellId);
         }
 
-        _ = DownloadAndCacheAsync(spellId);
-    }
-
-    private static async Task DownloadAndCacheAsync(long spellId)
-    {
-        try
-        {
-            using var tooltipResponse = await HttpClient.GetAsync(
-                $"https://nether.wowhead.com/tooltip/spell/{spellId}?dataEnv=1").ConfigureAwait(false);
-            tooltipResponse.EnsureSuccessStatusCode();
-            await using var tooltipStream = await tooltipResponse.Content.ReadAsStreamAsync().ConfigureAwait(false);
-            using var tooltip = await JsonDocument.ParseAsync(tooltipStream).ConfigureAwait(false);
-            if (!tooltip.RootElement.TryGetProperty("icon", out var iconElement))
-            {
-                throw new InvalidDataException("Spell tooltip did not contain an icon.");
-            }
-
-            var iconName = NormalizeIconName(iconElement.GetString());
-            if (iconName is null)
-            {
-                throw new InvalidDataException("Spell tooltip returned an invalid icon name.");
-            }
-
-            Directory.CreateDirectory(RuntimeCacheDirectory);
-            var target = GetRuntimeIconPath(iconName);
-            if (!File.Exists(target))
-            {
-                var bytes = await HttpClient.GetByteArrayAsync(
-                    $"https://wow.zamimg.com/images/wow/icons/large/{iconName}.jpg").ConfigureAwait(false);
-                if (bytes.Length < 512)
-                {
-                    throw new InvalidDataException("Downloaded icon is unexpectedly small.");
-                }
-
-                using (var memory = new MemoryStream(bytes, writable: false))
-                using (Image.FromStream(memory))
-                {
-                    // Decode before persisting so error payloads never enter the cache.
-                }
-
-                var temporary = $"{target}.{Guid.NewGuid():N}.download";
-                await File.WriteAllBytesAsync(temporary, bytes).ConfigureAwait(false);
-                File.Move(temporary, target, overwrite: true);
-            }
-
-            var image = LoadImageFile(target)
-                ?? throw new InvalidDataException("Downloaded icon could not be decoded.");
-            Cache(spellId, image);
-
-            lock (SyncRoot)
-            {
-                RuntimeIconsBySpellId[spellId] = iconName;
-                RetryAfter.Remove(spellId);
-                SaveRuntimeIndex();
-            }
-
-            IconAvailable?.Invoke(spellId);
-        }
-        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException
-            or IOException or JsonException or InvalidDataException or ArgumentException)
-        {
-            lock (SyncRoot)
-            {
-                RetryAfter[spellId] = DateTime.UtcNow.AddMinutes(5);
-            }
-        }
-        finally
-        {
-            lock (SyncRoot)
-            {
-                PendingDownloads.Remove(spellId);
-            }
-        }
-    }
-
-    private static string? NormalizeIconName(string? value)
-    {
-        var normalized = value?.Trim().ToLowerInvariant();
-        return !string.IsNullOrWhiteSpace(normalized)
-            && normalized.All(character => char.IsAsciiLetterOrDigit(character) || character is '_' or '-')
-                ? normalized
-                : null;
-    }
-
-    private static string GetRuntimeIconPath(string iconName)
-        => Path.Combine(RuntimeCacheDirectory, $"icon-{iconName}.jpg");
-
-    private static HttpClient CreateHttpClient()
-    {
-        var client = new HttpClient { Timeout = TimeSpan.FromSeconds(15) };
-        client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("Shigure", "1.0"));
-        return client;
-    }
-
-    private static Dictionary<long, string> LoadRuntimeIndex()
-    {
-        try
-        {
-            if (!File.Exists(RuntimeIndexPath))
-            {
-                return new Dictionary<long, string>();
-            }
-
-            return JsonSerializer.Deserialize<Dictionary<long, string>>(File.ReadAllText(RuntimeIndexPath))
-                ?? new Dictionary<long, string>();
-        }
-        catch (Exception ex) when (ex is IOException or JsonException or UnauthorizedAccessException)
-        {
-            return new Dictionary<long, string>();
-        }
-    }
-
-    private static void SaveRuntimeIndex()
-    {
-        Directory.CreateDirectory(RuntimeCacheDirectory);
-        var temporary = $"{RuntimeIndexPath}.download";
-        File.WriteAllText(temporary, JsonSerializer.Serialize(RuntimeIconsBySpellId));
-        File.Move(temporary, RuntimeIndexPath, overwrite: true);
-    }
-
-    private static Dictionary<string, long> LoadSpellIdsByName()
-    {
-        var result = new Dictionary<string, long>(Catalog.SpellIdsByName, StringComparer.Ordinal);
-        if (PackagedCatalog is null)
-        {
-            return result;
-        }
-
-        foreach (var (name, spellId) in PackagedCatalog.SpellIdsByName)
-        {
-            result.TryAdd(name, spellId);
-        }
-
-        return result;
-    }
-
-    private static SpellSuggestion[] LoadSpellSuggestions()
-    {
-        var namesBySpellId = new Dictionary<long, string>(Catalog.SpellNamesById);
-        if (PackagedCatalog is not null)
-        {
-            foreach (var (spellId, name) in PackagedCatalog.SpellNamesById)
-            {
-                namesBySpellId.TryAdd(spellId, name);
-            }
-        }
-
-        return namesBySpellId
+        _suggestionsBySpellId = _package.SpellNamesById
             .Where(pair => pair.Key > 0 && !string.IsNullOrWhiteSpace(pair.Value))
             .OrderBy(pair => pair.Key)
             .Select(pair => new SpellSuggestion(pair.Key, pair.Value))
             .ToArray();
     }
 
-    private static CatalogData LoadCatalog()
+    private static void DisposeImageCachesLocked()
     {
-        var result = new CatalogData();
-        try
+        foreach (var image in Icons.Values)
         {
-            var manifestPath = Path.Combine(AppContext.BaseDirectory, "Assets", "SpellIconManifest.json");
-            using var stream = File.OpenRead(manifestPath);
-            using var document = JsonDocument.Parse(stream);
-            if (!document.RootElement.TryGetProperty("spells", out var spells)
-                || spells.ValueKind != JsonValueKind.Array)
-            {
-                return result;
-            }
-
-            foreach (var spell in spells.EnumerateArray())
-            {
-                if (!spell.TryGetProperty("spellId", out var idElement)
-                    || !idElement.TryGetInt64(out var id))
-                {
-                    continue;
-                }
-
-                if (spell.TryGetProperty("name", out var nameElement))
-                {
-                    var name = nameElement.GetString()?.Trim();
-                    if (!string.IsNullOrWhiteSpace(name) && !result.SpellIdsByName.ContainsKey(name))
-                    {
-                        result.SpellIdsByName[name] = id;
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(name))
-                    {
-                        result.SpellNamesById[id] = name;
-                    }
-                }
-
-                if (spell.TryGetProperty("target", out var targetElement))
-                {
-                    var target = targetElement.GetString()?.Trim();
-                    if (!string.IsNullOrWhiteSpace(target))
-                    {
-                        result.TargetsBySpellId[id] = target;
-                    }
-                }
-            }
-        }
-        catch (Exception ex) when (ex is IOException or JsonException or UnauthorizedAccessException)
-        {
-            // 缺少或损坏清单时继续使用自定义图标和在线回退。
+            image.Dispose();
         }
 
-        return result;
+        Icons.Clear();
+        foreach (var image in NamedIcons.Values)
+        {
+            image?.Dispose();
+        }
+
+        NamedIcons.Clear();
     }
 
-    private sealed class CatalogData
-    {
-        public Dictionary<string, long> SpellIdsByName { get; } = new(StringComparer.Ordinal);
-        public Dictionary<long, string> SpellNamesById { get; } = new();
-        public Dictionary<long, string> TargetsBySpellId { get; } = new();
-    }
-
-    private sealed class SpellIconPackage
+    private sealed class SpellIconPackage : IDisposable
     {
         private static readonly byte[] Magic = "SHGICN1\0"u8.ToArray();
         private const int Version = 1;
@@ -603,10 +437,7 @@ internal static class SpellIconCatalog
             _stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
             try
             {
-                using var reader = new BinaryReader(
-                    _stream,
-                    System.Text.Encoding.UTF8,
-                    leaveOpen: true);
+                using var reader = new BinaryReader(_stream, System.Text.Encoding.UTF8, leaveOpen: true);
                 if (!reader.ReadBytes(Magic.Length).SequenceEqual(Magic)
                     || reader.ReadInt32() != Version)
                 {
@@ -706,17 +537,17 @@ internal static class SpellIconCatalog
         public Dictionary<string, long> SpellIdsByName { get; }
         public Dictionary<long, string> SpellNamesById { get; }
 
-        public static SpellIconPackage? TryOpen()
+        public static SpellIconPackage Open(string path) => new(path);
+
+        public static SpellIconPackage? TryOpen(string path)
         {
-            var path = Path.Combine(AppContext.BaseDirectory, "data", "SpellIcons.shgpack");
             try
             {
-                return File.Exists(path) ? new SpellIconPackage(path) : null;
+                return File.Exists(path) ? Open(path) : null;
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException
                 or InvalidDataException or ArgumentException)
             {
-                // 缺少或损坏数据包时继续使用文件夹、自定义图标和在线回退。
                 return null;
             }
         }
@@ -733,21 +564,18 @@ internal static class SpellIconCatalog
             var bytes = new byte[_iconLengths[iconIndex]];
             try
             {
-                lock (_stream)
-                {
-                    _stream.Position = _iconOffsets[iconIndex];
-                    _stream.ReadExactly(bytes);
-                }
-
+                _stream.Position = _iconOffsets[iconIndex];
+                _stream.ReadExactly(bytes);
                 using var memory = new MemoryStream(bytes, writable: false);
                 using var source = Image.FromStream(memory);
                 return new Bitmap(source);
             }
-            catch (Exception ex) when (ex is IOException or ArgumentException)
+            catch (Exception ex) when (ex is IOException or ArgumentException or ObjectDisposedException)
             {
                 return null;
             }
         }
-    }
 
+        public void Dispose() => _stream.Dispose();
+    }
 }

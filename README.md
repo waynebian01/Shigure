@@ -45,7 +45,7 @@ Shigure 是一个 Windows WinForms 桌面程序。它从目标窗口读取 Fuyut
 ## 界面
 
 - 置顶浮动条：显示程序名、当前职业图标颜色和逻辑状态，提供 `开启/关闭`、`设置`、`✕` 按钮。窗口可拖动和缩放，显示后自动启动运行循环。
-- `通用`：设置触发键和发送模式；从项目 Fuyutsui 更新配置并同步游戏插件；按实时环境筛选、自动选择或手动指定模块。
+- `通用`：设置触发键和发送模式；从项目 Fuyutsui 更新配置并同步游戏插件；按实时环境选择模块；从 GitHub 按需下载或更新技能图标数据包。
 - `配置`：直接编辑项目 `Fuyutsui/class/*.lua` 中的 `ClassBlocks`，包括状态、光环、法术和队伍字段；技能列表页可编辑 `Fuyutsui.spellsList` 中索引 1–100 的法术 ID、索引和名称，也可输入 spellId 与名称并自动分配空闲索引。旧版稀疏索引格式只读，需先迁移到 `states/auras/spells/group` 格式。
 - `宏`：编辑项目 `Fuyutsui/core/classmacros.lua` 中各职业的动态宏、静态宏和特殊宏。动态宏每项占用 30 个团队点名槽位。
 - `模块`：新建、编辑、删除本地模块，维护作者、推荐天赋、匹配条件、动态字段和有序规则。规则支持拖拽、上移、下移、复制与插入。
@@ -97,7 +97,7 @@ dotnet run --project .\Shigure.csproj -- --toggle XBUTTON2 --mode switch --logic
 dotnet build .\Shigure.csproj
 ```
 
-应用图标为 `Assets\arasaka-icon.ico`。项目会把 `Fuyutsui/**`、`config/*.json`、`keymap/*.json` 和 `wow_process.txt` 复制到输出/发布目录；图标、职业图和专精图作为嵌入资源打包。
+应用图标为 `Assets\arasaka-icon.ico`。项目会把 `Fuyutsui/**`、`config/*.json`、`keymap/*.json` 和 `wow_process.txt` 复制到输出/发布目录；应用、职业、专精和少量程序专用图标作为嵌入资源打包。完整技能图标库不随发布版分发，用户可在“设置 → 通用 → 下载数据包”中从 GitHub 最新正式 Release 下载到 `data\SpellIcons.shgpack`。缺少数据包时技能图标与添加技能的 spellId 联想保持关闭，但仍可手工编辑技能。
 
 ## 项目结构
 

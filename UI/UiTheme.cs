@@ -513,7 +513,8 @@ internal static class UiTheme
         Font font,
         Func<int, (int? ClassId, int? SpecId)>? moduleMatchSelector = null,
         bool showClassIconWithSpec = true,
-        int? logicalIconSize = null)
+        int? logicalIconSize = null,
+        Func<int, Color?>? itemForeColorSelector = null)
     {
         var logicalItemHeight = logicalIconSize is { } requestedIconSize
             ? Math.Max(40, Math.Clamp(requestedIconSize, 24, 64) + 16)
@@ -607,7 +608,7 @@ internal static class UiTheme
                 listBox.Items[e.Index]?.ToString() ?? string.Empty,
                 font,
                 textBounds,
-                selected ? Text : Muted,
+                itemForeColorSelector?.Invoke(e.Index) ?? (selected ? Text : Muted),
                 TextFormatFlags.VerticalCenter | TextFormatFlags.Left | TextFormatFlags.EndEllipsis);
         };
 

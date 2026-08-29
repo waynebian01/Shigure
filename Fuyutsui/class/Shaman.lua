@@ -24,7 +24,7 @@ Fuyutsui.ClassBlocks = {
                 "首领战",
                 "难度",
                 "敌人数量",
-                
+
             },
             ["能量"] = {
                 "漩涡值",
@@ -44,7 +44,7 @@ Fuyutsui.ClassBlocks = {
                 "施法可打断",
                 "引导",
                 "引导可打断",
-                
+
             },
             ["焦点"] = {
                 "施法(倒计时)",
@@ -52,7 +52,7 @@ Fuyutsui.ClassBlocks = {
                 "施法可打断",
                 "引导",
                 "引导可打断",
-                
+
             },
             ["鼠标"] = {
                 "类型",
@@ -229,7 +229,7 @@ Fuyutsui.ClassBlocks = {
                 "敌人数量",
                 "敌人数-无仇恨",
                 "敌人数-有仇恨",
-                
+
             },
             ["能量"] = {
                 "法力值",
@@ -246,7 +246,7 @@ Fuyutsui.ClassBlocks = {
                 "引导可打断",
                 "驱散类型",
                 "距离",
-                
+
             },
             ["焦点"] = {
                 "施法(倒计时)",
@@ -254,7 +254,7 @@ Fuyutsui.ClassBlocks = {
                 "施法可打断",
                 "引导",
                 "引导可打断",
-                
+
             },
             ["鼠标"] = {
                 "类型",
@@ -325,14 +325,13 @@ Fuyutsui.ClassBlocks = {
             { spellId = 192077, name = "狂风图腾" },
         },
         group = {
-            num = 6,
+            num = 5,
             healthPercent = 1,
             role = 2,
             dispel = 3,
             aura = {
                 [4] = { name = "激流", spellId = 61295, },
                 [5] = { name = "大地之盾", spellIds = { 974, 383648 }, },
-                [6] = { name = "救赎之魂", spellId = 27827, },
             },
         },
     },

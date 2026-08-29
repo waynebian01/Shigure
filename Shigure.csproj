@@ -28,20 +28,10 @@
     <EmbeddedResource Include="Assets\*.svg" />
     <EmbeddedResource Include="Assets\Class\*.jpg" />
     <EmbeddedResource Include="Assets\Spec\*.jpg" />
-    <!-- Development builds use the loose spell-icon folder. The one-click packer
-         creates SpellIcons.shgpack in its temporary project, which switches the
-         publish output to one external read-only package instead. -->
+    <!-- Only the small, application-specific spell images are embedded. The complete
+         icon catalog is downloaded by the user into data\SpellIcons.shgpack. -->
     <EmbeddedResource Include="Assets\Spell\*.jpg" Exclude="Assets\Spell\icon-*.jpg" />
     <EmbeddedResource Include="Assets\Spell\*.png" />
-    <None Update="Assets\Spell\icon-*.jpg" Condition="!Exists('Assets\SpellIcons.shgpack')"
-          CopyToOutputDirectory="PreserveNewest"
-          CopyToPublishDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
-    <None Update="Assets\SpellIconManifest.json" Condition="!Exists('Assets\SpellIcons.shgpack')"
-          CopyToOutputDirectory="PreserveNewest"
-          CopyToPublishDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
-    <None Include="Assets\SpellIcons.shgpack" Condition="Exists('Assets\SpellIcons.shgpack')"
-          Link="data\SpellIcons.shgpack" CopyToOutputDirectory="PreserveNewest"
-          CopyToPublishDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
     <None Include="config\*.json" CopyToOutputDirectory="PreserveNewest" />
     <None Include="keymap\*.json" CopyToOutputDirectory="PreserveNewest" />
     <None Include="wow_process.txt" CopyToOutputDirectory="PreserveNewest" />

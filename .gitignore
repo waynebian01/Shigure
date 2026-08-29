@@ -30,6 +30,3 @@ __pycache__/
 /.plan
 
 outputs/
-
-# Generated only inside the one-click packer's temporary build environment
-/Assets/SpellIcons.shgpack

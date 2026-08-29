@@ -46,6 +46,8 @@ public sealed class MainForm : Form, IMessageFilter
     private Label _moduleCountLabel = null!;
     private Label _configSourceLabel = null!;
     private Button _updateConfigButton = null!;
+    private Label _spellIconPackageStatusLabel = null!;
+    private Button _downloadSpellIconPackageButton = null!;
     private readonly ToolTip _settingsToolTip = new();
     private Button _horizontalLayoutButton = null!;
     private Button _verticalLayoutButton = null!;
@@ -100,7 +102,10 @@ public sealed class MainForm : Form, IMessageFilter
     private bool? _lastLoggedEnabled;
     private readonly object _configUpdateSync = new();
     private readonly SemaphoreSlim _moduleImportGate = new(1, 1);
+    private readonly SpellIconPackageDownloadService _spellIconPackageDownloadService = new();
     private Task _configUpdateTail = Task.CompletedTask;
+    private Task _spellIconPackageDownloadTask = Task.CompletedTask;
+    private CancellationTokenSource? _spellIconPackageDownloadCts;
     private long _runtimeRequestVersion;
     private bool _exitRequested;
     private bool _shutdownStarted;
@@ -293,7 +298,9 @@ public sealed class MainForm : Form, IMessageFilter
             return false;
         }
 
-        _moduleStore.RejectModules(result.Rejected.Select(item => item.ModuleId));
+        _moduleStore.SetImportIssues(
+            result.Rejected.Select(item => item.ModuleId),
+            result.ConflictedModuleIds);
         _moduleEditor.ReloadModulesFromStore(reloadStore: false);
         RefreshModuleSelector(_lastSnapshot, forceRefresh: false);
 
@@ -377,6 +384,7 @@ public sealed class MainForm : Form, IMessageFilter
                 SaveUiCache();
                 _roundedCornerResizeTimer.Stop();
                 _wowProcessMonitorTimer.Stop();
+                _spellIconPackageDownloadCts?.Cancel();
                 Application.RemoveMessageFilter(this);
                 _ = CompleteShutdownAsync();
             }
@@ -442,7 +450,10 @@ public sealed class MainForm : Form, IMessageFilter
         try
         {
             var runtimeShutdown = _runtimeSession.DisposeAsync().AsTask();
-            await Task.WhenAll(runtimeShutdown, GetPendingConfigUpdateTask());
+            await Task.WhenAll(
+                runtimeShutdown,
+                GetPendingConfigUpdateTask(),
+                _spellIconPackageDownloadTask);
         }
         catch (Exception ex)
         {
@@ -451,6 +462,8 @@ public sealed class MainForm : Form, IMessageFilter
         finally
         {
             _statusForm.Dispose();
+            _spellIconPackageDownloadCts?.Dispose();
+            _spellIconPackageDownloadService.Dispose();
             _shutdownCompleted = true;
             if (!IsDisposed)
             {
@@ -618,7 +631,7 @@ public sealed class MainForm : Form, IMessageFilter
         {
             Dock = DockStyle.Fill,
             ColumnCount = 1,
-            RowCount = 3,
+            RowCount = 4,
             BackColor = Color.Transparent,
             Margin = new Padding(0)
         };
@@ -824,6 +837,7 @@ public sealed class MainForm : Form, IMessageFilter
         const int settingsCardHeight = 190;
         const int settingsCardGap = UiTheme.PageGap;
         const int settingsActionButtonHeight = UiTheme.ActionButtonHeight;
+        panel.RowStyles.Add(new RowStyle(SizeType.Absolute, settingsCardHeight + settingsCardGap));
         panel.RowStyles.Add(new RowStyle(SizeType.Absolute, settingsCardHeight + settingsCardGap));
         panel.RowStyles.Add(new RowStyle(SizeType.Absolute, settingsCardHeight + settingsCardGap));
         panel.RowStyles.Add(new RowStyle(SizeType.Absolute, settingsCardHeight));
@@ -1123,11 +1137,163 @@ public sealed class MainForm : Form, IMessageFilter
         closeBehaviorCard.Controls.Add(closeBehaviorActions, 0, 3);
         panel.Controls.Add(closeBehaviorCard, 1, 2);
 
+        var spellIconPackageCard = new UiCardPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 1,
+            RowCount = 4,
+            Padding = new Padding(UiTheme.CardPadding),
+            Margin = new Padding(0)
+        };
+        spellIconPackageCard.RowStyles.Add(new RowStyle(SizeType.Absolute, 32));
+        spellIconPackageCard.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
+        spellIconPackageCard.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        spellIconPackageCard.RowStyles.Add(new RowStyle(SizeType.Absolute, settingsActionButtonHeight));
+        spellIconPackageCard.Controls.Add(CreateTitle("下载数据包"), 0, 0);
+        spellIconPackageCard.Controls.Add(
+            CreateDescription("从 GitHub 下载或更新技能图标数据包；不会随发布包自动附带"),
+            0,
+            1);
+
+        _spellIconPackageStatusLabel = CreateInfoLabel(string.Empty);
+        _spellIconPackageStatusLabel.Dock = DockStyle.Fill;
+        _spellIconPackageStatusLabel.AutoSize = false;
+        _spellIconPackageStatusLabel.AutoEllipsis = true;
+        _spellIconPackageStatusLabel.TextAlign = ContentAlignment.TopLeft;
+        _spellIconPackageStatusLabel.Margin = new Padding(0, 10, 0, 8);
+        spellIconPackageCard.Controls.Add(_spellIconPackageStatusLabel, 0, 2);
+
+        _downloadSpellIconPackageButton = UiTheme.CreateButton(
+            "下载数据包",
+            UiTheme.ButtonKind.Secondary);
+        _downloadSpellIconPackageButton.AutoSize = false;
+        _downloadSpellIconPackageButton.Size = new Size(140, settingsActionButtonHeight);
+        _downloadSpellIconPackageButton.Dock = DockStyle.Left;
+        _downloadSpellIconPackageButton.Margin = new Padding(0);
+        _downloadSpellIconPackageButton.Click += (_, _) => StartSpellIconPackageDownload();
+        spellIconPackageCard.Controls.Add(_downloadSpellIconPackageButton, 0, 3);
+        panel.Controls.Add(spellIconPackageCard, 0, 3);
+        panel.SetColumnSpan(spellIconPackageCard, 2);
+
         UpdateLayoutButtons();
         UpdateCloseBehaviorButtons();
+        UpdateSpellIconPackageCard();
         scrollHost.Controls.Add(panel);
         scrollHost.Resize += (_, _) => panel.Width = Math.Max(0, scrollHost.ClientSize.Width - SystemInformation.VerticalScrollBarWidth);
         return scrollHost;
+    }
+
+    private void StartSpellIconPackageDownload()
+    {
+        if (!_spellIconPackageDownloadTask.IsCompleted || _shutdownStarted)
+        {
+            return;
+        }
+
+        _spellIconPackageDownloadCts?.Dispose();
+        _spellIconPackageDownloadCts = new CancellationTokenSource();
+        _spellIconPackageDownloadTask = DownloadSpellIconPackageWithFeedbackAsync(
+            _spellIconPackageDownloadCts.Token);
+    }
+
+    private async Task DownloadSpellIconPackageWithFeedbackAsync(CancellationToken cancellationToken)
+    {
+        _downloadSpellIconPackageButton.Enabled = false;
+        var progress = new Progress<SpellIconDownloadProgress>(value =>
+        {
+            if (_shutdownStarted || _spellIconPackageStatusLabel.IsDisposed)
+            {
+                return;
+            }
+
+            _spellIconPackageStatusLabel.Text = value.Message;
+            _settingsToolTip.SetToolTip(_spellIconPackageStatusLabel, value.Message);
+            _downloadSpellIconPackageButton.Text = value.Percentage is { } percentage
+                ? $"正在下载 {percentage}%"
+                : "正在检查……";
+        });
+
+        AppendLog("开始检查 GitHub 技能图标数据包");
+        try
+        {
+            var result = await _spellIconPackageDownloadService.UpdateAsync(progress, cancellationToken);
+            if (_shutdownStarted)
+            {
+                return;
+            }
+
+            var sizeText = $"{result.Size / 1024d / 1024d:F2} MiB";
+            var hashText = result.Sha256[..Math.Min(12, result.Sha256.Length)];
+            if (result.UpToDate)
+            {
+                _spellIconPackageStatusLabel.Text = $"已是最新：{sizeText}，SHA-256 {hashText}…";
+                AppendLog("技能图标数据包已是最新，本地文件未修改");
+            }
+            else
+            {
+                _spellIconPackageStatusLabel.Text = $"安装完成：{sizeText}，SHA-256 {hashText}…";
+                AppendLog("技能图标数据包已下载、校验并热加载");
+            }
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            if (!_shutdownStarted)
+            {
+                _spellIconPackageStatusLabel.Text = "下载已取消；原数据包未修改。";
+                AppendLog("技能图标数据包下载已取消");
+            }
+        }
+        catch (Exception ex)
+        {
+            if (!_shutdownStarted)
+            {
+                _spellIconPackageStatusLabel.Text = $"下载失败：{ex.Message}";
+                _settingsToolTip.SetToolTip(_spellIconPackageStatusLabel, ex.ToString());
+                AppendLog($"技能图标数据包下载失败: {ex.Message}");
+                MessageBox.Show(
+                    this,
+                    ex.Message,
+                    "下载数据包失败",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+            }
+        }
+        finally
+        {
+            if (!_shutdownStarted && !_downloadSpellIconPackageButton.IsDisposed)
+            {
+                _downloadSpellIconPackageButton.Enabled = true;
+                _downloadSpellIconPackageButton.Text = SpellIconCatalog.IsPackageAvailable
+                    ? "检查更新"
+                    : "下载数据包";
+            }
+        }
+    }
+
+    private void UpdateSpellIconPackageCard()
+    {
+        var packagePath = SpellIconCatalog.PackagePath;
+        if (SpellIconCatalog.IsPackageAvailable && File.Exists(packagePath))
+        {
+            var length = new FileInfo(packagePath).Length;
+            _spellIconPackageStatusLabel.Text =
+                $"已安装：{length / 1024d / 1024d:F2} MiB。点击检查 GitHub 更新。";
+            _downloadSpellIconPackageButton.Text = "检查更新";
+        }
+        else if (File.Exists(packagePath))
+        {
+            _spellIconPackageStatusLabel.Text = "本地数据包损坏或格式不受支持；技能图标与添加技能联想不可用。";
+            _downloadSpellIconPackageButton.Text = "重新下载";
+        }
+        else
+        {
+            _spellIconPackageStatusLabel.Text = "未安装；技能图标与添加技能联想不可用。";
+            _downloadSpellIconPackageButton.Text = "下载数据包";
+        }
+
+        _settingsToolTip.SetToolTip(
+            _spellIconPackageStatusLabel,
+            _spellIconPackageStatusLabel.Text);
     }
 
     private void OpenModuleWebsite()

@@ -281,6 +281,8 @@ public sealed class ModuleStore
 
     private readonly object _gate = new();
     private List<ModuleDefinition> _modules = new();
+    private readonly HashSet<string> _rejectedModuleIds = new(StringComparer.OrdinalIgnoreCase);
+    private readonly HashSet<string> _importIssueModuleIds = new(StringComparer.OrdinalIgnoreCase);
 
     public ModuleStore(string moduleDirectory)
     {
@@ -300,21 +302,41 @@ public sealed class ModuleStore
     {
         lock (_gate)
         {
+            return _modules
+                .Where(module => !_rejectedModuleIds.Contains(module.Id))
+                .Select(module => module.Clone())
+                .ToList();
+        }
+    }
+
+    public IReadOnlyList<ModuleDefinition> GetModulesForDisplay()
+    {
+        lock (_gate)
+        {
             return _modules.Select(module => module.Clone()).ToList();
         }
     }
 
-    public void RejectModules(IEnumerable<string> moduleIds)
+    public void SetImportIssues(
+        IEnumerable<string> rejectedModuleIds,
+        IEnumerable<string> conflictedModuleIds)
     {
-        var rejected = new HashSet<string>(moduleIds, StringComparer.OrdinalIgnoreCase);
-        if (rejected.Count == 0)
-        {
-            return;
-        }
-
         lock (_gate)
         {
-            _modules.RemoveAll(module => rejected.Contains(module.Id));
+            _rejectedModuleIds.Clear();
+            _rejectedModuleIds.UnionWith(rejectedModuleIds);
+
+            _importIssueModuleIds.Clear();
+            _importIssueModuleIds.UnionWith(_rejectedModuleIds);
+            _importIssueModuleIds.UnionWith(conflictedModuleIds);
+        }
+    }
+
+    public bool HasImportIssue(string moduleId)
+    {
+        lock (_gate)
+        {
+            return _importIssueModuleIds.Contains(moduleId);
         }
     }
 
@@ -345,6 +367,8 @@ public sealed class ModuleStore
             }
 
             _modules = SortModules(loaded).ToList();
+            _rejectedModuleIds.Clear();
+            _importIssueModuleIds.Clear();
         }
     }
 
@@ -352,7 +376,13 @@ public sealed class ModuleStore
     {
         lock (_gate)
         {
-            var matches = SortMatches(_modules, classId, specId, partyType, heroTalent).ToList();
+            var matches = SortMatches(
+                    _modules.Where(module => !_rejectedModuleIds.Contains(module.Id)),
+                    classId,
+                    specId,
+                    partyType,
+                    heroTalent)
+                .ToList();
             if (!string.IsNullOrWhiteSpace(selectedModuleId))
             {
                 var selected = matches.FirstOrDefault(module =>
@@ -371,7 +401,12 @@ public sealed class ModuleStore
     {
         lock (_gate)
         {
-            return SortMatches(_modules, classId, specId, partyType, heroTalent)
+            return SortMatches(
+                    _modules.Where(module => !_rejectedModuleIds.Contains(module.Id)),
+                    classId,
+                    specId,
+                    partyType,
+                    heroTalent)
                 .Select(module => module.Clone())
                 .ToList();
         }
@@ -433,6 +468,8 @@ public sealed class ModuleStore
                 || string.Equals(existing.FilePath, path, StringComparison.OrdinalIgnoreCase));
             _modules.Add(module.Clone());
             _modules = SortModules(_modules).ToList();
+            _rejectedModuleIds.Remove(module.Id);
+            _importIssueModuleIds.Remove(module.Id);
 
             return module.Clone();
         }
@@ -452,6 +489,8 @@ public sealed class ModuleStore
             _modules.RemoveAll(existing =>
                 string.Equals(existing.Id, module.Id, StringComparison.OrdinalIgnoreCase)
                 || string.Equals(existing.FilePath, module.FilePath, StringComparison.OrdinalIgnoreCase));
+            _rejectedModuleIds.Remove(module.Id);
+            _importIssueModuleIds.Remove(module.Id);
         }
     }
 

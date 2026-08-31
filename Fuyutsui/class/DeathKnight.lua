@@ -195,7 +195,6 @@ Fuyutsui.ClassBlocks = {
                 { name = "破灭", spellIds = { 441426, 447954, 441424, 441416, 441378, 447954 }, },
                 { name = "冷酷严冬", spellId = 1233152, },
                 { name = "强效打击", spellId = 1269300, },
-                { name = "冰龙吐息", spellId = 12449658, },
             },
         },
         spells = {

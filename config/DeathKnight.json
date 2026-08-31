@@ -1069,18 +1069,6 @@
         "spellIds": [
           1269300
         ]
-      },
-      "player.12449658.value": {
-        "step": 58,
-        "type": "int",
-        "category": "玩家",
-        "displayName": "冰龙吐息",
-        "spellId": 12449658,
-        "scope": "player",
-        "metric": "value",
-        "spellIds": [
-          12449658
-        ]
       }
     },
     "spells": {

@@ -35,9 +35,9 @@ local AURA_BAR_STRATA = "TOOLTIP"
 local AURA_BAR_LEVEL = 9004
 
 -- 队伍治疗吸收条（FuyutsuiHealAbsorbBars）
-local HEAL_ABSORB_MAX_SLOTS = 30  -- 最大槽位数
-local HEAL_ABSORB_COLS = 5        -- 每行列数
-local HEAL_ABSORB_BAR_UNITS = 100 -- 单条条身单元数
+local HEAL_ABSORB_MAX_SLOTS = 30    -- 最大槽位数
+local HEAL_ABSORB_COLS = 5          -- 每行列数
+local HEAL_ABSORB_BAR_UNITS = 100   -- 单条条身单元数
 local HEAL_ABSORB_WIDTH_SCALE = 0.7 -- 单元宽度相对横向条的缩放比例
 
 --[[============================================================================
@@ -102,7 +102,7 @@ local function createTextureByIndex(i)
         local tex = colorBars:CreateTexture(nil, "OVERLAY")
         tex:SetSize(BLOCK_FIX_CONFIG.blockWidth, BLOCK_FIX_CONFIG.blockHeight)
         tex:SetPoint("TOPLEFT", colorBars, "TOPLEFT",
-                     GetXOffset(i - 1, BLOCK_FIX_CONFIG.blockWidth, BLOCK_FIX_CONFIG.blockSpacing), 0)
+            GetXOffset(i - 1, BLOCK_FIX_CONFIG.blockWidth, BLOCK_FIX_CONFIG.blockSpacing), 0)
         pixelTextures[i] = tex
     end
     return pixelTextures[i]
@@ -1078,12 +1078,12 @@ function Fuyutsui:LayoutAuraApplicationBars()
     for _, unit in ipairs(AURA_BAR_UNIT_ORDER) do
         local appSlots = slotsByUnit[unit]
         if #appSlots > 0 then
-        EnsureAuraContainerLoaded()
+            EnsureAuraContainerLoaded()
 
             local key = UNIT_AURA_BAR_CONTAINER_KEYS[unit]
             local frameName = "Fuyutsui" .. unit:gsub("^%l", string.upper) .. "AuraBarSlots"
             local barSlots = CreateFrame("AuraContainer", frameName, countBars,
-                                         "CustomAuraContainerTemplate")
+                "CustomAuraContainerTemplate")
             barSlots:SetPoint("TOPLEFT", countBars, "TOPLEFT", 0, 0)
             barSlots:SetUnit(unit)
             barSlots:SetEnabled(true)
@@ -1201,7 +1201,7 @@ local function CreateGroupMemberRoleOverlayContainer(memberIndex, groups)
     EnsureAuraContainerLoaded()
 
     local container = CreateFrame("AuraContainer", "FuyutsuiGroupRoleOverlaySlots_" .. memberIndex, UIParent,
-                                  "CustomAuraContainerTemplate")
+        "CustomAuraContainerTemplate")
     container:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 0, 0)
     container:SetEnabled(true)
     container:SetFrameStrata(AURA_DURATION_STRATA)
@@ -1230,7 +1230,7 @@ local function CreateGroupMemberAuraContainer(memberIndex, groups, auraDefs, inc
     EnsureAuraContainerLoaded()
 
     local container = CreateFrame("AuraContainer", "FuyutsuiGroupAuraSlots_" .. memberIndex, UIParent,
-                                  "CustomAuraContainerTemplate")
+        "CustomAuraContainerTemplate")
     container:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 0, 0)
     container:SetEnabled(true)
     container:SetFrameStrata(AURA_DURATION_STRATA)
@@ -1400,5 +1400,4 @@ function Fuyutsui:RebindAuraSpellFilters()
         local container = groupRoleOverlayContainers[memberIndex]
         RebindContainerSpellFilters(container, container.fuyutsuiUnit)
     end
-
 end

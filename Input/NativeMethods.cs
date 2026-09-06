@@ -26,6 +26,21 @@ internal static class NativeMethods
     public const uint SwpNomove = 0x0002;
     public const uint SwpNoSize = 0x0001;
     public const uint SwpNoActivate = 0x0010;
+    public const ushort XInputGamepadDPadUp = 0x0001;
+    public const ushort XInputGamepadDPadDown = 0x0002;
+    public const ushort XInputGamepadDPadLeft = 0x0004;
+    public const ushort XInputGamepadDPadRight = 0x0008;
+    public const ushort XInputGamepadStart = 0x0010;
+    public const ushort XInputGamepadBack = 0x0020;
+    public const ushort XInputGamepadLeftThumb = 0x0040;
+    public const ushort XInputGamepadRightThumb = 0x0080;
+    public const ushort XInputGamepadLeftShoulder = 0x0100;
+    public const ushort XInputGamepadRightShoulder = 0x0200;
+    public const ushort XInputGamepadA = 0x1000;
+    public const ushort XInputGamepadB = 0x2000;
+    public const ushort XInputGamepadX = 0x4000;
+    public const ushort XInputGamepadY = 0x8000;
+    public const byte XInputGamepadTriggerThreshold = 30;
 
     [StructLayout(LayoutKind.Sequential)]
     public struct Point
@@ -47,6 +62,25 @@ internal static class NativeMethods
         public int Top;
         public int Right;
         public int Bottom;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct XInputState
+    {
+        public uint PacketNumber;
+        public XInputGamepad Gamepad;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct XInputGamepad
+    {
+        public ushort Buttons;
+        public byte LeftTrigger;
+        public byte RightTrigger;
+        public short ThumbLX;
+        public short ThumbLY;
+        public short ThumbRX;
+        public short ThumbRY;
     }
 
     [DllImport("user32.dll", SetLastError = true)]
@@ -85,6 +119,9 @@ internal static class NativeMethods
 
     [DllImport("user32.dll")]
     public static extern short GetAsyncKeyState(int vKey);
+
+    [DllImport("xinput1_4.dll", EntryPoint = "XInputGetState")]
+    public static extern uint XInputGetState(uint userIndex, out XInputState state);
 
     [DllImport("user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]

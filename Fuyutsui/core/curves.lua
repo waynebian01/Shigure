@@ -34,7 +34,7 @@ end
 function Fuyutsui:CreatePowerCurve(powerType)
     if powerCurves[powerType] then return end
     local powerMax = UnitPowerMax("player", EnumPowerType[powerType])
-    if powerMax >= 250 then
+    if powerMax >= 300 then
         powerCurves[powerType] = self:CreateColorCurve(1, 100)
     else
         powerCurves[powerType] = self:CreateColorCurve(1, powerMax)

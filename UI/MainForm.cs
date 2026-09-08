@@ -19,6 +19,7 @@ public sealed class MainForm : Form, IMessageFilter
     private const int ResizeGripSize = 8;
     private const int RoundedCornerResizeDebounceMs = 80;
     private const int WowProcessMonitorIntervalMs = 10_000;
+    private const int GamepadCaptureIntervalMs = 50;
     private const int DefaultMainBarLongEdge = 476;
     private const int DefaultMainBarShortEdge = 64;
     private const int MinimumMainBarLongEdge = 294;
@@ -104,6 +105,7 @@ public sealed class MainForm : Form, IMessageFilter
     private readonly UiCacheState _uiCache;
     private readonly System.Windows.Forms.Timer _roundedCornerResizeTimer;
     private readonly System.Windows.Forms.Timer _wowProcessMonitorTimer;
+    private readonly System.Windows.Forms.Timer _gamepadCaptureTimer;
     private RenderSnapshot? _lastSnapshot;
     private string? _lastLoggedStep;
     private string? _lastLoggedStepDetails;
@@ -171,6 +173,11 @@ public sealed class MainForm : Form, IMessageFilter
         };
         _wowProcessMonitorTimer.Tick += HandleWowProcessMonitorTick;
         _wowProcessMonitorTimer.Start();
+        _gamepadCaptureTimer = new System.Windows.Forms.Timer
+        {
+            Interval = GamepadCaptureIntervalMs
+        };
+        _gamepadCaptureTimer.Tick += HandleGamepadCaptureTick;
         Application.AddMessageFilter(this);
         InitializeComponent();
         TryApplyApplicationIcon();
@@ -196,6 +203,7 @@ public sealed class MainForm : Form, IMessageFilter
         _statusForm.FormClosing += (_, _) =>
         {
             CancelToggleKeyCapture();
+            _gamepadCaptureTimer.Dispose();
             SaveUiCache();
         };
         ApplyCachedWindowState();
@@ -2561,6 +2569,32 @@ public sealed class MainForm : Form, IMessageFilter
         _isCapturingToggleKey = true;
         _toggleKeyButton.Text = "请按任意键...";
         ActiveControl = null;
+        _gamepadCaptureTimer.Start();
+    }
+
+    private void HandleGamepadCaptureTick(object? sender, EventArgs e)
+    {
+        if (!_isCapturingToggleKey)
+        {
+            _gamepadCaptureTimer.Stop();
+            return;
+        }
+
+        foreach (var keyName in WindowsTriggerKeyState.GamepadKeyNames)
+        {
+            var virtualKey = _triggerKeyState.ResolveVirtualKey(keyName);
+            if (virtualKey is not null && _triggerKeyState.Read(virtualKey.Value).IsDown)
+            {
+                _isCapturingToggleKey = false;
+                _gamepadCaptureTimer.Stop();
+                _toggleKeyName = keyName;
+                SetToggleKeyButtonText();
+                SaveUiCache();
+                AppendLog($"已录入触发键: {_toggleKeyName}");
+                HandleSettingCommitted(this, EventArgs.Empty);
+                return;
+            }
+        }
     }
 
     protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
@@ -2578,6 +2612,7 @@ public sealed class MainForm : Form, IMessageFilter
         if (key is Keys.Escape)
         {
             _isCapturingToggleKey = false;
+            _gamepadCaptureTimer.Stop();
             SetToggleKeyButtonText();
             AppendLog("已取消按键录入");
             return true;
@@ -2589,6 +2624,7 @@ public sealed class MainForm : Form, IMessageFilter
             AppendLog("触发键不支持 ALT, 请重试");
             _ = ResetCaptureButtonTextAsync();
             _isCapturingToggleKey = false;
+            _gamepadCaptureTimer.Stop();
             return true;
         }
 
@@ -2599,10 +2635,12 @@ public sealed class MainForm : Form, IMessageFilter
             AppendLog("该按键暂不支持, 请重试");
             _ = ResetCaptureButtonTextAsync();
             _isCapturingToggleKey = false;
+            _gamepadCaptureTimer.Stop();
             return true;
         }
 
         _isCapturingToggleKey = false;
+        _gamepadCaptureTimer.Stop();
         _toggleKeyName = keyName;
         SetToggleKeyButtonText();
         SaveUiCache();
@@ -2645,6 +2683,7 @@ public sealed class MainForm : Form, IMessageFilter
         }
 
         _isCapturingToggleKey = false;
+        _gamepadCaptureTimer.Stop();
         _toggleKeyName = keyName;
         SetToggleKeyButtonText();
         SaveUiCache();
@@ -2911,6 +2950,7 @@ public sealed class MainForm : Form, IMessageFilter
 
     private void CancelToggleKeyCapture()
     {
+        _gamepadCaptureTimer.Stop();
         if (!_isCapturingToggleKey)
         {
             return;

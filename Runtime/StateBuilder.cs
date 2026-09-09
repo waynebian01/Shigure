@@ -14,7 +14,8 @@ public sealed class StateBuilder : IRuntimeStateBuilder
     public GameState Build(
         IReadOnlyDictionary<int, int> rowData,
         IReadOnlyDictionary<int, int> barData,
-        IReadOnlyDictionary<int, int>? healAbsorbData = null)
+        IReadOnlyDictionary<int, int>? healAbsorbData = null,
+        IReadOnlyDictionary<int, NameplateScanData>? nameplates = null)
     {
         var classId = rowData.TryGetValue(2, out var cid) ? cid : 0;
         var specId = rowData.TryGetValue(3, out var sid) ? sid : 0;
@@ -60,8 +61,63 @@ public sealed class StateBuilder : IRuntimeStateBuilder
             result["group"] = group;
         }
 
+        if (JsonHelpers.Get(stateConfig, "nameplates") is JsonObject nameplateConfig)
+        {
+            result["nameplates"] = BuildNameplates(nameplateConfig, nameplates);
+        }
+
         return new GameState(result);
     }
+
+    private static Dictionary<string, IReadOnlyDictionary<string, object?>> BuildNameplates(
+        JsonObject config,
+        IReadOnlyDictionary<int, NameplateScanData>? scanned)
+    {
+        var result = new Dictionary<string, IReadOnlyDictionary<string, object?>>();
+        var healthRow = JsonHelpers.GetInt(JsonHelpers.Get(config, "healthPercent")) ?? 0;
+        var rangeRow = JsonHelpers.GetInt(JsonHelpers.Get(config, "range")) ?? 0;
+        var auraConfigs = JsonHelpers.Get(config, "auras") as JsonArray;
+
+        for (var slot = 1; slot <= 20; slot++)
+        {
+            var entry = scanned is not null && scanned.TryGetValue(slot, out var data)
+                ? data
+                : new NameplateScanData(false, Array.Empty<int>());
+            var values = new Dictionary<string, object?>
+            {
+                ["存在"] = entry.Present,
+                ["生命值"] = ReadNameplateRow(entry.Rows, healthRow),
+                ["距离"] = ReadNameplateRow(entry.Rows, rangeRow)
+            };
+
+            if (auraConfigs is not null)
+            {
+                var baseRow = Math.Max(Math.Max(healthRow, rangeRow), 2);
+                for (var auraIndex = 0; auraIndex < auraConfigs.Count; auraIndex++)
+                {
+                    var row = baseRow + auraIndex + 1;
+                    var value = ReadNameplateRow(entry.Rows, row);
+                    var ordinalKey = $"光环{auraIndex + 1}";
+                    values[ordinalKey] = value;
+                    if (auraConfigs[auraIndex] is JsonObject aura)
+                    {
+                        var name = JsonHelpers.GetString(JsonHelpers.Get(aura, "name"));
+                        if (!string.IsNullOrWhiteSpace(name) && !values.ContainsKey(name))
+                        {
+                            values[name] = value;
+                        }
+                    }
+                }
+            }
+
+            result[slot.ToString()] = values;
+        }
+
+        return result;
+    }
+
+    private static int ReadNameplateRow(IReadOnlyList<int> rows, int row)
+        => row > 0 && row <= rows.Count ? rows[row - 1] : 0;
 
     private static Dictionary<string, object?> BuildFieldMap(
         JsonObject fieldsConfig,

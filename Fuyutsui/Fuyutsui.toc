@@ -30,6 +30,7 @@ core/core.lua
 core/config.lua
 core/curves.lua
 core/block.lua
+core/nameplates.lua
 core/stateblocks.lua
 core/commands.lua
 core/quickbutton.lua

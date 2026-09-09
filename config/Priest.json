@@ -1920,6 +1920,16 @@
         "metric": "cooldown",
         "displayType": "冷却"
       }
+    },
+    "nameplates": {
+      "healthPercent": 1,
+      "range": 2,
+      "auras": [
+        {
+          "name": "暗言术：痛",
+          "spellId": 589
+        }
+      ]
     }
   }
 }

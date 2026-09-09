@@ -216,7 +216,7 @@ public sealed class ShigureRuntime
             return;
         }
 
-        _state = _stateBuilder.Build(scan.RowData, scan.BarData, scan.HealAbsorbData);
+        _state = _stateBuilder.Build(scan.RowData, scan.BarData, scan.HealAbsorbData, scan.Nameplates);
         _classId = _state.GetInt("职业");
         _specId = _state.GetInt("专精");
         (_className, _specName) = ClassNames.GetClassAndSpecName(_classId, _specId);

@@ -420,12 +420,18 @@ end
 
 function Fuyutsui:NAME_PLATE_UNIT_ADDED(_, unit)
     self:CacheNameplateUnit(unit)
+    if self.RefreshNameplatePixels then
+        self:RefreshNameplatePixels()
+    end
     self:RefreshTargetReactionState()
     self:RefreshBossReactionAndRangeStates()
 end
 
 function Fuyutsui:NAME_PLATE_UNIT_REMOVED(_, unit)
     nameplate[unit] = nil
+    if self.ClearNameplatePixelSlot then
+        self:ClearNameplatePixelSlot(unit)
+    end
     self:RefreshTargetReactionState()
 end
 
@@ -523,6 +529,7 @@ function Fuyutsui:OnUpdate(elapsed)
         RunUpdateSafely(self, "RefreshMouseoverRangeState")
 
         RunUpdateSafely(self, "RefreshEnemyCounts")
+        RunUpdateSafely(self, "RefreshNameplatePixels")
         RunUpdateSafely(self, "UpdateItemCooldown")
         self.timeElapsed = 0
     end

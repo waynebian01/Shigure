@@ -66,6 +66,10 @@ public sealed class ClassConfigEditorControl : UserControl
     private readonly CheckBox _groupHasRoleBox = new();
     private readonly CheckBox _groupHasDispelBox = new();
     private readonly DataGridView _groupAurasGrid = new();
+    private readonly NumericUpDown _nameplateHealthBox = new();
+    private readonly NumericUpDown _nameplateRangeBox = new();
+    private readonly CheckBox _nameplateEnabledBox = new();
+    private readonly DataGridView _nameplateAurasGrid = new();
 
     private string? _classDirectory;
     private readonly Dictionary<int, ClassBlocksStore.ClassFileDocument> _documents = new();
@@ -364,14 +368,14 @@ public sealed class ClassConfigEditorControl : UserControl
         {
             Dock = DockStyle.Fill,
             BackColor = UiTheme.Surface,
-            ColumnCount = 6,
+            ColumnCount = 7,
             RowCount = 1,
             Margin = new Padding(0, 0, 0, 8),
             Padding = new Padding(0)
         };
-        for (var i = 0; i < 6; i++)
+        for (var i = 0; i < 7; i++)
         {
-            tabBar.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F / 6));
+            tabBar.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F / 7));
         }
 
         var contentCard = new UiCardPanel
@@ -400,6 +404,7 @@ public sealed class ClassConfigEditorControl : UserControl
             BuildAurasPage(),
             BuildSpellsPage(),
             BuildGroupPage(),
+            BuildNameplatesPage(),
             BuildSpellsListPage(),
             BuildItemsPage()
         };
@@ -412,7 +417,7 @@ public sealed class ClassConfigEditorControl : UserControl
             contentHost.Controls.Add(page);
         }
 
-        var tabs = new UiPillTab[6];
+        var tabs = new UiPillTab[7];
         void SelectTab(int index)
         {
             if (_editorTabIndex == index)
@@ -428,7 +433,13 @@ public sealed class ClassConfigEditorControl : UserControl
                 WriteBackItems();
             }
 
-            if (!_suppressUi && _editorTabIndex == 5)
+            if (!_suppressUi && _editorTabIndex == 4)
+            {
+                _nameplateAurasGrid.EndEdit();
+                WriteBackNameplates();
+            }
+
+            if (!_suppressUi && _editorTabIndex == 6)
             {
                 _itemsListGrid.EndEdit();
                 WriteBackItemsList();
@@ -447,7 +458,7 @@ public sealed class ClassConfigEditorControl : UserControl
             }
         }
 
-        var titles = new[] { "状态", "光环", "冷却", "队伍", "技能列表", "物品列表" };
+        var titles = new[] { "状态", "光环", "冷却", "队伍", "姓名板", "技能列表", "物品列表" };
         for (var i = 0; i < titles.Length; i++)
         {
             var index = i;
@@ -1495,6 +1506,117 @@ public sealed class ClassConfigEditorControl : UserControl
         return panel;
     }
 
+    private Control BuildNameplatesPage()
+    {
+        var panel = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 1,
+            RowCount = 3,
+            BackColor = UiTheme.SurfaceRaised
+        };
+        panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 112));
+        panel.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 44));
+
+        var fields = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            FlowDirection = FlowDirection.LeftToRight,
+            WrapContents = false,
+            AutoScroll = true,
+            BackColor = UiTheme.SurfaceRaised,
+            Padding = new Padding(4, 6, 4, 6),
+            Margin = new Padding(0)
+        };
+
+        _nameplateEnabledBox.Text = "启用";
+        _nameplateEnabledBox.ForeColor = UiTheme.Text;
+        _nameplateEnabledBox.AutoSize = true;
+        _nameplateEnabledBox.CheckedChanged += (_, _) =>
+        {
+            if (!_suppressUi)
+            {
+                MarkDirty();
+                UpdateNameplateEditorsEnabled();
+            }
+        };
+        ConfigureGroupNumberBox(_nameplateHealthBox, 1, 254, 1);
+        ConfigureGroupNumberBox(_nameplateRangeBox, 1, 254, 2);
+        _nameplateHealthBox.Width = 84;
+        _nameplateRangeBox.Width = 84;
+
+        fields.Controls.Add(CreateGroupCard("NAMEPLATES", _nameplateEnabledBox));
+        fields.Controls.Add(CreateGroupCard("HEALTH ROW", _nameplateHealthBox));
+        fields.Controls.Add(CreateGroupCard("RANGE ROW", _nameplateRangeBox));
+        panel.Controls.Add(fields, 0, 0);
+
+        ConfigureGrid(_nameplateAurasGrid, "class-config-nameplates");
+        _nameplateAurasGrid.Columns.Add(CreateSpellIconColumn());
+        _nameplateAurasGrid.Columns.Add(new DataGridViewTextBoxColumn { Name = "Name", HeaderText = "名称", Width = 220 });
+        _nameplateAurasGrid.Columns.Add(new DataGridViewTextBoxColumn { Name = "SpellId", HeaderText = "spellId", Width = 120 });
+        _nameplateAurasGrid.Columns.Add(new DataGridViewTextBoxColumn
+        {
+            Name = "SpellIds",
+            HeaderText = "spellIds（逗号分隔）",
+            AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill
+        });
+        _nameplateAurasGrid.Columns.Add(CreateDeleteColumn());
+        _nameplateAurasGrid.CellContentClick += HandleDeleteClick;
+        _nameplateAurasGrid.CellValueChanged += (_, e) =>
+        {
+            MarkDirty();
+            if (e.RowIndex >= 0 && e.RowIndex < _nameplateAurasGrid.Rows.Count
+                && e.ColumnIndex >= 0
+                && _nameplateAurasGrid.Columns[e.ColumnIndex].Name is "Name" or "SpellId" or "SpellIds")
+            {
+                UpdateAuraGridIcon(_nameplateAurasGrid.Rows[e.RowIndex]);
+            }
+        };
+        _nameplateAurasGrid.UserAddedRow += (_, _) => MarkDirty();
+        panel.Controls.Add(_nameplateAurasGrid, 0, 1);
+        panel.Controls.Add(BuildMoveButtons(_nameplateAurasGrid), 0, 2);
+        return panel;
+    }
+
+    private void FillNameplateEditors()
+    {
+        _nameplateAurasGrid.Rows.Clear();
+        if (_currentSpec?.Nameplates is { } nameplates)
+        {
+            _nameplateEnabledBox.Checked = true;
+            _nameplateHealthBox.Value = Clamp(_nameplateHealthBox, nameplates.HealthPercent ?? 1);
+            _nameplateRangeBox.Value = Clamp(_nameplateRangeBox, nameplates.Range ?? 2);
+            foreach (var aura in nameplates.Auras)
+            {
+                var icon = GetAuraIcon(aura.SpellId, aura.SpellIds, aura.Name);
+                _nameplateAurasGrid.Rows.Add(
+                    icon!,
+                    aura.Name,
+                    aura.SpellId?.ToString(CultureInfo.InvariantCulture) ?? "",
+                    string.Join(", ", aura.SpellIds),
+                    "×");
+            }
+        }
+        else
+        {
+            _nameplateEnabledBox.Checked = false;
+            _nameplateHealthBox.Value = 1;
+            _nameplateRangeBox.Value = 2;
+        }
+
+        UpdateNameplateEditorsEnabled();
+    }
+
+    private void UpdateNameplateEditorsEnabled()
+    {
+        var enabled = _nameplateEnabledBox.Checked;
+        _nameplateHealthBox.Enabled = enabled;
+        _nameplateRangeBox.Enabled = enabled;
+        _nameplateAurasGrid.Enabled = enabled;
+        _nameplateAurasGrid.ReadOnly = !enabled;
+    }
+
     private Control CreateGroupNumberCard(
         string title,
         NumericUpDown box,
@@ -2070,6 +2192,7 @@ public sealed class ClassConfigEditorControl : UserControl
             FillSpellsGrid();
             FillItemsGrid();
             FillGroupEditors();
+            FillNameplateEditors();
         }
         finally
         {
@@ -3374,6 +3497,7 @@ public sealed class ClassConfigEditorControl : UserControl
         WriteBackSpells();
         WriteBackItems();
         WriteBackGroup();
+        WriteBackNameplates();
     }
 
     private void WriteBackSpellsList()
@@ -3667,6 +3791,48 @@ public sealed class ClassConfigEditorControl : UserControl
             {
                 error = $"物品列表索引 {index} 重复。";
                 return false;
+            }
+        }
+
+        return true;
+    }
+
+    private bool TryValidateNameplates(out string error)
+    {
+        error = string.Empty;
+        if (_currentDocument is null)
+        {
+            return true;
+        }
+
+        foreach (var (specId, spec) in _currentDocument.Specs.OrderBy(pair => pair.Key))
+        {
+            if (spec.Nameplates is not { } nameplates)
+            {
+                continue;
+            }
+
+            if (nameplates.HealthPercent is not > 0 or > 254
+                || nameplates.Range is not > 0 or > 254)
+            {
+                error = $"专精 {specId} 的姓名板行偏移必须是 1–254 的整数。";
+                return false;
+            }
+
+            if (nameplates.HealthPercent == nameplates.Range)
+            {
+                error = $"专精 {specId} 的姓名板生命值与距离行偏移不能相同。";
+                return false;
+            }
+
+            for (var index = 0; index < nameplates.Auras.Count; index++)
+            {
+                var aura = nameplates.Auras[index];
+                if (aura.SpellId is not > 0 && aura.SpellIds.Count == 0)
+                {
+                    error = $"专精 {specId} 的姓名板光环第 {index + 1} 行缺少有效 spellId。";
+                    return false;
+                }
             }
         }
 
@@ -3980,6 +4146,65 @@ public sealed class ClassConfigEditorControl : UserControl
         _currentSpec.Group = group;
     }
 
+    private void WriteBackNameplates()
+    {
+        if (_currentSpec is null)
+        {
+            return;
+        }
+
+        if (!_nameplateEnabledBox.Checked)
+        {
+            _currentSpec.Nameplates = null;
+            return;
+        }
+
+        var health = (int)_nameplateHealthBox.Value;
+        var range = (int)_nameplateRangeBox.Value;
+        if (health == range)
+        {
+            range = health == 254 ? 253 : health + 1;
+            _nameplateRangeBox.Value = range;
+        }
+
+        var nameplates = new ClassBlocksStore.NameplateBlocks
+        {
+            HealthPercent = health,
+            Range = range
+        };
+
+        foreach (DataGridViewRow row in _nameplateAurasGrid.Rows)
+        {
+            if (row.IsNewRow)
+            {
+                continue;
+            }
+
+            var name = row.Cells["Name"].Value?.ToString()?.Trim() ?? string.Empty;
+            var spellIdsText = row.Cells["SpellIds"].Value?.ToString()?.Trim() ?? string.Empty;
+            var entry = new ClassBlocksStore.AuraEntry { Name = name };
+            foreach (var id in ParseIdList(spellIdsText))
+            {
+                entry.SpellIds.Add(id);
+            }
+
+            if (long.TryParse(row.Cells["SpellId"].Value?.ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var spellId)
+                && spellId > 0)
+            {
+                entry.SpellId = spellId;
+            }
+
+            if (entry.SpellId is not > 0 && entry.SpellIds.Count == 0)
+            {
+                continue;
+            }
+
+            nameplates.Auras.Add(entry);
+        }
+
+        _currentSpec.Nameplates = nameplates;
+    }
+
     private async Task SaveAndUpdateAsync()
     {
         if (_currentDocument is null || _currentClassId is null)
@@ -4018,6 +4243,12 @@ public sealed class ClassConfigEditorControl : UserControl
 
             // 切换分类前把当前状态表写回。
             CommitCurrentSpecFromUi();
+            if (!TryValidateNameplates(out validationError))
+            {
+                MessageBox.Show(validationError, "姓名板", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                _statusLabel.Text = validationError;
+                return;
+            }
             if (!TryValidateItems(out validationError))
             {
                 MessageBox.Show(validationError, "物品冷却", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -4131,6 +4362,7 @@ public sealed class ClassConfigEditorControl : UserControl
         _spellsListGrid.Rows.Clear();
         _spellsListSearchBox.Clear();
         _groupAurasGrid.Rows.Clear();
+        _nameplateAurasGrid.Rows.Clear();
     }
 
     private void HandleDeleteClick(object? sender, DataGridViewCellEventArgs e)

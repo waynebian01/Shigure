@@ -1,6 +1,6 @@
 ---
 title: "Shigure 像素生产消费契约"
-summary: "定义 Fuyutsui 主色块、CountBars 和治疗吸收网格的屏幕编码，以及 Shigure 的采样、原始解码和状态构建责任。"
+summary: "定义 Fuyutsui 主色块、CountBars、治疗吸收网格和姓名板像素的屏幕编码，以及 Shigure 的采样、原始解码和状态构建责任。"
 aliases:
   - "Fuyutsui Shigure 像素协议"
   - "屏幕读色契约"
@@ -56,6 +56,10 @@ Shigure 可在主色块成功时对后两者降级：找不到 CountBars 标记�
 - `StateBuilder` 如何使用 config 把这些原始值变成业务状态。
 - 生产或消费协议变更时的同步责任。
 
+### 姓名板像素
+
+姓名板使用独立于主色块和 CountBars 的区域。第一行是标记行：首格为 `(1,0,1)`，第二格的 `B` 通道编码数据行数；后续每行固定 20 个槽位。每个槽位的 `R=1` 表示 `nameplateN` 存在，`B` 是该行的 0..255 原始值。配置中的 `healthPercent`、`range` 指定行偏移，光环从两者最大值之后按顺序排列。
+
 本契约不定义 `ClassBlocks` 中业务字段的完整顺序；见 [[50-参考资料/TEXTURE_LAYOUT_zh-CN|纹理排序说明]]。它也不定义 AuraContainer 上游 API；见 [[50-参考资料/AuraContainer_AI_Reference_zh-CN|AuraContainer 技术参考]]。
 
 ## 输入与输出
@@ -80,6 +84,8 @@ Fuyutsui 内部颜色通道使用 0..1；屏幕采样后 Shigure 读取 0..255 �
 - `FailureReason`，用于区分窗口、客户区、起始标记或 CountBars 的失败。
 
 `StateBuilder.Build` 再把这些值映射成 `GameState`；像素采集器本身不知道字段名称。
+
+`ScreenScanResult.Nameplates` 返回 `1..20` 的 `NameplateScanData`，`Rows[0]` 对应姓名板数据第 1 行。`GameState` 以 `nameplates.<槽位>.<字段>` 提供存在、生命值、距离和光环剩余时间。
 
 ## 编码与运行链路
 

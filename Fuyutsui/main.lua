@@ -49,6 +49,7 @@ function Fuyutsui:LoadPlayerBlocks(specIndex)
         auras = {},
         spells = {},
         bars = {},
+        nameplates = nil,
     }
 
     local index = 1
@@ -219,6 +220,25 @@ function Fuyutsui:LoadPlayerBlocks(specIndex)
         }
     end
 
+    if type(t.nameplates) == "table" then
+        blocks.nameplates = {
+            healthPercent = tonumber(t.nameplates.healthPercent),
+            range = tonumber(t.nameplates.range),
+            auras = {},
+        }
+        if type(t.nameplates.auras) == "table" then
+            for _, aura in ipairs(t.nameplates.auras) do
+                if type(aura) == "table" and (aura.spellId or aura.spellIds) then
+                    tinsert(blocks.nameplates.auras, {
+                        name = aura.name,
+                        spellId = aura.spellId,
+                        spellIds = aura.spellIds,
+                    })
+                end
+            end
+        end
+    end
+
     self.blocks = blocks
     if self.ReleaseUnitAuraContainers then
         self:ReleaseUnitAuraContainers()
@@ -227,6 +247,10 @@ function Fuyutsui:LoadPlayerBlocks(specIndex)
     end
     if self.ReleaseGroupAuraContainers then
         self:ReleaseGroupAuraContainers()
+    end
+    if self.LoadNameplatePixels then
+        self:LoadNameplatePixels(blocks.nameplates)
+        self:RefreshNameplatePixels()
     end
 end
 

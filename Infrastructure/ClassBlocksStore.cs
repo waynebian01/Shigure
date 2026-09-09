@@ -6,7 +6,7 @@ using static Shigure.LuaLiteParser;
 namespace Shigure;
 
 /// <summary>
-/// 读写 Fuyutsui class/*.lua 中的 ClassBlocks（states/auras/spells/items/group），
+/// 读写 Fuyutsui class/*.lua 中的 ClassBlocks（states/auras/spells/items/group/nameplates），
 /// 同时读写 spellsList 与 itemsList；保存时替换 ClassBlocks 表字面量，并原位更新列表条目。
 /// </summary>
 internal static class ClassBlocksStore
@@ -94,6 +94,7 @@ internal static class ClassBlocksStore
         public List<AuraEntry> FocusHelpfulAuras { get; } = new();
         public List<SpellEntry> Spells { get; } = new();
         public GroupBlocks? Group { get; set; }
+        public NameplateBlocks? Nameplates { get; set; }
     }
 
     public sealed class AuraEntry
@@ -130,6 +131,13 @@ internal static class ClassBlocksStore
         public string Name { get; set; } = string.Empty;
         public long? SpellId { get; set; }
         public List<long> SpellIds { get; } = new();
+    }
+
+    public sealed class NameplateBlocks
+    {
+        public int? HealthPercent { get; set; }
+        public int? Range { get; set; }
+        public List<AuraEntry> Auras { get; } = new();
     }
 
     public static ClassFileDocument Load(string filePath)
@@ -538,7 +546,8 @@ internal static class ClassBlocksStore
             || spec.GetTable("auras") is not null
             || spec.GetTable("spells") is not null
             || spec.GetTable("items") is not null
-            || spec.GetTable("group") is not null;
+            || spec.GetTable("group") is not null
+            || spec.GetTable("nameplates") is not null;
 
         if (!isModern)
         {
@@ -688,6 +697,17 @@ internal static class ClassBlocksStore
             }
 
             result.Group = groupBlocks;
+        }
+
+        if (spec.GetTable("nameplates") is { } nameplates)
+        {
+            var blocks = new NameplateBlocks
+            {
+                HealthPercent = nameplates.GetNumber("healthPercent") is { } hp ? (int)hp : null,
+                Range = nameplates.GetNumber("range") is { } range ? (int)range : null
+            };
+            AppendAuraList(nameplates.GetTable("auras"), blocks.Auras);
+            result.Nameplates = blocks;
         }
 
         return result;
@@ -933,6 +953,33 @@ internal static class ClassBlocksStore
 
                     WriteSpellIdFields(sb, aura.SpellId, aura.SpellIds);
                     sb.AppendLine(" },");
+                }
+
+                sb.Append(indent).AppendLine("    },");
+            }
+
+            sb.Append(indent).AppendLine("},");
+        }
+
+        if (spec.Nameplates is { } nameplates)
+        {
+            sb.Append(indent).AppendLine("nameplates = {");
+            if (nameplates.HealthPercent is { } healthPercent)
+            {
+                sb.Append(indent).Append("    healthPercent = ").Append(healthPercent).AppendLine(",");
+            }
+
+            if (nameplates.Range is { } range)
+            {
+                sb.Append(indent).Append("    range = ").Append(range).AppendLine(",");
+            }
+
+            if (nameplates.Auras.Count > 0)
+            {
+                sb.Append(indent).AppendLine("    auras = {");
+                foreach (var aura in nameplates.Auras)
+                {
+                    WriteAuraEntry(sb, aura, indent + "        ");
                 }
 
                 sb.Append(indent).AppendLine("    },");

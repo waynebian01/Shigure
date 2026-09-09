@@ -119,6 +119,7 @@ Fuyutsui.ClassBlocks = {
                 [5] = { name = "真言术：盾", spellIds = { 17, 1253593 }, },
             },
         },
+
     },
     [2] = {
         states = {
@@ -351,6 +352,13 @@ Fuyutsui.ClassBlocks = {
             { spellId = 120644, name = "光晕" },
             { spellId = 1242173, name = "虚空齐射" },
         },
+        nameplates = {
+            healthPercent = 1,
+            range = 2,
+            auras = {
+                { name = "暗言术：痛", spellId = 589, },
+            },
+        }
     },
 }
 

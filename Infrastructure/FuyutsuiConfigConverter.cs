@@ -552,6 +552,64 @@ internal static class FuyutsuiConfigConverter
             result["group"] = groupJson;
         }
 
+        if (spec.GetTable("nameplates") is { } nameplates)
+        {
+            var nameplateJson = new JsonObject();
+            if (nameplates.GetNumber("healthPercent") is { } healthPercent)
+            {
+                nameplateJson["healthPercent"] = (int)healthPercent;
+            }
+
+            if (nameplates.GetNumber("range") is { } range)
+            {
+                nameplateJson["range"] = (int)range;
+            }
+
+            if (nameplates.GetTable("auras") is { } nameplateAuras)
+            {
+                var auraArray = new JsonArray();
+                foreach (var item in nameplateAuras.IPairs())
+                {
+                    if (item is not TableValue aura)
+                    {
+                        continue;
+                    }
+
+                    var ids = ReadAuraIds(aura);
+                    if (ids.Count == 0)
+                    {
+                        warnings.Add($"{label}: nameplates aura 缺少有效 spellId，已跳过");
+                        continue;
+                    }
+
+                    var auraJson = new JsonObject
+                    {
+                        ["name"] = aura.GetString("name")?.Trim() ?? string.Empty,
+                        ["spellId"] = ids[0]
+                    };
+                    if (ids.Count > 1)
+                    {
+                        var aliases = new JsonArray();
+                        foreach (var id in ids.Skip(1))
+                        {
+                            aliases.Add(id);
+                        }
+
+                        auraJson["spellIds"] = aliases;
+                    }
+
+                    auraArray.Add(auraJson);
+                }
+
+                nameplateJson["auras"] = auraArray;
+            }
+
+            if (nameplateJson.Count > 0)
+            {
+                result["nameplates"] = nameplateJson;
+            }
+        }
+
         return (result, warnings);
     }
 

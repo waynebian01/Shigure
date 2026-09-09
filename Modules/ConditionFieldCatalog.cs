@@ -239,6 +239,30 @@ public sealed class ConditionFieldCatalog
             }
         }
 
+        if (JsonHelpers.Get(stateConfig, "nameplates") is JsonObject nameplates)
+        {
+            var auraCount = (JsonHelpers.Get(nameplates, "auras") as JsonArray)?.Count ?? 0;
+            for (var slot = 1; slot <= 20; slot++)
+            {
+                var prefix = $"nameplates.{slot}.";
+                AddField(fields, seen, prefix + "存在", $"姓名板{slot} / 存在", ConditionFieldType.Bool, ConditionFieldCategory.State, "姓名板");
+                AddField(fields, seen, prefix + "生命值", $"姓名板{slot} / 生命值", ConditionFieldType.Int, ConditionFieldCategory.State, "姓名板");
+                AddField(fields, seen, prefix + "距离", $"姓名板{slot} / 距离", ConditionFieldType.Int, ConditionFieldCategory.State, "姓名板");
+                for (var auraIndex = 1; auraIndex <= auraCount; auraIndex++)
+                {
+                    var name = $"光环{auraIndex}";
+                    if (JsonHelpers.Get(nameplates, "auras") is JsonArray auraList
+                        && auraIndex - 1 < auraList.Count
+                        && auraList[auraIndex - 1] is JsonObject aura)
+                    {
+                        name = JsonHelpers.GetString(JsonHelpers.Get(aura, "name")) ?? name;
+                    }
+
+                    AddField(fields, seen, prefix + $"光环{auraIndex}", $"姓名板{slot} / {name}", ConditionFieldType.Int, ConditionFieldCategory.Aura, "姓名板");
+                }
+            }
+        }
+
         // 原始“插入法术”按 config 中的 int 状态保留；转换为技能名的特殊字段单独置底。
         AddField(
             fields,

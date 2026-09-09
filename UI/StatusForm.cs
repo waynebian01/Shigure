@@ -13,6 +13,7 @@ internal enum SettingsPage
     Modules,
     Status,
     Party,
+    Nameplates,
     Logic,
     Logs,
     BossNumbers,
@@ -28,6 +29,7 @@ internal enum SettingsNavIcon
     Modules,
     Status,
     Party,
+    Nameplates,
     Logic,
     Logs,
     BossNumbers,
@@ -310,6 +312,7 @@ public sealed class StatusForm : Form
     private ListView _dynamicUnitList = null!;
     private ListView _spellList = null!;
     private ListView _partyList = null!;
+    private ListView _nameplateList = null!;
     private ListView _unitInfoList = null!;
     private TextBox _logTextBox = null!;
     private Panel _contentHost = null!;
@@ -487,6 +490,9 @@ public sealed class StatusForm : Form
         _partyList = UiTheme.CreateListView(Font, "status-party",
             new UiTheme.ListColumn("单位", 120, 180, FixedWidth: true),
             new UiTheme.ListColumn("摘要", 320, 1600, FillRemaining: true));
+        _nameplateList = UiTheme.CreateListView(Font, "status-nameplates",
+            new UiTheme.ListColumn("单位", 120, 180, FixedWidth: true),
+            new UiTheme.ListColumn("摘要", 320, 1600, FillRemaining: true));
         _unitInfoList = UiTheme.CreateListView(Font, "status-unit-info",
             new UiTheme.ListColumn("名称", 180, 320),
             new UiTheme.ListColumn("值", 320, 1400, FillRemaining: true));
@@ -521,6 +527,7 @@ public sealed class StatusForm : Form
         AddNavGroup(nav, "监控");
         AddNavItem(nav, SettingsPage.Status, SettingsNavIcon.Status, "状态", CreatePageShell("状态", string.Empty, BuildStatusPage()));
         AddNavItem(nav, SettingsPage.Party, SettingsNavIcon.Party, "队伍", CreatePageShell("队伍", "当前队伍单位与扫描字段摘要", BuildFixedWidthSectionPage("队伍成员", _partyList, "实时队伍数据")));
+        AddNavItem(nav, SettingsPage.Nameplates, SettingsNavIcon.Party, "姓名板", CreatePageShell("姓名板", "20 个敌对姓名板与配置字段", BuildFixedWidthSectionPage("姓名板", _nameplateList, "实时姓名板数据")));
         AddNavItem(nav, SettingsPage.Logic, SettingsNavIcon.Logic, "逻辑", CreatePageShell("逻辑", "运行时推荐目标与调试值", BuildFixedWidthSectionPage("逻辑信息", _unitInfoList, "当前模块的决策输出")));
         AddNavItem(nav, SettingsPage.Logs, SettingsNavIcon.Logs, "日志", CreatePageShell("日志", "运行、模块匹配与施放记录", BuildLogPage()));
         AddNavGroup(nav, "说明");
@@ -545,6 +552,7 @@ public sealed class StatusForm : Form
         ReplaceItems(_spellList, [new ListViewItem(["-", "技能", "-", "-", "无数据"])]);
         ReplaceItems(_dynamicUnitList, [new ListViewItem(["-", "动态单位", "等待游戏状态"])]);
         ReplaceItems(_partyList, [new ListViewItem(["队伍", "无队伍数据"])]);
+        ReplaceItems(_nameplateList, [new ListViewItem(["姓名板", "无姓名板数据"])]);
         ReplaceItems(_unitInfoList, [new ListViewItem(["逻辑信息", "无推荐目标"])]);
     }
 
@@ -1597,6 +1605,10 @@ public sealed class StatusForm : Form
             "宠物",
             ["存在", "生命值"],
             104), 0, 4);
+        fields.Controls.Add(CreateCommonFieldCard(
+            "姓名板",
+            ["nameplates.N.存在", "nameplates.N.生命值", "nameplates.N.距离", "nameplates.N.光环N"],
+            104), 1, 4);
 
         void SyncScrollLayout()
         {
@@ -1938,6 +1950,7 @@ public sealed class StatusForm : Form
         UpdateDynamicUnitList(snapshot);
         UpdateSpellList(snapshot);
         UpdatePartyList(snapshot);
+        UpdateNameplateList(snapshot);
         UpdateUnitInfoList(snapshot);
     }
 
@@ -1959,7 +1972,7 @@ public sealed class StatusForm : Form
 
             foreach (var (key, value) in snapshot.State.Values)
             {
-                if (key is "spells" or "auras" or "group"
+                if (key is "spells" or "auras" or "group" or "nameplates"
                     || key.StartsWith('$')
                     || snapshot.State.ItemIds.ContainsKey(key))
                 {
@@ -2165,6 +2178,41 @@ public sealed class StatusForm : Form
         }
 
         ReplaceItems(_partyList, items);
+    }
+
+    private void UpdateNameplateList(RenderSnapshot snapshot)
+    {
+        var items = new List<ListViewItem>();
+        for (var slot = 1; slot <= 20; slot++)
+        {
+            var key = slot.ToString();
+            if (snapshot.State?.Nameplates.TryGetValue(key, out var data) != true || data is null)
+            {
+                items.Add(new ListViewItem([$"nameplate{slot}", "-"]));
+                continue;
+            }
+
+            var present = data.TryGetValue("存在", out var presentValue) && presentValue is bool flag && flag;
+            if (!present)
+            {
+                items.Add(new ListViewItem([$"nameplate{slot}", "-"]));
+                continue;
+            }
+
+            var summary = string.Join("  ", data
+                .Where(pair => pair.Key is not "存在" && !pair.Key.StartsWith("光环", StringComparison.Ordinal))
+                .Select(pair => $"{pair.Key}: {UiTheme.FormatValue(pair.Value)}"));
+            var auraValues = data.Where(pair => pair.Key.StartsWith("光环", StringComparison.Ordinal));
+            var auraSummary = string.Join("  ", auraValues.Select(pair => $"{pair.Key}: {UiTheme.FormatValue(pair.Value)}"));
+            if (!string.IsNullOrWhiteSpace(auraSummary))
+            {
+                summary = string.IsNullOrWhiteSpace(summary) ? auraSummary : summary + "  " + auraSummary;
+            }
+
+            items.Add(new ListViewItem([$"nameplate{slot}", summary]));
+        }
+
+        ReplaceItems(_nameplateList, items);
     }
 
     private static string DisplayPartyFieldName(string key)

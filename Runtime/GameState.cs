@@ -34,6 +34,11 @@ public sealed class GameState
             ? group
             : new Dictionary<string, IReadOnlyDictionary<string, object?>>();
 
+    public IReadOnlyDictionary<string, IReadOnlyDictionary<string, object?>> Nameplates =>
+        Values.TryGetValue("nameplates", out var value) && value is IReadOnlyDictionary<string, IReadOnlyDictionary<string, object?>> nameplates
+            ? nameplates
+            : new Dictionary<string, IReadOnlyDictionary<string, object?>>();
+
     public int GetInt(string key, int defaultValue = 0)
     {
         var value = GetValue(key);
@@ -96,6 +101,15 @@ public sealed class GameState
         if (normalized.StartsWith("aura.", StringComparison.OrdinalIgnoreCase))
         {
             return Auras.TryGetValue(normalized["aura.".Length..], out var value) ? value : null;
+        }
+
+        if (normalized.StartsWith("nameplates.", StringComparison.OrdinalIgnoreCase))
+        {
+            var parts = normalized["nameplates.".Length..].Split('.', 2);
+            if (parts.Length == 2 && Nameplates.TryGetValue(parts[0], out var plate))
+            {
+                return plate.TryGetValue(parts[1], out var value) ? value : null;
+            }
         }
 
         return Values.TryGetValue(normalized, out var directValue) ? directValue : null;

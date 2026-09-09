@@ -8,10 +8,13 @@ public sealed record ScreenScanResult(
     IReadOnlyDictionary<int, int>? RowData,
     IReadOnlyDictionary<int, int> BarData,
     IReadOnlyDictionary<int, int> HealAbsorbData,
-    string? FailureReason)
+    string? FailureReason,
+    IReadOnlyDictionary<int, NameplateScanData>? Nameplates = null)
 {
     internal nint TargetWindowHandle { get; init; }
 }
+
+public sealed record NameplateScanData(bool Present, IReadOnlyList<int> Rows);
 
 public sealed class PixelScanner : IRuntimeScreenScanner
 {
@@ -19,6 +22,8 @@ public sealed class PixelScanner : IRuntimeScreenScanner
     private const int TopRowFirstSchemeMax = 255;
     private const int HealAbsorbMaxRows = 6;
     private const int HealAbsorbMaxUnits = 30;
+    private const int NameplateSlotCount = 20;
+    private const int NameplateMaxRows = 255;
     private readonly WowProcessLocator _processLocator;
 
     internal PixelScanner(WowProcessLocator processLocator)
@@ -89,19 +94,81 @@ public sealed class PixelScanner : IRuntimeScreenScanner
             var healAbsorbData = markerY is null
                 ? emptyAbsorb
                 : ScanHealAbsorbGrid(point.X, point.Y, width, height, markerY.Value);
+            var nameplates = ScanNameplates(point.X, point.Y, width, height);
             var result = rowData.Count == 0
-                ? new ScreenScanResult(null, barData, healAbsorbData, "未找到有效的状态像素起始标记")
+                ? new ScreenScanResult(null, barData, healAbsorbData, "未找到有效的状态像素起始标记", nameplates)
                 : new ScreenScanResult(
                     rowData,
                     barData,
                     healAbsorbData,
-                    markerY is null ? "未找到 CountBars 标记，层数条和治疗吸收数据未采集" : null);
+                    markerY is null ? "未找到 CountBars 标记，层数条和治疗吸收数据未采集" : null,
+                    nameplates);
             return result with { TargetWindowHandle = hwnd };
         }
         catch (Exception ex)
         {
             return new ScreenScanResult(null, emptyBars, emptyAbsorb, $"{ex.GetType().Name}: {ex.Message}");
         }
+    }
+
+    private static Dictionary<int, NameplateScanData> ScanNameplates(int baseX, int baseY, int width, int height)
+    {
+        var result = new Dictionary<int, NameplateScanData>();
+        for (var slot = 1; slot <= NameplateSlotCount; slot++)
+        {
+            result[slot] = new NameplateScanData(false, Array.Empty<int>());
+        }
+
+        if (width < NameplateSlotCount)
+        {
+            return result;
+        }
+
+        var searchHeight = Math.Min(height, 64);
+        using var headerImage = Capture(baseX, baseY, width, searchHeight);
+        var headerPixels = ReadPixels(headerImage);
+        var cellWidth = (double)width / NameplateSlotCount;
+        var markerY = -1;
+        var rowCount = 0;
+        for (var y = 0; y < searchHeight; y++)
+        {
+            var marker = Color.FromArgb(headerPixels[y * width]);
+            if (marker.R != 1 || marker.G != 0 || marker.B != 1)
+            {
+                continue;
+            }
+
+            var headerX = Math.Min(width - 1, Math.Max(0, (int)Math.Floor(cellWidth * 1.5)));
+            var header = Color.FromArgb(headerPixels[y * width + headerX]);
+            rowCount = Math.Clamp((int)header.B, 0, NameplateMaxRows);
+            markerY = y;
+            break;
+        }
+
+        if (markerY < 0 || rowCount <= 0 || markerY + rowCount >= height)
+        {
+            return result;
+        }
+
+        using var image = Capture(baseX, baseY + markerY + 1, width, rowCount);
+        var pixels = ReadPixels(image);
+
+        for (var slot = 1; slot <= NameplateSlotCount; slot++)
+        {
+            var rows = new int[rowCount];
+            var present = false;
+            var x = Math.Min(width - 1, Math.Max(0, (int)Math.Floor((slot - 0.5) * cellWidth)));
+            for (var row = 0; row < rowCount; row++)
+            {
+                var color = Color.FromArgb(pixels[row * width + x]);
+                present |= color.R == 1;
+                rows[row] = color.B;
+            }
+
+            result[slot] = new NameplateScanData(present, rows);
+        }
+
+        return result;
     }
 
     private static Dictionary<int, int> ScanTopRow(int baseX, int baseY, int width)

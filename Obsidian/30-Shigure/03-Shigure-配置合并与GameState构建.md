@@ -68,6 +68,8 @@ verified_at: 2026-08-28
 
 ## GameState 构建链路
 
+当专精配置包含 `nameplates` 时，`StateBuilder` 会把扫描到的 20 个固定槽位映射为 `nameplates.<槽位>.<字段>`，字段包括 `存在`、`生命值`、`距离` 和配置光环的剩余时间；这些路径可直接用于模块条件。
+
 ```text
 RowData[2,3]
   -> BuildStateConfig(classId, specId)

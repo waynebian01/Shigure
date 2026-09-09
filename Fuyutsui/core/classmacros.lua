@@ -10,8 +10,8 @@ Fuyutsui.MacroBodies = {
     ["收割者战刃"] = "/cast 投掷利刃",
 }
 -- 全职业宏表：按 UnitClassBase 键索引
--- 由 LoadPlayerMacros 按当前职业与专精选取
--- dynamicSpells 支持：纯数组（旧），或 { common = {...}, [specIndex] = {...} }
+-- 由 LoadPlayerMacros 按当前职业选取
+-- dynamicSpells、staticSpells、specialSpells 均为职业级列表
 -- 创建顺序：dynamicSpells（每组 30 键）→ staticSpells → specialSpells
 Fuyutsui.ClassMacros = {
     WARRIOR = {
@@ -60,10 +60,7 @@ Fuyutsui.ClassMacros = {
     },
 
     PALADIN = {
-        dynamicSpells = {
-            common = { "清毒术", "荣耀圣令" },
-            [1] = { "圣光术", "圣光闪现", "神圣震击", "圣洁鸣钟", "圣疗术", "圣光道标" },
-        },
+        dynamicSpells = { "清毒术", "荣耀圣令", "圣光术", "圣光闪现", "神圣震击", "圣洁鸣钟", "圣疗术", "圣光道标" },
         staticSpells = {
             "圣盾术",
             "盲目之光",
@@ -183,11 +180,7 @@ Fuyutsui.ClassMacros = {
     },
 
     PRIEST = {
-        dynamicSpells = {
-            common = { "纯净术", "快速治疗" },
-            [1] = { "真言术：盾", "苦修" },
-            [2] = { "愈合祷言", "圣言术：静" },
-        },
+        dynamicSpells = { "纯净术", "快速治疗", "真言术：盾", "苦修", "愈合祷言", "圣言术：静" },
         staticSpells = {
             "心灵震爆",
             "[@target]惩击",
@@ -640,11 +633,7 @@ Fuyutsui.ClassMacros = {
     },
 
     EVOKER = {
-        dynamicSpells = {
-            common = { "净除" },
-            [2] = { "活化烈焰", "青翠之拥", "回响", "逆转", "翡翠之花" },
-            [3] = { "先知先觉" },
-        },
+        dynamicSpells = { "净除" },
         staticSpells = {
             "[channeling]火焰吐息",
             "[nochanneling]火焰吐息",

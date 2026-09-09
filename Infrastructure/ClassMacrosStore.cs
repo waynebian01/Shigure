@@ -30,26 +30,10 @@ internal static class ClassMacrosStore
 
     public sealed class ClassMacros
     {
-        /// <summary>
-        /// false 表示旧式纯数组；true 表示 common + [specIndex] 分组格式。
-        /// 两种格式的通用项都保存在 DynamicCommon 中，以便旧文件无损回写。
-        /// </summary>
-        public bool UsesSpecDynamicSpells { get; set; }
-        public List<string> DynamicCommon { get; } = new();
-        public Dictionary<int, List<string>> DynamicBySpec { get; } = new();
+        /// <summary>职业级动态宏；每个条目占用 30 个团队点名槽位。</summary>
+        public List<string> DynamicSpells { get; } = new();
         public List<ArrayEntry> StaticSpells { get; } = new();
         public List<ArrayEntry> SpecialSpells { get; } = new();
-
-        public IReadOnlyList<string> ResolveDynamicSpells(int? specIndex)
-        {
-            if (!UsesSpecDynamicSpells || specIndex is null
-                || !DynamicBySpec.TryGetValue(specIndex.Value, out var specSpells))
-            {
-                return DynamicCommon;
-            }
-
-            return [.. DynamicCommon, .. specSpells];
-        }
     }
 
     public sealed class ArrayEntry
@@ -147,30 +131,14 @@ internal static class ClassMacrosStore
         var macros = new ClassMacros();
         if (classTable.GetTable("dynamicSpells") is { } dynamic)
         {
-            var specIndexes = dynamic.Entries
-                .Select(entry => TryGetPositiveIndex(entry.Key))
-                .Where(index => index is not null)
-                .Select(index => index!.Value)
-                .Distinct()
-                .Where(index => dynamic.GetTable((long)index) is not null)
-                .OrderBy(index => index)
-                .ToList();
+            if (dynamic.GetTable("common") is not null || dynamic.Entries.Any(entry =>
+                    entry.Value is TableValue && TryGetPositiveIndex(entry.Key) is not null))
+            {
+                throw new InvalidDataException(
+                    "classmacros.lua 仍包含专精动态宏；请先将 dynamicSpells 展平为职业级数组。");
+            }
 
-            macros.UsesSpecDynamicSpells = dynamic.GetTable("common") is not null || specIndexes.Count > 0;
-            if (macros.UsesSpecDynamicSpells)
-            {
-                ReadStringArray(dynamic.GetTable("common"), macros.DynamicCommon);
-                foreach (var specIndex in specIndexes)
-                {
-                    var spells = new List<string>();
-                    ReadStringArray(dynamic.GetTable((long)specIndex), spells);
-                    macros.DynamicBySpec[specIndex] = spells;
-                }
-            }
-            else
-            {
-                ReadStringArray(dynamic, macros.DynamicCommon);
-            }
+            ReadStringArray(dynamic, macros.DynamicSpells);
         }
 
         ReadArray(classTable.GetTable("staticSpells"), macros.StaticSpells);
@@ -298,20 +266,7 @@ internal static class ClassMacrosStore
 
     private static void WriteDynamicSpells(StringBuilder sb, ClassMacros macros)
     {
-        if (!macros.UsesSpecDynamicSpells)
-        {
-            WriteInlineStringArray(sb, "        dynamicSpells = ", macros.DynamicCommon);
-            return;
-        }
-
-        sb.AppendLine("        dynamicSpells = {");
-        WriteInlineStringArray(sb, "            common = ", macros.DynamicCommon);
-        foreach (var (specIndex, spells) in macros.DynamicBySpec.OrderBy(item => item.Key))
-        {
-            WriteInlineStringArray(sb, $"            [{specIndex}] = ", spells);
-        }
-
-        sb.AppendLine("        },");
+        WriteInlineStringArray(sb, "        dynamicSpells = ", macros.DynamicSpells);
     }
 
     private static void WriteInlineStringArray(StringBuilder sb, string prefix, IReadOnlyList<string> values)

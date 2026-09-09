@@ -56,7 +56,7 @@ dynamicSpells（每项展开 30 个团队槽）
   → specialSpells
 ```
 
-`dynamicSpells` 支持 `common + [specIndex]`；Fuyutsui 运行时和 Shigure 转换器必须按相同专精解析。宏键池容量由 Fuyutsui 预设组合决定：7 组修饰符 × 50 个主键共 350 个组合（原 39 键末尾追加减号、导航六键、四个方向键）。不含 F4、反引号、NUMPADENTER。新增主键只能往 `keys` 末尾追加，插入中间会平移后续槽位。
+`dynamicSpells` 只保存职业级数组；Fuyutsui 运行时和 Shigure 转换器按同一顺序展开，不再生成专精 keymap。宏键池容量由 26 组左右修饰符 × 45 个主键决定，共 1170 个组合。不含 F4、反引号、NUMPADENTER、数字主键和斜杠主键。新增主键只能往 `keys` 末尾追加，插入中间会平移后续槽位。
 
 ## 范围
 
@@ -82,7 +82,7 @@ dynamicSpells（每项展开 30 个团队槽）
 | `staticSpells` | 普通技能或可解析宏条目 | 每项占一个槽，空字符串保留位置 |
 | `specialSpells` | 完整特殊宏文本；行尾注释是手工技能名 | 在 static 之后逐项占槽，保留顺序；Shigure 固定映射为无目标、无宏条件 |
 
-`LoadPlayerMacros` 先取得当前职业和专精，把 `dynamicSpells.common` 与当前 `[specIndex]` 连接，再交给 `CreateMacro`。
+`LoadPlayerMacros` 按当前职业读取 `dynamicSpells` 职业级数组，再交给 `CreateMacro`；专精切换不会选择另一份宏表。
 
 ### 输出：两端的一致映射
 
@@ -94,7 +94,7 @@ Fuyutsui 输出：
 
 Shigure 输出：
 
-- 按职业/专精可选择的 keymap 条目。
+- 按职业选择的 keymap 条目（专精参数仅为兼容调用保留）。
 - 由 `KeymapService.GetHotkey(unit, spell, macroCondition)` 返回的 hotkey。
 - `KeySender` 面向目标窗口的发送结果。
 - 内置 `classmacros.lua` 部署到游戏 AddOn 后由 WoW 实际加载的宏按钮与绑定。
@@ -141,7 +141,7 @@ keymap 是生成物；宏 Lua 与两端一致的展开算法才是来源。
 
 - Fuyutsui `CreateMacro` 和 Shigure KeymapConverter 必须使用同一个 key pool、同一遍历顺序和同一空槽保留规则。
 - 一个 dynamic 条目固定占 30 个连续目标槽；不能只按实际队伍人数缩短。
-- `common + 当前 spec` 的解析结果必须一致，否则从第一个专精差异开始整体偏移。
+- Lua 与 C# 必须按同一职业数组顺序展开，否则从第一个条目开始整体偏移。
 - 空 static/special 槽若用于稳定偏移，转换和序列化时不得自动删除。
 - 技能名、单位和宏条件共同决定 keymap 命中；只按技能名查找可能选错目标宏。
 - module 单位迁移必须在规则解析前完成，当前保存版本为 3。
@@ -155,7 +155,7 @@ keymap 是生成物；宏 Lua 与两端一致的展开算法才是来源。
 | 失败 | 表现 |
 |---|---|
 | dynamic 一端按 30 槽、另一端按实际人数 | 第一个 dynamic 后所有热键错位 |
-| common/spec 合并顺序不同 | 只有部分专精发送错误按键 |
+| 职业数组顺序不同 | 该职业从首个差异处开始发送错误按键 |
 | 序列化删除空数组项 | 后续 static/special 槽全部前移 |
 | 宏文本无法提取技能名 | keymap 缺项，module 命中但无 hotkey |
 | 单位或宏条件归一化不一致 | 同技能解析到错误目标或找不到映射 |
@@ -171,7 +171,7 @@ keymap 是生成物；宏 Lua 与两端一致的展开算法才是来源。
 
 - `Fuyutsui/core/classmacros.lua`、`core/macro.lua` 和 `main.lua:LoadPlayerMacros`。
 - `ClassMacrosStore`、`FuyutsuiKeymapConverter`、`KeymapService` 和 `KeymapCatalog`。
-- module schema、`CurrentUnitMappingVersion` 和迁移函数。
+- module schema、宏快照迁移函数和职业级宏容量检查。
 - 宏编辑器的槽位提示、空槽保存与保存后同步。
 - [[50-参考资料/CLASSMACROS_AI_Reference_zh-CN|ClassMacros 规则参考]]、`Fuyutsui/core/keybinds.lua`（当前键池编码）和本契约。
 
@@ -197,7 +197,7 @@ keymap 是生成物；宏 Lua 与两端一致的展开算法才是来源。
 ```mermaid
 flowchart LR
   Data["ClassMacros"]
-  Resolve["common + 当前专精"]
+  Resolve["职业级 dynamicSpells 数组"]
   Create["Fuyutsui CreateMacro"]
   Buttons["SecureActionButton 与覆盖绑定"]
   Convert["Shigure KeymapConverter"]

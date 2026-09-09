@@ -61,9 +61,11 @@ wow_process.txt 目标游戏进程名列表；构建时复制，运行期间每�
 
 ## 模块解析（改逻辑前必读）
 
+宏容量与迁移规则：ClassMacros 仅使用职业级 dynamicSpells；26 组左右修饰键 × 45 个基础键，共 1170 个槽位。历史专精动态字段导入时仅牧师/圣骑士合并，其他职业丢弃。
+
 - 模块以 `{MyDocuments}/Shigure/module/模块名.json` 平铺保存（`ModuleStore.ResolveModuleDirectory()` 返回我的文档目录，`{MyDocuments}/{程序集名}/module`），**文件名取自模块名，故模块名不可重复**；加载递归扫描子目录。模型在 [Modules/ModuleStore.cs](Modules/ModuleStore.cs)（`ModuleDefinition`/`ModuleMatch`/`ModuleRule`/`ModuleUnit`/`ModuleCountField`/`ModuleValueAdjustment`）。`RecommendedTalent` 是 `ModuleDefinition` 上的纯展示字段，不参与匹配（`ModuleMatch.Specificity` 不计入）。
 - `ModuleStore` 的 `Reload`/`Save`/`Delete` 会在同一个门锁内串行完整文件事务与内存快照更新；`Save` 通过同目录临时文件提交，重命名失败会回滚新文件。编辑器写入不要绕过它，避免运行时读到半次操作。运行时工厂不再自行 `Reload`：启动和模块刷新先由 `ModuleDependencyService` 导入依赖、拒绝宏容量超限模块，再把已验证的内存快照交给运行时。
-- 职业/专精明确的模块保存时会写入 `Dependencies` 快照。保存配置/宏或保存模块时，`Capture` 以当前本地 Lua **完全覆盖**模块 `Dependencies`（该专精 ClassBlocks、职业级 spellsList/itemsList、ClassMacros），模块里多出来的配置和宏会被删掉。启动和刷新模块时 `Import` 仍以本地为优先追加缺失的 ClassBlocks/spellsList/itemsList/ClassMacros，**不因模块 `Version` 过期而跳过**；按动态宏 30 槽、其它宏 1 槽检查所有受影响专精；任一专精超过 keymap 容量就拒绝整个模块且不写 Lua。依赖提交失败会恢复配置和宏原文。过期模块导入成功后仍不参与选择和运行，编辑器继续标红。
+- 职业/专精明确的模块保存时会写入 `Dependencies` 快照。保存配置/宏或保存模块时，`Capture` 以当前本地 Lua **完全覆盖**模块 `Dependencies`（该专精 ClassBlocks、职业级 spellsList/itemsList、ClassMacros），模块里多出来的配置和宏会被删掉。启动和刷新模块时 `Import` 仍以本地为优先追加缺失的 ClassBlocks/spellsList/itemsList/ClassMacros，**不因模块 `Version` 过期而跳过**；按动态宏 30 槽、其它宏 1 槽检查职业级宏总容量；超过 1170 个槽位就拒绝整个模块且不写 Lua。依赖提交失败会恢复配置和宏原文。过期模块导入成功后仍不参与选择和运行，编辑器继续标红。
 - 选择优先级：`ModuleStore.FindSelectedOrBestMatch` —— 先用 UI/参数选定的 `ModuleId`；否则取 `Match` 命中字段最多者（`ModuleMatch.Specificity` 越大越优先），并列按名称。`Match` 字段留空 = 任意。`PartyType` 数字会归一化为 `"1-40"`。
 - 动态单位/数量/动态数值的语义见 [README.md](README.md#动态单位与数量字段)；列表与编辑器的人类可读摘要统一走 [UI/UnitSummary.cs](UI/UnitSummary.cs)`.Describe(...)`（单一来源，勿再复制一份描述逻辑）。
 
@@ -98,7 +100,7 @@ wow_process.txt 目标游戏进程名列表；构建时复制，运行期间每�
 - **DynamicSpells**：每项占 30 热键槽位
 - **StaticSpells / SpecialSpells**：顺序数组条目（`ArrayEntry`：text + 可选行尾注释）；空字符串保留槽位
 
-保存后 [Infrastructure/FuyutsuiKeymapConverter.cs](Infrastructure/FuyutsuiKeymapConverter.cs)`.UpdateFromClassMacros` 将 Lua 宏表按 dynamic（每项 30 槽）→ static → special 顺序转换为 `keymap/*.json`，把宏槽位映射到热键池（7 修饰符 × 50 键 = 350 组合/职业；不含 F4）。`DeriveSpellName` 解析 WoW 宏文本提取技能名。
+保存后 [Infrastructure/FuyutsuiKeymapConverter.cs](Infrastructure/FuyutsuiKeymapConverter.cs)`.UpdateFromClassMacros` 将 Lua 宏表按 dynamic（每项 30 槽）→ static → special 顺序转换为 `keymap/*.json`，把宏槽位映射到热键池（26 组左右修饰键 × 45 个基础键 = 1170 组合/职业；不含 F4）。`DeriveSpellName` 解析 WoW 宏文本提取技能名。
 
 ### UI 编辑器
 

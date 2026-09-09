@@ -33,3 +33,4 @@ outputs/
 
 # Local spell icon package sources, tools, and generated data
 /SpellIconPackage/
+/data/

@@ -109,7 +109,7 @@ verified_at: 2026-08-10
 ## ClassMacros round-trip
 
 - Store 同样只替换目标 table literal，表外文本保留、表内按 canonical 格式重写。
-- 支持 common/spec 动态宏、数组和受支持的尾注释。
+- 支持职业级动态宏数组、静态/特殊宏数组和受支持的尾注释。
 - 未建模的表内字段或格式不保证保留。
 - 仍是直接覆盖 Lua 文件，无原子替换、备份或跨文件事务。
 
@@ -117,14 +117,14 @@ verified_at: 2026-08-10
 
 ## ClassMacros → keymap
 
-- 固定键池为 7 个修饰组合 × 50 个主键 = **350** 项。主键含原小键盘/F 键/标点/数字，末尾追加 `-`、导航六键和四个方向键；刻意不含 F4、反引号和 `NUMPADENTER`。Lua `macroKind` 与 C# `FuyutsuiKeymapConverter` 必须逐项相同。
+- 固定键池为 26 个左右修饰组合 × 45 个主键 = **1170** 项。主键与 `Fuyutsui/core/macro.lua` 当前列表一致；刻意不含 F4、反引号、`NUMPADENTER`、数字主键和斜杠主键。Lua `macroKind` 与 C# `FuyutsuiKeymapConverter` 必须逐项相同。
 - 动态宏项每项预留/消耗 30 个单位位置，然后是静态宏和特殊宏；超过容量会警告并截断。
-- 旧 flat 格式或 common+spec 格式都可转换；专精输出是“common + 当前 spec + static + special”的完整映射，以适配运行时不合并顶层的语义。
+- 只转换职业级 flat 格式；输入仍含 common/spec 动态宏时直接报错，避免静默丢失。
 - party1..4 映射组员槽 2..5；原始 `@player` 动态语义映射组员槽 1；显式中文/player 保留单位 31；raid1..30 映射 1..30。
 - dynamic/static 仍按宏文本生成映射，方括号中非 `@` 条件汇总为 macroCondition，尾注释可以覆盖推导出的 spell 名。
 - special 不再分析宏正文：尾注释必须作为手工技能名，映射固定为 `unit=0`、空 macroCondition；宏编辑器因此只显示可编辑技能名和完整宏，不显示目标与条件。
 - 能识别 stopcasting、castsequence、最后一个 cast 和 item 等受支持形式；不等于完整 WoW 宏解释器。
-- 输出包含全部 350 项，包括空项，以维持索引位置。
+- 输出包含全部 1170 项，包括空项，以维持索引位置。
 
 ## 同步队列和运行时重启
 
@@ -146,7 +146,7 @@ verified_at: 2026-08-10
 | 旧 ClassBlocks 页面为空 | legacy sparse 专精不被完整建模；不要保存混合文件 |
 | config 部分职业是新、部分是旧 | 13 文件转换非事务，某个文件失败后可能已有部分覆盖 |
 | 某状态永远为 0 | 步骤顺序、重复名覆盖、是否超过 510 |
-| Keymap 后半被截断 | 动态项每项消耗 30，整体超过 350 |
+| Keymap 后半被截断 | 动态项每项消耗 30，职业级宏整体超过 1170 |
 | 刚保存但运行时仍用旧数据 | 等待同步队列结束并确认会话已重启 |
 | 游戏目录手工修改消失 | 游戏副本不是权威源；下次全量或同文件部署会以项目源覆盖 |
 
@@ -167,7 +167,7 @@ verified_at: 2026-08-10
 - `Infrastructure/ClassBlocksStore.cs:102-207`：modern 判定、替换保存与 legacy 行为。
 - `Infrastructure/ClassMacrosStore.cs:63-354`：宏表加载、直接写回和 canonical 序列化。
 - `Infrastructure/FuyutsuiConfigConverter.cs:44-483`：13 职业、步骤顺序、组员与字段规范化。
-- `Infrastructure/FuyutsuiKeymapConverter.cs`：350 键池、单位映射、宏/注释解析。
+- `Infrastructure/FuyutsuiKeymapConverter.cs`：26×45、共 1170 个键位的职业级键池、单位映射、宏/注释解析。
 - `UI/MainForm.cs:624-867`：启动部署、串行更新尾、转换、全量/单文件部署、刷新和告警。
 - `UI/MainForm.cs:781-958`：运行前等待队列并重启会话。
 

@@ -97,11 +97,10 @@ internal sealed class ModuleDependencyService
             },
             Macros = new ModuleMacrosSnapshot
             {
-                UsesSpecDynamicSpells = macros.UsesSpecDynamicSpells,
-                DynamicCommon = new List<string>(macros.DynamicCommon),
-                DynamicForSpec = macros.UsesSpecDynamicSpells
-                    ? new List<string>(macros.DynamicBySpec.GetValueOrDefault(specId.Value) ?? [])
-                    : [],
+                DynamicCommon = new List<string>(macros.DynamicSpells),
+                // 旧字段保留为空，仅用于兼容读取历史模块文件。
+                UsesSpecDynamicSpells = false,
+                DynamicForSpec = [],
                 StaticSpells = CompactMacroSnapshots(macros.StaticSpells.Select(CaptureMacro), isSpecial: false),
                 SpecialSpells = CompactMacroSnapshots(macros.SpecialSpells.Select(CaptureMacro), isSpecial: true)
             }
@@ -179,7 +178,7 @@ internal sealed class ModuleDependencyService
         MergeSpec(localSpec, snapshot.Config.Spec, counters);
         MergeSpellsList(configDocument.SpellsList, snapshot.Config.SpellsList, counters);
         MergeItemsList(configDocument.ItemsList, snapshot.Config.ItemsList, counters);
-        MergeMacros(localMacros, snapshot.SpecId, snapshot.Macros, counters);
+        MergeMacros(localMacros, snapshot.ClassId, snapshot.Macros, counters);
         EnsureMacroCapacity(snapshot.ClassId, localMacros);
 
         if (!counters.HasConfigChanges && counters.MacrosAdded == 0)
@@ -1093,38 +1092,30 @@ internal sealed class ModuleDependencyService
 
     private static void MergeMacros(
         ClassMacrosStore.ClassMacros local,
-        int specId,
+        int classId,
         ModuleMacrosSnapshot incoming,
         MergeCounters counters)
     {
-        var commonNames = new HashSet<string>(local.DynamicCommon.Select(NormalizeMacroText), StringComparer.Ordinal);
-        foreach (var value in incoming.DynamicCommon)
+        var commonNames = new HashSet<string>(local.DynamicSpells.Select(NormalizeMacroText), StringComparer.Ordinal);
+        foreach (var value in incoming.DynamicCommon ?? [])
         {
             var normalized = NormalizeMacroText(value);
             if (normalized.Length > 0 && commonNames.Add(normalized))
             {
-                local.DynamicCommon.Add(value.Trim());
+                local.DynamicSpells.Add(value.Trim());
                 counters.MacrosAdded++;
             }
         }
 
-        if (incoming.UsesSpecDynamicSpells && incoming.DynamicForSpec.Count > 0)
+        // 历史模块的专精动态宏只对牧师/圣骑士迁移到职业宏；其他职业按新规则丢弃。
+        if (incoming.UsesSpecDynamicSpells && classId is 2 or 5)
         {
-            local.UsesSpecDynamicSpells = true;
-            if (!local.DynamicBySpec.TryGetValue(specId, out var specMacros))
-            {
-                specMacros = new List<string>();
-                local.DynamicBySpec[specId] = specMacros;
-            }
-
-            var resolved = new HashSet<string>(local.DynamicCommon.Select(NormalizeMacroText), StringComparer.Ordinal);
-            resolved.UnionWith(specMacros.Select(NormalizeMacroText));
-            foreach (var value in incoming.DynamicForSpec)
+            foreach (var value in incoming.DynamicForSpec ?? [])
             {
                 var normalized = NormalizeMacroText(value);
-                if (normalized.Length > 0 && resolved.Add(normalized))
+                if (normalized.Length > 0 && commonNames.Add(normalized))
                 {
-                    specMacros.Add(value.Trim());
+                    local.DynamicSpells.Add(value.Trim());
                     counters.MacrosAdded++;
                 }
             }
@@ -1282,17 +1273,12 @@ internal sealed class ModuleDependencyService
 
     private static void EnsureMacroCapacity(int classId, ClassMacrosStore.ClassMacros macros)
     {
-        foreach (var (specId, specName) in ClassNames.GetSpecs(classId))
+        var slots = checked(macros.DynamicSpells.Count * 30 + macros.StaticSpells.Count + macros.SpecialSpells.Count);
+        if (slots > FuyutsuiKeymapConverter.MacroSlotCapacity)
         {
-            var dynamicCount = macros.UsesSpecDynamicSpells
-                ? macros.DynamicCommon.Count + (macros.DynamicBySpec.GetValueOrDefault(specId)?.Count ?? 0)
-                : macros.DynamicCommon.Count;
-            var slots = checked(dynamicCount * 30 + macros.StaticSpells.Count + macros.SpecialSpells.Count);
-            if (slots > FuyutsuiKeymapConverter.MacroSlotCapacity)
-            {
-                throw new InvalidOperationException(
-                    $"宏容量超限：{ClassNames.GetClassAndSpecName(classId, specId).ClassName} {specName} 合并后 {slots} 个槽位，最大 {FuyutsuiKeymapConverter.MacroSlotCapacity}。模块未导入。");
-            }
+            var className = ClassNames.GetClassAndSpecName(classId, null).ClassName ?? $"职业{classId}";
+            throw new InvalidOperationException(
+                $"宏容量超限：{className} 合并后 {slots} 个槽位，最大 {FuyutsuiKeymapConverter.MacroSlotCapacity}。模块未导入。");
         }
     }
 

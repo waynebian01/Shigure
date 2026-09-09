@@ -163,8 +163,10 @@ public sealed class ModuleGroupAuraSnapshot
 
 public sealed class ModuleMacrosSnapshot
 {
+    // 兼容历史模块文件；新格式只使用 DynamicCommon 作为职业级动态宏列表。
     public bool UsesSpecDynamicSpells { get; set; }
     public List<string> DynamicCommon { get; set; } = new();
+    // 旧版专精动态宏，仅在导入牧师/圣骑士模块时迁移一次。
     public List<string> DynamicForSpec { get; set; } = new();
     public List<ModuleMacroEntrySnapshot> StaticSpells { get; set; } = new();
     public List<ModuleMacroEntrySnapshot> SpecialSpells { get; set; } = new();

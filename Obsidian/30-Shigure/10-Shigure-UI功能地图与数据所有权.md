@@ -58,7 +58,7 @@ verified_at: 2026-08-10
 | `StatusForm` | 九个状态/诊断页 | `RenderSnapshot`、日志 | 不拥有运行状态 |
 | 模块编辑器 | 匹配、规则、动态单位、数量、调整/公式、排序 | 模块快照 | `{MyDocuments}/Shigure/module` |
 | ClassBlocks 编辑器 | 职业/专精状态块编辑 | `Fuyutsui/class/*.lua` 项目源 | ClassBlocks table、config、当前 Lua 游戏部署 |
-| ClassMacros 编辑器 | common/spec/static/special 宏编辑 | `Fuyutsui/core/classmacros.lua` 项目源 | ClassMacros table、keymap、当前 Lua 游戏部署 |
+| ClassMacros 编辑器 | 职业动态/static/special 宏编辑 | `Fuyutsui/core/classmacros.lua` 项目源 | ClassMacros table、keymap、当前 Lua 游戏部署 |
 | 条件/单位对话框 | 构造受限条件和动态定义 | 当前草稿 | 返回编辑器内存模型 |
 
 `UiTheme` 集中定义主题和控件样式；素材由项目资源嵌入，不是运行时业务数据。

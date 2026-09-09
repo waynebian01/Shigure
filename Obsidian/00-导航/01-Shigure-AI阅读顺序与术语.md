@@ -66,7 +66,7 @@ verified_at: "2026-08-09"
 | `GameState` | `StateBuilder` 把原始字节按 config 变成的业务状态 | 不包含像素位置知识，也不负责发送按键 |
 | module | Shigure 的匹配条件、动态字段和有序规则 JSON | 不等于 Fuyutsui 宏 |
 | `ClassMacros` | Fuyutsui 按职业声明的 dynamic/static/special 宏数据 | 不等于 Shigure 生成后的 keymap |
-| keymap | Shigure 用于 `(专精、单位、技能、宏条件) → 热键` 的生成数据 | 不是 Windows 虚拟键表本身 |
+| keymap | Shigure 用于 `(职业、单位、技能、宏条件) → 热键` 的生成数据 | 不是 Windows 虚拟键表本身 |
 | MOC | Map of Content，负责导航和关系，不重复功能页正文 | 不是又一篇完整架构说明 |
 | 契约 | 两个项目必须一致理解的格式、不变量和变更责任 | 不能只在生产端修改 |
 

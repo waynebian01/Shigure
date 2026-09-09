@@ -64,7 +64,7 @@ verified_at: "2026-08-10"
 |---|---|---|---|
 | 像素 | `Fuyutsui.blocks`、状态值、光环和队伍数据 | 屏幕 RGB：主行、CountBars、吸收网格 | `RowData`、`BarData`、`HealAbsorbData` |
 | ClassBlocks | `class/*.lua` 中各专精的 `states/auras/spells/items/group` | Lua 表 → `config/*.json` | `StateBuilder` 可使用的 `step/type/bar/group` 映射 |
-| ClassMacros | `core/classmacros.lua` 的 dynamic/static/special 数据 | Lua 表 → `keymap/*.json` + WoW 覆盖绑定 | `(专精、单位、技能、宏条件) → hotkey` |
+| ClassMacros | `core/classmacros.lua` 的职业级 dynamic/static/special 数据 | Lua 表 → `keymap/*.json` + WoW 覆盖绑定 | `(职业、单位、技能、宏条件) → hotkey` |
 
 三条契约最终汇合到 Shigure 的决策路径：原始像素通过 config 变成 `GameState`，module 从 `GameState` 选出技能和单位，再通过 keymap 解析 hotkey。
 

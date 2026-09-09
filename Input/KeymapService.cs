@@ -14,7 +14,6 @@ public sealed class KeymapService : IKeymapResolver
     private readonly Dictionary<long, int> _itemIndices = new();
     private readonly Dictionary<long, string> _itemNames = new();
     private int? _currentClassId;
-    private int? _currentSpecId;
 
     public KeymapService(string baseDirectory, ConfigService config)
     {
@@ -29,13 +28,13 @@ public sealed class KeymapService : IKeymapResolver
 
     public void SelectForClass(int? classId, int? specId)
     {
-        if (_currentClassId == classId && _currentSpecId == specId && _hotkeys.Count > 0)
+        // keymap 现在只有职业级映射；专精变化不需要重新读取同一份文件。
+        if (_currentClassId == classId && _hotkeys.Count > 0)
         {
             return;
         }
 
         _currentClassId = classId;
-        _currentSpecId = specId;
         _hotkeys.Clear();
         _fallbackHotkeys.Clear();
         _spellIndices.Clear();
@@ -62,15 +61,7 @@ public sealed class KeymapService : IKeymapResolver
             return;
         }
 
-        var entries = root;
-        if (specId is { } id
-            && JsonHelpers.Get(root, "专精") is JsonObject specRoot
-            && JsonHelpers.Get(specRoot, id.ToString()) is JsonObject specEntries)
-        {
-            entries = specEntries;
-        }
-
-        foreach (var (_, node) in entries)
+        foreach (var (_, node) in root)
         {
             if (node is not JsonObject entry)
             {

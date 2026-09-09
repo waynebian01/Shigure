@@ -230,39 +230,14 @@ function Fuyutsui:LoadPlayerBlocks(specIndex)
     end
 end
 
--- 解析 dynamicSpells：common + [specIndex] 追加；旧纯数组原样返回
-local function ResolveDynamicSpells(dynamicSpells, specIndex)
-    if not dynamicSpells then
-        return {}
-    end
-    local common = dynamicSpells.common
-    local bySpec = specIndex and dynamicSpells[specIndex]
-    if type(common) == "table" or type(bySpec) == "table" then
-        local result = {}
-        if type(common) == "table" then
-            for _, spell in ipairs(common) do
-                result[#result + 1] = spell
-            end
-        end
-        if type(bySpec) == "table" then
-            for _, spell in ipairs(bySpec) do
-                result[#result + 1] = spell
-            end
-        end
-        return result
-    end
-    return dynamicSpells
-end
-
--- 载入玩家宏（按当前职业与专精从 ClassMacros 选取）
+-- 载入玩家宏（按当前职业选取；宏本身不再按专精分组）
 function Fuyutsui:LoadPlayerMacros()
     local classFile = UnitClassBase("player")
     local m = self.ClassMacros and self.ClassMacros[classFile]
     if not m then
         return
     end
-    local specIndex = self.state and self.state.specIndex or C_SpecializationInfo.GetSpecialization()
-    local dynamicSpells = ResolveDynamicSpells(m.dynamicSpells, specIndex)
+    local dynamicSpells = m.dynamicSpells
     self.MacrosList = {
         dynamicSpells = dynamicSpells,
         staticSpells = m.staticSpells,

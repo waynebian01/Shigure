@@ -20,9 +20,18 @@ internal static partial class FuyutsuiKeymapConverter
 
     private static readonly string[] Modifiers =
     [
-        "CTRL", "ALT", "SHIFT",
-        "ALT-CTRL", "ALT-SHIFT", "CTRL-SHIFT",
-        "ALT-CTRL-SHIFT"
+        // 保留原有 14 组顺序，随后追加左右混合组合，避免已有槽位整体平移。
+        "RCTRL", "RALT", "RSHIFT",
+        "RALT-RCTRL", "RALT-RSHIFT", "RCTRL-RSHIFT",
+        "RALT-RCTRL-RSHIFT",
+        "LCTRL", "LALT", "LSHIFT",
+        "LALT-LCTRL", "LALT-LSHIFT", "LCTRL-LSHIFT",
+        "LALT-LCTRL-LSHIFT",
+        "LALT-RCTRL", "RALT-LCTRL",
+        "LALT-RSHIFT", "RALT-LSHIFT",
+        "LCTRL-RSHIFT", "RCTRL-LSHIFT",
+        "LALT-LCTRL-RSHIFT", "LALT-RCTRL-LSHIFT", "LALT-RCTRL-RSHIFT",
+        "RALT-LCTRL-LSHIFT", "RALT-LCTRL-RSHIFT", "RALT-RCTRL-LSHIFT"
     ];
 
     private static readonly string[] Keys =
@@ -31,9 +40,8 @@ internal static partial class FuyutsuiKeymapConverter
         "NUMPAD6", "NUMPAD7", "NUMPAD8", "NUMPAD9", "NUMPAD0",
         "NUMPADDECIMAL", "NUMPADPLUS", "NUMPADMINUS", "NUMPADMULTIPLY", "NUMPADDIVIDE",
         "F1", "F2", "F3", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12",
-        ",", ".", "/", ";", "'", "[", "]", "\\",
-        "7", "8", "9", "0", "=",
-        "-", "INSERT", "DELETE", "HOME", "END", "PAGEUP", "PAGEDOWN",
+        ",", ".", ";", "'", "[", "]", "\\", "=", "-",
+        "INSERT", "DELETE", "HOME", "END", "PAGEUP", "PAGEDOWN",
         "UP", "DOWN", "LEFT", "RIGHT"
     ];
 
@@ -90,7 +98,7 @@ internal static partial class FuyutsuiKeymapConverter
             var jsonPath = Path.Combine(keymapDirectory, fileName);
             var existing = LoadExistingSpellNames(jsonPath);
 
-            var (root, classWarnings) = CompileClassKeymap(classTable, existing, classFile, classId);
+            var (root, classWarnings) = CompileClassKeymap(classTable, existing, classFile);
             warnings.AddRange(classWarnings);
 
             File.WriteAllText(jsonPath, root.ToJsonString(WriteOptions) + Environment.NewLine, Encoding.UTF8);
@@ -108,62 +116,29 @@ internal static partial class FuyutsuiKeymapConverter
     private static (JsonObject Root, List<string> Warnings) CompileClassKeymap(
         TableValue classTable,
         ExistingSpellNames existingSpellNames,
-        string classFile,
-        int classId)
+        string classFile)
     {
         var warnings = new List<string>();
         var dynamicTable = classTable.GetTable("dynamicSpells");
         var staticSpells = ReadArrayEntries(classTable.GetTable("staticSpells"));
         var specialSpells = ReadArrayEntries(classTable.GetTable("specialSpells"));
 
-        if (!IsSpecializedDynamicFormat(dynamicTable))
+        if (IsSpecializedDynamicFormat(dynamicTable))
         {
-            var dynamicSpells = ReadArrayStrings(dynamicTable);
-            return (
-                CompileSlotMap(
-                    dynamicSpells,
-                    staticSpells,
-                    specialSpells,
-                    existingSpellNames,
-                    null,
-                    classFile,
-                    warnings),
-                warnings);
+            throw new InvalidDataException(
+                $"{classFile} 仍包含专精动态宏；请先将 dynamicSpells 展平为职业级数组。");
         }
 
-        var commonSpells = ReadArrayStrings(dynamicTable?.GetTable("common"));
-        var root = CompileSlotMap(
-            commonSpells,
-            staticSpells,
-            specialSpells,
-            existingSpellNames,
-            null,
-            $"{classFile}[兼容回退]",
-            warnings);
-        var specRoot = new JsonObject();
-        var specs = ClassNames.GetSpecs(classId);
-        var knownSpecIds = specs.Select(spec => spec.Id).ToHashSet();
-        foreach (var unknownSpecId in GetDynamicSpecIndexes(dynamicTable).Where(id => !knownSpecIds.Contains(id)))
-        {
-            warnings.Add($"{classFile}[专精 {unknownSpecId}]: ClassNames 未登记，未生成此专精映射");
-        }
-
-        foreach (var spec in specs)
-        {
-            var dynamicSpells = new List<string>(commonSpells);
-            dynamicSpells.AddRange(ReadArrayStrings(GetIndexedTable(dynamicTable, spec.Id)));
-            specRoot[spec.Id.ToString()] = CompileSlotMap(
+        var dynamicSpells = ReadArrayStrings(dynamicTable);
+        return (
+            CompileSlotMap(
                 dynamicSpells,
                 staticSpells,
                 specialSpells,
                 existingSpellNames,
-                spec.Id,
-                $"{classFile}[专精 {spec.Id} {spec.Name}]",
-                warnings);
-        }
-
-        root["专精"] = specRoot;
-        return (root, warnings);
+                classFile,
+                warnings),
+            warnings);
     }
 
     private static JsonObject CompileSlotMap(
@@ -171,7 +146,6 @@ internal static partial class FuyutsuiKeymapConverter
         IReadOnlyList<MacroEntry> staticSpells,
         IReadOnlyList<MacroEntry> specialSpells,
         ExistingSpellNames existingSpellNames,
-        int? specId,
         string warningContext,
         List<string> warnings)
     {
@@ -243,7 +217,7 @@ internal static partial class FuyutsuiKeymapConverter
                 if (isStaticEntry
                     && entry is { Body.Length: > 0 }
                     && IsWeakSpellName(spell)
-                    && TryGetExistingSpellName(existingSpellNames, specId, i, out var preserved)
+                    && TryGetExistingSpellName(existingSpellNames, i, out var preserved)
                     && !string.IsNullOrWhiteSpace(preserved)
                     && !IsWeakSpellName(preserved))
                 {
@@ -273,11 +247,6 @@ internal static partial class FuyutsuiKeymapConverter
 
         return dynamicTable.GetTable("common") is not null
             || GetDynamicSpecIndexes(dynamicTable).Count > 0;
-    }
-
-    private static TableValue? GetIndexedTable(TableValue? table, int index)
-    {
-        return table?.GetTable((long)index) ?? table?.GetTable(index);
     }
 
     private static IReadOnlyList<int> GetDynamicSpecIndexes(TableValue? table)
@@ -551,12 +520,9 @@ internal static partial class FuyutsuiKeymapConverter
     }
 
     private sealed record ExistingSpellNames(
-        IReadOnlyDictionary<int, string> Fallback,
-        IReadOnlyDictionary<int, IReadOnlyDictionary<int, string>> BySpec)
+        IReadOnlyDictionary<int, string> Fallback)
     {
-        public static readonly ExistingSpellNames Empty = new(
-            new Dictionary<int, string>(),
-            new Dictionary<int, IReadOnlyDictionary<int, string>>());
+        public static readonly ExistingSpellNames Empty = new(new Dictionary<int, string>());
     }
 
     private static ExistingSpellNames LoadExistingSpellNames(string jsonPath)
@@ -574,21 +540,7 @@ internal static partial class FuyutsuiKeymapConverter
             }
 
             var fallback = ReadExistingSpellNames(root);
-            var bySpec = new Dictionary<int, IReadOnlyDictionary<int, string>>();
-            if (JsonHelpers.Get(root, "专精") is JsonObject specRoot)
-            {
-                foreach (var (key, node) in specRoot)
-                {
-                    if (!int.TryParse(key, out var specId) || node is not JsonObject specMap)
-                    {
-                        continue;
-                    }
-
-                    bySpec[specId] = ReadExistingSpellNames(specMap);
-                }
-            }
-
-            return new ExistingSpellNames(fallback, bySpec);
+            return new ExistingSpellNames(fallback);
         }
         catch
         {
@@ -620,22 +572,9 @@ internal static partial class FuyutsuiKeymapConverter
 
     private static bool TryGetExistingSpellName(
         ExistingSpellNames existingSpellNames,
-        int? specId,
         int slot,
         out string spell)
-    {
-        if (specId is { } id
-            && existingSpellNames.BySpec.TryGetValue(id, out var specNames)
-            && specNames.TryGetValue(slot, out var specSpell)
-            && !string.IsNullOrWhiteSpace(specSpell)
-            && !IsWeakSpellName(specSpell))
-        {
-            spell = specSpell;
-            return true;
-        }
-
-        return existingSpellNames.Fallback.TryGetValue(slot, out spell!);
-    }
+        => existingSpellNames.Fallback.TryGetValue(slot, out spell!);
 
     private static string[] BuildMacroKind()
     {

@@ -19,8 +19,7 @@ internal interface IRuntimeStateBuilder
     GameState Build(
         IReadOnlyDictionary<int, int> rowData,
         IReadOnlyDictionary<int, int> barData,
-        IReadOnlyDictionary<int, int>? healAbsorbData = null,
-        IReadOnlyDictionary<int, NameplateScanData>? nameplates = null);
+        IReadOnlyDictionary<int, int>? healAbsorbData = null);
 }
 
 internal interface IRuntimeLogic

@@ -1922,6 +1922,9 @@
       }
     },
     "nameplates": {
+      "start": 79,
+      "num": 3,
+      "auraStart": 3,
       "healthPercent": 1,
       "range": 2,
       "auras": [

@@ -66,8 +66,9 @@ public sealed class ClassConfigEditorControl : UserControl
     private readonly CheckBox _groupHasRoleBox = new();
     private readonly CheckBox _groupHasDispelBox = new();
     private readonly DataGridView _groupAurasGrid = new();
-    private readonly NumericUpDown _nameplateHealthBox = new();
-    private readonly NumericUpDown _nameplateRangeBox = new();
+    private readonly CheckBox _nameplateHealthBox = new();
+    private readonly CheckBox _nameplateRangeBox = new();
+    private readonly Label _nameplatePixelSummary = new() { AutoSize = true };
     private readonly CheckBox _nameplateEnabledBox = new();
     private readonly DataGridView _nameplateAurasGrid = new();
 
@@ -1541,14 +1542,24 @@ public sealed class ClassConfigEditorControl : UserControl
                 UpdateNameplateEditorsEnabled();
             }
         };
-        ConfigureGroupNumberBox(_nameplateHealthBox, 1, 254, 1);
-        ConfigureGroupNumberBox(_nameplateRangeBox, 1, 254, 2);
-        _nameplateHealthBox.Width = 84;
-        _nameplateRangeBox.Width = 84;
+        _nameplateHealthBox.Text = "生命值";
+        _nameplateRangeBox.Text = "距离";
+        foreach (var box in new[] { _nameplateHealthBox, _nameplateRangeBox })
+        {
+            box.AutoSize = true;
+            box.ForeColor = UiTheme.Text;
+            box.CheckedChanged += (_, _) =>
+            {
+                MarkDirty();
+                UpdateNameplatePixelSummary();
+            };
+        }
+        _nameplatePixelSummary.ForeColor = UiTheme.Text;
 
         fields.Controls.Add(CreateGroupCard("NAMEPLATES", _nameplateEnabledBox));
-        fields.Controls.Add(CreateGroupCard("HEALTH ROW", _nameplateHealthBox));
-        fields.Controls.Add(CreateGroupCard("RANGE ROW", _nameplateRangeBox));
+        fields.Controls.Add(CreateGroupCard("生命值", _nameplateHealthBox));
+        fields.Controls.Add(CreateGroupCard("距离", _nameplateRangeBox));
+        fields.Controls.Add(CreateGroupCard("主像素（队伍后）", _nameplatePixelSummary));
         panel.Controls.Add(fields, 0, 0);
 
         ConfigureGrid(_nameplateAurasGrid, "class-config-nameplates");
@@ -1566,6 +1577,7 @@ public sealed class ClassConfigEditorControl : UserControl
         _nameplateAurasGrid.CellValueChanged += (_, e) =>
         {
             MarkDirty();
+            UpdateNameplatePixelSummary();
             if (e.RowIndex >= 0 && e.RowIndex < _nameplateAurasGrid.Rows.Count
                 && e.ColumnIndex >= 0
                 && _nameplateAurasGrid.Columns[e.ColumnIndex].Name is "Name" or "SpellId" or "SpellIds")
@@ -1573,7 +1585,8 @@ public sealed class ClassConfigEditorControl : UserControl
                 UpdateAuraGridIcon(_nameplateAurasGrid.Rows[e.RowIndex]);
             }
         };
-        _nameplateAurasGrid.UserAddedRow += (_, _) => MarkDirty();
+        _nameplateAurasGrid.UserAddedRow += (_, _) => { MarkDirty(); UpdateNameplatePixelSummary(); };
+        _nameplateAurasGrid.RowsRemoved += (_, _) => UpdateNameplatePixelSummary();
         panel.Controls.Add(_nameplateAurasGrid, 0, 1);
         panel.Controls.Add(BuildMoveButtons(_nameplateAurasGrid), 0, 2);
         return panel;
@@ -1585,8 +1598,8 @@ public sealed class ClassConfigEditorControl : UserControl
         if (_currentSpec?.Nameplates is { } nameplates)
         {
             _nameplateEnabledBox.Checked = true;
-            _nameplateHealthBox.Value = Clamp(_nameplateHealthBox, nameplates.HealthPercent ?? 1);
-            _nameplateRangeBox.Value = Clamp(_nameplateRangeBox, nameplates.Range ?? 2);
+            _nameplateHealthBox.Checked = nameplates.HealthPercent is > 0;
+            _nameplateRangeBox.Checked = nameplates.Range is > 0;
             foreach (var aura in nameplates.Auras)
             {
                 var icon = GetAuraIcon(aura.SpellId, aura.SpellIds, aura.Name);
@@ -1601,8 +1614,8 @@ public sealed class ClassConfigEditorControl : UserControl
         else
         {
             _nameplateEnabledBox.Checked = false;
-            _nameplateHealthBox.Value = 1;
-            _nameplateRangeBox.Value = 2;
+            _nameplateHealthBox.Checked = true;
+            _nameplateRangeBox.Checked = true;
         }
 
         UpdateNameplateEditorsEnabled();
@@ -1615,6 +1628,24 @@ public sealed class ClassConfigEditorControl : UserControl
         _nameplateRangeBox.Enabled = enabled;
         _nameplateAurasGrid.Enabled = enabled;
         _nameplateAurasGrid.ReadOnly = !enabled;
+        UpdateNameplatePixelSummary();
+    }
+
+    private void UpdateNameplatePixelSummary()
+    {
+        var fields = (_nameplateHealthBox.Checked ? 1 : 0) + (_nameplateRangeBox.Checked ? 1 : 0);
+        foreach (DataGridViewRow row in _nameplateAurasGrid.Rows)
+        {
+            if (!row.IsNewRow
+                && ((long.TryParse(row.Cells["SpellId"].Value?.ToString(), out var id) && id > 0)
+                    || ParseIdList(row.Cells["SpellIds"].Value?.ToString() ?? string.Empty).Any()))
+            {
+                fields++;
+            }
+        }
+        _nameplatePixelSummary.Text = _nameplateEnabledBox.Checked
+            ? $"20 × {fields} = {20 * fields} 格"
+            : "未启用";
     }
 
     private Control CreateGroupNumberCard(
@@ -3812,16 +3843,9 @@ public sealed class ClassConfigEditorControl : UserControl
                 continue;
             }
 
-            if (nameplates.HealthPercent is not > 0 or > 254
-                || nameplates.Range is not > 0 or > 254)
+            if (nameplates.HealthPercent is not > 0 && nameplates.Range is not > 0 && nameplates.Auras.Count == 0)
             {
-                error = $"专精 {specId} 的姓名板行偏移必须是 1–254 的整数。";
-                return false;
-            }
-
-            if (nameplates.HealthPercent == nameplates.Range)
-            {
-                error = $"专精 {specId} 的姓名板生命值与距离行偏移不能相同。";
+                error = $"专精 {specId} 的姓名板至少需要选择一个字段或光环。";
                 return false;
             }
 
@@ -4159,18 +4183,11 @@ public sealed class ClassConfigEditorControl : UserControl
             return;
         }
 
-        var health = (int)_nameplateHealthBox.Value;
-        var range = (int)_nameplateRangeBox.Value;
-        if (health == range)
-        {
-            range = health == 254 ? 253 : health + 1;
-            _nameplateRangeBox.Value = range;
-        }
-
+        var offset = 0;
         var nameplates = new ClassBlocksStore.NameplateBlocks
         {
-            HealthPercent = health,
-            Range = range
+            HealthPercent = _nameplateHealthBox.Checked ? ++offset : null,
+            Range = _nameplateRangeBox.Checked ? ++offset : null
         };
 
         foreach (DataGridViewRow row in _nameplateAurasGrid.Rows)

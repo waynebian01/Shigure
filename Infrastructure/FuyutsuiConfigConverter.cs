@@ -550,21 +550,25 @@ internal static class FuyutsuiConfigConverter
             }
 
             result["group"] = groupJson;
+            // 与插件一致：队伍偏移从 1 开始，预留全部 40 个成员。
+            index += 40 * (int)(group.GetNumber("num") ?? 5) + 1;
         }
 
         if (spec.GetTable("nameplates") is { } nameplates)
         {
-            var nameplateJson = new JsonObject();
-            if (nameplates.GetNumber("healthPercent") is { } healthPercent)
+            var nameplateJson = new JsonObject { ["start"] = index };
+            var fieldCount = 0;
+            if (nameplates.GetNumber("healthPercent") is > 0)
             {
-                nameplateJson["healthPercent"] = (int)healthPercent;
+                nameplateJson["healthPercent"] = ++fieldCount;
             }
 
-            if (nameplates.GetNumber("range") is { } range)
+            if (nameplates.GetNumber("range") is > 0)
             {
-                nameplateJson["range"] = (int)range;
+                nameplateJson["range"] = ++fieldCount;
             }
 
+            nameplateJson["auraStart"] = fieldCount + 1;
             if (nameplates.GetTable("auras") is { } nameplateAuras)
             {
                 var auraArray = new JsonArray();
@@ -602,9 +606,15 @@ internal static class FuyutsuiConfigConverter
                 }
 
                 nameplateJson["auras"] = auraArray;
+                fieldCount += auraArray.Count;
             }
 
-            if (nameplateJson.Count > 0)
+            nameplateJson["num"] = fieldCount;
+            if (index + 20 * fieldCount - 1 > 510)
+            {
+                warnings.Add($"{label}: 姓名板需要 {20 * fieldCount} 格，超过主像素行 510 格上限，已停用姓名板");
+            }
+            else if (fieldCount > 0)
             {
                 result["nameplates"] = nameplateJson;
             }

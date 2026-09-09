@@ -117,6 +117,16 @@ function Fuyutsui:CreateTexture(i, b)
     end
 end
 
+-- 姓名板单位不存在时清除索引通道，读取端由索引是否存在判断单位存在。
+function Fuyutsui:ClearNameplateTexture(i)
+    local tex = createTextureByIndex(i)
+    if tex then
+        tex:SetColorTexture(0, 0, 0, 1)
+    end
+end
+
+Fuyutsui.MainPixelCount = BLOCK_FIX_COUNT
+
 function Fuyutsui:ClearAllTextures()
     for i = 1, BLOCK_FIX_CONFIG.blockCount do
         self:CreateTexture(i, 0)
@@ -686,6 +696,10 @@ local function AddDurationAuraSlotPair(container, slotKeyPrefix, filter, include
         filter = filter,
         includeSpellIDs = includeSpellIDs,
     })
+end
+
+function Fuyutsui:AddNameplateAuraPixelSlots(container, slotKeyPrefix, includeSpellIDs, index)
+    AddDurationAuraSlotPair(container, slotKeyPrefix, "HARMFUL|PLAYER", includeSpellIDs, index)
 end
 
 local function ApplyUnitAuraReactionFilters(container, unit)

@@ -218,14 +218,22 @@ function Fuyutsui:LoadPlayerBlocks(specIndex)
             -- 成员光环偏移：pixel = start + (memberIndex-1)*num + offset
             aura = t.group.aura,
         }
+        -- 队伍偏移从 1 开始；预留全部 40 人后再追加姓名板。
+        index = index + 40 * blocks.groups.num + 1
     end
 
     if type(t.nameplates) == "table" then
         blocks.nameplates = {
-            healthPercent = tonumber(t.nameplates.healthPercent),
-            range = tonumber(t.nameplates.range),
+            start = index,
+            num = 0,
             auras = {},
         }
+        for _, field in ipairs({ "healthPercent", "range" }) do
+            if (tonumber(t.nameplates[field]) or 0) > 0 then
+                blocks.nameplates.num = blocks.nameplates.num + 1
+                blocks.nameplates[field] = blocks.nameplates.num
+            end
+        end
         if type(t.nameplates.auras) == "table" then
             for _, aura in ipairs(t.nameplates.auras) do
                 if type(aura) == "table" and (aura.spellId or aura.spellIds) then
@@ -236,6 +244,13 @@ function Fuyutsui:LoadPlayerBlocks(specIndex)
                     })
                 end
             end
+        end
+        blocks.nameplates.auraStart = blocks.nameplates.num + 1
+        blocks.nameplates.num = blocks.nameplates.num + #blocks.nameplates.auras
+        index = index + 20 * blocks.nameplates.num
+        if index - 1 > self.MainPixelCount then
+            print("LoadPlayerBlocks: 姓名板像素超出主像素行 " .. self.MainPixelCount .. " 格上限，已停用姓名板")
+            blocks.nameplates = nil
         end
     end
 

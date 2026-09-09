@@ -218,7 +218,7 @@ function Fuyutsui:RefreshUnitHealthState(unit)
     local healthPercent = UnitHealthPercent(unit, false, self.curve100)
     ---@diagnostic disable-next-line: param-type-mismatch
     local _, _, b = healthPercent:GetRGB()
-    cache.healthPercent = b or 0
+    cache.healthPercent = b
     self:UpdateStateBlock(category, "生命值")
 end
 

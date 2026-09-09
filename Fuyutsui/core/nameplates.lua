@@ -49,6 +49,17 @@ local function SetCell(row, slot, present, value)
     tex:SetColorTexture(present and NAMEPLATE_MARKER_R or 0, 0, math.max(0, math.min(255, value or 0)) / 255, 1)
 end
 
+-- Secret values returned by UnitHealthPercent():GetRGB() cannot participate in
+-- Lua arithmetic or comparisons.  They are already normalized to 0..1, so
+-- write the channel directly and let the protected API consume it.
+local function SetNormalizedCell(row, slot, present, value)
+    if row < 1 or row > NAMEPLATE_MAX_ROWS + 1 or slot < 1 or slot > NAMEPLATE_SLOT_COUNT then
+        return
+    end
+    local tex = EnsureRow(row)[slot]
+    tex:SetColorTexture(present and NAMEPLATE_MARKER_R or 0, 0, value, 1)
+end
+
 local function ClearSlot(slot)
     for row = 2, rowCount + 1 do
         SetCell(row, slot, false, 0)
@@ -239,7 +250,7 @@ function Fuyutsui:RefreshNameplatePixels()
             if healthRow > 0 then
                 local health = UnitHealthPercent(unit, false, self.curve100)
                 local _, _, value = health:GetRGB()
-                SetCell(healthRow + 1, slot, true, (value or 0) * 255)
+                SetNormalizedCell(healthRow + 1, slot, true, value)
             end
             if rangeRow > 0 then
                 local _, maxRange = self:GetUnitRangeBounds(unit)

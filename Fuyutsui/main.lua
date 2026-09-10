@@ -281,11 +281,19 @@ function Fuyutsui:LoadPlayerBlocks(specIndex)
         end
         blocks.nameplates.auraStart = blocks.nameplates.num + 1
         blocks.nameplates.num = blocks.nameplates.num + #blocks.nameplates.auras
-        index = index + 20 * blocks.nameplates.num
-        if index - 1 > self.MainPixelCount then
-            print("LoadPlayerBlocks: 姓名板像素超出主像素行 " .. self.MainPixelCount .. " 格上限，已停用姓名板")
+        local maxPixels = self.MainPixelMaxCount or self.MainPixelCount
+        local nameplateEnd = index + 20 * blocks.nameplates.num
+        if nameplateEnd - 1 > maxPixels then
+            print("LoadPlayerBlocks: 姓名板像素超出主像素行 " .. maxPixels .. " 格上限，已停用姓名板")
             blocks.nameplates = nil
+        else
+            index = nameplateEnd
         end
+    end
+
+    -- 先按实际占用选定容量档位（可能改变格宽），再重建光环容器，避免容器按旧格宽定位。
+    if self.ApplyMainPixelCapacity then
+        self:ApplyMainPixelCapacity(index - 1)
     end
 
     self.blocks = blocks

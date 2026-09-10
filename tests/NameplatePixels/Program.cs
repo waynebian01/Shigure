@@ -83,12 +83,30 @@ foreach (var (fields, count) in new[]
     Check(layout["healthPercent"]!.GetValue<int>() == 1 && layout["range"]!.GetValue<int>() == 2, "Fixed field offsets must never move");
     Check(layout["auraStart"]!.GetValue<int>() == 3, "Auras must always start at the third pixel");
 }
-// 15 个队伍字段占到 455 格，姓名板再要 80 格就越过 510 格上限。
+// 17 个队伍字段占到 514 格：超过默认 510 档，但升档后仍能容下姓名板。
+var tieredGroup = "group = { healthPercent = 1, aura = { "
+    + string.Join(",", Enumerable.Range(1, 16).Select(id => "{ spellId = " + id + " }")) + " } },";
+var (tiered, tieredWarnings) = Compile(fourFields, tieredGroup);
+Check(tieredWarnings.Count == 0 && tiered["nameplates"]!["start"]!.GetValue<int>() == 515,
+    "Allocations past 510 must use the larger capacity tier instead of dropping nameplates");
+
+// 32 个队伍字段占到 964 格，姓名板再要 80 格就越过 1020 格的最大档位。
 var oversizedGroup = "group = { healthPercent = 1, aura = { "
-    + string.Join(",", Enumerable.Range(1, 14).Select(id => "{ spellId = " + id + " }")) + " } },";
+    + string.Join(",", Enumerable.Range(1, 31).Select(id => "{ spellId = " + id + " }")) + " } },";
 var (overflow, overflowWarnings) = Compile(fourFields, oversizedGroup);
 Check(overflow["nameplates"] is null && overflowWarnings.Count > 0, "Overflow must be reported instead of partially transmitting units");
-Console.WriteLine("PASS: converter layout, 20-unit main-row round-trip (including index 255/256), zero health, removal, hardcoded fields and overflow.");
+
+// 四套索引方案的边界与终止色块。
+foreach (var (step, red, green) in new[] { (1, 0, 1), (255, 0, 255), (256, 1, 1), (510, 1, 255),
+    (511, 2, 1), (765, 2, 255), (766, 3, 1), (1020, 3, 255) })
+{
+    object?[] schemeArgs = [Color.FromArgb(red, green, 7), 0, 0];
+    Check((bool)decode.Invoke(null, schemeArgs)! && (int)schemeArgs[1]! == step && (int)schemeArgs[2]! == 7,
+        $"Index scheme boundary {step} must decode");
+}
+object?[] terminator = [Color.FromArgb(255, 0, 0), 0, 0];
+Check(!(bool)decode.Invoke(null, terminator)!, "The red terminator must never decode as data");
+Console.WriteLine("PASS: converter layout, 20-unit main-row round-trip (including index 255/256), zero health, removal, hardcoded fields, capacity tiers and overflow.");
 
 var groupLayout = spec["group"]!.AsObject();
 Check(!groupLayout.ContainsKey("num"), "Generated group config must not carry a manual num");

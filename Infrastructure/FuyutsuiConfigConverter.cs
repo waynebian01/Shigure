@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using static Shigure.LuaLiteParser;
@@ -609,9 +609,9 @@ internal static class FuyutsuiConfigConverter
             }
 
             nameplateJson["num"] = fieldCount;
-            if (index + 20 * fieldCount - 1 > 510)
+            if (index + 20 * fieldCount - 1 > MainPixelLayout.MaxCapacity)
             {
-                warnings.Add($"{label}: 姓名板需要 {20 * fieldCount} 格，超过主像素行 510 格上限，已停用姓名板");
+                warnings.Add($"{label}: 姓名板需要 {20 * fieldCount} 格，超过主像素行 {MainPixelLayout.MaxCapacity} 格上限，已停用姓名板");
             }
             else
             {

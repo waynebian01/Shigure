@@ -38,7 +38,7 @@ function CreateFrame(kind, name, parent)
     return frame
 end
 UIParent = widget()
-function GetScreenWidth() return 1020 end
+function GetScreenWidth() return 1022 end -- 511 格（510 数据 + 1 终止）每格恰好 2 像素
 function CreateUnitHealPredictionCalculator() return {} end
 function CreateColor(r, g, b, a) return { r, g, b, a } end
 C_CurveUtil = { CreateColorCurve = function()
@@ -72,7 +72,10 @@ local config = Fuyutsui.blocks.nameplates
 assert(Fuyutsui.blocks.groups.num == 5 and Fuyutsui.blocks.groups.aura[4].spellId == 194384,
     "Group fields and plain aura list must auto-allocate five pixels")
 assert(config.start == 155 and config.num == 4 and config.auraStart == 3, "Layout must match C# converter")
-assert(#pixels == 510, "Nameplates must reuse main textures")
+assert(#pixels == 511, "Nameplates must reuse main textures")
+assert(Fuyutsui.MainPixelCount == 510, "Default capacity tier changed")
+local endColor = pixels[511].color
+assert(endColor[1] == 1 and endColor[2] == 0 and endColor[3] == 0, "Main row must end with a pure red terminator")
 assert(rawequal(pixels[155].color[3], secret), "Health must pass unchanged to SetColorTexture")
 assert(pixels[156].color[3] == 10 / 255, "Range byte encoding changed")
 assert(rawequal(pixels[231].color[3], secret), "20th unit offset is incorrect")
@@ -164,3 +167,27 @@ for _, plates in ipairs({
         and plateConfig.num == 3, "Nameplate fixed fields must ignore state lists and legacy offsets")
 end
 print("PASS: hardcoded nameplate health/range offsets ignore state lists and legacy fields.")
+
+-- 容量分档：17 个队伍字段占到 514 格，超过 510 后升到 765 档，末尾终止格跟着后移。
+local manyAuras = {}
+for i = 1, 16 do manyAuras[i] = { spellId = 100000 + i } end
+Fuyutsui.ClassBlocks[1] = { states = { "锚点", "职业", "专精" },
+    group = { state = { "healthPercent" }, aura = manyAuras } }
+Fuyutsui:LoadPlayerBlocks(1)
+assert(Fuyutsui.blocks.groups.num == 17, "Group fixture must reserve 17 fields")
+assert(Fuyutsui.MainPixelCount == 765 and #pixels == 766, "Exceeding 510 data blocks must switch to the 765 tier")
+assert(pixels[511].color[1] == 2 / 255 and pixels[511].color[2] == 1 / 255, "Third index scheme must use r=2/255")
+assert(pixels[765].color[1] == 2 / 255 and pixels[765].color[2] == 255 / 255, "Tier 765 must end the third scheme")
+assert(pixels[766].color[1] == 1 and pixels[766].color[2] == 0 and pixels[766].color[3] == 0,
+    "Terminator must move to the end of the active tier")
+assert(pixels[600].width == 1022 / 766, "Block width must follow the active tier")
+
+-- 回到默认档：多余纹理必须隐藏，终止格回到 511。
+Fuyutsui.ClassBlocks[1] = { states = { "锚点", "职业", "专精" } }
+Fuyutsui:LoadPlayerBlocks(1)
+assert(Fuyutsui.MainPixelCount == 510 and #pixels == 766, "Shrinking must reuse textures instead of creating more")
+assert(pixels[511].color[1] == 1 and pixels[511].color[2] == 0 and pixels[511].color[3] == 0,
+    "Terminator must return to the default tier end")
+assert(pixels[512].shown == false and pixels[766].shown == false, "Blocks beyond the tier must be hidden")
+assert(pixels[510].shown ~= false and pixels[510].width == 1022 / 511, "Active blocks must be re-anchored")
+print("PASS: capacity tiers 510/765/1020, third index scheme and the constant red terminator.")

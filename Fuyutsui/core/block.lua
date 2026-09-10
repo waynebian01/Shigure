@@ -6,10 +6,13 @@ local screenWidth = GetScreenWidth()
 ============================================================================]]
 
 -- 主色条（FuyutsuiColorBars / CreateTexture）
-local BLOCK_FIX_COUNT = 510        -- 总色块数量
-local BLOCK_FIRST_SCHEME_MAX = 255 -- 第一套索引方案上限（其后用 r=1/255）
-local BLOCK_HEIGHT = 1             -- 色块高度
-local BLOCK_SPACING = 0            -- 色块间距
+-- 数据色块容量分档：默认 510，超出后升到 765，再超出升到 1020（上限）。
+-- 档位之后再画一格恒定纯红的终止色块，Shigure 扫描到它即结束本次主色条扫描。
+local BLOCK_FIX_TIERS = { 510, 765, 1020 }
+local BLOCK_SCHEME_SPAN = 255          -- 每套索引方案容纳的索引数（r 通道区分第几套）
+local BLOCK_END_COLOR = { 1, 0, 0, 1 } -- 终止色块颜色（纯红 255,0,0）
+local BLOCK_HEIGHT = 1                 -- 色块高度
+local BLOCK_SPACING = 0                -- 色块间距
 local COLOR_BARS_STRATA = "TOOLTIP"
 local COLOR_BARS_LEVEL = 9001
 
@@ -44,9 +47,13 @@ local HEAL_ABSORB_WIDTH_SCALE = 0.7 -- 单元宽度相对横向条的缩放比�
     派生尺寸（一般不用改）
 ============================================================================]]
 
+local BLOCK_MAX_CAPACITY = BLOCK_FIX_TIERS[#BLOCK_FIX_TIERS]
+
+-- capacity = 可写数据格数（当前档位）；blockCount = 实际纹理数 = 数据格 + 末尾终止格。
 local BLOCK_FIX_CONFIG = {
-    blockCount = BLOCK_FIX_COUNT,
-    blockWidth = screenWidth / BLOCK_FIX_COUNT,
+    capacity = BLOCK_FIX_TIERS[1],
+    blockCount = BLOCK_FIX_TIERS[1] + 1,
+    blockWidth = screenWidth / (BLOCK_FIX_TIERS[1] + 1),
     blockHeight = BLOCK_HEIGHT,
     blockSpacing = BLOCK_SPACING,
 }
@@ -66,12 +73,11 @@ local HEAL_ABSORB_UNIT_WIDTH = BAR_CONFIG.width * HEAL_ABSORB_WIDTH_SCALE
 local AURA_BLOCK_W = BLOCK_FIX_CONFIG.blockWidth
 local AURA_BLOCK_H = AURA_BLOCK_HEIGHT
 
---- 索引 1..255 → r=0, g=i/255；256..510 → r=1/255, g=(i-255)/255
+--- 索引按每 255 个一套分方案：r = 方案序号/255，g = 套内序号/255。
+--- 1..255 → r=0；256..510 → r=1/255；511..765 → r=2/255；766..1020 → r=3/255。
 local function EncodeBlockChannels(index)
-    if index > BLOCK_FIRST_SCHEME_MAX then
-        return 1 / 255, (index - BLOCK_FIRST_SCHEME_MAX) / 255
-    end
-    return 0, index / 255
+    local scheme = math.floor((index - 1) / BLOCK_SCHEME_SPAN)
+    return scheme / 255, (index - scheme * BLOCK_SCHEME_SPAN) / 255
 end
 
 local function EnsureAuraContainerLoaded()
@@ -96,20 +102,34 @@ colorBars:SetFrameLevel(COLOR_BARS_LEVEL)
 
 local pixelTextures = {}
 
+local function AnchorPixelTexture(tex, i)
+    tex:SetSize(BLOCK_FIX_CONFIG.blockWidth, BLOCK_FIX_CONFIG.blockHeight)
+    tex:ClearAllPoints()
+    tex:SetPoint("TOPLEFT", colorBars, "TOPLEFT",
+                 GetXOffset(i - 1, BLOCK_FIX_CONFIG.blockWidth, BLOCK_FIX_CONFIG.blockSpacing), 0)
+end
+
 local function createTextureByIndex(i)
     if i <= 0 or i > BLOCK_FIX_CONFIG.blockCount then return nil end
     if pixelTextures[i] == nil then
         local tex = colorBars:CreateTexture(nil, "OVERLAY")
-        tex:SetSize(BLOCK_FIX_CONFIG.blockWidth, BLOCK_FIX_CONFIG.blockHeight)
-        tex:SetPoint("TOPLEFT", colorBars, "TOPLEFT",
-                     GetXOffset(i - 1, BLOCK_FIX_CONFIG.blockWidth, BLOCK_FIX_CONFIG.blockSpacing), 0)
+        AnchorPixelTexture(tex, i)
         pixelTextures[i] = tex
     end
     return pixelTextures[i]
 end
 
--- 索引 1..255: (0, i/255, b, 1)；索引 256..510: (1/255, (i-255)/255, b, 1)
+--- 末尾终止色块：恒为纯红，不参与索引编码，消费端读到即结束本次扫描。
+local function DrawBlockEndMarker()
+    local tex = createTextureByIndex(BLOCK_FIX_CONFIG.blockCount)
+    if tex then
+        tex:SetColorTexture(BLOCK_END_COLOR[1], BLOCK_END_COLOR[2], BLOCK_END_COLOR[3], BLOCK_END_COLOR[4])
+    end
+end
+
+-- 索引 1..255: (0, i/255, b, 1)；256..510: (1/255, ...)；511..765: (2/255, ...)；766..1020: (3/255, ...)
 function Fuyutsui:CreateTexture(i, b)
+    if i > BLOCK_FIX_CONFIG.capacity then return end
     local tex = createTextureByIndex(i)
     if tex then
         local r, g = EncodeBlockChannels(i)
@@ -119,23 +139,62 @@ end
 
 -- 姓名板单位不存在时清除索引通道，读取端由索引是否存在判断单位存在。
 function Fuyutsui:ClearNameplateTexture(i)
+    if i > BLOCK_FIX_CONFIG.capacity then return end
     local tex = createTextureByIndex(i)
     if tex then
         tex:SetColorTexture(0, 0, 0, 1)
     end
 end
 
-Fuyutsui.MainPixelCount = BLOCK_FIX_COUNT
+Fuyutsui.MainPixelCount = BLOCK_FIX_CONFIG.capacity
+Fuyutsui.MainPixelMaxCount = BLOCK_MAX_CAPACITY
 
 function Fuyutsui:ClearAllTextures()
-    for i = 1, BLOCK_FIX_CONFIG.blockCount do
+    for i = 1, BLOCK_FIX_CONFIG.capacity do
         self:CreateTexture(i, 0)
     end
 end
 
-for i = 1, BLOCK_FIX_CONFIG.blockCount do
+--- 按实际需要的格数选择容量档位（510/765/1020），返回当前容量。
+--- 换档会改变格宽，因此重新排布已有纹理并清空数据；调用方需在之后重建光环容器。
+function Fuyutsui:ApplyMainPixelCapacity(required)
+    required = tonumber(required) or 0
+    local capacity = BLOCK_MAX_CAPACITY
+    for _, tier in ipairs(BLOCK_FIX_TIERS) do
+        if required <= tier then
+            capacity = tier
+            break
+        end
+    end
+
+    if capacity ~= BLOCK_FIX_CONFIG.capacity then
+        BLOCK_FIX_CONFIG.capacity = capacity
+        BLOCK_FIX_CONFIG.blockCount = capacity + 1
+        BLOCK_FIX_CONFIG.blockWidth = screenWidth / BLOCK_FIX_CONFIG.blockCount
+        AURA_BLOCK_W = BLOCK_FIX_CONFIG.blockWidth
+        self.MainPixelCount = capacity
+        -- 降档后多余纹理的旧位置会压在新布局上，必须隐藏。
+        for i, tex in pairs(pixelTextures) do
+            if i > BLOCK_FIX_CONFIG.blockCount then
+                tex:Hide()
+            else
+                AnchorPixelTexture(tex, i)
+                tex:Show()
+            end
+        end
+        for i = 1, capacity do
+            self:CreateTexture(i, 0)
+        end
+    end
+
+    DrawBlockEndMarker()
+    return capacity
+end
+
+for i = 1, BLOCK_FIX_CONFIG.capacity do
     Fuyutsui:CreateTexture(i, 0)
 end
+DrawBlockEndMarker()
 
 --[[============================================================================
     横向计数条布局（计数条 + AuraContainer 层数条共用）
@@ -1252,7 +1311,7 @@ local function CreateGroupMemberAuraContainer(memberIndex, groups, auraDefs, inc
 
     for _, def in ipairs(auraDefs) do
         local pixelIndex = GroupAuraPixelIndex(groups, memberIndex, def.offset)
-        if pixelIndex > 0 and pixelIndex <= BLOCK_FIX_COUNT then
+        if pixelIndex > 0 and pixelIndex <= BLOCK_FIX_CONFIG.capacity then
             -- 救赎之魂（27827）可能由其他牧师施加；该槽只按 HELPFUL 筛选，不能限制 PLAYER。
             local filter = def.includeSpellIDs[27827] and "HELPFUL" or "HELPFUL|PLAYER"
             AddDurationAuraSlotPair(
@@ -1268,7 +1327,7 @@ local function CreateGroupMemberAuraContainer(memberIndex, groups, auraDefs, inc
     -- 可驱散减益：仅包含玩家当前会的驱散类型；像素显示类型固定色，非剩余时间
     if groups.dispel and includeDispelTypes then
         local pixelIndex = GroupAuraPixelIndex(groups, memberIndex, groups.dispel)
-        if pixelIndex > 0 and pixelIndex <= BLOCK_FIX_COUNT then
+        if pixelIndex > 0 and pixelIndex <= BLOCK_FIX_CONFIG.capacity then
             local dispelKey = "group_" .. memberIndex .. "_dispel"
             container:AddAuraSlot(
                 dispelKey,

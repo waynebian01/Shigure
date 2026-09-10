@@ -728,7 +728,6 @@
     },
     "group": {
       "start": 78,
-      "num": 5,
       "生命值": {
         "step": 1,
         "type": "int"
@@ -1308,7 +1307,6 @@
     },
     "group": {
       "start": 74,
-      "num": 5,
       "生命值": {
         "step": 1,
         "type": "int"

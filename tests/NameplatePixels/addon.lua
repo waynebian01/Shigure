@@ -64,16 +64,18 @@ dofile("Fuyutsui/core/nameplates.lua")
 dofile("Fuyutsui/main.lua")
 Fuyutsui.ClassBlocks = { [1] = {
     states = { "锚点", "职业", "专精" },
-    group = { num = 5, healthPercent = 1, role = 2 },
+    group = { state = { "healthPercent", "role", "dispel" }, aura = { { spellId = 194384 }, { spellIds = { 17, 1253593 } } } },
     nameplates = { healthPercent = 7, range = 9, auras = { { spellId = 589 }, { spellId = 34914 } } },
 } }
 Fuyutsui:LoadPlayerBlocks(1)
 local config = Fuyutsui.blocks.nameplates
-assert(config.start == 205 and config.num == 4 and config.auraStart == 3, "Layout must match C# converter")
+assert(Fuyutsui.blocks.groups.num == 5 and Fuyutsui.blocks.groups.aura[4].spellId == 194384,
+    "Group fields and plain aura list must auto-allocate five pixels")
+assert(config.start == 155 and config.num == 4 and config.auraStart == 3, "Layout must match C# converter")
 assert(#pixels == 510, "Nameplates must reuse main textures")
-assert(rawequal(pixels[205].color[3], secret), "Health must pass unchanged to SetColorTexture")
-assert(pixels[206].color[3] == 10 / 255, "Range byte encoding changed")
-assert(rawequal(pixels[281].color[3], secret), "20th unit offset is incorrect")
+assert(rawequal(pixels[155].color[3], secret), "Health must pass unchanged to SetColorTexture")
+assert(pixels[156].color[3] == 10 / 255, "Range byte encoding changed")
+assert(rawequal(pixels[231].color[3], secret), "20th unit offset is incorrect")
 for i = 209, 212 do assert(pixels[i].color[1] == 0 and pixels[i].color[2] == 0, "Absent unit retains an index") end
 
 for _, slot in ipairs({ 1, 20 }) do
@@ -82,7 +84,7 @@ for _, slot in ipairs({ 1, 20 }) do
     for _, entry in pairs(container.slots) do
         count = count + 1
         local button = entry.button
-        local firstAura = 207 + (slot - 1) * 4
+        local firstAura = 157 + (slot - 1) * 4
         local x = button.point[4]
         assert(button.point[5] == 0 and button.width == 2 and button.height == 1, "Aura must use main-row position and size")
         local index = x / 2 + 1
@@ -97,14 +99,14 @@ end
 local oldContainer = frames.FuyutsuiNameplateAuraSlots_1
 Fuyutsui:ClearNameplatePixelSlot("nameplate1")
 assert(oldContainer.enabled == false and oldContainer.shown == false, "Removal leaves aura overlays")
-for i = 205, 208 do assert(pixels[i].color[2] == 0, "Removal leaves a main-row index") end
-assert(pixels[204].color[2] == 204 / 255, "Nameplate clearing overlaps the final group pixel")
-assert(rawequal(pixels[281].color[3], secret), "Clearing one unit changes another")
+for i = 155, 158 do assert(pixels[i].color[2] == 0, "Removal leaves a main-row index") end
+assert(pixels[154].color[2] == 154 / 255, "Nameplate clearing overlaps the final group pixel")
+assert(rawequal(pixels[231].color[3], secret), "Clearing one unit changes another")
 
 Fuyutsui.ClassBlocks[1] = { states = { "锚点", "职业", "专精" }, nameplates = { auras = { { spellId = 589 } } } }
 Fuyutsui:LoadPlayerBlocks(1)
 assert(Fuyutsui.blocks.nameplates.start == 4 and Fuyutsui.blocks.nameplates.num == 1, "Aura-only config must use 20 pixels")
-assert(pixels[205].color[2] == 205 / 255 and pixels[205].color[3] == 0, "Old allocation was not reset")
+assert(pixels[155].color[2] == 155 / 255 and pixels[155].color[3] == 0, "Old allocation was not reset")
 Fuyutsui.ClassBlocks[1] = { states = { "锚点", "职业", "专精" }, nameplates = { range = 8 } }
 Fuyutsui:LoadPlayerBlocks(1)
 assert(Fuyutsui.blocks.nameplates.num == 1 and Fuyutsui.blocks.nameplates.range == 1, "Range-only offset must compact")
@@ -112,3 +114,38 @@ Fuyutsui.ClassBlocks[1].nameplates = nil
 Fuyutsui:LoadPlayerBlocks(1)
 assert(Fuyutsui.blocks.nameplates == nil, "Disabled config retains allocation")
 print("PASS: Lua layout, main texture reuse, secret channel passthrough, aura position/index encoding, removal and config reload.")
+
+Fuyutsui.ClassBlocks[1] = { states = { "锚点", "职业", "专精" },
+    group = { num = 99, role = 8, aura = { [10] = { spellId = 17 }, [4] = { spellId = 194384 } } },
+    nameplates = { range = 1 } }
+Fuyutsui:LoadPlayerBlocks(1)
+assert(Fuyutsui.blocks.groups.num == 3 and Fuyutsui.blocks.groups.role == 1
+    and Fuyutsui.blocks.groups.aura[2].spellId == 194384
+    and Fuyutsui.blocks.nameplates.start == 95, "Legacy group config must compact and move nameplates")
+Fuyutsui.state, Fuyutsui.roleMap, Fuyutsui.groupHealthCurves = {}, {}, {}
+Fuyutsui.group = { player = { index = 1 } }
+dofile("Fuyutsui/unit/group.lua")
+Fuyutsui:RefreshGroupMemberHealth("player") -- health field disabled: no API call or nil arithmetic
+Fuyutsui.ClassBlocks[1].group = { aura = { { spellId = 194384 } } }
+Fuyutsui:LoadPlayerBlocks(1)
+assert(Fuyutsui.blocks.groups.num == 1 and Fuyutsui.blocks.groups.aura[1].spellId == 194384)
+Fuyutsui:RefreshNextGroupMemberState() -- role disabled: no nil arithmetic
+Fuyutsui.ClassBlocks[1].group = {}
+Fuyutsui:LoadPlayerBlocks(1)
+assert(Fuyutsui.blocks.groups == nil and Fuyutsui.blocks.nameplates.start == 4, "Empty group must reserve no pixels")
+print("PASS: automatic group offsets, legacy sparse lists, disabled health/role and empty group.")
+
+Fuyutsui.ClassBlocks[1].group = { state = { "dispel", "role", "healthPercent" }, healthPercent = 99,
+    aura = { { spellId = 194384 } } }
+Fuyutsui:LoadPlayerBlocks(1)
+local groupConfig = Fuyutsui.blocks.groups
+assert(groupConfig.dispel == 1 and groupConfig.role == 2 and groupConfig.healthPercent == 3
+    and groupConfig.aura[4].spellId == 194384 and groupConfig.num == 4, "Explicit state order must control pixels")
+Fuyutsui.ClassBlocks[1].group = { state = {}, healthPercent = 1, role = 2 }
+Fuyutsui:LoadPlayerBlocks(1)
+assert(Fuyutsui.blocks.groups == nil, "Empty state must not fall back to legacy fields")
+Fuyutsui.ClassBlocks[1].group = { state = { "role", "role", "unknown", "healthPercent" } }
+Fuyutsui:LoadPlayerBlocks(1)
+assert(Fuyutsui.blocks.groups.num == 2 and Fuyutsui.blocks.groups.role == 1
+    and Fuyutsui.blocks.groups.healthPercent == 2, "Unknown and duplicate fields must not allocate pixels")
+print("PASS: explicit state ordering/precedence, empty lists and duplicate filtering.")

@@ -165,7 +165,9 @@ public sealed class StateBuilder : IRuntimeStateBuilder
         IReadOnlyDictionary<int, int> healAbsorbData)
     {
         var start = JsonHelpers.GetInt(JsonHelpers.Get(groupConfig, "start")) ?? 26;
-        var numParams = JsonHelpers.GetInt(JsonHelpers.Get(groupConfig, "num")) ?? 5;
+        var numParams = groupConfig
+            .Where(pair => pair.Key is not "start" and not "num" && pair.Value is JsonObject field && field.ContainsKey("step"))
+            .Count();
         var group = new Dictionary<string, IReadOnlyDictionary<string, object?>>();
 
         for (var i = 1; i <= 30; i++)

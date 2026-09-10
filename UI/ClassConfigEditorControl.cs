@@ -57,10 +57,7 @@ public sealed class ClassConfigEditorControl : UserControl
     private bool _expandingSpellDatabaseRows;
     private CancellationTokenSource? _spellDatabaseFilterCancellation;
     private int _spellDatabaseFilterVersion;
-    private readonly NumericUpDown _groupNumBox = new();
-    private readonly NumericUpDown _groupHealthBox = new();
-    private readonly NumericUpDown _groupRoleBox = new();
-    private readonly NumericUpDown _groupDispelBox = new();
+    private readonly Label _groupPixelSummary = new() { AutoSize = true };
     private readonly CheckBox _groupEnabledBox = new();
     private readonly CheckBox _groupHasHealthBox = new();
     private readonly CheckBox _groupHasRoleBox = new();
@@ -1449,13 +1446,21 @@ public sealed class ClassConfigEditorControl : UserControl
                 UpdateGroupEditorsEnabled();
             }
         };
+        foreach (var box in new[] { _groupHasHealthBox, _groupHasRoleBox, _groupHasDispelBox })
+        {
+            box.Text = "启用";
+            box.AutoSize = true;
+            box.ForeColor = UiTheme.Text;
+            box.CheckedChanged += (_, _) => { MarkDirty(); UpdateGroupPixelSummary(); };
+        }
+        _groupPixelSummary.ForeColor = UiTheme.Text;
         var groupCards = new Control[]
         {
             CreateGroupCard("GROUP", _groupEnabledBox),
-            CreateGroupNumberCard("NUM", _groupNumBox, 1, 40, 5),
-            CreateGroupOptionalNumberCard("HEALTH PERCENT", _groupHasHealthBox, _groupHealthBox, 0, 40, 1),
-            CreateGroupOptionalNumberCard("ROLE", _groupHasRoleBox, _groupRoleBox, 0, 40, 2),
-            CreateGroupOptionalNumberCard("DISPEL", _groupHasDispelBox, _groupDispelBox, 0, 40, 3)
+            CreateGroupCard("生命值", _groupHasHealthBox),
+            CreateGroupCard("职责", _groupHasRoleBox),
+            CreateGroupCard("驱散", _groupHasDispelBox),
+            CreateGroupCard("自动分配", _groupPixelSummary)
         };
         foreach (var card in groupCards)
         {
@@ -1480,7 +1485,6 @@ public sealed class ClassConfigEditorControl : UserControl
 
         ConfigureGrid(_groupAurasGrid, "class-config-group-auras");
         _groupAurasGrid.Columns.Add(CreateSpellIconColumn());
-        _groupAurasGrid.Columns.Add(new DataGridViewTextBoxColumn { Name = "Offset", HeaderText = "偏移", Width = 70 });
         _groupAurasGrid.Columns.Add(new DataGridViewTextBoxColumn { Name = "Name", HeaderText = "名称", Width = 160 });
         _groupAurasGrid.Columns.Add(new DataGridViewTextBoxColumn { Name = "SpellId", HeaderText = "spellId", Width = 110 });
         _groupAurasGrid.Columns.Add(new DataGridViewTextBoxColumn
@@ -1494,6 +1498,7 @@ public sealed class ClassConfigEditorControl : UserControl
         _groupAurasGrid.CellValueChanged += (_, e) =>
         {
             MarkDirty();
+            UpdateGroupPixelSummary();
             if (e.RowIndex >= 0 && e.RowIndex < _groupAurasGrid.Rows.Count
                 && e.ColumnIndex >= 0
                 && _groupAurasGrid.Columns[e.ColumnIndex].Name is "Name" or "SpellId" or "SpellIds")
@@ -1501,7 +1506,8 @@ public sealed class ClassConfigEditorControl : UserControl
                 UpdateAuraGridIcon(_groupAurasGrid.Rows[e.RowIndex]);
             }
         };
-        _groupAurasGrid.UserAddedRow += (_, _) => MarkDirty();
+        _groupAurasGrid.UserAddedRow += (_, _) => { MarkDirty(); UpdateGroupPixelSummary(); };
+        _groupAurasGrid.RowsRemoved += (_, _) => UpdateGroupPixelSummary();
         panel.Controls.Add(_groupAurasGrid, 0, 1);
         panel.Controls.Add(BuildMoveButtons(_groupAurasGrid), 0, 2);
         return panel;
@@ -1648,81 +1654,6 @@ public sealed class ClassConfigEditorControl : UserControl
             : "未启用";
     }
 
-    private Control CreateGroupNumberCard(
-        string title,
-        NumericUpDown box,
-        decimal min,
-        decimal max,
-        decimal value)
-    {
-        ConfigureGroupNumberBox(box, min, max, value);
-        box.AutoSize = false;
-        box.Width = 110;
-        box.Anchor = AnchorStyles.Left;
-        box.Margin = Padding.Empty;
-        return CreateGroupCard(title, box);
-    }
-
-    private void ConfigureGroupNumberBox(NumericUpDown box, decimal min, decimal max, decimal value)
-    {
-        UiTheme.StyleNumericUpDown(box);
-        box.Minimum = min;
-        box.Maximum = max;
-        box.Value = value;
-        box.ValueChanged += (_, _) =>
-        {
-            if (!_suppressUi)
-            {
-                MarkDirty();
-            }
-        };
-    }
-
-    private Control CreateGroupOptionalNumberCard(
-        string title,
-        CheckBox enabledBox,
-        NumericUpDown numberBox,
-        decimal min,
-        decimal max,
-        decimal value)
-    {
-        enabledBox.Text = "启用";
-        enabledBox.ForeColor = UiTheme.Text;
-        enabledBox.AutoSize = true;
-        enabledBox.Anchor = AnchorStyles.Left;
-        enabledBox.Margin = new Padding(0, 0, 10, 0);
-        enabledBox.CheckedChanged += (_, _) =>
-        {
-            if (!_suppressUi)
-            {
-                MarkDirty();
-                numberBox.Enabled = _groupEnabledBox.Checked && enabledBox.Checked;
-            }
-        };
-
-        ConfigureGroupNumberBox(numberBox, min, max, value);
-        numberBox.AutoSize = false;
-        numberBox.Width = 76;
-        numberBox.Anchor = AnchorStyles.Left;
-        numberBox.Margin = Padding.Empty;
-
-        var body = new TableLayoutPanel
-        {
-            Dock = DockStyle.Fill,
-            BackColor = Color.Transparent,
-            ColumnCount = 3,
-            RowCount = 1,
-            Margin = Padding.Empty,
-            Padding = Padding.Empty
-        };
-        // 复选框列按“勾选框 + 启用文字”的实际首选宽度计算，避免高 DPI 下文字被裁切。
-        body.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
-        body.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 76));
-        body.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-        body.Controls.Add(enabledBox, 0, 0);
-        body.Controls.Add(numberBox, 1, 0);
-        return CreateGroupCard(title, body);
-    }
 
     private Control CreateGroupCard(string title, Control content)
     {
@@ -3444,19 +3375,14 @@ public sealed class ClassConfigEditorControl : UserControl
         if (_currentSpec?.Group is { } group)
         {
             _groupEnabledBox.Checked = true;
-            _groupNumBox.Value = Clamp(_groupNumBox, group.Num);
-            _groupHasHealthBox.Checked = group.HealthPercent is not null;
-            _groupHealthBox.Value = Clamp(_groupHealthBox, group.HealthPercent ?? 1);
-            _groupHasRoleBox.Checked = group.Role is not null;
-            _groupRoleBox.Value = Clamp(_groupRoleBox, group.Role ?? 2);
-            _groupHasDispelBox.Checked = group.Dispel is not null;
-            _groupDispelBox.Value = Clamp(_groupDispelBox, group.Dispel ?? 3);
+            _groupHasHealthBox.Checked = group.State.Contains("healthPercent");
+            _groupHasRoleBox.Checked = group.State.Contains("role");
+            _groupHasDispelBox.Checked = group.State.Contains("dispel");
             foreach (var aura in group.Auras)
             {
                 var icon = GetAuraIcon(aura.SpellId, aura.SpellIds, aura.Name);
                 _groupAurasGrid.Rows.Add(
                     icon!,
-                    aura.Offset.ToString(CultureInfo.InvariantCulture),
                     aura.Name,
                     aura.SpellId?.ToString(CultureInfo.InvariantCulture) ?? "",
                     string.Join(", ", aura.SpellIds),
@@ -3469,10 +3395,6 @@ public sealed class ClassConfigEditorControl : UserControl
             _groupHasHealthBox.Checked = false;
             _groupHasRoleBox.Checked = false;
             _groupHasDispelBox.Checked = false;
-            _groupNumBox.Value = 5;
-            _groupHealthBox.Value = 1;
-            _groupRoleBox.Value = 2;
-            _groupDispelBox.Value = 3;
         }
 
         UpdateGroupEditorsEnabled();
@@ -3481,15 +3403,28 @@ public sealed class ClassConfigEditorControl : UserControl
     private void UpdateGroupEditorsEnabled()
     {
         var enabled = _groupEnabledBox.Checked;
-        _groupNumBox.Enabled = enabled;
         _groupHasHealthBox.Enabled = enabled;
-        _groupHealthBox.Enabled = enabled && _groupHasHealthBox.Checked;
         _groupHasRoleBox.Enabled = enabled;
-        _groupRoleBox.Enabled = enabled && _groupHasRoleBox.Checked;
         _groupHasDispelBox.Enabled = enabled;
-        _groupDispelBox.Enabled = enabled && _groupHasDispelBox.Checked;
         _groupAurasGrid.Enabled = enabled;
         _groupAurasGrid.ReadOnly = !enabled;
+        UpdateGroupPixelSummary();
+    }
+
+    private void UpdateGroupPixelSummary()
+    {
+        var fields = (_groupHasHealthBox.Checked ? 1 : 0) + (_groupHasRoleBox.Checked ? 1 : 0)
+            + (_groupHasDispelBox.Checked ? 1 : 0);
+        foreach (DataGridViewRow row in _groupAurasGrid.Rows)
+        {
+            if (!row.IsNewRow
+                && ((long.TryParse(row.Cells["SpellId"].Value?.ToString(), out var id) && id > 0)
+                    || ParseIdList(row.Cells["SpellIds"].Value?.ToString() ?? string.Empty).Any()))
+            {
+                fields++;
+            }
+        }
+        _groupPixelSummary.Text = _groupEnabledBox.Checked ? $"每人 {fields} 格，30 人共 {30 * fields} 格" : "未启用";
     }
 
     private List<ClassBlocksStore.AuraEntry> GetCurrentAuraList()
@@ -4128,13 +4063,18 @@ public sealed class ClassConfigEditorControl : UserControl
             return;
         }
 
-        var group = new ClassBlocksStore.GroupBlocks
+        var group = new ClassBlocksStore.GroupBlocks();
+        var enabledFields = new Dictionary<string, bool>
         {
-            Num = (int)_groupNumBox.Value,
-            HealthPercent = _groupHasHealthBox.Checked ? (int)_groupHealthBox.Value : null,
-            Role = _groupHasRoleBox.Checked ? (int)_groupRoleBox.Value : null,
-            Dispel = _groupHasDispelBox.Checked ? (int)_groupDispelBox.Value : null
+            ["healthPercent"] = _groupHasHealthBox.Checked,
+            ["role"] = _groupHasRoleBox.Checked,
+            ["dispel"] = _groupHasDispelBox.Checked
         };
+        // 保留配置中的 state 顺序；新启用的字段追加到末尾。
+        foreach (var field in (_currentSpec.Group?.State ?? []).Concat(GroupStateLayout.SupportedFields).Distinct())
+        {
+            if (enabledFields.TryGetValue(field, out var enabled) && enabled) group.State.Add(field);
+        }
 
         foreach (DataGridViewRow row in _groupAurasGrid.Rows)
         {
@@ -4143,14 +4083,8 @@ public sealed class ClassConfigEditorControl : UserControl
                 continue;
             }
 
-            if (!int.TryParse(row.Cells["Offset"].Value?.ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var offset))
-            {
-                continue;
-            }
-
             var entry = new ClassBlocksStore.GroupAuraEntry
             {
-                Offset = offset,
                 Name = row.Cells["Name"].Value?.ToString()?.Trim() ?? ""
             };
             var spellIdsText = row.Cells["SpellIds"].Value?.ToString()?.Trim() ?? "";
@@ -4164,7 +4098,10 @@ public sealed class ClassConfigEditorControl : UserControl
                 entry.SpellId = sid;
             }
 
-            group.Auras.Add(entry);
+            if (entry.SpellId is > 0 || entry.SpellIds.Count > 0)
+            {
+                group.Auras.Add(entry);
+            }
         }
 
         _currentSpec.Group = group;

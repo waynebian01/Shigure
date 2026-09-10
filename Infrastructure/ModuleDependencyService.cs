@@ -415,13 +415,9 @@ internal sealed class ModuleDependencyService
         }).ToList(),
         Group = spec.Group is null ? null : new ModuleGroupSnapshot
         {
-            Num = spec.Group.Num,
-            HealthPercent = spec.Group.HealthPercent,
-            Role = spec.Group.Role,
-            Dispel = spec.Group.Dispel,
+            State = new List<string>(spec.Group.State),
             Auras = spec.Group.Auras.Select(entry => new ModuleGroupAuraSnapshot
             {
-                Offset = entry.Offset,
                 Name = entry.Name,
                 SpellId = entry.SpellId,
                 SpellIds = new List<long>(entry.SpellIds)

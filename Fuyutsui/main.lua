@@ -211,15 +211,52 @@ function Fuyutsui:LoadPlayerBlocks(specIndex)
     if type(t.group) == "table" then
         blocks.groups = {
             start = index,
-            num = t.group.num,
-            healthPercent = t.group.healthPercent,
-            role = t.group.role,
-            dispel = t.group.dispel,
-            -- 成员光环偏移：pixel = start + (memberIndex-1)*num + offset
-            aura = t.group.aura,
+            num = 0,
+            aura = {},
         }
-        -- 队伍偏移从 1 开始；预留全部 40 人后再追加姓名板。
-        index = index + 40 * blocks.groups.num + 1
+        local groups = blocks.groups
+        local stateFields = t.group.state
+        if type(stateFields) ~= "table" then
+            stateFields = {}
+            for _, field in ipairs({ "healthPercent", "role", "dispel" }) do
+                local configured = tonumber(t.group[field])
+                if configured and configured >= 0 then stateFields[#stateFields + 1] = field end
+            end
+        end
+        local supported = { healthPercent = true, role = true, dispel = true }
+        for _, field in ipairs(stateFields) do
+            if type(field) == "string" and supported[field] and not groups[field] then
+                groups.num = groups.num + 1
+                groups[field] = groups.num
+            end
+        end
+        -- 兼容旧的 [4]/[5] 光环键；按配置顺序压紧，不依赖键值作为像素偏移。
+        local auraKeys = {}
+        for key, aura in pairs(t.group.aura or {}) do
+            if type(key) == "number" and type(aura) == "table" then
+                auraKeys[#auraKeys + 1] = key
+            end
+        end
+        table.sort(auraKeys)
+        for _, key in ipairs(auraKeys) do
+            local aura = t.group.aura[key]
+            local hasSpell = type(aura.spellId) == "number" and aura.spellId > 0
+            if type(aura.spellIds) == "table" then
+                for _, spellId in ipairs(aura.spellIds) do
+                    if type(spellId) == "number" and spellId > 0 then hasSpell = true end
+                end
+            end
+            if hasSpell then
+                groups.num = groups.num + 1
+                groups.aura[groups.num] = aura
+            end
+        end
+        -- 队伍偏移从 1 开始；预留插件实际处理的 30 人后再追加姓名板。
+        if groups.num > 0 then
+            index = index + 30 * groups.num + 1
+        else
+            blocks.groups = nil
+        end
     end
 
     if type(t.nameplates) == "table" then

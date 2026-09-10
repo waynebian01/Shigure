@@ -110,13 +110,10 @@ Fuyutsui.ClassBlocks = {
             [241304] = { name = "治疗药水", isEquipped = false },
         },
         group = {
-            num = 5,
-            healthPercent = 1,
-            role = 2,
-            dispel = 3,
+            state = { "healthPercent", "role", "dispel", },
             aura = {
-                [4] = { name = "救赎", spellId = 194384, },
-                [5] = { name = "真言术：盾", spellIds = { 17, 1253593 }, },
+                { name = "救赎", spellId = 194384, },
+                { name = "真言术：盾", spellIds = { 17, 1253593 }, },
             },
         },
 
@@ -231,13 +228,10 @@ Fuyutsui.ClassBlocks = {
             [241304] = { name = "治疗药水", isEquipped = false },
         },
         group = {
-            num = 5,
-            healthPercent = 1,
-            role = 2,
-            dispel = 3,
+            state = { "healthPercent", "role", "dispel" },
             aura = {
-                [4] = { name = "恢复", spellId = 139, },
-                [5] = { name = "愈合祷言", spellId = 41635, },
+                { name = "恢复", spellId = 139, },
+                { name = "愈合祷言", spellId = 41635, },
             },
         },
     },

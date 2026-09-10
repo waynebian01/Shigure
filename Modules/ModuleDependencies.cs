@@ -129,7 +129,8 @@ public sealed class ModuleItemListEntrySnapshot
 
 public sealed class ModuleGroupSnapshot
 {
-    public int Num { get; set; } = 5;
+    public List<string>? State { get; set; }
+    // 兼容旧模块快照；新快照通过 State 保存字段及其顺序。
     public int? HealthPercent { get; set; }
     public int? Role { get; set; }
     public int? Dispel { get; set; }
@@ -137,7 +138,7 @@ public sealed class ModuleGroupSnapshot
 
     public ModuleGroupSnapshot Clone() => new()
     {
-        Num = Num,
+        State = State is null ? null : new List<string>(State),
         HealthPercent = HealthPercent,
         Role = Role,
         Dispel = Dispel,
@@ -147,14 +148,12 @@ public sealed class ModuleGroupSnapshot
 
 public sealed class ModuleGroupAuraSnapshot
 {
-    public int Offset { get; set; }
     public string Name { get; set; } = string.Empty;
     public long? SpellId { get; set; }
     public List<long> SpellIds { get; set; } = new();
 
     public ModuleGroupAuraSnapshot Clone() => new()
     {
-        Offset = Offset,
         Name = Name,
         SpellId = SpellId,
         SpellIds = new List<long>(SpellIds ?? [])

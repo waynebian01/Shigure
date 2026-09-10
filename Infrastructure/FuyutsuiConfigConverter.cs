@@ -498,17 +498,17 @@ internal static class FuyutsuiConfigConverter
         {
             var groupJson = new JsonObject
             {
-                ["start"] = index,
-                ["num"] = (int)(group.GetNumber("num") ?? 5)
+                ["start"] = index
             };
-
-            AddGroupOffset(groupJson, group.GetNumber("healthPercent"), "生命值");
-            AddGroupOffset(groupJson, group.GetNumber("role"), "职责");
-            AddGroupOffset(groupJson, group.GetNumber("dispel"), "驱散");
+            var groupFieldCount = 0;
+            foreach (var field in GroupStateLayout.Read(group))
+            {
+                AddGroupOffset(groupJson, ++groupFieldCount, GroupStateLayout.DisplayName(field));
+            }
 
             if (group.GetTable("aura") is { } auraOffsets)
             {
-                foreach (var (key, value) in auraOffsets.Entries)
+                foreach (var (key, value) in auraOffsets.Entries.OrderBy(pair => pair.Key is long n ? n : long.MaxValue))
                 {
                     var offset = key switch
                     {
@@ -540,7 +540,7 @@ internal static class FuyutsuiConfigConverter
                     }
 
                     groupJson[$"auras.{canonicalId}.{SpellFieldKey.AuraValue}"] = AuraField(
-                        (int)offset.Value,
+                        ++groupFieldCount,
                         auraName,
                         canonicalId.Value,
                         "group",
@@ -549,9 +549,12 @@ internal static class FuyutsuiConfigConverter
                 }
             }
 
-            result["group"] = groupJson;
-            // 与插件一致：队伍偏移从 1 开始，预留全部 40 个成员。
-            index += 40 * (int)(group.GetNumber("num") ?? 5) + 1;
+            if (groupFieldCount > 0)
+            {
+                result["group"] = groupJson;
+                // 自动计算的步长与插件一致，预留插件实际处理的 30 个成员。
+                index += 30 * groupFieldCount + 1;
+            }
         }
 
         if (spec.GetTable("nameplates") is { } nameplates)

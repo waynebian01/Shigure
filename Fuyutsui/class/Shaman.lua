@@ -333,13 +333,10 @@ Fuyutsui.ClassBlocks = {
             { spellId = 192077, name = "狂风图腾" },
         },
         group = {
-            num = 5,
-            healthPercent = 1,
-            role = 2,
-            dispel = 3,
+            state = { "healthPercent", "role", "dispel" },
             aura = {
-                [4] = { name = "激流", spellId = 61295, },
-                [5] = { name = "大地之盾", spellIds = { 974, 383648 }, },
+                { name = "激流", spellId = 61295, },
+                { name = "大地之盾", spellIds = { 974, 383648 }, },
             },
         },
     },

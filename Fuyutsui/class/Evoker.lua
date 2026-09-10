@@ -196,14 +196,11 @@ Fuyutsui.ClassBlocks = {
             { spellId = 363916, name = "黑曜鳞片", charge = true, maxCharge = 2 },
         },
         group = {
-            num = 6,
-            healthPercent = 1,
-            role = 2,
-            dispel = 3,
+            state = { "healthPercent", "role", "dispel" },
             aura = {
-                [4] = { name = "逆转", spellIds = { 366155, 366155 }, },
-                [5] = { name = "回响", spellId = 364343, },
-                [6] = { name = "梦境吐息", spellId = 355941, },
+                { name = "逆转", spellIds = { 366155, 366155 }, },
+                { name = "回响", spellId = 364343, },
+                { name = "梦境吐息", spellId = 355941, },
             },
         },
     },
@@ -292,9 +289,7 @@ Fuyutsui.ClassBlocks = {
             { spellId = 403264, name = "黑龙协调" },
         },
         group = {
-            num = 5,
-            healthPercent = 1,
-            role = 2,
+            state = { "healthPercent", "role" },
         },
     },
 }

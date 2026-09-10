@@ -246,9 +246,10 @@ public sealed class ConditionFieldCatalog
             {
                 var prefix = $"nameplates.{slot}.";
                 AddField(fields, seen, prefix + "存在", $"姓名板{slot} / 存在", ConditionFieldType.Bool, ConditionFieldCategory.State, "姓名板");
-                // 生命值/距离是固定像素，启用姓名板即可用。
+                // 生命值/距离/战斗是固定像素，启用姓名板即可用。
                 AddField(fields, seen, prefix + "生命值", $"姓名板{slot} / 生命值", ConditionFieldType.Int, ConditionFieldCategory.State, "姓名板");
                 AddField(fields, seen, prefix + "距离", $"姓名板{slot} / 距离", ConditionFieldType.Int, ConditionFieldCategory.State, "姓名板");
+                AddField(fields, seen, prefix + "战斗", $"姓名板{slot} / 战斗", ConditionFieldType.Bool, ConditionFieldCategory.State, "姓名板");
                 for (var auraIndex = 1; auraIndex <= auraCount; auraIndex++)
                 {
                     var name = $"光环{auraIndex}";

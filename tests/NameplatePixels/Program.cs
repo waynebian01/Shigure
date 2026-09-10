@@ -31,14 +31,15 @@ var (spec, warnings) = Compile(fourFields, fiveFieldGroup);
 var config = spec["nameplates"]!.AsObject();
 Check(warnings.Count == 0, "Unexpected config warning");
 Check(config["start"]!.GetValue<int>() == 155, "Nameplates must follow all 30 group slots including the final offset");
-Check(config["num"]!.GetValue<int>() == 4 && config["auraStart"]!.GetValue<int>() == 3, "Two fixed fields plus two auras must use exactly 80 pixels without gaps");
-Check(config["healthPercent"]!.GetValue<int>() == 1 && config["range"]!.GetValue<int>() == 2, "生命值/距离 must sit at the hardcoded offsets");
+Check(config["num"]!.GetValue<int>() == 5 && config["auraStart"]!.GetValue<int>() == 4, "Three fixed fields plus two auras must use exactly 100 pixels without gaps");
+Check(config["healthPercent"]!.GetValue<int>() == 1 && config["range"]!.GetValue<int>() == 2
+    && config["combat"]!.GetValue<int>() == 3, "生命值/距离/战斗 must sit at the hardcoded offsets");
 
-var pixels = new Dictionary<int, int> { [154] = 99, [235] = 88 };
+var pixels = new Dictionary<int, int> { [154] = 99, [255] = 88 };
 for (var slot = 1; slot <= 20; slot++)
 {
-    var first = 155 + (slot - 1) * 4;
-    foreach (var (offset, value) in new[] { (0, slot), (1, slot + 20), (2, slot + 40), (3, slot + 60) })
+    var first = 155 + (slot - 1) * 5;
+    foreach (var (offset, value) in new[] { (0, slot), (1, slot + 20), (2, 1), (3, slot + 40), (4, slot + 60) })
     {
         var index = first + offset;
         var color = Color.FromArgb(index > 255 ? 1 : 0, index > 255 ? index - 255 : index, value);
@@ -53,35 +54,37 @@ for (var slot = 1; slot <= 20; slot++)
     var plate = plates[slot.ToString()];
     Check((bool)plate["存在"]!, "Present unit lost");
     Check((int)plate["生命值"]! == slot && (int)plate["距离"]! == slot + 20, "Unit fields overlap");
+    Check((bool)plate["战斗"]!, "战斗 must decode as a bool from the third fixed pixel");
     Check((int)plate["光环1"]! == slot + 40 && (int)plate["光环乙"]! == slot + 60, "Aura offset or alias mismatch");
 }
 pixels[155] = 0;
 Check((bool)Read(config, pixels)["1"]["存在"]!, "Zero health must not imply absence");
 // 第 2 个单位整段置黑：start + (2 - 1) * num .. + num - 1。
-for (var index = 159; index <= 162; index++) pixels.Remove(index);
+for (var index = 160; index <= 164; index++) pixels.Remove(index);
 var absent = Read(config, pixels)["2"];
-Check(!(bool)absent["存在"]! && (int)absent["光环1"]! == 0, "Removed unit retains data");
-Check(pixels[154] == 99 && pixels[235] == 88, "Adjacent allocations were changed");
+Check(!(bool)absent["存在"]! && (int)absent["光环1"]! == 0 && !(bool)absent["战斗"]!, "Removed unit retains data");
+Check(pixels[154] == 99 && pixels[255] == 88, "Adjacent allocations were changed");
 object?[] black = [Color.Black, 0, 0];
 Check(!(bool)decode.Invoke(null, black)!, "Cleared nameplate must have no readable index");
 
-// 生命值/距离写死为第 1、2 格，配置里残留的 state 与旧偏移都不再影响布局。
+// 生命值/距离/战斗写死为第 1、2、3 格，配置里残留的 state 与旧偏移都不再影响布局。
 foreach (var (fields, count) in new[]
 {
-    ("", 2),
-    ("auras = { { spellId = 589 } }", 3),
-    ("auras = { { spellId = 589 }, { spellId = 34914 } }", 4),
-    ("state = {}, auras = { { spellId = 589 } }", 3),
-    ("state = { 'range' }", 2),
-    ("state = { 'range', 'range', 'unknown', 'healthPercent' }", 2),
-    ("healthPercent = 0, range = 4, auras = { { spellId = 589 } }", 3)
+    ("", 3),
+    ("auras = { { spellId = 589 } }", 4),
+    ("auras = { { spellId = 589 }, { spellId = 34914 } }", 5),
+    ("state = {}, auras = { { spellId = 589 } }", 4),
+    ("state = { 'range' }", 3),
+    ("state = { 'range', 'range', 'unknown', 'healthPercent' }", 3),
+    ("healthPercent = 0, range = 4, auras = { { spellId = 589 } }", 4)
 })
 {
     var (single, _) = Compile(fields);
     var layout = single["nameplates"]!.AsObject();
     Check(layout["start"]!.GetValue<int>() == 4 && layout["num"]!.GetValue<int>() == count, "Fixed fields plus auras reserve the wrong pixel count");
-    Check(layout["healthPercent"]!.GetValue<int>() == 1 && layout["range"]!.GetValue<int>() == 2, "Fixed field offsets must never move");
-    Check(layout["auraStart"]!.GetValue<int>() == 3, "Auras must always start at the third pixel");
+    Check(layout["healthPercent"]!.GetValue<int>() == 1 && layout["range"]!.GetValue<int>() == 2
+        && layout["combat"]!.GetValue<int>() == 3, "Fixed field offsets must never move");
+    Check(layout["auraStart"]!.GetValue<int>() == 4, "Auras must always start at the fourth pixel");
 }
 // 17 个队伍字段占到 514 格：超过默认 510 档，但升档后仍能容下姓名板。
 var tieredGroup = "group = { healthPercent = 1, aura = { "
@@ -90,7 +93,7 @@ var (tiered, tieredWarnings) = Compile(fourFields, tieredGroup);
 Check(tieredWarnings.Count == 0 && tiered["nameplates"]!["start"]!.GetValue<int>() == 515,
     "Allocations past 510 must use the larger capacity tier instead of dropping nameplates");
 
-// 32 个队伍字段占到 964 格，姓名板再要 80 格就越过 1020 格的最大档位。
+// 32 个队伍字段占到 964 格，姓名板再要 100 格就越过 1020 格的最大档位。
 var oversizedGroup = "group = { healthPercent = 1, aura = { "
     + string.Join(",", Enumerable.Range(1, 31).Select(id => "{ spellId = " + id + " }")) + " } },";
 var (overflow, overflowWarnings) = Compile(fourFields, oversizedGroup);

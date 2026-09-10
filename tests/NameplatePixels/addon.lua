@@ -53,6 +53,8 @@ local exists = { nameplate1 = true, nameplate20 = true }
 function UnitExists(unit) return exists[unit] or false end
 function UnitCanAttack() return true end
 function UnitCanAssist() return false end
+local inCombat = { nameplate1 = true }
+function UnitAffectingCombat(unit) return inCombat[unit] or false end
 local function forbidden() error("Secret health channel was inspected or calculated") end
 local secret = setmetatable({}, { __add = forbidden, __sub = forbidden, __mul = forbidden,
     __div = forbidden, __lt = forbidden, __le = forbidden, __tostring = forbidden })
@@ -71,15 +73,17 @@ Fuyutsui:LoadPlayerBlocks(1)
 local config = Fuyutsui.blocks.nameplates
 assert(Fuyutsui.blocks.groups.num == 5 and Fuyutsui.blocks.groups.aura[4].spellId == 194384,
     "Group fields and plain aura list must auto-allocate five pixels")
-assert(config.start == 155 and config.num == 4 and config.auraStart == 3, "Layout must match C# converter")
+assert(config.start == 155 and config.num == 5 and config.auraStart == 4, "Layout must match C# converter")
 assert(#pixels == 511, "Nameplates must reuse main textures")
 assert(Fuyutsui.MainPixelCount == 510, "Default capacity tier changed")
 local endColor = pixels[511].color
 assert(endColor[1] == 1 and endColor[2] == 0 and endColor[3] == 0, "Main row must end with a pure red terminator")
 assert(rawequal(pixels[155].color[3], secret), "Health must pass unchanged to SetColorTexture")
 assert(pixels[156].color[3] == 10 / 255, "Range byte encoding changed")
-assert(rawequal(pixels[231].color[3], secret), "20th unit offset is incorrect")
-for i = 209, 212 do assert(pixels[i].color[1] == 0 and pixels[i].color[2] == 0, "Absent unit retains an index") end
+assert(pixels[157].color[3] == 1 / 255, "Combat pixel must encode UnitAffectingCombat as 1")
+assert(rawequal(pixels[250].color[3], secret), "20th unit offset is incorrect")
+assert(pixels[252].color[3] == 0, "Out-of-combat unit must clear the combat pixel")
+for i = 160, 164 do assert(pixels[i].color[1] == 0 and pixels[i].color[2] == 0, "Absent unit retains an index") end
 
 for _, slot in ipairs({ 1, 20 }) do
     local container = frames["FuyutsuiNameplateAuraSlots_" .. slot]
@@ -87,7 +91,7 @@ for _, slot in ipairs({ 1, 20 }) do
     for _, entry in pairs(container.slots) do
         count = count + 1
         local button = entry.button
-        local firstAura = 157 + (slot - 1) * 4
+        local firstAura = 158 + (slot - 1) * 5
         local x = button.point[4]
         assert(button.point[5] == 0 and button.width == 2 and button.height == 1, "Aura must use main-row position and size")
         local index = x / 2 + 1
@@ -102,18 +106,19 @@ end
 local oldContainer = frames.FuyutsuiNameplateAuraSlots_1
 Fuyutsui:ClearNameplatePixelSlot("nameplate1")
 assert(oldContainer.enabled == false and oldContainer.shown == false, "Removal leaves aura overlays")
-for i = 155, 158 do assert(pixels[i].color[2] == 0, "Removal leaves a main-row index") end
+for i = 155, 159 do assert(pixels[i].color[2] == 0, "Removal leaves a main-row index") end
 assert(pixels[154].color[2] == 154 / 255, "Nameplate clearing overlaps the final group pixel")
-assert(rawequal(pixels[231].color[3], secret), "Clearing one unit changes another")
+assert(rawequal(pixels[250].color[3], secret), "Clearing one unit changes another")
 
 Fuyutsui.ClassBlocks[1] = { states = { "锚点", "职业", "专精" }, nameplates = { auras = { { spellId = 589 } } } }
 Fuyutsui:LoadPlayerBlocks(1)
-assert(Fuyutsui.blocks.nameplates.start == 4 and Fuyutsui.blocks.nameplates.num == 3, "Aura-only config must use 60 pixels")
+assert(Fuyutsui.blocks.nameplates.start == 4 and Fuyutsui.blocks.nameplates.num == 4, "Aura-only config must use 80 pixels")
 assert(pixels[155].color[2] == 155 / 255 and pixels[155].color[3] == 0, "Old allocation was not reset")
 Fuyutsui.ClassBlocks[1] = { states = { "锚点", "职业", "专精" }, nameplates = {} }
 Fuyutsui:LoadPlayerBlocks(1)
-assert(Fuyutsui.blocks.nameplates.num == 2 and Fuyutsui.blocks.nameplates.healthPercent == 1
-    and Fuyutsui.blocks.nameplates.range == 2, "Aura-less config must still reserve the two fixed fields")
+assert(Fuyutsui.blocks.nameplates.num == 3 and Fuyutsui.blocks.nameplates.healthPercent == 1
+    and Fuyutsui.blocks.nameplates.range == 2 and Fuyutsui.blocks.nameplates.combat == 3,
+    "Aura-less config must still reserve the three fixed fields")
 Fuyutsui.ClassBlocks[1].nameplates = nil
 Fuyutsui:LoadPlayerBlocks(1)
 assert(Fuyutsui.blocks.nameplates == nil, "Disabled config retains allocation")
@@ -154,7 +159,7 @@ assert(Fuyutsui.blocks.groups.num == 2 and Fuyutsui.blocks.groups.role == 1
     and Fuyutsui.blocks.groups.healthPercent == 2, "Unknown and duplicate fields must not allocate pixels")
 print("PASS: explicit state ordering/precedence, empty lists and duplicate filtering.")
 
--- 残留的 state 与旧偏移都不再影响布局：生命值/距离恒为第 1、2 格。
+-- 残留的 state 与旧偏移都不再影响布局：生命值/距离/战斗恒为第 1、2、3 格。
 for _, plates in ipairs({
     { state = { "range", "range", "unknown", "healthPercent" }, healthPercent = 99, auras = { { spellId = 589 } } },
     { state = {}, healthPercent = 1, range = 2, auras = { { spellId = 589 } } },
@@ -163,10 +168,11 @@ for _, plates in ipairs({
     Fuyutsui.ClassBlocks[1] = { states = { "锚点", "职业", "专精" }, nameplates = plates }
     Fuyutsui:LoadPlayerBlocks(1)
     local plateConfig = Fuyutsui.blocks.nameplates
-    assert(plateConfig.healthPercent == 1 and plateConfig.range == 2 and plateConfig.auraStart == 3
-        and plateConfig.num == 3, "Nameplate fixed fields must ignore state lists and legacy offsets")
+    assert(plateConfig.healthPercent == 1 and plateConfig.range == 2 and plateConfig.combat == 3
+        and plateConfig.auraStart == 4 and plateConfig.num == 4,
+        "Nameplate fixed fields must ignore state lists and legacy offsets")
 end
-print("PASS: hardcoded nameplate health/range offsets ignore state lists and legacy fields.")
+print("PASS: hardcoded nameplate health/range/combat offsets ignore state lists and legacy fields.")
 
 -- 容量分档：17 个队伍字段占到 514 格，超过 510 后升到 765 档，末尾终止格跟着后移。
 local manyAuras = {}

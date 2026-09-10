@@ -1549,10 +1549,10 @@ public sealed class ClassConfigEditorControl : UserControl
         };
         _nameplatePixelSummary.ForeColor = UiTheme.Text;
         _nameplateFixedFieldSummary.ForeColor = UiTheme.Muted;
-        _nameplateFixedFieldSummary.Text = "生命值 + 距离（固定 2 格）";
+        _nameplateFixedFieldSummary.Text = $"生命值 + 距离 + 战斗（固定 {NameplateStateLayout.FixedFieldCount} 格）";
 
-        // 姓名板卡片比默认宽 50%，避免「主像素（队伍后）」标题被截断。
-        const int cardWidth = GroupCardWidth * 3 / 2;
+        // 姓名板卡片在原来加宽 50% 的基础上再宽 60%，避免「生命值 + 距离 + 战斗（固定 3 格）」被截断。
+        const int cardWidth = GroupCardWidth * 3 / 2 * 8 / 5;
         fields.Controls.Add(CreateGroupCard("NAMEPLATES", _nameplateEnabledBox, cardWidth));
         fields.Controls.Add(CreateGroupCard("固定字段", _nameplateFixedFieldSummary, cardWidth));
         fields.Controls.Add(CreateGroupCard("主像素（队伍后）", _nameplatePixelSummary, cardWidth));

@@ -559,12 +559,13 @@ internal static class FuyutsuiConfigConverter
 
         if (spec.GetTable("nameplates") is { } nameplates)
         {
-            // 生命值/距离是固定偏移，与插件 LoadPlayerBlocks 的分配保持一致。
+            // 生命值/距离/战斗是固定偏移，与插件 LoadPlayerBlocks 的分配保持一致。
             var nameplateJson = new JsonObject
             {
                 ["start"] = index,
                 ["healthPercent"] = NameplateStateLayout.HealthPercentOffset,
                 ["range"] = NameplateStateLayout.RangeOffset,
+                ["combat"] = NameplateStateLayout.CombatOffset,
                 ["auraStart"] = NameplateStateLayout.AuraStartOffset
             };
             var fieldCount = NameplateStateLayout.FixedFieldCount;

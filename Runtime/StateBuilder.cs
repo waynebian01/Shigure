@@ -75,9 +75,10 @@ public sealed class StateBuilder : IRuntimeStateBuilder
         var result = new Dictionary<string, IReadOnlyDictionary<string, object?>>();
         var start = JsonHelpers.GetInt(JsonHelpers.Get(config, "start")) ?? 0;
         var fieldCount = JsonHelpers.GetInt(JsonHelpers.Get(config, "num")) ?? 0;
-        // 生命值/距离/光环起点都是固定偏移，与插件分配一致。
+        // 生命值/距离/战斗/光环起点都是固定偏移，与插件分配一致。
         const int healthOffset = NameplateStateLayout.HealthPercentOffset;
         const int rangeOffset = NameplateStateLayout.RangeOffset;
+        const int combatOffset = NameplateStateLayout.CombatOffset;
         const int auraStart = NameplateStateLayout.AuraStartOffset;
         var auraConfigs = JsonHelpers.Get(config, "auras") as JsonArray;
 
@@ -91,7 +92,9 @@ public sealed class StateBuilder : IRuntimeStateBuilder
             {
                 ["存在"] = present,
                 ["生命值"] = ReadField(healthOffset),
-                ["距离"] = ReadField(rangeOffset)
+                ["距离"] = ReadField(rangeOffset),
+                // 插件用 1 表示 UnitAffectingCombat 为真，这里还原成布尔值。
+                ["战斗"] = ReadField(combatOffset) != 0
             };
 
             if (auraConfigs is not null)

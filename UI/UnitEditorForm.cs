@@ -86,6 +86,13 @@ public sealed class UnitEditorForm : Form
         new("距离小于", EnemyThresholdFilterKind.Below)
     ];
 
+    private static readonly EnemyCombatFilterItem[] EnemyCombatFilterOptions =
+    [
+        new("不筛选战斗", EnemyCombatFilterKind.None),
+        new("战斗中", EnemyCombatFilterKind.InCombat),
+        new("不在战斗中", EnemyCombatFilterKind.NotInCombat)
+    ];
+
     private static readonly EnemyAuraFilterItem[] EnemyAuraFilterOptions =
     [
         new("不筛选光环", EnemyAuraFilterKind.None),
@@ -124,6 +131,7 @@ public sealed class UnitEditorForm : Form
     private readonly UiDropDown _enemyHealthFilterBox = new();
     private readonly UiDropDown _enemyAuraFilterBox = new();
     private readonly UiDropDown _enemyRangeFilterBox = new();
+    private readonly UiDropDown _enemyCombatFilterBox = new();
     private readonly UiDropDown _enemyAuraBox = new();
     private readonly CheckedListBox _enemyAurasBox = new();
     private readonly ThresholdGroup _enemyHealthThreshold = new();
@@ -133,6 +141,7 @@ public sealed class UnitEditorForm : Form
     private Panel _enemyHealthFilterRow = null!;
     private Panel _enemyAuraFilterRow = null!;
     private Panel _enemyRangeFilterRow = null!;
+    private Panel _enemyCombatFilterRow = null!;
     private Panel _enemyAuraRow = null!;
     private Panel _enemyAurasRow = null!;
     private Panel _thresholdModeRow = null!;
@@ -471,11 +480,12 @@ public sealed class UnitEditorForm : Form
             _enemyRangeFilterRow,
             _enemyRangeThreshold.ModeRow,
             _enemyRangeThreshold.ValueRow,
-            _enemyRangeThreshold.FieldRow
+            _enemyRangeThreshold.FieldRow,
+            _enemyCombatFilterRow
         ]);
     }
 
-    // 敌人数量: 生命值 / 光环 / 距离 三组筛选彼此独立, 各自带一套阈值控件。
+    // 敌人数量: 生命值 / 光环 / 距离 / 战斗 四组筛选彼此独立, 前三组各自带一套阈值控件。
     private void BuildEnemyParamRows()
     {
         UiTheme.StyleComboBox(_enemyHealthFilterBox);
@@ -495,6 +505,12 @@ public sealed class UnitEditorForm : Form
         _enemyRangeFilterBox.Items.AddRange(EnemyRangeFilterOptions.Cast<object>().ToArray());
         _enemyRangeFilterBox.SelectedIndex = 0;
         _enemyRangeFilterBox.SelectedIndexChanged += (_, _) => UpdateParamVisibility();
+
+        UiTheme.StyleComboBox(_enemyCombatFilterBox);
+        _enemyCombatFilterBox.DropDownWidth = 220;
+        _enemyCombatFilterBox.Items.AddRange(EnemyCombatFilterOptions.Cast<object>().ToArray());
+        _enemyCombatFilterBox.SelectedIndex = 0;
+        _enemyCombatFilterBox.SelectedIndexChanged += (_, _) => UpdateParamVisibility();
 
         UiTheme.StyleComboBox(_enemyAuraBox);
         _enemyAuraBox.DropDownWidth = 360;
@@ -525,6 +541,7 @@ public sealed class UnitEditorForm : Form
         _enemyHealthFilterRow = BuildLabeledRow("生命值筛选", _enemyHealthFilterBox);
         _enemyAuraFilterRow = BuildLabeledRow("光环筛选", _enemyAuraFilterBox);
         _enemyRangeFilterRow = BuildLabeledRow("距离筛选", _enemyRangeFilterBox);
+        _enemyCombatFilterRow = BuildLabeledRow("战斗筛选", _enemyCombatFilterBox);
         _enemyAuraRow = BuildLabeledRow("光环", _enemyAuraBox);
         _enemyAurasRow = BuildLabeledRow("光环 (可多选)", _enemyAurasBox, 116);
     }
@@ -801,6 +818,7 @@ public sealed class UnitEditorForm : Form
         _enemyHealthFilterRow.Visible = true;
         _enemyAuraFilterRow.Visible = true;
         _enemyRangeFilterRow.Visible = true;
+        _enemyCombatFilterRow.Visible = true;
         SetThresholdGroupVisible(_enemyHealthThreshold, healthFilter);
         SetThresholdGroupVisible(_enemyRangeThreshold, rangeFilter);
         _enemyAuraRow.Visible = auraFilter is EnemyAuraFilterKind.WithAura or EnemyAuraFilterKind.WithoutAura;
@@ -812,6 +830,7 @@ public sealed class UnitEditorForm : Form
         _enemyHealthFilterRow.Visible = visible;
         _enemyAuraFilterRow.Visible = visible;
         _enemyRangeFilterRow.Visible = visible;
+        _enemyCombatFilterRow.Visible = visible;
         _enemyAuraRow.Visible = visible;
         _enemyAurasRow.Visible = visible;
         SetThresholdGroupVisible(_enemyHealthThreshold, visible);
@@ -922,7 +941,8 @@ public sealed class UnitEditorForm : Form
             Name = name,
             HealthFilter = SelectedEnemyHealthFilter(),
             AuraFilter = SelectedEnemyAuraFilter(),
-            RangeFilter = SelectedEnemyRangeFilter()
+            RangeFilter = SelectedEnemyRangeFilter(),
+            CombatFilter = SelectedEnemyCombatFilter()
         };
 
         if (count.HealthFilter != EnemyThresholdFilterKind.None)
@@ -997,6 +1017,7 @@ public sealed class UnitEditorForm : Form
             SelectEnemyThresholdFilter(_enemyHealthFilterBox, enemyCount.HealthFilter);
             SelectEnemyThresholdFilter(_enemyRangeFilterBox, enemyCount.RangeFilter);
             SelectEnemyAuraFilter(enemyCount.AuraFilter);
+            SelectEnemyCombatFilter(enemyCount.CombatFilter);
             SeedThresholdGroup(_enemyHealthThreshold, enemyCount.HealthFilter, enemyCount.HealthThreshold, enemyCount.HealthThresholdField);
             SeedThresholdGroup(_enemyRangeThreshold, enemyCount.RangeFilter, enemyCount.RangeThreshold, enemyCount.RangeThresholdField);
             var auraSpellIds = enemyCount.AuraSpellIds ?? [];
@@ -1470,6 +1491,9 @@ public sealed class UnitEditorForm : Form
     private EnemyThresholdFilterKind SelectedEnemyRangeFilter()
         => (_enemyRangeFilterBox.SelectedItem as EnemyThresholdFilterItem)?.Kind ?? EnemyThresholdFilterKind.None;
 
+    private EnemyCombatFilterKind SelectedEnemyCombatFilter()
+        => (_enemyCombatFilterBox.SelectedItem as EnemyCombatFilterItem)?.Kind ?? EnemyCombatFilterKind.None;
+
     private EnemyAuraFilterKind SelectedEnemyAuraFilter()
         => (_enemyAuraFilterBox.SelectedItem as EnemyAuraFilterItem)?.Kind ?? EnemyAuraFilterKind.None;
 
@@ -1640,6 +1664,20 @@ public sealed class UnitEditorForm : Form
         }
 
         box.SelectedIndex = 0;
+    }
+
+    private void SelectEnemyCombatFilter(EnemyCombatFilterKind kind)
+    {
+        for (var i = 0; i < _enemyCombatFilterBox.Items.Count; i++)
+        {
+            if (_enemyCombatFilterBox.Items[i] is EnemyCombatFilterItem item && item.Kind == kind)
+            {
+                _enemyCombatFilterBox.SelectedIndex = i;
+                return;
+            }
+        }
+
+        _enemyCombatFilterBox.SelectedIndex = 0;
     }
 
     private void SelectEnemyAuraFilter(EnemyAuraFilterKind kind)
@@ -1902,6 +1940,11 @@ public sealed class UnitEditorForm : Form
     }
 
     private sealed record EnemyAuraFilterItem(string Text, EnemyAuraFilterKind Kind)
+    {
+        public override string ToString() => Text;
+    }
+
+    private sealed record EnemyCombatFilterItem(string Text, EnemyCombatFilterKind Kind)
     {
         public override string ToString() => Text;
     }

@@ -153,6 +153,19 @@ public enum EnemyThresholdFilterKind
     Below
 }
 
+/// <summary>敌人数量的战斗状态筛选方式(对应插件的 UnitAffectingCombat)。</summary>
+public enum EnemyCombatFilterKind
+{
+    /// <summary>不筛选。</summary>
+    None,
+
+    /// <summary>战斗中。</summary>
+    InCombat,
+
+    /// <summary>不在战斗中。</summary>
+    NotInCombat
+}
+
 /// <summary>敌人数量的光环筛选方式。</summary>
 public enum EnemyAuraFilterKind
 {
@@ -175,7 +188,7 @@ public enum EnemyAuraFilterKind
 /// <summary>
 /// 模块内定义的命名敌人数量字段。统计姓名板(nameplates)中满足筛选条件的敌人数,
 /// 仅用于条件(如 近身敌人数 &gt;= 3), 不能作为目标。
-/// 三组筛选(生命值 / 光环 / 距离)彼此独立, 同时生效时是「且」关系;
+/// 四组筛选(生命值 / 光环 / 距离 / 战斗)彼此独立, 同时生效时是「且」关系;
 /// 无论如何都只统计生命值 &gt; 0 的敌人。
 /// </summary>
 public sealed class ModuleEnemyCountField
@@ -194,6 +207,8 @@ public sealed class ModuleEnemyCountField
     public int? RangeThreshold { get; set; }
     public string? RangeThresholdField { get; set; }
 
+    public EnemyCombatFilterKind CombatFilter { get; set; } = EnemyCombatFilterKind.None;
+
     public ModuleEnemyCountField Clone()
     {
         return new ModuleEnemyCountField
@@ -206,7 +221,8 @@ public sealed class ModuleEnemyCountField
             AuraSpellIds = AuraSpellIds is null ? null : new List<long>(AuraSpellIds),
             RangeFilter = RangeFilter,
             RangeThreshold = RangeThreshold,
-            RangeThresholdField = RangeThresholdField
+            RangeThresholdField = RangeThresholdField,
+            CombatFilter = CombatFilter
         };
     }
 }

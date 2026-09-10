@@ -260,12 +260,13 @@ function Fuyutsui:LoadPlayerBlocks(specIndex)
     end
 
     if type(t.nameplates) == "table" then
-        -- 生命值/距离固定占用每个单位的前两格，光环从第三格开始。
+        -- 生命值/距离/战斗固定占用每个单位的前三格，光环从第四格开始。
         blocks.nameplates = {
             start = index,
             healthPercent = 1,
             range = 2,
-            num = 2,
+            combat = 3,
+            num = 3,
             auras = {},
         }
         if type(t.nameplates.auras) == "table" then

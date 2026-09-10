@@ -91,6 +91,11 @@ internal static class UnitSummary
             parts.Add($"距离{ThresholdOperator(count.RangeFilter)}{DescribeThreshold(count.RangeThreshold, count.RangeThresholdField, 0)}");
         }
 
+        if (count.CombatFilter != EnemyCombatFilterKind.None)
+        {
+            parts.Add(count.CombatFilter == EnemyCombatFilterKind.InCombat ? "战斗中" : "不在战斗中");
+        }
+
         return parts.Count == 0
             ? "敌人数(血量>0)"
             : $"{string.Join("且", parts)} 的敌人数";

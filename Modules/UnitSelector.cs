@@ -147,7 +147,7 @@ public static class UnitSelector
     }
 
     /// <summary>
-    /// 解析敌人数量字段为整数: 统计姓名板中生命值 &gt; 0 且满足全部已启用筛选(生命值 / 光环 / 距离)的敌人。
+    /// 解析敌人数量字段为整数: 统计姓名板中生命值 &gt; 0 且满足全部已启用筛选(生命值 / 光环 / 距离 / 战斗)的敌人。
     /// 姓名板未配置生命值时该字段恒为 0, 结果也恒为 0。
     /// </summary>
     public static int Resolve(ModuleEnemyCountField count, GameState state)
@@ -199,6 +199,11 @@ public static class UnitSelector
                 continue;
             }
 
+            if (!MatchesCombatFilter(data, count.CombatFilter))
+            {
+                continue;
+            }
+
             result++;
         }
 
@@ -228,6 +233,20 @@ public static class UnitSelector
             EnemyAuraFilterKind.WithoutAnyAura => !HasAnyAura(data, auraSpellIds),
             _ => true
         };
+    }
+
+    private static bool MatchesCombatFilter(
+        IReadOnlyDictionary<string, object?> data,
+        EnemyCombatFilterKind filter)
+    {
+        if (filter == EnemyCombatFilterKind.None)
+        {
+            return true;
+        }
+
+        // 姓名板未配置战斗格时该字段恒为 false, 「战斗中」筛选自然统计不到人。
+        var inCombat = GetField(data, "战斗") is bool flag && flag;
+        return filter == EnemyCombatFilterKind.InCombat ? inCombat : !inCombat;
     }
 
     private static bool RequiresAura(EnemyAuraFilterKind filter)

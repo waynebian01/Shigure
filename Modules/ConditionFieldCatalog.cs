@@ -246,14 +246,9 @@ public sealed class ConditionFieldCatalog
             {
                 var prefix = $"nameplates.{slot}.";
                 AddField(fields, seen, prefix + "存在", $"姓名板{slot} / 存在", ConditionFieldType.Bool, ConditionFieldCategory.State, "姓名板");
-                if (JsonHelpers.GetInt(JsonHelpers.Get(nameplates, "healthPercent")) is > 0)
-                {
-                    AddField(fields, seen, prefix + "生命值", $"姓名板{slot} / 生命值", ConditionFieldType.Int, ConditionFieldCategory.State, "姓名板");
-                }
-                if (JsonHelpers.GetInt(JsonHelpers.Get(nameplates, "range")) is > 0)
-                {
-                    AddField(fields, seen, prefix + "距离", $"姓名板{slot} / 距离", ConditionFieldType.Int, ConditionFieldCategory.State, "姓名板");
-                }
+                // 生命值/距离是固定像素，启用姓名板即可用。
+                AddField(fields, seen, prefix + "生命值", $"姓名板{slot} / 生命值", ConditionFieldType.Int, ConditionFieldCategory.State, "姓名板");
+                AddField(fields, seen, prefix + "距离", $"姓名板{slot} / 距离", ConditionFieldType.Int, ConditionFieldCategory.State, "姓名板");
                 for (var auraIndex = 1; auraIndex <= auraCount; auraIndex++)
                 {
                     var name = $"光环{auraIndex}";
@@ -332,6 +327,49 @@ public sealed class ConditionFieldCatalog
         if (seen.Add("治疗吸收"))
         {
             fields.Add(new ConditionField("治疗吸收", "治疗吸收", ConditionFieldType.Int));
+        }
+
+        return fields;
+    }
+
+    /// <summary>
+    /// 返回姓名板配置的光环，字段名统一为 auras.{spellId}.value，供敌人数量编辑器选择光环。
+    /// </summary>
+    public IReadOnlyList<ConditionField> GetNameplateAuraFields(int? classId, int? specId)
+    {
+        var fields = new List<ConditionField>();
+        if (_config is null)
+        {
+            return fields;
+        }
+
+        var stateConfig = _config.BuildStateConfig(classId, specId);
+        if (JsonHelpers.Get(stateConfig, "nameplates") is not JsonObject nameplates
+            || JsonHelpers.Get(nameplates, "auras") is not JsonArray auras)
+        {
+            return fields;
+        }
+
+        var seen = new HashSet<long>();
+        for (var index = 0; index < auras.Count; index++)
+        {
+            if (auras[index] is not JsonObject aura)
+            {
+                continue;
+            }
+
+            var spellId = ReadSpellId(aura);
+            if (spellId is not > 0 || !seen.Add(spellId.Value))
+            {
+                continue;
+            }
+
+            var name = JsonHelpers.GetString(JsonHelpers.Get(aura, "name"));
+            fields.Add(new ConditionField(
+                SpellFieldKey.AuraMember(spellId.Value),
+                $"{(string.IsNullOrWhiteSpace(name) ? $"光环{index + 1}" : name)} / {spellId.Value}",
+                ConditionFieldType.Int,
+                ConditionFieldCategory.Aura));
         }
 
         return fields;

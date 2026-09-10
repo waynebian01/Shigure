@@ -63,9 +63,8 @@ public sealed class ClassConfigEditorControl : UserControl
     private readonly CheckBox _groupHasRoleBox = new();
     private readonly CheckBox _groupHasDispelBox = new();
     private readonly DataGridView _groupAurasGrid = new();
-    private readonly CheckBox _nameplateHealthBox = new();
-    private readonly CheckBox _nameplateRangeBox = new();
     private readonly Label _nameplatePixelSummary = new() { AutoSize = true };
+    private readonly Label _nameplateFixedFieldSummary = new() { AutoSize = true };
     private readonly CheckBox _nameplateEnabledBox = new();
     private readonly DataGridView _nameplateAurasGrid = new();
 
@@ -1548,25 +1547,14 @@ public sealed class ClassConfigEditorControl : UserControl
                 UpdateNameplateEditorsEnabled();
             }
         };
-        _nameplateHealthBox.Text = NameplateStateLayout.DisplayName("healthPercent");
-        _nameplateRangeBox.Text = NameplateStateLayout.DisplayName("range");
-        foreach (var box in new[] { _nameplateHealthBox, _nameplateRangeBox })
-        {
-            box.AutoSize = true;
-            box.ForeColor = UiTheme.Text;
-            box.CheckedChanged += (_, _) =>
-            {
-                MarkDirty();
-                UpdateNameplatePixelSummary();
-            };
-        }
         _nameplatePixelSummary.ForeColor = UiTheme.Text;
+        _nameplateFixedFieldSummary.ForeColor = UiTheme.Muted;
+        _nameplateFixedFieldSummary.Text = "生命值 + 距离（固定 2 格）";
 
         // 姓名板卡片比默认宽 50%，避免「主像素（队伍后）」标题被截断。
         const int cardWidth = GroupCardWidth * 3 / 2;
         fields.Controls.Add(CreateGroupCard("NAMEPLATES", _nameplateEnabledBox, cardWidth));
-        fields.Controls.Add(CreateGroupCard(_nameplateHealthBox.Text, _nameplateHealthBox, cardWidth));
-        fields.Controls.Add(CreateGroupCard(_nameplateRangeBox.Text, _nameplateRangeBox, cardWidth));
+        fields.Controls.Add(CreateGroupCard("固定字段", _nameplateFixedFieldSummary, cardWidth));
         fields.Controls.Add(CreateGroupCard("主像素（队伍后）", _nameplatePixelSummary, cardWidth));
         panel.Controls.Add(fields, 0, 0);
 
@@ -1606,8 +1594,6 @@ public sealed class ClassConfigEditorControl : UserControl
         if (_currentSpec?.Nameplates is { } nameplates)
         {
             _nameplateEnabledBox.Checked = true;
-            _nameplateHealthBox.Checked = nameplates.State.Contains("healthPercent");
-            _nameplateRangeBox.Checked = nameplates.State.Contains("range");
             foreach (var aura in nameplates.Auras)
             {
                 var icon = GetAuraIcon(aura.SpellId, aura.SpellIds, aura.Name);
@@ -1622,8 +1608,6 @@ public sealed class ClassConfigEditorControl : UserControl
         else
         {
             _nameplateEnabledBox.Checked = false;
-            _nameplateHealthBox.Checked = true;
-            _nameplateRangeBox.Checked = true;
         }
 
         UpdateNameplateEditorsEnabled();
@@ -1632,8 +1616,6 @@ public sealed class ClassConfigEditorControl : UserControl
     private void UpdateNameplateEditorsEnabled()
     {
         var enabled = _nameplateEnabledBox.Checked;
-        _nameplateHealthBox.Enabled = enabled;
-        _nameplateRangeBox.Enabled = enabled;
         _nameplateAurasGrid.Enabled = enabled;
         _nameplateAurasGrid.ReadOnly = !enabled;
         UpdateNameplatePixelSummary();
@@ -1641,7 +1623,7 @@ public sealed class ClassConfigEditorControl : UserControl
 
     private void UpdateNameplatePixelSummary()
     {
-        var fields = (_nameplateHealthBox.Checked ? 1 : 0) + (_nameplateRangeBox.Checked ? 1 : 0);
+        var fields = NameplateStateLayout.FixedFieldCount;
         foreach (DataGridViewRow row in _nameplateAurasGrid.Rows)
         {
             if (!row.IsNewRow
@@ -3782,12 +3764,6 @@ public sealed class ClassConfigEditorControl : UserControl
                 continue;
             }
 
-            if (nameplates.State.Count == 0 && nameplates.Auras.Count == 0)
-            {
-                error = $"专精 {specId} 的姓名板至少需要选择一个字段或光环。";
-                return false;
-            }
-
             for (var index = 0; index < nameplates.Auras.Count; index++)
             {
                 var aura = nameplates.Auras[index];
@@ -4124,18 +4100,8 @@ public sealed class ClassConfigEditorControl : UserControl
             return;
         }
 
+        // 生命值/距离是固定像素，这里只写回光环列表。
         var nameplates = new ClassBlocksStore.NameplateBlocks();
-        var enabledFields = new Dictionary<string, bool>
-        {
-            ["healthPercent"] = _nameplateHealthBox.Checked,
-            ["range"] = _nameplateRangeBox.Checked
-        };
-        // 保留配置中的 state 顺序；新启用的字段追加到末尾。
-        foreach (var field in (_currentSpec.Nameplates?.State ?? []).Concat(NameplateStateLayout.SupportedFields).Distinct())
-        {
-            if (enabledFields.TryGetValue(field, out var enabled) && enabled) nameplates.State.Add(field);
-        }
-
         foreach (DataGridViewRow row in _nameplateAurasGrid.Rows)
         {
             if (row.IsNewRow)

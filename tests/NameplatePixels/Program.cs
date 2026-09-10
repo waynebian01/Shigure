@@ -25,14 +25,14 @@ void Check(bool condition, string message)
 Dictionary<string, IReadOnlyDictionary<string, object?>> Read(JsonObject config, Dictionary<int, int> pixels)
     => (Dictionary<string, IReadOnlyDictionary<string, object?>>)build.Invoke(null, [config, pixels])!;
 
-const string fourFields = "state = { 'healthPercent', 'range' }, auras = { { name = '光环甲', spellId = 589 }, { name = '光环乙', spellId = 34914 } }";
+const string fourFields = "auras = { { name = '光环甲', spellId = 589 }, { name = '光环乙', spellId = 34914 } }";
 const string fiveFieldGroup = "group = { state = { 'healthPercent', 'role', 'dispel' }, aura = { { spellId = 194384 }, { spellIds = { 17, 1253593 } } } },";
 var (spec, warnings) = Compile(fourFields, fiveFieldGroup);
 var config = spec["nameplates"]!.AsObject();
 Check(warnings.Count == 0, "Unexpected config warning");
 Check(config["start"]!.GetValue<int>() == 155, "Nameplates must follow all 30 group slots including the final offset");
-Check(config["num"]!.GetValue<int>() == 4 && config["auraStart"]!.GetValue<int>() == 3, "Four configured fields must use exactly 80 pixels without gaps");
-Check(config["healthPercent"]!.GetValue<int>() == 1 && config["range"]!.GetValue<int>() == 2, "state order must determine row offsets");
+Check(config["num"]!.GetValue<int>() == 4 && config["auraStart"]!.GetValue<int>() == 3, "Two fixed fields plus two auras must use exactly 80 pixels without gaps");
+Check(config["healthPercent"]!.GetValue<int>() == 1 && config["range"]!.GetValue<int>() == 2, "生命值/距离 must sit at the hardcoded offsets");
 
 var pixels = new Dictionary<int, int> { [154] = 99, [235] = 88 };
 for (var slot = 1; slot <= 20; slot++)
@@ -65,37 +65,30 @@ Check(pixels[154] == 99 && pixels[235] == 88, "Adjacent allocations were changed
 object?[] black = [Color.Black, 0, 0];
 Check(!(bool)decode.Invoke(null, black)!, "Cleared nameplate must have no readable index");
 
-foreach (var (fields, count, health, range, auraStart) in new[]
+// 生命值/距离写死为第 1、2 格，配置里残留的 state 与旧偏移都不再影响布局。
+foreach (var (fields, count) in new[]
 {
-    ("state = { 'healthPercent' }", 1, 1, 0, 2),
-    ("state = { 'range' }", 1, 0, 1, 2),
-    ("auras = { { spellId = 589 } }", 1, 0, 0, 1),
-    ("state = { 'range' }, auras = { { spellId = 589 } }", 2, 0, 1, 2),
-    // state 顺序决定偏移，重复与未知字段不占格。
-    ("state = { 'range', 'healthPercent' }", 2, 2, 1, 3),
-    ("state = { 'range', 'range', 'unknown', 'healthPercent' }", 2, 2, 1, 3),
-    // 显式空 state 覆盖旧字段；缺少 state 时旧的正偏移才迁移，0 视为未启用。
-    ("state = {}, healthPercent = 1, auras = { { spellId = 589 } }", 1, 0, 0, 1),
-    ("healthPercent = 2", 1, 1, 0, 2),
-    ("range = 9", 1, 0, 1, 2),
-    ("healthPercent = 0, range = 4, auras = { { spellId = 589 } }", 2, 0, 1, 2)
+    ("", 2),
+    ("auras = { { spellId = 589 } }", 3),
+    ("auras = { { spellId = 589 }, { spellId = 34914 } }", 4),
+    ("state = {}, auras = { { spellId = 589 } }", 3),
+    ("state = { 'range' }", 2),
+    ("state = { 'range', 'range', 'unknown', 'healthPercent' }", 2),
+    ("healthPercent = 0, range = 4, auras = { { spellId = 589 } }", 3)
 })
 {
     var (single, _) = Compile(fields);
     var layout = single["nameplates"]!.AsObject();
-    Check(layout["start"]!.GetValue<int>() == 4 && layout["num"]!.GetValue<int>() == count, "Optional fields reserve empty pixels");
-    Check((layout["healthPercent"]?.GetValue<int>() ?? 0) == health && (layout["range"]?.GetValue<int>() ?? 0) == range, "Optional field offsets differ");
-    Check(layout["auraStart"]!.GetValue<int>() == auraStart, "Aura-only layout differs");
+    Check(layout["start"]!.GetValue<int>() == 4 && layout["num"]!.GetValue<int>() == count, "Fixed fields plus auras reserve the wrong pixel count");
+    Check(layout["healthPercent"]!.GetValue<int>() == 1 && layout["range"]!.GetValue<int>() == 2, "Fixed field offsets must never move");
+    Check(layout["auraStart"]!.GetValue<int>() == 3, "Auras must always start at the third pixel");
 }
-Check(Compile("").Item1["nameplates"] is null, "Empty config must allocate nothing");
-Check(Compile("state = {}, healthPercent = 1, range = 2").Item1["nameplates"] is null,
-    "Explicit empty state must suppress legacy nameplate fields");
 // 15 个队伍字段占到 455 格，姓名板再要 80 格就越过 510 格上限。
 var oversizedGroup = "group = { healthPercent = 1, aura = { "
     + string.Join(",", Enumerable.Range(1, 14).Select(id => "{ spellId = " + id + " }")) + " } },";
 var (overflow, overflowWarnings) = Compile(fourFields, oversizedGroup);
 Check(overflow["nameplates"] is null && overflowWarnings.Count > 0, "Overflow must be reported instead of partially transmitting units");
-Console.WriteLine("PASS: converter layout, 20-unit main-row round-trip (including index 255/256), zero health, removal, optional fields, empty config and overflow.");
+Console.WriteLine("PASS: converter layout, 20-unit main-row round-trip (including index 255/256), zero health, removal, hardcoded fields and overflow.");
 
 var groupLayout = spec["group"]!.AsObject();
 Check(!groupLayout.ContainsKey("num"), "Generated group config must not carry a manual num");
@@ -171,23 +164,21 @@ Console.WriteLine("PASS: state order/precedence, explicit empty list, duplicate 
 var nameplateLua = Path.GetTempFileName();
 try
 {
-    foreach (var (source, expected) in new[]
+    foreach (var source in new[]
     {
-        ("nameplates = { healthPercent = 7, range = 9, auras = { { spellId = 589 } } }",
-            "state = { \"healthPercent\", \"range\", },"),
-        ("nameplates = { state = { 'range', 'healthPercent' }, auras = { { spellId = 589 } } }",
-            "state = { \"range\", \"healthPercent\", },"),
-        ("nameplates = { auras = { { spellId = 589 } } }", "state = { },")
+        "nameplates = { healthPercent = 7, range = 9, auras = { { spellId = 589 } } }",
+        "nameplates = { state = { 'range', 'healthPercent' }, auras = { { spellId = 589 } } }",
+        "nameplates = { auras = { { spellId = 589 } } }"
     })
     {
         File.WriteAllText(nameplateLua, "Fuyutsui.ClassBlocks = { [1] = { " + source + " } }");
         var document = store.GetMethod("Load")!.Invoke(null, [nameplateLua])!;
         var saved = (string)store.GetMethod("SerializeClassBlocks")!.Invoke(null,
             [document.GetType().GetProperty("Specs")!.GetValue(document)])!;
-        Check(saved.Contains(expected), "Nameplate state list was not saved in configuration order");
-        Check(!saved.Contains("healthPercent =") && !saved.Contains("range ="),
-            "Editor serialization reintroduces manual nameplate offsets");
+        Check(saved.Contains("nameplates = {") && saved.Contains("spellId = 589"), "Nameplate aura list was lost on save");
+        Check(!saved.Contains("state = {") && !saved.Contains("healthPercent =") && !saved.Contains("range ="),
+            "Editor serialization reintroduces nameplate state or manual offsets");
     }
 }
 finally { File.Delete(nameplateLua); }
-Console.WriteLine("PASS: nameplate editor round-trip keeps order and migrates legacy offsets to a state list.");
+Console.WriteLine("PASS: nameplate editor round-trip drops the state list and legacy offsets, keeping only auras.");

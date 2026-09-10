@@ -146,6 +146,96 @@ public static class UnitSelector
         };
     }
 
+    /// <summary>
+    /// 解析敌人数量字段为整数: 统计姓名板中生命值 &gt; 0 且满足全部已启用筛选(生命值 / 光环 / 距离)的敌人。
+    /// 姓名板未配置生命值时该字段恒为 0, 结果也恒为 0。
+    /// </summary>
+    public static int Resolve(ModuleEnemyCountField count, GameState state)
+    {
+        var nameplates = state.Nameplates;
+        var healthThreshold = ResolveThreshold(count.HealthThreshold, count.HealthThresholdField, state, 0);
+        var rangeThreshold = ResolveThreshold(count.RangeThreshold, count.RangeThresholdField, state, 0);
+        var auras = count.AuraSpellIds ?? [];
+        if (RequiresAura(count.AuraFilter) && auras.Count == 0)
+        {
+            return 0;
+        }
+
+        var result = 0;
+        for (var i = 1; i <= 20; i++)
+        {
+            if (!nameplates.TryGetValue(i.ToString(), out var data))
+            {
+                continue;
+            }
+
+            // 默认基线: 只统计存在且生命值 > 0 的敌人。
+            if (GetField(data, "存在") is bool present && !present)
+            {
+                continue;
+            }
+
+            if (!TryInt(GetField(data, "生命值"), out var health) || health <= 0)
+            {
+                continue;
+            }
+
+            if (!MatchesThreshold(count.HealthFilter, health, healthThreshold))
+            {
+                continue;
+            }
+
+            if (count.RangeFilter != EnemyThresholdFilterKind.None)
+            {
+                if (!TryInt(GetField(data, "距离"), out var range)
+                    || !MatchesThreshold(count.RangeFilter, range, rangeThreshold))
+                {
+                    continue;
+                }
+            }
+
+            if (!MatchesAuraFilter(data, count.AuraFilter, auras))
+            {
+                continue;
+            }
+
+            result++;
+        }
+
+        return result;
+    }
+
+    private static bool MatchesThreshold(EnemyThresholdFilterKind filter, int value, int threshold)
+    {
+        return filter switch
+        {
+            EnemyThresholdFilterKind.Above => value > threshold,
+            EnemyThresholdFilterKind.Below => value < threshold,
+            _ => true
+        };
+    }
+
+    private static bool MatchesAuraFilter(
+        IReadOnlyDictionary<string, object?> data,
+        EnemyAuraFilterKind filter,
+        IReadOnlyList<long> auraSpellIds)
+    {
+        return filter switch
+        {
+            EnemyAuraFilterKind.WithAura => HasAura(data, auraSpellIds[0]),
+            EnemyAuraFilterKind.WithoutAura => !HasAura(data, auraSpellIds[0]),
+            EnemyAuraFilterKind.WithAnyAura => HasAnyAura(data, auraSpellIds),
+            EnemyAuraFilterKind.WithoutAnyAura => !HasAnyAura(data, auraSpellIds),
+            _ => true
+        };
+    }
+
+    private static bool RequiresAura(EnemyAuraFilterKind filter)
+        => filter is EnemyAuraFilterKind.WithAura
+            or EnemyAuraFilterKind.WithoutAura
+            or EnemyAuraFilterKind.WithAnyAura
+            or EnemyAuraFilterKind.WithoutAnyAura;
+
     /// <summary>在职责 != 0 的单位里, 取生命值 &lt; 阈值且满足 predicate 的最低血量单位（含 0 和负数）。</summary>
     private static string? LowestHealth(
         IReadOnlyDictionary<string, IReadOnlyDictionary<string, object?>> group,

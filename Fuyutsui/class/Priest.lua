@@ -102,6 +102,7 @@ Fuyutsui.ClassBlocks = {
             { spellId = 34433, name = "暗影魔" },
             { spellId = 1235211, name = "暗影分流" },
             { spellId = 586, name = "渐隐术" },
+            { spellId = 10060, name = "能量灌注" },
         },
         items = {
             [5512] = { name = "治疗石", isEquipped = false },
@@ -116,7 +117,6 @@ Fuyutsui.ClassBlocks = {
                 { name = "真言术：盾", spellIds = { 17, 1253593 }, },
             },
         },
-
     },
     [2] = {
         states = {
@@ -143,6 +143,7 @@ Fuyutsui.ClassBlocks = {
                 "难度",
                 "施法技能",
                 "施法目标",
+                "公共冷却",
             },
             ["能量"] = {
                 "法力值",
@@ -157,7 +158,6 @@ Fuyutsui.ClassBlocks = {
                 "施法(正计时)",
                 "施法可打断",
                 "驱散类型",
-
             },
             ["鼠标"] = {
                 "类型",
@@ -182,7 +182,7 @@ Fuyutsui.ClassBlocks = {
         auras = {
             player = {
                 { name = "神圣化身", spellId = 200183, },
-                { name = "神圣镜像", spellId = 405963, },
+                { name = "神圣镜像", spellId = 405963, maxApps = 5, },
                 { name = "圣光涌动", spellId = 114255, maxApps = 2, },
                 { name = "祈福", spellId = 1262766, maxApps = 2, },
                 { name = "救赎之魂", spellId = 27827, },
@@ -223,12 +223,16 @@ Fuyutsui.ClassBlocks = {
             { spellId = 64843, name = "神圣赞美诗" },
             { spellId = 586, name = "渐隐术" },
             { spellId = 528, name = "驱散魔法" },
+            { spellId = 10060, name = "能量灌注" },
         },
         items = {
+            [5512] = { name = "治疗石", isEquipped = false },
             [241304] = { name = "治疗药水", isEquipped = false },
+            [241308] = { name = "圣光潜力", isEquipped = false },
+            [270162] = { name = "盘魂者仪式容器", isEquipped = true },
         },
         group = {
-            state = { "healthPercent", "role", "dispel" },
+            state = { "healthPercent", "role", "dispel", },
             aura = {
                 { name = "恢复", spellId = 139, },
                 { name = "愈合祷言", spellId = 41635, },
@@ -282,7 +286,6 @@ Fuyutsui.ClassBlocks = {
                 "施法可打断",
                 "引导",
                 "引导可打断",
-
             },
             ["焦点"] = {
                 "施法(倒计时)",
@@ -290,7 +293,6 @@ Fuyutsui.ClassBlocks = {
                 "施法可打断",
                 "引导",
                 "引导可打断",
-
             },
             ["鼠标"] = {
                 "类型",
@@ -345,13 +347,13 @@ Fuyutsui.ClassBlocks = {
             { spellId = 15286, name = "吸血鬼的拥抱" },
             { spellId = 120644, name = "光晕" },
             { spellId = 1242173, name = "虚空齐射" },
+            { spellId = 10060, name = "能量灌注" },
         },
         nameplates = {
-            state = { "healthPercent", "range" },
             auras = {
                 { name = "暗言术：痛", spellId = 589, },
             },
-        }
+        },
     },
 }
 
@@ -464,4 +466,5 @@ Fuyutsui.itemsList = {
     [245919] = { index = 16, name = "飞逝银月城生命药水" },
     [271883] = { index = 17, name = "浓缩银月城生命药水" },
     [271884] = { index = 18, name = "浓缩银月城生命药水" },
+    [270162] = { index = 19, name = "盘魂者仪式容器" },
 }

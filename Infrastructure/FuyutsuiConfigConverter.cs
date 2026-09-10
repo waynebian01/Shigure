@@ -559,14 +559,15 @@ internal static class FuyutsuiConfigConverter
 
         if (spec.GetTable("nameplates") is { } nameplates)
         {
-            var nameplateJson = new JsonObject { ["start"] = index };
-            var fieldCount = 0;
-            foreach (var field in NameplateStateLayout.Read(nameplates))
+            // 生命值/距离是固定偏移，与插件 LoadPlayerBlocks 的分配保持一致。
+            var nameplateJson = new JsonObject
             {
-                nameplateJson[field] = ++fieldCount;
-            }
-
-            nameplateJson["auraStart"] = fieldCount + 1;
+                ["start"] = index,
+                ["healthPercent"] = NameplateStateLayout.HealthPercentOffset,
+                ["range"] = NameplateStateLayout.RangeOffset,
+                ["auraStart"] = NameplateStateLayout.AuraStartOffset
+            };
+            var fieldCount = NameplateStateLayout.FixedFieldCount;
             if (nameplates.GetTable("auras") is { } nameplateAuras)
             {
                 var auraArray = new JsonArray();
@@ -612,7 +613,7 @@ internal static class FuyutsuiConfigConverter
             {
                 warnings.Add($"{label}: 姓名板需要 {20 * fieldCount} 格，超过主像素行 510 格上限，已停用姓名板");
             }
-            else if (fieldCount > 0)
+            else
             {
                 result["nameplates"] = nameplateJson;
             }

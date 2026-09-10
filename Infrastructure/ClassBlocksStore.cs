@@ -129,9 +129,9 @@ internal static class ClassBlocksStore
         public List<long> SpellIds { get; } = new();
     }
 
+    // 生命值/距离是固定像素，配置里只剩光环列表。
     public sealed class NameplateBlocks
     {
-        public List<string> State { get; } = new();
         public List<AuraEntry> Auras { get; } = new();
     }
 
@@ -690,7 +690,6 @@ internal static class ClassBlocksStore
         if (spec.GetTable("nameplates") is { } nameplates)
         {
             var blocks = new NameplateBlocks();
-            blocks.State.AddRange(NameplateStateLayout.Read(nameplates));
             AppendAuraList(nameplates.GetTable("auras"), blocks.Auras);
             result.Nameplates = blocks;
         }
@@ -940,14 +939,6 @@ internal static class ClassBlocksStore
         if (spec.Nameplates is { } nameplates)
         {
             sb.Append(indent).AppendLine("nameplates = {");
-            sb.Append(indent).Append("    state = {");
-            foreach (var field in nameplates.State)
-            {
-                sb.Append(" \"").Append(Escape(field)).Append("\",");
-            }
-
-            sb.AppendLine(" },");
-
             if (nameplates.Auras.Count > 0)
             {
                 sb.Append(indent).AppendLine("    auras = {");

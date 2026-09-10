@@ -72,7 +72,31 @@ public sealed class UnitEditorForm : Form
         new("动态阈值", true)
     ];
 
+    private static readonly EnemyThresholdFilterItem[] EnemyHealthFilterOptions =
+    [
+        new("不筛选生命值", EnemyThresholdFilterKind.None),
+        new("生命值大于", EnemyThresholdFilterKind.Above),
+        new("生命值小于", EnemyThresholdFilterKind.Below)
+    ];
+
+    private static readonly EnemyThresholdFilterItem[] EnemyRangeFilterOptions =
+    [
+        new("不筛选距离", EnemyThresholdFilterKind.None),
+        new("距离大于", EnemyThresholdFilterKind.Above),
+        new("距离小于", EnemyThresholdFilterKind.Below)
+    ];
+
+    private static readonly EnemyAuraFilterItem[] EnemyAuraFilterOptions =
+    [
+        new("不筛选光环", EnemyAuraFilterKind.None),
+        new("有某一个光环", EnemyAuraFilterKind.WithAura),
+        new("没有某一个光环", EnemyAuraFilterKind.WithoutAura),
+        new("有任一光环 (多选)", EnemyAuraFilterKind.WithAnyAura),
+        new("无任一光环 (多选)", EnemyAuraFilterKind.WithoutAnyAura)
+    ];
+
     private readonly IReadOnlyList<ConditionField> _auraFields;
+    private readonly IReadOnlyList<ConditionField> _nameplateAuraFields;
     private readonly IReadOnlyList<string> _thresholdFields;
     private readonly HashSet<string> _takenNames;
 
@@ -97,6 +121,20 @@ public sealed class UnitEditorForm : Form
     private readonly NumericUpDown _auraCountBox = new();
     private readonly UiDropDown _dispelTypeBox = new();
 
+    private readonly UiDropDown _enemyHealthFilterBox = new();
+    private readonly UiDropDown _enemyAuraFilterBox = new();
+    private readonly UiDropDown _enemyRangeFilterBox = new();
+    private readonly UiDropDown _enemyAuraBox = new();
+    private readonly CheckedListBox _enemyAurasBox = new();
+    private readonly ThresholdGroup _enemyHealthThreshold = new();
+    private readonly ThresholdGroup _enemyRangeThreshold = new();
+
+    private Label _selectorLabel = null!;
+    private Panel _enemyHealthFilterRow = null!;
+    private Panel _enemyAuraFilterRow = null!;
+    private Panel _enemyRangeFilterRow = null!;
+    private Panel _enemyAuraRow = null!;
+    private Panel _enemyAurasRow = null!;
     private Panel _thresholdModeRow = null!;
     private Panel _thresholdRow = null!;
     private Label _thresholdLabel = null!;
@@ -113,19 +151,23 @@ public sealed class UnitEditorForm : Form
 
     public ModuleUnit? ResultUnit { get; private set; }
     public ModuleCountField? ResultCount { get; private set; }
+    public ModuleEnemyCountField? ResultEnemyCount { get; private set; }
 
     public UnitEditorForm(
         IReadOnlyList<ConditionField> auraFields,
+        IReadOnlyList<ConditionField> nameplateAuraFields,
         IReadOnlyList<string> thresholdFields,
         IReadOnlyCollection<string> takenNames,
         ModuleUnit? existingUnit,
-        ModuleCountField? existingCount)
+        ModuleCountField? existingCount,
+        ModuleEnemyCountField? existingEnemyCount)
     {
         _auraFields = auraFields;
+        _nameplateAuraFields = nameplateAuraFields;
         _thresholdFields = thresholdFields;
         _takenNames = new HashSet<string>(takenNames, StringComparer.OrdinalIgnoreCase);
         InitializeComponent();
-        Seed(existingUnit, existingCount);
+        Seed(existingUnit, existingCount, existingEnemyCount);
         UpdateParamVisibility();
         UpdateHealthNameState();
     }
@@ -211,7 +253,7 @@ public sealed class UnitEditorForm : Form
         AutoScaleMode = AutoScaleMode.Dpi;
         BackColor = UiTheme.Surface;
         ForeColor = UiTheme.Text;
-        ClientSize = new Size(RowWidth + 36, 534);
+        ClientSize = new Size(RowWidth + 36, 600);
         FormBorderStyle = FormBorderStyle.Sizable;
         MaximizeBox = false;
         MinimizeBox = false;
@@ -235,7 +277,7 @@ public sealed class UnitEditorForm : Form
 
         UiTheme.StyleComboBox(_categoryBox);
         _categoryBox.DropDownWidth = 180;
-        _categoryBox.Items.AddRange(["单位 (可作目标)", "数量 (仅条件)"]);
+        _categoryBox.Items.AddRange(["单位 (可作目标)", "数量 (仅条件)", "敌人数量 (仅条件)"]);
         _categoryBox.SelectedIndex = 0;
         _categoryBox.SelectedIndexChanged += (_, _) =>
         {
@@ -415,7 +457,112 @@ public sealed class UnitEditorForm : Form
         _auraCountRow = BuildLabeledRow("光环值", _auraCountBox);
         _dispelRow = BuildLabeledRow("驱散类型", _dispelTypeBox);
 
+        BuildEnemyParamRows();
+
         _paramPanel.Controls.AddRange([_thresholdModeRow, _thresholdRow, _thresholdFieldRow, _lowestHealthAuraFilterRow, _lowestHealthRoleFilterRow, _roleRow, _reverseRow, _auraRow, _aurasRow, _auraCountRow, _dispelRow]);
+        _paramPanel.Controls.AddRange([
+            _enemyHealthFilterRow,
+            _enemyHealthThreshold.ModeRow,
+            _enemyHealthThreshold.ValueRow,
+            _enemyHealthThreshold.FieldRow,
+            _enemyAuraFilterRow,
+            _enemyAuraRow,
+            _enemyAurasRow,
+            _enemyRangeFilterRow,
+            _enemyRangeThreshold.ModeRow,
+            _enemyRangeThreshold.ValueRow,
+            _enemyRangeThreshold.FieldRow
+        ]);
+    }
+
+    // 敌人数量: 生命值 / 光环 / 距离 三组筛选彼此独立, 各自带一套阈值控件。
+    private void BuildEnemyParamRows()
+    {
+        UiTheme.StyleComboBox(_enemyHealthFilterBox);
+        _enemyHealthFilterBox.DropDownWidth = 220;
+        _enemyHealthFilterBox.Items.AddRange(EnemyHealthFilterOptions.Cast<object>().ToArray());
+        _enemyHealthFilterBox.SelectedIndex = 0;
+        _enemyHealthFilterBox.SelectedIndexChanged += (_, _) => UpdateParamVisibility();
+
+        UiTheme.StyleComboBox(_enemyAuraFilterBox);
+        _enemyAuraFilterBox.DropDownWidth = 220;
+        _enemyAuraFilterBox.Items.AddRange(EnemyAuraFilterOptions.Cast<object>().ToArray());
+        _enemyAuraFilterBox.SelectedIndex = 0;
+        _enemyAuraFilterBox.SelectedIndexChanged += (_, _) => UpdateParamVisibility();
+
+        UiTheme.StyleComboBox(_enemyRangeFilterBox);
+        _enemyRangeFilterBox.DropDownWidth = 220;
+        _enemyRangeFilterBox.Items.AddRange(EnemyRangeFilterOptions.Cast<object>().ToArray());
+        _enemyRangeFilterBox.SelectedIndex = 0;
+        _enemyRangeFilterBox.SelectedIndexChanged += (_, _) => UpdateParamVisibility();
+
+        UiTheme.StyleComboBox(_enemyAuraBox);
+        _enemyAuraBox.DropDownWidth = 360;
+        UiTheme.StyleCheckedListBox(_enemyAurasBox);
+        foreach (var aura in _nameplateAuraFields)
+        {
+            _enemyAuraBox.Items.Add(aura);
+            _enemyAurasBox.Items.Add(aura);
+        }
+
+        if (_enemyAuraBox.Items.Count > 0)
+        {
+            _enemyAuraBox.SelectedIndex = 0;
+        }
+
+        _enemyAuraBox.SelectedIndexChanged += (_, _) => UpdatePreview();
+        _enemyAurasBox.ItemCheck += (_, _) =>
+        {
+            if (IsHandleCreated)
+            {
+                BeginInvoke(new Action(UpdatePreview));
+            }
+        };
+
+        InitializeThresholdGroup(_enemyHealthThreshold, "生命值阈值", 0);
+        InitializeThresholdGroup(_enemyRangeThreshold, "距离阈值", 0);
+
+        _enemyHealthFilterRow = BuildLabeledRow("生命值筛选", _enemyHealthFilterBox);
+        _enemyAuraFilterRow = BuildLabeledRow("光环筛选", _enemyAuraFilterBox);
+        _enemyRangeFilterRow = BuildLabeledRow("距离筛选", _enemyRangeFilterBox);
+        _enemyAuraRow = BuildLabeledRow("光环", _enemyAuraBox);
+        _enemyAurasRow = BuildLabeledRow("光环 (可多选)", _enemyAurasBox, 116);
+    }
+
+    private void InitializeThresholdGroup(ThresholdGroup group, string valueLabel, int defaultValue)
+    {
+        group.ValueBox.Minimum = 0;
+        group.ValueBox.Maximum = int.MaxValue;
+        group.ValueBox.Value = defaultValue;
+        UiTheme.StyleNumericUpDown(group.ValueBox);
+        group.ValueBox.ValueChanged += (_, _) => UpdatePreview();
+
+        UiTheme.StyleComboBox(group.ModeBox);
+        group.ModeBox.DropDownWidth = 160;
+        group.ModeBox.Items.AddRange(ThresholdModeOptions.Cast<object>().ToArray());
+        group.ModeBox.SelectedIndex = 0;
+        group.ModeBox.SelectedIndexChanged += (_, _) => UpdateParamVisibility();
+
+        UiTheme.StyleComboBox(group.FieldBox);
+        group.FieldBox.DropDownWidth = 360;
+        foreach (var field in _thresholdFields)
+        {
+            if (!group.FieldBox.Items.Contains(field))
+            {
+                group.FieldBox.Items.Add(field);
+            }
+        }
+
+        if (group.FieldBox.Items.Count > 0)
+        {
+            group.FieldBox.SelectedIndex = 0;
+        }
+
+        group.FieldBox.SelectedIndexChanged += (_, _) => UpdatePreview();
+
+        group.ModeRow = BuildLabeledRow($"{valueLabel}类型", group.ModeBox);
+        group.ValueRow = BuildLabeledRow(valueLabel, group.ValueBox);
+        group.FieldRow = BuildLabeledRow($"动态{valueLabel}", group.FieldBox);
     }
 
     private Control BuildActionRow()
@@ -462,6 +609,19 @@ public sealed class UnitEditorForm : Form
     private void PopulateSelectors()
     {
         _selectorBox.Items.Clear();
+        // 敌人数量没有互斥的选择器, 三组筛选同时生效, 因此整行隐藏。
+        var hasSelector = !IsEnemyCountCategory;
+        _selectorBox.Visible = hasSelector;
+        if (_selectorLabel is not null)
+        {
+            _selectorLabel.Visible = hasSelector;
+        }
+
+        if (!hasSelector)
+        {
+            return;
+        }
+
         if (IsCountCategory)
         {
             _selectorBox.Items.AddRange(CountSelectors.Cast<object>().ToArray());
@@ -494,6 +654,25 @@ public sealed class UnitEditorForm : Form
     {
         bool threshold = false, lowestHealthAuraFilter = false, lowestHealthRoleFilter = false, role = false, reverse = false, auraSingle = false, auraMulti = false, auraCount = false, dispel = false;
 
+        if (IsEnemyCountCategory)
+        {
+            UpdateEnemyParamVisibility();
+            _thresholdModeRow.Visible = false;
+            _thresholdRow.Visible = false;
+            _thresholdFieldRow.Visible = false;
+            _lowestHealthAuraFilterRow.Visible = false;
+            _lowestHealthRoleFilterRow.Visible = false;
+            _roleRow.Visible = false;
+            _reverseRow.Visible = false;
+            _auraRow.Visible = false;
+            _aurasRow.Visible = false;
+            _auraCountRow.Visible = false;
+            _dispelRow.Visible = false;
+            UpdatePreview();
+            return;
+        }
+
+        SetEnemyRowsVisible(false);
         if (IsCountCategory)
         {
             switch ((_selectorBox.SelectedItem as CountItem)?.Kind)
@@ -613,6 +792,39 @@ public sealed class UnitEditorForm : Form
         UpdatePreview();
     }
 
+    private void UpdateEnemyParamVisibility()
+    {
+        var healthFilter = SelectedEnemyHealthFilter() != EnemyThresholdFilterKind.None;
+        var rangeFilter = SelectedEnemyRangeFilter() != EnemyThresholdFilterKind.None;
+        var auraFilter = SelectedEnemyAuraFilter();
+
+        _enemyHealthFilterRow.Visible = true;
+        _enemyAuraFilterRow.Visible = true;
+        _enemyRangeFilterRow.Visible = true;
+        SetThresholdGroupVisible(_enemyHealthThreshold, healthFilter);
+        SetThresholdGroupVisible(_enemyRangeThreshold, rangeFilter);
+        _enemyAuraRow.Visible = auraFilter is EnemyAuraFilterKind.WithAura or EnemyAuraFilterKind.WithoutAura;
+        _enemyAurasRow.Visible = auraFilter is EnemyAuraFilterKind.WithAnyAura or EnemyAuraFilterKind.WithoutAnyAura;
+    }
+
+    private void SetEnemyRowsVisible(bool visible)
+    {
+        _enemyHealthFilterRow.Visible = visible;
+        _enemyAuraFilterRow.Visible = visible;
+        _enemyRangeFilterRow.Visible = visible;
+        _enemyAuraRow.Visible = visible;
+        _enemyAurasRow.Visible = visible;
+        SetThresholdGroupVisible(_enemyHealthThreshold, visible);
+        SetThresholdGroupVisible(_enemyRangeThreshold, visible);
+    }
+
+    private static void SetThresholdGroupVisible(ThresholdGroup group, bool visible)
+    {
+        group.ModeRow.Visible = visible;
+        group.ValueRow.Visible = visible && !group.UsesDynamicField;
+        group.FieldRow.Visible = visible && group.UsesDynamicField;
+    }
+
     private void UpdatePreview()
     {
         var text = BuildPreviewText();
@@ -622,6 +834,11 @@ public sealed class UnitEditorForm : Form
     // 用当前控件状态构造一个宽容的(不校验、不弹框)单位/数量, 复用 UnitSummary 渲染预览。
     private string BuildPreviewText()
     {
+        if (IsEnemyCountCategory)
+        {
+            return UnitSummary.Describe(BuildEnemyCount(_nameBox.Text.Trim()), ResolveNameplateAuraName);
+        }
+
         if (IsCountCategory)
         {
             var count = new ModuleCountField
@@ -697,8 +914,97 @@ public sealed class UnitEditorForm : Form
         }
     }
 
-    private void Seed(ModuleUnit? unit, ModuleCountField? count)
+    // 用当前控件状态构造敌人数量字段; 预览与确定共用, 校验留给 OnConfirm。
+    private ModuleEnemyCountField BuildEnemyCount(string name)
     {
+        var count = new ModuleEnemyCountField
+        {
+            Name = name,
+            HealthFilter = SelectedEnemyHealthFilter(),
+            AuraFilter = SelectedEnemyAuraFilter(),
+            RangeFilter = SelectedEnemyRangeFilter()
+        };
+
+        if (count.HealthFilter != EnemyThresholdFilterKind.None)
+        {
+            ReadThresholdGroup(_enemyHealthThreshold, out var fixedValue, out var field);
+            count.HealthThreshold = fixedValue;
+            count.HealthThresholdField = field;
+        }
+
+        if (count.RangeFilter != EnemyThresholdFilterKind.None)
+        {
+            ReadThresholdGroup(_enemyRangeThreshold, out var fixedValue, out var field);
+            count.RangeThreshold = fixedValue;
+            count.RangeThresholdField = field;
+        }
+
+        count.AuraSpellIds = count.AuraFilter switch
+        {
+            EnemyAuraFilterKind.WithAura or EnemyAuraFilterKind.WithoutAura => SingleAuraList(_enemyAuraBox),
+            EnemyAuraFilterKind.WithAnyAura or EnemyAuraFilterKind.WithoutAnyAura => CheckedAuras(_enemyAurasBox),
+            _ => null
+        };
+
+        return count;
+    }
+
+    private static void ReadThresholdGroup(ThresholdGroup group, out int? fixedValue, out string? field)
+    {
+        if (group.UsesDynamicField)
+        {
+            fixedValue = null;
+            field = group.FieldBox.SelectedItem?.ToString()?.Trim();
+            return;
+        }
+
+        fixedValue = (int)group.ValueBox.Value;
+        field = null;
+    }
+
+    private void SeedThresholdGroup(
+        ThresholdGroup group,
+        EnemyThresholdFilterKind filter,
+        int? fixedValue,
+        string? field)
+    {
+        if (filter == EnemyThresholdFilterKind.None)
+        {
+            return;
+        }
+
+        if (!string.IsNullOrWhiteSpace(field))
+        {
+            SelectThresholdMode(group.ModeBox, usesDynamicField: true);
+            SelectThresholdField(group.FieldBox, field.Trim());
+            return;
+        }
+
+        SelectThresholdMode(group.ModeBox, usesDynamicField: false);
+        if (fixedValue is { } value)
+        {
+            group.ValueBox.Value = Clamp(value, group.ValueBox);
+        }
+    }
+
+    private void Seed(ModuleUnit? unit, ModuleCountField? count, ModuleEnemyCountField? enemyCount)
+    {
+        if (enemyCount is not null)
+        {
+            _nameBox.Text = enemyCount.Name;
+            _categoryBox.SelectedIndex = 2;
+            PopulateSelectors();
+            SelectEnemyThresholdFilter(_enemyHealthFilterBox, enemyCount.HealthFilter);
+            SelectEnemyThresholdFilter(_enemyRangeFilterBox, enemyCount.RangeFilter);
+            SelectEnemyAuraFilter(enemyCount.AuraFilter);
+            SeedThresholdGroup(_enemyHealthThreshold, enemyCount.HealthFilter, enemyCount.HealthThreshold, enemyCount.HealthThresholdField);
+            SeedThresholdGroup(_enemyRangeThreshold, enemyCount.RangeFilter, enemyCount.RangeThreshold, enemyCount.RangeThresholdField);
+            var auraSpellIds = enemyCount.AuraSpellIds ?? [];
+            SelectAura(_enemyAuraBox, auraSpellIds.Count > 0 ? auraSpellIds[0] : null);
+            CheckAuras(_enemyAurasBox, auraSpellIds);
+            return;
+        }
+
         if (count is not null)
         {
             _nameBox.Text = count.Name;
@@ -759,6 +1065,37 @@ public sealed class UnitEditorForm : Form
         if (!ValidateName(name, out var message))
         {
             MessageBox.Show(message, "Shigure", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return;
+        }
+
+        if (IsEnemyCountCategory)
+        {
+            var enemyCount = BuildEnemyCount(name);
+            if (enemyCount.HealthFilter != EnemyThresholdFilterKind.None
+                && enemyCount.HealthThreshold is null
+                && string.IsNullOrWhiteSpace(enemyCount.HealthThresholdField))
+            {
+                MessageBox.Show("请选择动态生命值阈值。", "Shigure", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (enemyCount.RangeFilter != EnemyThresholdFilterKind.None
+                && enemyCount.RangeThreshold is null
+                && string.IsNullOrWhiteSpace(enemyCount.RangeThresholdField))
+            {
+                MessageBox.Show("请选择动态距离阈值。", "Shigure", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (enemyCount.AuraFilter != EnemyAuraFilterKind.None
+                && (enemyCount.AuraSpellIds is null || enemyCount.AuraSpellIds.Count == 0))
+            {
+                MessageBox.Show("请选择光环。", "Shigure", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            ResultEnemyCount = enemyCount;
+            DialogResult = DialogResult.OK;
             return;
         }
 
@@ -1004,6 +1341,8 @@ public sealed class UnitEditorForm : Form
 
     private bool IsCountCategory => _categoryBox.SelectedIndex == 1;
 
+    private bool IsEnemyCountCategory => _categoryBox.SelectedIndex == 2;
+
     private bool IsDynamicThresholdMode()
         => (_thresholdModeBox.SelectedItem as ThresholdModeItem)?.UsesDynamicField == true;
 
@@ -1090,6 +1429,7 @@ public sealed class UnitEditorForm : Form
 
     private bool SupportsHealthName()
         => !IsCountCategory
+            && !IsEnemyCountCategory
             && (_selectorBox.SelectedItem as SelectorItem)?.Kind == UnitSelectorKind.LowestHealth;
 
     private static bool RequiresAura(CountKind kind)
@@ -1124,16 +1464,30 @@ public sealed class UnitEditorForm : Form
     private UnitRoleFilterKind? SelectedLowestHealthRoleFilter()
         => (_lowestHealthRoleFilterBox.SelectedItem as LowestHealthRoleFilterItem)?.Kind;
 
-    private List<long> SingleAuraList()
+    private EnemyThresholdFilterKind SelectedEnemyHealthFilter()
+        => (_enemyHealthFilterBox.SelectedItem as EnemyThresholdFilterItem)?.Kind ?? EnemyThresholdFilterKind.None;
+
+    private EnemyThresholdFilterKind SelectedEnemyRangeFilter()
+        => (_enemyRangeFilterBox.SelectedItem as EnemyThresholdFilterItem)?.Kind ?? EnemyThresholdFilterKind.None;
+
+    private EnemyAuraFilterKind SelectedEnemyAuraFilter()
+        => (_enemyAuraFilterBox.SelectedItem as EnemyAuraFilterItem)?.Kind ?? EnemyAuraFilterKind.None;
+
+    private List<long> SingleAuraList() => SingleAuraList(_auraBox);
+
+    private static List<long> SingleAuraList(UiDropDown box)
     {
-        var aura = SelectedAura();
-        return aura is null ? new List<long>() : new List<long> { aura.Value };
+        return TryReadAuraSpellId(box.SelectedItem, out var spellId)
+            ? new List<long> { spellId }
+            : new List<long>();
     }
 
-    private List<long> CheckedAuras()
+    private List<long> CheckedAuras() => CheckedAuras(_aurasBox);
+
+    private static List<long> CheckedAuras(CheckedListBox box)
     {
         var list = new List<long>();
-        foreach (var item in _aurasBox.CheckedItems)
+        foreach (var item in box.CheckedItems)
         {
             if (TryReadAuraSpellId(item, out var spellId) && !list.Contains(spellId))
             {
@@ -1243,29 +1597,63 @@ public sealed class UnitEditorForm : Form
     }
 
     private void SelectThresholdMode(bool usesDynamicField)
+        => SelectThresholdMode(_thresholdModeBox, usesDynamicField);
+
+    private static void SelectThresholdMode(UiDropDown box, bool usesDynamicField)
     {
-        for (var i = 0; i < _thresholdModeBox.Items.Count; i++)
+        for (var i = 0; i < box.Items.Count; i++)
         {
-            if (_thresholdModeBox.Items[i] is ThresholdModeItem item && item.UsesDynamicField == usesDynamicField)
+            if (box.Items[i] is ThresholdModeItem item && item.UsesDynamicField == usesDynamicField)
             {
-                _thresholdModeBox.SelectedIndex = i;
+                box.SelectedIndex = i;
                 return;
             }
         }
 
-        _thresholdModeBox.SelectedIndex = 0;
+        box.SelectedIndex = 0;
     }
 
     private void SelectThresholdField(string field)
+        => SelectThresholdField(_thresholdFieldBox, field);
+
+    private static void SelectThresholdField(UiDropDown box, string field)
     {
-        var index = _thresholdFieldBox.Items.IndexOf(field);
+        var index = box.Items.IndexOf(field);
         if (index < 0)
         {
-            _thresholdFieldBox.Items.Add(field);
-            index = _thresholdFieldBox.Items.Count - 1;
+            box.Items.Add(field);
+            index = box.Items.Count - 1;
         }
 
-        _thresholdFieldBox.SelectedIndex = index;
+        box.SelectedIndex = index;
+    }
+
+    private static void SelectEnemyThresholdFilter(UiDropDown box, EnemyThresholdFilterKind kind)
+    {
+        for (var i = 0; i < box.Items.Count; i++)
+        {
+            if (box.Items[i] is EnemyThresholdFilterItem item && item.Kind == kind)
+            {
+                box.SelectedIndex = i;
+                return;
+            }
+        }
+
+        box.SelectedIndex = 0;
+    }
+
+    private void SelectEnemyAuraFilter(EnemyAuraFilterKind kind)
+    {
+        for (var i = 0; i < _enemyAuraFilterBox.Items.Count; i++)
+        {
+            if (_enemyAuraFilterBox.Items[i] is EnemyAuraFilterItem item && item.Kind == kind)
+            {
+                _enemyAuraFilterBox.SelectedIndex = i;
+                return;
+            }
+        }
+
+        _enemyAuraFilterBox.SelectedIndex = 0;
     }
 
     private void SelectRole(int role)
@@ -1319,7 +1707,9 @@ public sealed class UnitEditorForm : Form
         box.SelectedIndex = index;
     }
 
-    private void CheckAuras(List<long>? auraSpellIds)
+    private void CheckAuras(List<long>? auraSpellIds) => CheckAuras(_aurasBox, auraSpellIds);
+
+    private static void CheckAuras(CheckedListBox box, IReadOnlyList<long>? auraSpellIds)
     {
         if (auraSpellIds is null)
         {
@@ -1329,9 +1719,9 @@ public sealed class UnitEditorForm : Form
         foreach (var auraSpellId in auraSpellIds)
         {
             var index = -1;
-            for (var i = 0; i < _aurasBox.Items.Count; i++)
+            for (var i = 0; i < box.Items.Count; i++)
             {
-                if (TryReadAuraSpellId(_aurasBox.Items[i], out var existing) && existing == auraSpellId)
+                if (TryReadAuraSpellId(box.Items[i], out var existing) && existing == auraSpellId)
                 {
                     index = i;
                     break;
@@ -1339,10 +1729,10 @@ public sealed class UnitEditorForm : Form
             }
             if (index < 0)
             {
-                index = _aurasBox.Items.Add(UnknownAura(auraSpellId));
+                index = box.Items.Add(UnknownAura(auraSpellId));
             }
 
-            _aurasBox.SetItemChecked(index, true);
+            box.SetItemChecked(index, true);
         }
     }
 
@@ -1370,6 +1760,10 @@ public sealed class UnitEditorForm : Form
 
     private string? ResolveAuraName(long spellId)
         => _auraFields.FirstOrDefault(field => TryReadAuraSpellId(field, out var id) && id == spellId)
+            ?.DisplayName.Split(" / ", 2, StringSplitOptions.TrimEntries)[0];
+
+    private string? ResolveNameplateAuraName(long spellId)
+        => _nameplateAuraFields.FirstOrDefault(field => TryReadAuraSpellId(field, out var id) && id == spellId)
             ?.DisplayName.Split(" / ", 2, StringSplitOptions.TrimEntries)[0];
 
     private long? ResolveLegacyAura(string? name)
@@ -1435,6 +1829,11 @@ public sealed class UnitEditorForm : Form
         controlA.Bounds = new Rectangle(80, 5, 230, 28);
         var labelBControl = new Label { Text = labelB, ForeColor = UiTheme.Muted, TextAlign = ContentAlignment.MiddleLeft, Bounds = new Rectangle(330, 5, 130, 28), AutoEllipsis = true };
         controlB.Bounds = new Rectangle(466, 5, RowWidth - 466, 28);
+        if (ReferenceEquals(controlB, _selectorBox))
+        {
+            // 敌人数量没有选择器, 需要连标签一起隐藏。
+            _selectorLabel = labelBControl;
+        }
 
         panel.Controls.Add(controlA);
         panel.Controls.Add(labelAControl);
@@ -1495,6 +1894,29 @@ public sealed class UnitEditorForm : Form
     private sealed record ThresholdModeItem(string Text, bool UsesDynamicField)
     {
         public override string ToString() => Text;
+    }
+
+    private sealed record EnemyThresholdFilterItem(string Text, EnemyThresholdFilterKind Kind)
+    {
+        public override string ToString() => Text;
+    }
+
+    private sealed record EnemyAuraFilterItem(string Text, EnemyAuraFilterKind Kind)
+    {
+        public override string ToString() => Text;
+    }
+
+    /// <summary>一组「阈值类型 + 固定阈值 + 动态阈值」控件与其所在的三行。</summary>
+    private sealed class ThresholdGroup
+    {
+        public UiDropDown ModeBox { get; } = new();
+        public NumericUpDown ValueBox { get; } = new();
+        public UiDropDown FieldBox { get; } = new();
+        public Panel ModeRow { get; set; } = null!;
+        public Panel ValueRow { get; set; } = null!;
+        public Panel FieldRow { get; set; } = null!;
+
+        public bool UsesDynamicField => (ModeBox.SelectedItem as ThresholdModeItem)?.UsesDynamicField == true;
     }
 
     private sealed record RoleOption(string Text, int Value)

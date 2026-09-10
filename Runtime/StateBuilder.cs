@@ -75,9 +75,10 @@ public sealed class StateBuilder : IRuntimeStateBuilder
         var result = new Dictionary<string, IReadOnlyDictionary<string, object?>>();
         var start = JsonHelpers.GetInt(JsonHelpers.Get(config, "start")) ?? 0;
         var fieldCount = JsonHelpers.GetInt(JsonHelpers.Get(config, "num")) ?? 0;
-        var healthOffset = JsonHelpers.GetInt(JsonHelpers.Get(config, "healthPercent")) ?? 0;
-        var rangeOffset = JsonHelpers.GetInt(JsonHelpers.Get(config, "range")) ?? 0;
-        var auraStart = JsonHelpers.GetInt(JsonHelpers.Get(config, "auraStart")) ?? 1;
+        // 生命值/距离/光环起点都是固定偏移，与插件分配一致。
+        const int healthOffset = NameplateStateLayout.HealthPercentOffset;
+        const int rangeOffset = NameplateStateLayout.RangeOffset;
+        const int auraStart = NameplateStateLayout.AuraStartOffset;
         var auraConfigs = JsonHelpers.Get(config, "auras") as JsonArray;
 
         for (var slot = 1; slot <= 20; slot++)
@@ -107,6 +108,9 @@ public sealed class StateBuilder : IRuntimeStateBuilder
                         {
                             values[name] = value;
                         }
+
+                        // 按 spellId 再暴露一份, 供敌人数量字段与队伍光环用同一套键查找。
+                        AddNameplateAuraIds(values, aura, value);
                     }
                 }
             }
@@ -214,6 +218,33 @@ public sealed class StateBuilder : IRuntimeStateBuilder
         }
 
         return group;
+    }
+
+    // 姓名板光环配置形如 { name, spellId, spellIds? }; 规范 ID 与别名都写成 auras.{spellId}.value。
+    private static void AddNameplateAuraIds(
+        IDictionary<string, object?> target,
+        JsonObject aura,
+        object? value)
+    {
+        var canonicalId = JsonHelpers.GetLong(JsonHelpers.Get(aura, "spellId"));
+        if (canonicalId is > 0)
+        {
+            target[SpellFieldKey.AuraMember(canonicalId.Value)] = value;
+        }
+
+        if (JsonHelpers.Get(aura, "spellIds") is not JsonArray aliases)
+        {
+            return;
+        }
+
+        foreach (var node in aliases)
+        {
+            var alias = JsonHelpers.GetLong(node);
+            if (alias is > 0 && alias != canonicalId)
+            {
+                target[SpellFieldKey.AuraMember(alias.Value)] = value;
+            }
+        }
     }
 
     private static void AddAuraAliases(

@@ -38,7 +38,6 @@ Fuyutsui.ClassBlocks = {
                 "符文能量",
                 "符文",
             },
-
             ["配置开关"] = {
                 "爆发开关",
                 "爆发药水开关",
@@ -52,7 +51,6 @@ Fuyutsui.ClassBlocks = {
                 "引导",
                 "引导可打断",
                 "距离",
-
             },
             ["焦点"] = {
                 "施法(倒计时)",
@@ -61,7 +59,6 @@ Fuyutsui.ClassBlocks = {
                 "引导",
                 "引导可打断",
                 "距离",
-
             },
             ["鼠标"] = {
                 "类型",
@@ -89,6 +86,9 @@ Fuyutsui.ClassBlocks = {
                 { name = "鲜血护盾", spellId = 77535, maxApps = 50, },
                 { name = "鲜血禁闭", spellId = 273947, maxApps = 5, },
                 { name = "鲜血女王的精华", spellId = 433925, maxApps = 7, },
+                { name = "埋骨之所", spellId = 219786, },
+                { name = "巫妖之躯", spellId = 49039, },
+                { name = "血债", spellId = 1310372, maxApps = 10, },
             },
             target = {
                 harmful = {
@@ -146,7 +146,10 @@ Fuyutsui.ClassBlocks = {
                 "首领战",
                 "难度",
                 "敌人数量",
-
+            },
+            ["特殊"] = {
+                "计时器",
+                "循环计时器",
             },
             ["能量"] = {
                 "符文能量",
@@ -166,7 +169,7 @@ Fuyutsui.ClassBlocks = {
                 "施法可打断",
                 "引导",
                 "引导可打断",
-
+                "距离",
             },
             ["焦点"] = {
                 "施法(倒计时)",
@@ -174,7 +177,6 @@ Fuyutsui.ClassBlocks = {
                 "施法可打断",
                 "引导",
                 "引导可打断",
-
             },
             ["鼠标"] = {
                 "类型",
@@ -192,13 +194,23 @@ Fuyutsui.ClassBlocks = {
             player = {
                 { name = "白霜", spellIds = { 59057, 59052 }, },
                 { name = "冰霜之柱", spellId = 51271, },
-                { name = "杀戮机器", spellIds = { 51128, 51124 }, },
+                { name = "杀戮机器", spellIds = { 51128, 51124 }, maxApps = 2, },
                 { name = "冰龙吐息", spellId = 1249658, },
                 { name = "黑暗援助", spellId = 101568, },
                 { name = "霜巢之眷", spellId = 1265639, },
                 { name = "破灭", spellIds = { 441426, 447954, 441424, 441416, 441378, 447954 }, },
                 { name = "冷酷严冬", spellId = 1233152, },
                 { name = "强效打击", spellId = 1269300, },
+                { name = "冰霜之柱", spellIds = { 281214, 316849 }, },
+                { name = "冰龙吐息", spellId = 12449658, },
+                { name = "冰龙吐息", spellIds = { 152279, 155166, 155168, 174552, 175546, 175796, 1226969, 1231316 }, },
+                { name = "断裂之痕", spellIds = { 377101, 377098, 377103 }, maxApps = 5, },
+                { name = "掠霜使者", spellIds = { 1230301, 1230306, 1233351, 1233609 }, },
+            },
+            target = {
+                harmful = {
+                    { name = "冰霜疫病", spellId = 55095, },
+                },
             },
         },
         spells = {
@@ -212,6 +224,7 @@ Fuyutsui.ClassBlocks = {
             { spellId = 47568, name = "符文武器增效", charge = true, maxCharge = 2 },
             { spellId = 1249658, name = "冰龙吐息" },
             { spellId = 47528, name = "心灵冰冻" },
+            { spellId = 46585, name = "亡者复生" },
         },
         items = {
             [241288] = { name = "鲁莽药水", isEquipped = false },
@@ -266,7 +279,6 @@ Fuyutsui.ClassBlocks = {
                 "施法可打断",
                 "引导",
                 "引导可打断",
-
             },
             ["焦点"] = {
                 "类型",
@@ -277,7 +289,6 @@ Fuyutsui.ClassBlocks = {
                 "施法可打断",
                 "引导",
                 "引导可打断",
-
             },
             ["鼠标"] = {
                 "类型",
@@ -402,6 +413,13 @@ Fuyutsui.spellsList = {
     [368970]  = { index = 253, name = "扫尾" },
     [357214]  = { index = 254, name = "翼击" },
     [436344]  = { index = 255, name = "艾泽里特涌动" },
+    [1230301] = { index = 28, name = "掠霜使者" },
+    [1271967] = { index = 43, name = "瘟疫降临" },
+    [1230306] = { index = 43, name = "掠霜使者" },
+    [1233351] = { index = 44, name = "掠霜使者" },
+    [1233609] = { index = 45, name = "掠霜使者" },
+    [1233619] = { index = 46, name = "掠霜使者" },
+    [1233621] = { index = 47, name = "掠霜使者" },
 }
 
 Fuyutsui.itemsList = {

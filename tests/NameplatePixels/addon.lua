@@ -65,7 +65,7 @@ dofile("Fuyutsui/main.lua")
 Fuyutsui.ClassBlocks = { [1] = {
     states = { "锚点", "职业", "专精" },
     group = { state = { "healthPercent", "role", "dispel" }, aura = { { spellId = 194384 }, { spellIds = { 17, 1253593 } } } },
-    nameplates = { state = { "healthPercent", "range" }, auras = { { spellId = 589 }, { spellId = 34914 } } },
+    nameplates = { auras = { { spellId = 589 }, { spellId = 34914 } } },
 } }
 Fuyutsui:LoadPlayerBlocks(1)
 local config = Fuyutsui.blocks.nameplates
@@ -105,12 +105,12 @@ assert(rawequal(pixels[231].color[3], secret), "Clearing one unit changes anothe
 
 Fuyutsui.ClassBlocks[1] = { states = { "锚点", "职业", "专精" }, nameplates = { auras = { { spellId = 589 } } } }
 Fuyutsui:LoadPlayerBlocks(1)
-assert(Fuyutsui.blocks.nameplates.start == 4 and Fuyutsui.blocks.nameplates.num == 1, "Aura-only config must use 20 pixels")
+assert(Fuyutsui.blocks.nameplates.start == 4 and Fuyutsui.blocks.nameplates.num == 3, "Aura-only config must use 60 pixels")
 assert(pixels[155].color[2] == 155 / 255 and pixels[155].color[3] == 0, "Old allocation was not reset")
-Fuyutsui.ClassBlocks[1] = { states = { "锚点", "职业", "专精" }, nameplates = { state = { "range" } } }
+Fuyutsui.ClassBlocks[1] = { states = { "锚点", "职业", "专精" }, nameplates = {} }
 Fuyutsui:LoadPlayerBlocks(1)
-assert(Fuyutsui.blocks.nameplates.num == 1 and Fuyutsui.blocks.nameplates.range == 1
-    and Fuyutsui.blocks.nameplates.healthPercent == nil, "Range-only state must compact")
+assert(Fuyutsui.blocks.nameplates.num == 2 and Fuyutsui.blocks.nameplates.healthPercent == 1
+    and Fuyutsui.blocks.nameplates.range == 2, "Aura-less config must still reserve the two fixed fields")
 Fuyutsui.ClassBlocks[1].nameplates = nil
 Fuyutsui:LoadPlayerBlocks(1)
 assert(Fuyutsui.blocks.nameplates == nil, "Disabled config retains allocation")
@@ -151,18 +151,16 @@ assert(Fuyutsui.blocks.groups.num == 2 and Fuyutsui.blocks.groups.role == 1
     and Fuyutsui.blocks.groups.healthPercent == 2, "Unknown and duplicate fields must not allocate pixels")
 print("PASS: explicit state ordering/precedence, empty lists and duplicate filtering.")
 
-Fuyutsui.ClassBlocks[1] = { states = { "锚点", "职业", "专精" },
-    nameplates = { state = { "range", "range", "unknown", "healthPercent" }, healthPercent = 99,
-        auras = { { spellId = 589 } } } }
-Fuyutsui:LoadPlayerBlocks(1)
-local plateConfig = Fuyutsui.blocks.nameplates
-assert(plateConfig.range == 1 and plateConfig.healthPercent == 2 and plateConfig.auraStart == 3
-    and plateConfig.num == 3, "Nameplate state order must control pixels and filter duplicates")
-Fuyutsui.ClassBlocks[1].nameplates = { state = {}, healthPercent = 1, range = 2 }
-Fuyutsui:LoadPlayerBlocks(1)
-assert(Fuyutsui.blocks.nameplates == nil, "Empty nameplate state must not fall back to legacy fields")
-Fuyutsui.ClassBlocks[1].nameplates = { healthPercent = 0, range = 4, auras = { { spellId = 589 } } }
-Fuyutsui:LoadPlayerBlocks(1)
-assert(Fuyutsui.blocks.nameplates.num == 2 and Fuyutsui.blocks.nameplates.range == 1
-    and Fuyutsui.blocks.nameplates.healthPercent == nil, "Legacy nameplate offsets must migrate and drop zeros")
-print("PASS: nameplate state ordering/precedence, empty list, duplicate filtering and legacy migration.")
+-- 残留的 state 与旧偏移都不再影响布局：生命值/距离恒为第 1、2 格。
+for _, plates in ipairs({
+    { state = { "range", "range", "unknown", "healthPercent" }, healthPercent = 99, auras = { { spellId = 589 } } },
+    { state = {}, healthPercent = 1, range = 2, auras = { { spellId = 589 } } },
+    { healthPercent = 0, range = 4, auras = { { spellId = 589 } } },
+}) do
+    Fuyutsui.ClassBlocks[1] = { states = { "锚点", "职业", "专精" }, nameplates = plates }
+    Fuyutsui:LoadPlayerBlocks(1)
+    local plateConfig = Fuyutsui.blocks.nameplates
+    assert(plateConfig.healthPercent == 1 and plateConfig.range == 2 and plateConfig.auraStart == 3
+        and plateConfig.num == 3, "Nameplate fixed fields must ignore state lists and legacy offsets")
+end
+print("PASS: hardcoded nameplate health/range offsets ignore state lists and legacy fields.")

@@ -561,14 +561,9 @@ internal static class FuyutsuiConfigConverter
         {
             var nameplateJson = new JsonObject { ["start"] = index };
             var fieldCount = 0;
-            if (nameplates.GetNumber("healthPercent") is > 0)
+            foreach (var field in NameplateStateLayout.Read(nameplates))
             {
-                nameplateJson["healthPercent"] = ++fieldCount;
-            }
-
-            if (nameplates.GetNumber("range") is > 0)
-            {
-                nameplateJson["range"] = ++fieldCount;
+                nameplateJson[field] = ++fieldCount;
             }
 
             nameplateJson["auraStart"] = fieldCount + 1;

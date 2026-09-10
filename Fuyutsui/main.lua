@@ -265,8 +265,17 @@ function Fuyutsui:LoadPlayerBlocks(specIndex)
             num = 0,
             auras = {},
         }
-        for _, field in ipairs({ "healthPercent", "range" }) do
-            if (tonumber(t.nameplates[field]) or 0) > 0 then
+        local stateFields = t.nameplates.state
+        if type(stateFields) ~= "table" then
+            stateFields = {}
+            for _, field in ipairs({ "healthPercent", "range" }) do
+                local configured = tonumber(t.nameplates[field])
+                if configured and configured > 0 then stateFields[#stateFields + 1] = field end
+            end
+        end
+        local supported = { healthPercent = true, range = true }
+        for _, field in ipairs(stateFields) do
+            if type(field) == "string" and supported[field] and not blocks.nameplates[field] then
                 blocks.nameplates.num = blocks.nameplates.num + 1
                 blocks.nameplates[field] = blocks.nameplates.num
             end
@@ -285,7 +294,9 @@ function Fuyutsui:LoadPlayerBlocks(specIndex)
         blocks.nameplates.auraStart = blocks.nameplates.num + 1
         blocks.nameplates.num = blocks.nameplates.num + #blocks.nameplates.auras
         index = index + 20 * blocks.nameplates.num
-        if index - 1 > self.MainPixelCount then
+        if blocks.nameplates.num == 0 then
+            blocks.nameplates = nil
+        elseif index - 1 > self.MainPixelCount then
             print("LoadPlayerBlocks: 姓名板像素超出主像素行 " .. self.MainPixelCount .. " 格上限，已停用姓名板")
             blocks.nameplates = nil
         end

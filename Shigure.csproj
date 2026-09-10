@@ -47,6 +47,11 @@
     <Compile Remove="tests\**\*.cs" />
     <EmbeddedResource Remove="tests\**\*" />
     <None Remove="tests\**\*" />
+    <!-- artifacts\ 是测试项目构建时的中间/输出目录（.gitignore 已忽略）；
+         其中的 AssemblyInfo.cs 会被默认通配符吸入主项目，导致特性重复(CS0579)。 -->
+    <Compile Remove="artifacts\**\*.cs" />
+    <EmbeddedResource Remove="artifacts\**\*" />
+    <None Remove="artifacts\**\*" />
   </ItemGroup>
 
 </Project>

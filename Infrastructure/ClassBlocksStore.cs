@@ -131,8 +131,7 @@ internal static class ClassBlocksStore
 
     public sealed class NameplateBlocks
     {
-        public int? HealthPercent { get; set; }
-        public int? Range { get; set; }
+        public List<string> State { get; } = new();
         public List<AuraEntry> Auras { get; } = new();
     }
 
@@ -690,11 +689,8 @@ internal static class ClassBlocksStore
 
         if (spec.GetTable("nameplates") is { } nameplates)
         {
-            var blocks = new NameplateBlocks
-            {
-                HealthPercent = nameplates.GetNumber("healthPercent") is { } hp ? (int)hp : null,
-                Range = nameplates.GetNumber("range") is { } range ? (int)range : null
-            };
+            var blocks = new NameplateBlocks();
+            blocks.State.AddRange(NameplateStateLayout.Read(nameplates));
             AppendAuraList(nameplates.GetTable("auras"), blocks.Auras);
             result.Nameplates = blocks;
         }
@@ -944,15 +940,13 @@ internal static class ClassBlocksStore
         if (spec.Nameplates is { } nameplates)
         {
             sb.Append(indent).AppendLine("nameplates = {");
-            if (nameplates.HealthPercent is { } healthPercent)
+            sb.Append(indent).Append("    state = {");
+            foreach (var field in nameplates.State)
             {
-                sb.Append(indent).Append("    healthPercent = ").Append(healthPercent).AppendLine(",");
+                sb.Append(" \"").Append(Escape(field)).Append("\",");
             }
 
-            if (nameplates.Range is { } range)
-            {
-                sb.Append(indent).Append("    range = ").Append(range).AppendLine(",");
-            }
+            sb.AppendLine(" },");
 
             if (nameplates.Auras.Count > 0)
             {

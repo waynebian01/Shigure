@@ -65,7 +65,7 @@ dofile("Fuyutsui/main.lua")
 Fuyutsui.ClassBlocks = { [1] = {
     states = { "锚点", "职业", "专精" },
     group = { state = { "healthPercent", "role", "dispel" }, aura = { { spellId = 194384 }, { spellIds = { 17, 1253593 } } } },
-    nameplates = { healthPercent = 7, range = 9, auras = { { spellId = 589 }, { spellId = 34914 } } },
+    nameplates = { state = { "healthPercent", "range" }, auras = { { spellId = 589 }, { spellId = 34914 } } },
 } }
 Fuyutsui:LoadPlayerBlocks(1)
 local config = Fuyutsui.blocks.nameplates
@@ -107,9 +107,10 @@ Fuyutsui.ClassBlocks[1] = { states = { "锚点", "职业", "专精" }, nameplate
 Fuyutsui:LoadPlayerBlocks(1)
 assert(Fuyutsui.blocks.nameplates.start == 4 and Fuyutsui.blocks.nameplates.num == 1, "Aura-only config must use 20 pixels")
 assert(pixels[155].color[2] == 155 / 255 and pixels[155].color[3] == 0, "Old allocation was not reset")
-Fuyutsui.ClassBlocks[1] = { states = { "锚点", "职业", "专精" }, nameplates = { range = 8 } }
+Fuyutsui.ClassBlocks[1] = { states = { "锚点", "职业", "专精" }, nameplates = { state = { "range" } } }
 Fuyutsui:LoadPlayerBlocks(1)
-assert(Fuyutsui.blocks.nameplates.num == 1 and Fuyutsui.blocks.nameplates.range == 1, "Range-only offset must compact")
+assert(Fuyutsui.blocks.nameplates.num == 1 and Fuyutsui.blocks.nameplates.range == 1
+    and Fuyutsui.blocks.nameplates.healthPercent == nil, "Range-only state must compact")
 Fuyutsui.ClassBlocks[1].nameplates = nil
 Fuyutsui:LoadPlayerBlocks(1)
 assert(Fuyutsui.blocks.nameplates == nil, "Disabled config retains allocation")
@@ -149,3 +150,19 @@ Fuyutsui:LoadPlayerBlocks(1)
 assert(Fuyutsui.blocks.groups.num == 2 and Fuyutsui.blocks.groups.role == 1
     and Fuyutsui.blocks.groups.healthPercent == 2, "Unknown and duplicate fields must not allocate pixels")
 print("PASS: explicit state ordering/precedence, empty lists and duplicate filtering.")
+
+Fuyutsui.ClassBlocks[1] = { states = { "锚点", "职业", "专精" },
+    nameplates = { state = { "range", "range", "unknown", "healthPercent" }, healthPercent = 99,
+        auras = { { spellId = 589 } } } }
+Fuyutsui:LoadPlayerBlocks(1)
+local plateConfig = Fuyutsui.blocks.nameplates
+assert(plateConfig.range == 1 and plateConfig.healthPercent == 2 and plateConfig.auraStart == 3
+    and plateConfig.num == 3, "Nameplate state order must control pixels and filter duplicates")
+Fuyutsui.ClassBlocks[1].nameplates = { state = {}, healthPercent = 1, range = 2 }
+Fuyutsui:LoadPlayerBlocks(1)
+assert(Fuyutsui.blocks.nameplates == nil, "Empty nameplate state must not fall back to legacy fields")
+Fuyutsui.ClassBlocks[1].nameplates = { healthPercent = 0, range = 4, auras = { { spellId = 589 } } }
+Fuyutsui:LoadPlayerBlocks(1)
+assert(Fuyutsui.blocks.nameplates.num == 2 and Fuyutsui.blocks.nameplates.range == 1
+    and Fuyutsui.blocks.nameplates.healthPercent == nil, "Legacy nameplate offsets must migrate and drop zeros")
+print("PASS: nameplate state ordering/precedence, empty list, duplicate filtering and legacy migration.")

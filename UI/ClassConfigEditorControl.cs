@@ -1548,8 +1548,8 @@ public sealed class ClassConfigEditorControl : UserControl
                 UpdateNameplateEditorsEnabled();
             }
         };
-        _nameplateHealthBox.Text = "生命值";
-        _nameplateRangeBox.Text = "距离";
+        _nameplateHealthBox.Text = NameplateStateLayout.DisplayName("healthPercent");
+        _nameplateRangeBox.Text = NameplateStateLayout.DisplayName("range");
         foreach (var box in new[] { _nameplateHealthBox, _nameplateRangeBox })
         {
             box.AutoSize = true;
@@ -1562,10 +1562,12 @@ public sealed class ClassConfigEditorControl : UserControl
         }
         _nameplatePixelSummary.ForeColor = UiTheme.Text;
 
-        fields.Controls.Add(CreateGroupCard("NAMEPLATES", _nameplateEnabledBox));
-        fields.Controls.Add(CreateGroupCard("生命值", _nameplateHealthBox));
-        fields.Controls.Add(CreateGroupCard("距离", _nameplateRangeBox));
-        fields.Controls.Add(CreateGroupCard("主像素（队伍后）", _nameplatePixelSummary));
+        // 姓名板卡片比默认宽 50%，避免「主像素（队伍后）」标题被截断。
+        const int cardWidth = GroupCardWidth * 3 / 2;
+        fields.Controls.Add(CreateGroupCard("NAMEPLATES", _nameplateEnabledBox, cardWidth));
+        fields.Controls.Add(CreateGroupCard(_nameplateHealthBox.Text, _nameplateHealthBox, cardWidth));
+        fields.Controls.Add(CreateGroupCard(_nameplateRangeBox.Text, _nameplateRangeBox, cardWidth));
+        fields.Controls.Add(CreateGroupCard("主像素（队伍后）", _nameplatePixelSummary, cardWidth));
         panel.Controls.Add(fields, 0, 0);
 
         ConfigureGrid(_nameplateAurasGrid, "class-config-nameplates");
@@ -1604,8 +1606,8 @@ public sealed class ClassConfigEditorControl : UserControl
         if (_currentSpec?.Nameplates is { } nameplates)
         {
             _nameplateEnabledBox.Checked = true;
-            _nameplateHealthBox.Checked = nameplates.HealthPercent is > 0;
-            _nameplateRangeBox.Checked = nameplates.Range is > 0;
+            _nameplateHealthBox.Checked = nameplates.State.Contains("healthPercent");
+            _nameplateRangeBox.Checked = nameplates.State.Contains("range");
             foreach (var aura in nameplates.Auras)
             {
                 var icon = GetAuraIcon(aura.SpellId, aura.SpellIds, aura.Name);
@@ -1655,12 +1657,14 @@ public sealed class ClassConfigEditorControl : UserControl
     }
 
 
-    private Control CreateGroupCard(string title, Control content)
+    private const int GroupCardWidth = 160;
+
+    private Control CreateGroupCard(string title, Control content, int width = GroupCardWidth)
     {
         var card = new UiCardPanel
         {
             AutoSize = false,
-            Size = new Size(160, 88),
+            Size = new Size(width, 88),
             ColumnCount = 1,
             RowCount = 2,
             Padding = new Padding(12, 10, 12, 10),
@@ -3778,7 +3782,7 @@ public sealed class ClassConfigEditorControl : UserControl
                 continue;
             }
 
-            if (nameplates.HealthPercent is not > 0 && nameplates.Range is not > 0 && nameplates.Auras.Count == 0)
+            if (nameplates.State.Count == 0 && nameplates.Auras.Count == 0)
             {
                 error = $"专精 {specId} 的姓名板至少需要选择一个字段或光环。";
                 return false;
@@ -4120,12 +4124,17 @@ public sealed class ClassConfigEditorControl : UserControl
             return;
         }
 
-        var offset = 0;
-        var nameplates = new ClassBlocksStore.NameplateBlocks
+        var nameplates = new ClassBlocksStore.NameplateBlocks();
+        var enabledFields = new Dictionary<string, bool>
         {
-            HealthPercent = _nameplateHealthBox.Checked ? ++offset : null,
-            Range = _nameplateRangeBox.Checked ? ++offset : null
+            ["healthPercent"] = _nameplateHealthBox.Checked,
+            ["range"] = _nameplateRangeBox.Checked
         };
+        // 保留配置中的 state 顺序；新启用的字段追加到末尾。
+        foreach (var field in (_currentSpec.Nameplates?.State ?? []).Concat(NameplateStateLayout.SupportedFields).Distinct())
+        {
+            if (enabledFields.TryGetValue(field, out var enabled) && enabled) nameplates.State.Add(field);
+        }
 
         foreach (DataGridViewRow row in _nameplateAurasGrid.Rows)
         {

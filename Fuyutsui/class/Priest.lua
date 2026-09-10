@@ -347,8 +347,7 @@ Fuyutsui.ClassBlocks = {
             { spellId = 1242173, name = "虚空齐射" },
         },
         nameplates = {
-            healthPercent = 1,
-            range = 2,
+            state = { "healthPercent", "range" },
             auras = {
                 { name = "暗言术：痛", spellId = 589, },
             },

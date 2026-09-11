@@ -57,6 +57,10 @@ function Fuyutsui:RebuildSpecializationState()
     self:LoadPlayerMacros()
     self:UpdateStateBlock("状态", "职业")
     self:UpdateStateBlock("状态", "专精")
+    self:UpdateStateBlock("特殊", "计时器")
+    self:UpdateStateBlock("特殊", "循环计时器")
+    self:UpdateStateBlock("特殊", "战斗计时(秒)")
+    self:UpdateStateBlock("特殊", "战斗计时(分)")
 end
 
 function Fuyutsui:RefreshPlayerValidity()
@@ -72,12 +76,25 @@ end
 
 function Fuyutsui:RefreshPlayerCombatDuration()
     if state.combat then
+        if not state.combatStartTime then
+            state.combatStartTime = GetTime()
+        end
         local combatTime = GetTime() - state.combatStartTime
+        if combatTime < 0 then
+            combatTime = 0
+        end
         state.combatTime = math.min(1, combatTime / 255)
+        local elapsedSec = math.floor(combatTime)
+        state.combatTimerSec = ((elapsedSec % 60) + 1) / 255
+        state.combatTimerMin = math.min(255, math.floor(elapsedSec / 60)) / 255
     else
         state.combatTime = 0
+        state.combatTimerSec = 0
+        state.combatTimerMin = 0
     end
     self:UpdateStateBlock("状态", "战斗时间")
+    self:UpdateStateBlock("特殊", "战斗计时(秒)")
+    self:UpdateStateBlock("特殊", "战斗计时(分)")
 end
 
 function Fuyutsui:SetPlayerMoving(isMoving)

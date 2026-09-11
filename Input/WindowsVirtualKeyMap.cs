@@ -5,10 +5,16 @@ internal static class WindowsVirtualKeyMap
     private static readonly Dictionary<string, int> NamedKeys = new(StringComparer.OrdinalIgnoreCase)
     {
         ["SHIFT"] = 0x10,
+        ["LSHIFT"] = 0xA0,
+        ["RSHIFT"] = 0xA1,
         ["CONTROL"] = 0x11,
         ["CTRL"] = 0x11,
+        ["LCTRL"] = 0xA2,
+        ["RCTRL"] = 0xA3,
         ["MENU"] = 0x12,
         ["ALT"] = 0x12,
+        ["LALT"] = 0xA4,
+        ["RALT"] = 0xA5,
         ["XBUTTON1"] = 0x05,
         ["X1"] = 0x05,
         ["MOUSE4"] = 0x05,

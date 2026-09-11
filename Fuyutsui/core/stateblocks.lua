@@ -9,6 +9,15 @@ local mouseover = Fuyutsui.mouseover
 local pet = Fuyutsui.pet
 local boss = Fuyutsui.boss
 
+-- 先检查秘密标记，避免对秘密生命值执行 or 判断；普通空值仍回退为 0。
+local function GetHealthChannel(cache)
+    local value = cache.healthPercent
+    if issecretvalue(value) then
+        return value
+    end
+    return value or 0
+end
+
 local ColorValue0 = CreateColor(0, 0, 0, 1)
 local ColorValue1 = CreateColor(0, 0, 1 / 255, 1)
 
@@ -115,7 +124,7 @@ local stateBlockGetters = {
         ["有效性"] = function() return state.valid or 0 end,
         ["战斗时间"] = function() return state.combatTime or 0 end,
         ["移动"] = function() return state.moving or 0 end,
-        ["生命值"] = function() return state.healthPercent or 0 end,
+        ["生命值"] = function() return GetHealthChannel(state) end,
         ["一键辅助"] = function() return state.assistantSpell or 0 end,
         ["插入法术"] = function() return state.insertSpell or 0 end,
         ["插入物品"] = function() return state.insertItem or 0 end,
@@ -197,6 +206,10 @@ local stateBlockGetters = {
     },
     -- 职业特殊状态
     ["特殊"] = {
+        ["计时器"] = function() return state.timer or 0 end,
+        ["循环计时器"] = function() return state.loopTimer or 0 end,
+        ["战斗计时(秒)"] = function() return state.combatTimerSec or 0 end,
+        ["战斗计时(分)"] = function() return state.combatTimerMin or 0 end,
         ["酒池"] = function() return state.staggerPercent or 0 end,
         ["神圣军备"] = function() return state.holyArmaments or 0 end,
         ["吸血鬼打击"] = function() return state.VampiricStrike or 0 end,
@@ -226,7 +239,7 @@ local stateBlockGetters = {
     ["目标"] = {
         ["类型"] = function() return target.type or 0 end,
         ["驱散类型"] = function() return 0 end,
-        ["生命值"] = function() return target.healthPercent or 0 end,
+        ["生命值"] = function() return GetHealthChannel(target) end,
         ["距离"] = function()
             if not target.maxRange then return nil end
             return target.maxRange / 255
@@ -240,7 +253,7 @@ local stateBlockGetters = {
     ["焦点"] = {
         ["类型"] = function() return focus.type or 0 end,
         ["驱散类型"] = function() return 0 end,
-        ["生命值"] = function() return focus.healthPercent or 0 end,
+        ["生命值"] = function() return GetHealthChannel(focus) end,
         ["距离"] = function()
             if not focus.maxRange then return nil end
             return focus.maxRange / 255
@@ -254,7 +267,7 @@ local stateBlockGetters = {
     ["鼠标"] = {
         ["类型"] = function() return mouseover.type or 0 end,
         ["驱散类型"] = function() return 0 end,
-        ["生命值"] = function() return mouseover.healthPercent or 0 end,
+        ["生命值"] = function() return GetHealthChannel(mouseover) end,
         ["距离"] = function()
             if not mouseover.maxRange then return nil end
             return mouseover.maxRange / 255
@@ -267,7 +280,7 @@ local stateBlockGetters = {
     },
     ["宠物"] = {
         ["存在"] = function() return pet.exists or 0 end,
-        ["生命值"] = function() return pet.healthPercent or 0 end,
+        ["生命值"] = function() return GetHealthChannel(pet) end,
         ["施法(倒计时)"] = function(self) return self:GetUnitCastPixel("pet", "cast") end,
         ["施法(正计时)"] = function(self) return self:GetUnitCastPixel("pet", "castElapsed") end,
         ["施法可打断"] = function(self) return self:GetUnitInterruptiblePixel("pet", "cast") end,
@@ -284,7 +297,7 @@ for index = 1, 5 do
     stateBlockGetters[category] = {
         ["类型"] = function() return cache.type or 0 end,
         ["驱散类型"] = function() return 0 end,
-        ["生命值"] = function() return cache.healthPercent or 0 end,
+        ["生命值"] = function() return GetHealthChannel(cache) end,
         ["距离"] = function()
             if not cache.maxRange then return nil end
             return cache.maxRange / 255
@@ -323,7 +336,7 @@ function Fuyutsui:UpdateStateBlock(category, name)
     local index = b and b.state and b.state[key]
     if not index then return end
     local value = getter(self)
-    if value ~= nil then
+    if issecretvalue(value) or value ~= nil then
         self:CreateTexture(index, value)
     end
 end

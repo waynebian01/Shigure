@@ -25,10 +25,12 @@ Fuyutsui.ClassBlocks = {
                 "首领战",
                 "难度",
                 "敌人数量",
-
             },
             ["能量"] = {
                 "恶魔之怒",
+            },
+            ["配置开关"] = {
+                "爆发开关",
             },
             ["目标"] = {
                 "类型",
@@ -37,7 +39,7 @@ Fuyutsui.ClassBlocks = {
                 "施法可打断",
                 "引导",
                 "引导可打断",
-
+                "距离",
             },
             ["焦点"] = {
                 "施法(倒计时)",
@@ -46,7 +48,6 @@ Fuyutsui.ClassBlocks = {
                 "引导",
                 "引导可打断",
                 "生命值",
-
             },
             ["鼠标"] = {
                 "类型",
@@ -58,6 +59,21 @@ Fuyutsui.ClassBlocks = {
                 "施法可打断",
                 "引导",
                 "引导可打断",
+            },
+        },
+        auras = {
+            player = {
+                { name = "先发制人", spellId = 388108, },
+                { name = "能量放射", spellId = 208628, },
+                { name = "冲撞惯性", spellId = 427640, },
+                { name = "恶魔变形", spellId = 162264, },
+            },
+            target = {
+                harmful = {
+                    { name = "精华破碎", spellIds = { 320338, 258860 }, },
+                    { name = "能量放射", spellId = 208628, },
+                    { name = "冲撞惯性", spellId = 427640, },
+                },
             },
         },
         spells = {
@@ -77,6 +93,7 @@ Fuyutsui.ClassBlocks = {
             { spellId = 198013, name = "眼棱" },
             { spellId = 195072, name = "邪能冲撞" },
             { spellId = 258860, name = "精华破碎" },
+            { spellId = 183752, name = "瓦解" },
         },
     },
     [2] = {
@@ -123,7 +140,6 @@ Fuyutsui.ClassBlocks = {
                 "引导",
                 "引导可打断",
                 "距离",
-
             },
             ["焦点"] = {
                 "施法(倒计时)",
@@ -132,7 +148,6 @@ Fuyutsui.ClassBlocks = {
                 "引导",
                 "引导可打断",
                 "距离",
-
             },
             ["鼠标"] = {
                 "类型",
@@ -219,7 +234,6 @@ Fuyutsui.ClassBlocks = {
                 "首领战",
                 "难度",
                 "敌人数量",
-
             },
             ["能量"] = {
                 "恶魔之怒",
@@ -231,7 +245,6 @@ Fuyutsui.ClassBlocks = {
                 "施法可打断",
                 "引导",
                 "引导可打断",
-
             },
             ["焦点"] = {
                 "施法(倒计时)",
@@ -239,7 +252,6 @@ Fuyutsui.ClassBlocks = {
                 "施法可打断",
                 "引导",
                 "引导可打断",
-
             },
             ["鼠标"] = {
                 "类型",
@@ -334,7 +346,13 @@ Fuyutsui.spellsList = {
     [200166]  = { index = 55, name = "恶魔变形" },
     [456640]  = { index = 56, name = "吞噬之焰" },
     [1283344] = { index = 57, name = "收割者战刃" },
-
+    [241289]  = { index = 58, name = "鲁莽药水" },
+    [388108]  = { index = 59, name = "先发制人" },
+    [208628]  = { index = 60, name = "能量放射" },
+    [427640]  = { index = 61, name = "冲撞惯性" },
+    [162264]  = { index = 62, name = "恶魔变形" },
+    [320338]  = { index = 63, name = "精华破碎" },
+    [183752]  = { index = 64, name = "瓦解" },
     -- 种族
     [384255]  = { index = 210, name = "切换天赋" },
     [200749]  = { index = 211, name = "切换专精" },
@@ -382,6 +400,7 @@ Fuyutsui.spellsList = {
     [368970]  = { index = 253, name = "扫尾" },
     [357214]  = { index = 254, name = "翼击" },
     [436344]  = { index = 255, name = "艾泽里特涌动" },
+
 }
 
 Fuyutsui.itemsList = {

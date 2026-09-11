@@ -1,6 +1,6 @@
 ---
 title: Shigure Keymap 解析与按键发送
-summary: 说明职业专精 Keymap 的查找语义、v3 单位与宏条件、Windows 虚拟键解析，以及 PostMessage 输出的目标和权限边界。
+summary: 说明职业级 Keymap 的查找语义、v3 单位与宏条件、左右 Windows 虚拟键解析，以及 PostMessage 输出的目标和权限边界。
 aliases:
   - KeymapService
   - KeySender
@@ -50,7 +50,7 @@ verified_at: 2026-08-10
 
 ## 范围与非范围
 
-本页覆盖运行时 Keymap 选择和 Windows 输出。Lua 宏如何转换为 350 个键位项见 [[30-Shigure/09-Shigure-Fuyutsui配置宏编辑与同步]]；触发模式状态机见运行循环页。
+本页覆盖运行时职业级 Keymap 选择和 Windows 输出。Lua 宏如何转换为最多 1170 个键位项见 [[30-Shigure/09-Shigure-Fuyutsui配置宏编辑与同步]]；触发模式状态机见运行循环页。
 
 ## 从规则到按键
 

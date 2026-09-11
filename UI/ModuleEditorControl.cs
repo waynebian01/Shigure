@@ -58,6 +58,7 @@ public sealed class ModuleEditorControl : UserControl
     // 当前编辑中模块的动态单位/数量字段(含未保存的新增), 供目标下拉与条件字段使用。
     private readonly List<ModuleUnit> _units = new();
     private readonly List<ModuleCountField> _counts = new();
+    private readonly List<ModuleEnemyCountField> _enemyCounts = new();
     private readonly List<ModuleValueAdjustment> _valueAdjustments = new();
     private readonly Dictionary<string, List<long>> _currentClassSpellIdsByName =
         new(StringComparer.Ordinal);
@@ -882,17 +883,19 @@ public sealed class ModuleEditorControl : UserControl
             ReadOnly = true,
             SortMode = DataGridViewColumnSortMode.NotSortable
         });
-        _rulesGrid.Columns.Add(new DataGridViewButtonColumn
+        // 注释存在单元格 Value 里。必须用文本列（或按钮列且 UseColumnTextForButtonValue=false）：
+        // DataGridViewButtonCell.GetValue 在 UseColumnTextForButtonValue=true 时会返回列 Text（空串），
+        // 导致编辑器写入后读回仍是空的，保存模块时注释也会丢失。
+        _rulesGrid.Columns.Add(new DataGridViewTextBoxColumn
         {
             Name = RuleCommentColumnName,
             HeaderText = string.Empty,
-            Text = string.Empty,
-            UseColumnTextForButtonValue = true,
             Width = 32,
             MinimumWidth = 32,
             AutoSizeMode = DataGridViewAutoSizeColumnMode.None,
             Resizable = DataGridViewTriState.False,
-            FlatStyle = FlatStyle.Flat
+            ReadOnly = true,
+            SortMode = DataGridViewColumnSortMode.NotSortable
         });
         _rulesGrid.Columns[RuleCommentColumnName]!.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
         AddRuleIconColumn("MoveUp", "▲", "上移 (Alt+↑)");
@@ -1793,6 +1796,14 @@ public sealed class ModuleEditorControl : UserControl
             }
         }
 
+        foreach (var count in _enemyCounts)
+        {
+            if (!string.IsNullOrWhiteSpace(count.Name))
+            {
+                AddAdjustmentField(fields, seen, count.Name, $"敌人数: {count.Name}", ConditionFieldCategory.DynamicValue);
+            }
+        }
+
         // 公式结果和其它不属于状态/技能/光环/动态单位的命名目标都是动态数值。
         foreach (var fieldName in GetAdjustmentTargetFields())
         {
@@ -1860,7 +1871,14 @@ public sealed class ModuleEditorControl : UserControl
 
     private void AddUnit()
     {
-        using var editor = new UnitEditorForm(GetAuraFields(), GetThresholdFields(), CollectTakenNames(), null, null);
+        using var editor = new UnitEditorForm(
+            GetAuraFields(),
+            GetNameplateAuraFields(),
+            GetThresholdFields(),
+            CollectTakenNames(),
+            null,
+            null,
+            null);
         if (editor.ShowDialog(FindForm()) != DialogResult.OK)
         {
             return;
@@ -1873,6 +1891,10 @@ public sealed class ModuleEditorControl : UserControl
         else if (editor.ResultCount is { } count)
         {
             _counts.Add(count);
+        }
+        else if (editor.ResultEnemyCount is { } enemyCount)
+        {
+            _enemyCounts.Add(enemyCount);
         }
 
         RefreshUnitsList();
@@ -1890,24 +1912,25 @@ public sealed class ModuleEditorControl : UserControl
 
         var existingUnit = kind == UnitRowKind.Unit ? _units[index] : null;
         var existingCount = kind == UnitRowKind.Count ? _counts[index] : null;
-        var ownName = existingUnit?.Name ?? existingCount?.Name;
+        var existingEnemyCount = kind == UnitRowKind.EnemyCount ? _enemyCounts[index] : null;
+        var ownName = existingUnit?.Name ?? existingCount?.Name ?? existingEnemyCount?.Name;
         var ownHealthName = existingUnit?.HealthName;
 
-        using var editor = new UnitEditorForm(GetAuraFields(), GetThresholdFields(), CollectTakenNames(ownName, ownHealthName), existingUnit, existingCount);
+        using var editor = new UnitEditorForm(
+            GetAuraFields(),
+            GetNameplateAuraFields(),
+            GetThresholdFields(),
+            CollectTakenNames(ownName, ownHealthName),
+            existingUnit,
+            existingCount,
+            existingEnemyCount);
         if (editor.ShowDialog(FindForm()) != DialogResult.OK)
         {
             return;
         }
 
-        // 类别可能在编辑中改变(单位↔数量), 先移除原项再按结果加入。
-        if (kind == UnitRowKind.Unit)
-        {
-            _units.RemoveAt(index);
-        }
-        else
-        {
-            _counts.RemoveAt(index);
-        }
+        // 类别可能在编辑中改变(单位↔数量↔敌人数量), 先移除原项再按结果加入。
+        RemoveUnitRow(kind, index);
 
         if (editor.ResultUnit is { } unit)
         {
@@ -1916,6 +1939,10 @@ public sealed class ModuleEditorControl : UserControl
         else if (editor.ResultCount is { } count)
         {
             _counts.Add(count);
+        }
+        else if (editor.ResultEnemyCount is { } enemyCount)
+        {
+            _enemyCounts.Add(enemyCount);
         }
 
         RefreshUnitsList();
@@ -1931,21 +1958,30 @@ public sealed class ModuleEditorControl : UserControl
             return;
         }
 
-        if (kind == UnitRowKind.Unit)
-        {
-            _units.RemoveAt(index);
-        }
-        else
-        {
-            _counts.RemoveAt(index);
-        }
+        RemoveUnitRow(kind, index);
 
         RefreshUnitsList();
         RefreshUnitDependentUi();
         RefreshAdjustmentFieldColumn();
     }
 
-    // ListView 行顺序: 先全部单位, 再全部数量。把选中行映射回对应列表索引。
+    private void RemoveUnitRow(UnitRowKind kind, int index)
+    {
+        switch (kind)
+        {
+            case UnitRowKind.Unit:
+                _units.RemoveAt(index);
+                break;
+            case UnitRowKind.Count:
+                _counts.RemoveAt(index);
+                break;
+            case UnitRowKind.EnemyCount:
+                _enemyCounts.RemoveAt(index);
+                break;
+        }
+    }
+
+    // ListView 行顺序: 先全部单位, 再全部数量, 最后全部敌人数量。把选中行映射回对应列表索引。
     private (UnitRowKind Kind, int Index) GetSelectedUnitRef()
     {
         if (_unitsList.SelectedIndices.Count == 0)
@@ -1960,7 +1996,13 @@ public sealed class ModuleEditorControl : UserControl
         }
 
         var countIndex = row - _units.Count;
-        return countIndex < _counts.Count ? (UnitRowKind.Count, countIndex) : (UnitRowKind.None, -1);
+        if (countIndex < _counts.Count)
+        {
+            return (UnitRowKind.Count, countIndex);
+        }
+
+        var enemyIndex = countIndex - _counts.Count;
+        return enemyIndex < _enemyCounts.Count ? (UnitRowKind.EnemyCount, enemyIndex) : (UnitRowKind.None, -1);
     }
 
     private void RefreshUnitsList()
@@ -2012,6 +2054,26 @@ public sealed class ModuleEditorControl : UserControl
             _unitsList.Items.Add(item);
         }
 
+        var availableNameplateAuraIds = GetNameplateAuraFields()
+            .SelectMany(field => field.Name.Split('.', StringSplitOptions.RemoveEmptyEntries))
+            .Where(part => long.TryParse(part, out _))
+            .Select(long.Parse)
+            .ToHashSet();
+        foreach (var count in _enemyCounts)
+        {
+            var summary = UnitSummary.Describe(count, ResolveNameplateAuraName);
+            var item = new ListViewItem([count.Name, "敌人数量", summary]) { ToolTipText = $"{count.Name}\n{summary}" };
+            var missing = (count.AuraSpellIds ?? []).Where(id => !availableNameplateAuraIds.Contains(id)).ToArray();
+            if (missing.Length > 0)
+            {
+                item.BackColor = UiTheme.DangerSoft;
+                item.ForeColor = UiTheme.Danger;
+                item.ToolTipText += $"\n姓名板不存在 spellId 为 {string.Join("、", missing)} 的光环";
+            }
+
+            _unitsList.Items.Add(item);
+        }
+
         _unitsList.EndUpdate();
         _unitsEmptyHint.Visible = _unitsList.Items.Count == 0;
     }
@@ -2037,6 +2099,23 @@ public sealed class ModuleEditorControl : UserControl
             .GetGroupFields(ReadMatchCombo(_classBox), ReadMatchCombo(_specBox))
             .Where(field => !NonAuraGroupFields.Contains(field.Name))
             .ToList();
+    }
+
+    private IReadOnlyList<ConditionField> GetNameplateAuraFields()
+        => _fieldCatalog.GetNameplateAuraFields(ReadMatchCombo(_classBox), ReadMatchCombo(_specBox));
+
+    private string? ResolveNameplateAuraName(long spellId)
+    {
+        foreach (var field in GetNameplateAuraFields())
+        {
+            if (field.Name.Split('.', StringSplitOptions.RemoveEmptyEntries)
+                .Any(part => long.TryParse(part, out var id) && id == spellId))
+            {
+                return field.DisplayName.Split(" / ", 2, StringSplitOptions.TrimEntries)[0];
+            }
+        }
+
+        return null;
     }
 
     private string? ResolveGroupAuraName(long spellId)
@@ -2086,6 +2165,11 @@ public sealed class ModuleEditorControl : UserControl
             taken.Add(count.Name);
         }
 
+        foreach (var count in _enemyCounts)
+        {
+            taken.Add(count.Name);
+        }
+
         foreach (var field in _fieldCatalog.GetFields(classId, specId))
         {
             taken.Add(field.Name);
@@ -2126,7 +2210,8 @@ public sealed class ModuleEditorControl : UserControl
     {
         None,
         Unit,
-        Count
+        Count,
+        EnemyCount
     }
 
     private sealed record RuleRowValues(
@@ -2724,11 +2809,7 @@ public sealed class ModuleEditorControl : UserControl
 
         if (columnName == RuleCommentColumnName)
         {
-            if (!_rulesGrid.Rows[e.RowIndex].IsNewRow)
-            {
-                PaintRuleCommentCell(e);
-            }
-
+            PaintRuleCommentCell(e);
             return;
         }
 
@@ -2750,7 +2831,7 @@ public sealed class ModuleEditorControl : UserControl
     private void PaintRuleCommentCell(DataGridViewCellPaintingEventArgs e)
     {
         e.Paint(e.CellBounds, DataGridViewPaintParts.Background | DataGridViewPaintParts.Border);
-        if (e.Graphics is null)
+        if (e.Graphics is null || e.RowIndex < 0 || _rulesGrid.Rows[e.RowIndex].IsNewRow)
         {
             e.Handled = true;
             return;
@@ -3694,6 +3775,14 @@ public sealed class ModuleEditorControl : UserControl
             }
         }
 
+        foreach (var count in _enemyCounts)
+        {
+            if (!string.IsNullOrWhiteSpace(count.Name) && seen.Add(count.Name))
+            {
+                fields.Add(new ConditionField(count.Name, $"敌人数: {count.Name}", ConditionFieldType.Int, ConditionFieldCategory.DynamicValue));
+            }
+        }
+
         foreach (var fieldName in GetAdjustmentTargetFields())
         {
             if (seen.Add(fieldName))
@@ -3885,6 +3974,8 @@ public sealed class ModuleEditorControl : UserControl
         _units.AddRange(module.Units.Select(unit => unit.Clone()));
         _counts.Clear();
         _counts.AddRange(module.Counts.Select(count => count.Clone()));
+        _enemyCounts.Clear();
+        _enemyCounts.AddRange(module.EnemyCounts.Select(count => count.Clone()));
         _valueAdjustments.Clear();
         _valueAdjustments.AddRange(module.ValueAdjustments.Select(adjustment => adjustment.Clone()));
         SelectClass(module.Match.ClassId);
@@ -3956,6 +4047,7 @@ public sealed class ModuleEditorControl : UserControl
         _recommendedTalentBox.Clear();
         _units.Clear();
         _counts.Clear();
+        _enemyCounts.Clear();
         _valueAdjustments.Clear();
         RefreshUnitsList();
         SelectClass(null);
@@ -4117,6 +4209,7 @@ public sealed class ModuleEditorControl : UserControl
 
         module.Units = _units.Select(unit => unit.Clone()).ToList();
         module.Counts = _counts.Select(count => count.Clone()).ToList();
+        module.EnemyCounts = _enemyCounts.Select(count => count.Clone()).ToList();
         if (!TryReadValueAdjustments(out var valueAdjustments, out var adjustmentError))
         {
             MessageBox.Show(adjustmentError, "Shigure", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -4200,6 +4293,7 @@ public sealed class ModuleEditorControl : UserControl
         var dynamicFieldNames = module.Units
             .SelectMany(unit => new[] { unit.Name, unit.HealthName })
             .Concat(module.Counts.Select(count => count.Name))
+            .Concat(module.EnemyCounts.Select(count => count.Name))
             .Where(name => !string.IsNullOrWhiteSpace(name))
             .Select(name => name!.Trim())
             .Distinct(StringComparer.Ordinal)

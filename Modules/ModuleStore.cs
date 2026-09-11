@@ -22,6 +22,7 @@ public sealed class ModuleDefinition
     public ModuleMatch Match { get; set; } = new();
     public List<ModuleUnit> Units { get; set; } = new();
     public List<ModuleCountField> Counts { get; set; } = new();
+    public List<ModuleEnemyCountField> EnemyCounts { get; set; } = new();
     public List<ModuleValueAdjustment> ValueAdjustments { get; set; } = new();
     public List<ModuleRule> Rules { get; set; } = new();
     public ModuleDependencySnapshot? Dependencies { get; set; }
@@ -44,6 +45,7 @@ public sealed class ModuleDefinition
             Match = Match.Clone(),
             Units = Units.Select(unit => unit.Clone()).ToList(),
             Counts = Counts.Select(count => count.Clone()).ToList(),
+            EnemyCounts = EnemyCounts.Select(count => count.Clone()).ToList(),
             ValueAdjustments = ValueAdjustments.Select(adjustment => adjustment.Clone()).ToList(),
             Rules = Rules.Select(rule => rule.Clone()).ToList(),
             Dependencies = Dependencies?.Clone()
@@ -669,9 +671,11 @@ public sealed class ModuleStore
         module.Match.PartyType = ModuleMatch.NormalizePartyTypeValue(module.Match.PartyType);
         module.Units ??= new List<ModuleUnit>();
         module.Counts ??= new List<ModuleCountField>();
+        module.EnemyCounts ??= new List<ModuleEnemyCountField>();
         module.ValueAdjustments ??= new List<ModuleValueAdjustment>();
         module.Units.RemoveAll(unit => string.IsNullOrWhiteSpace(unit.Name));
         module.Counts.RemoveAll(count => string.IsNullOrWhiteSpace(count.Name));
+        module.EnemyCounts.RemoveAll(count => string.IsNullOrWhiteSpace(count.Name));
         module.ValueAdjustments.RemoveAll(adjustment => string.IsNullOrWhiteSpace(adjustment.Field));
         foreach (var unit in module.Units)
         {
@@ -684,6 +688,13 @@ public sealed class ModuleStore
         {
             count.Name = count.Name.Trim();
             count.HealthThresholdField = string.IsNullOrWhiteSpace(count.HealthThresholdField) ? null : count.HealthThresholdField.Trim();
+        }
+
+        foreach (var count in module.EnemyCounts)
+        {
+            count.Name = count.Name.Trim();
+            count.HealthThresholdField = string.IsNullOrWhiteSpace(count.HealthThresholdField) ? null : count.HealthThresholdField.Trim();
+            count.RangeThresholdField = string.IsNullOrWhiteSpace(count.RangeThresholdField) ? null : count.RangeThresholdField.Trim();
         }
 
         foreach (var adjustment in module.ValueAdjustments)
@@ -1086,6 +1097,14 @@ public static class ModuleLogic
             }
         }
 
+        foreach (var count in module.EnemyCounts)
+        {
+            if (!string.IsNullOrWhiteSpace(count.Name))
+            {
+                counts[count.Name] = UnitSelector.Resolve(count, state);
+            }
+        }
+
         state.Values["$counts"] = counts;
     }
 
@@ -1161,6 +1180,19 @@ public static class ModuleLogic
             if (!string.IsNullOrWhiteSpace(count.HealthThresholdField))
             {
                 fields.Add(count.HealthThresholdField.Trim());
+            }
+        }
+
+        foreach (var count in module.EnemyCounts)
+        {
+            if (!string.IsNullOrWhiteSpace(count.HealthThresholdField))
+            {
+                fields.Add(count.HealthThresholdField.Trim());
+            }
+
+            if (!string.IsNullOrWhiteSpace(count.RangeThresholdField))
+            {
+                fields.Add(count.RangeThresholdField.Trim());
             }
         }
 

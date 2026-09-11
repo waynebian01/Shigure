@@ -20,6 +20,20 @@ internal static class Program
             return;
         }
 
+        if (args.Contains("--update-keymap", StringComparer.OrdinalIgnoreCase))
+        {
+            var baseDirectory = Directory.GetCurrentDirectory();
+            if (!Directory.Exists(Path.Combine(baseDirectory, "Fuyutsui", "core")))
+            {
+                baseDirectory = AppPaths.BaseDirectory;
+            }
+
+            FuyutsuiKeymapConverter.UpdateFromClassMacros(
+                Path.Combine(baseDirectory, "Fuyutsui", "core", "classmacros.lua"),
+                Path.Combine(baseDirectory, "keymap"));
+            return;
+        }
+
         if (!OperatingSystem.IsWindows())
         {
             MessageBox.Show(

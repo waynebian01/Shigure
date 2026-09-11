@@ -70,6 +70,134 @@ function Fuyutsui:SwitchDelay()
     self:NormalizeCharConfig()
 end
 
+local fuTimerTicker = nil
+local fuTimerElapsed = 0
+
+function Fuyutsui:IsTimerRunning()
+    return fuTimerTicker ~= nil
+end
+
+function Fuyutsui:GetTimerElapsed()
+    return fuTimerElapsed
+end
+
+local function SyncTimerPixel()
+    if Fuyutsui.UpdateStateBlock then
+        Fuyutsui:UpdateStateBlock("特殊", "计时器")
+    end
+    if Fuyutsui.RefreshTimerAppearance then
+        Fuyutsui:RefreshTimerAppearance()
+    end
+end
+
+--- 开始（或重新开始）秒表：立即显示 0，之后每秒 +1；超过 255 秒自动关闭
+function Fuyutsui:StartTimer()
+    if fuTimerTicker then
+        fuTimerTicker:Cancel()
+        fuTimerTicker = nil
+    end
+    fuTimerElapsed = 0
+    self.state.timer = 0
+    SyncTimerPixel()
+    print("|cff00ff00[Fuyutsui]|r 计时器已开启")
+    fuTimerTicker = C_Timer.NewTicker(1, function()
+        fuTimerElapsed = fuTimerElapsed + 1
+        if fuTimerElapsed > 255 then
+            Fuyutsui:StopTimer("overflow")
+            return
+        end
+        Fuyutsui.state.timer = fuTimerElapsed / 255
+        SyncTimerPixel()
+    end)
+end
+
+--- reason == "overflow" 时使用超时文案；右击 / /fu timer off 走默认关闭文案
+function Fuyutsui:StopTimer(reason)
+    if fuTimerTicker then
+        fuTimerTicker:Cancel()
+        fuTimerTicker = nil
+    end
+    fuTimerElapsed = 0
+    self.state.timer = 0
+    SyncTimerPixel()
+    if reason == "overflow" then
+        print("|cff00ff00[Fuyutsui]|r 计时器已超过 255 秒，已关闭")
+    else
+        print("|cff00ff00[Fuyutsui]|r 计时器已关闭")
+    end
+end
+
+function Fuyutsui:ToggleTimer()
+    if self:IsTimerRunning() then
+        self:StopTimer()
+    else
+        self:StartTimer()
+    end
+end
+
+local fuLoopTicker = nil
+local fuLoopValue = 0
+local fuLoopPeriod = 0
+
+function Fuyutsui:IsLoopTimerRunning()
+    return fuLoopTicker ~= nil
+end
+
+local function SyncLoopTimerPixel()
+    if Fuyutsui.UpdateStateBlock then
+        Fuyutsui:UpdateStateBlock("特殊", "循环计时器")
+    end
+end
+
+--- 从 1 计到 period 再回到 1；period 钳在 1..255
+function Fuyutsui:StartLoopTimer(period)
+    period = math.floor(tonumber(period) or 0)
+    if period < 1 then
+        self:StopLoopTimer()
+        return
+    end
+    if period > 255 then
+        period = 255
+    end
+    if fuLoopTicker then
+        fuLoopTicker:Cancel()
+        fuLoopTicker = nil
+    end
+    fuLoopPeriod = period
+    fuLoopValue = 1
+    self.state.loopTimer = fuLoopValue / 255
+    SyncLoopTimerPixel()
+    print("|cff00ff00[Fuyutsui]|r 循环计时器已开启（1-" .. period .. " 秒）")
+    fuLoopTicker = C_Timer.NewTicker(1, function()
+        fuLoopValue = fuLoopValue + 1
+        if fuLoopValue > fuLoopPeriod then
+            fuLoopValue = 1
+        end
+        Fuyutsui.state.loopTimer = fuLoopValue / 255
+        SyncLoopTimerPixel()
+    end)
+end
+
+function Fuyutsui:StopLoopTimer()
+    if fuLoopTicker then
+        fuLoopTicker:Cancel()
+        fuLoopTicker = nil
+    end
+    fuLoopValue = 0
+    fuLoopPeriod = 0
+    self.state.loopTimer = 0
+    SyncLoopTimerPixel()
+    print("|cff00ff00[Fuyutsui]|r 循环计时器已关闭")
+end
+
+function Fuyutsui:ToggleLoopTimer()
+    if self:IsLoopTimerRunning() then
+        self:StopLoopTimer()
+    else
+        self:StartLoopTimer(255)
+    end
+end
+
 local function FindSpellListByName(spellName)
     local list = Fuyutsui.spellsList
     if not list then return nil end
@@ -229,6 +357,32 @@ function Fuyutsui:SlashCommand(input, editbox)
         if not c then return end
         c.potion = 0
         self:SwitchPotion()
+    elseif command == "timer" then
+        self:ToggleTimer()
+    elseif command == "timer on" then
+        self:StartTimer()
+    elseif command == "timer off" then
+        self:StopTimer()
+    elseif command:match("^timer") then
+        print("|cff00ff00[Fuyutsui]|r 用法: /fu timer [on|off]")
+    elseif command == "loop" then
+        self:ToggleLoopTimer()
+    elseif command == "loop on" then
+        self:StartLoopTimer(255)
+    elseif command == "loop off" then
+        self:StopLoopTimer()
+    elseif command:match("^loop%s+") then
+        local secStr = command:match("^loop%s+(.+)$")
+        local sec = tonumber(strtrim(secStr or ""))
+        if not sec then
+            print("|cff00ff00[Fuyutsui]|r 无效秒数；请输入 1-255（例如 /fu loop 5），或使用 /fu loop on / /fu loop off。")
+        elseif sec > 0 then
+            self:StartLoopTimer(sec)
+        else
+            self:StopLoopTimer()
+        end
+    elseif command:match("^loop") then
+        print("|cff00ff00[Fuyutsui]|r 用法: /fu loop [on|off|秒数]")
     elseif command == "hide" then
         self:HideQuickToggleButton()
     elseif command == "show" then
@@ -288,6 +442,13 @@ function Fuyutsui:SlashCommand(input, editbox)
         print("爆发药水开关: /fu potion")
         print("|cff00ff00开启|r药水: /fu potion on")
         print("|cffff0000关闭|r药水: /fu potion off")
+        print("切换计时器: /fu timer")
+        print("|cff00ff00开启|r计时器: /fu timer on")
+        print("|cffff0000关闭|r计时器: /fu timer off")
+        print("切换循环计时器（1-255 秒）: /fu loop")
+        print("|cff00ff00开启|r循环计时器（1-255 秒）: /fu loop on")
+        print("|cffff0000关闭|r循环计时器: /fu loop off")
+        print("按秒开启循环计时器: /fu loop xx（xx 为 1-255，<=0 等同关闭）")
         print("隐藏快捷控件: /fu hide")
         print("显示快捷控件: /fu show")
         print("临时 delay 标志（db.char.delay 置 1 持续 x 秒后归零）: /fu delay [秒]，省略秒数则为 1 秒")

@@ -1,6 +1,6 @@
-# CLAUDE.md
+# AGENTS.md
 
-本文件给在此仓库工作的 Claude Code 提供导航与约定。面向终端用户的功能细节（模块系统、config/keymap 结构、条件语法）见 [README.md](README.md)，此处不重复，只记录架构、命令与容易踩坑的点。
+本文件给在此仓库工作的 Codex 提供导航与约定。面向终端用户的功能细节（模块系统、config/keymap 结构、条件语法）见 [README.md](README.md)，此处不重复，只记录架构、命令与容易踩坑的点。
 
 ## 项目是什么
 

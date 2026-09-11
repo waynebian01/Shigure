@@ -49,6 +49,7 @@ function Fuyutsui:LoadPlayerBlocks(specIndex)
         auras = {},
         spells = {},
         bars = {},
+        nameplates = nil,
     }
 
     local index = 1
@@ -210,13 +211,90 @@ function Fuyutsui:LoadPlayerBlocks(specIndex)
     if type(t.group) == "table" then
         blocks.groups = {
             start = index,
-            num = t.group.num,
-            healthPercent = t.group.healthPercent,
-            role = t.group.role,
-            dispel = t.group.dispel,
-            -- 成员光环偏移：pixel = start + (memberIndex-1)*num + offset
-            aura = t.group.aura,
+            num = 0,
+            aura = {},
         }
+        local groups = blocks.groups
+        local stateFields = t.group.state
+        if type(stateFields) ~= "table" then
+            stateFields = {}
+            for _, field in ipairs({ "healthPercent", "role", "dispel" }) do
+                local configured = tonumber(t.group[field])
+                if configured and configured >= 0 then stateFields[#stateFields + 1] = field end
+            end
+        end
+        local supported = { healthPercent = true, role = true, dispel = true }
+        for _, field in ipairs(stateFields) do
+            if type(field) == "string" and supported[field] and not groups[field] then
+                groups.num = groups.num + 1
+                groups[field] = groups.num
+            end
+        end
+        -- 兼容旧的 [4]/[5] 光环键；按配置顺序压紧，不依赖键值作为像素偏移。
+        local auraKeys = {}
+        for key, aura in pairs(t.group.aura or {}) do
+            if type(key) == "number" and type(aura) == "table" then
+                auraKeys[#auraKeys + 1] = key
+            end
+        end
+        table.sort(auraKeys)
+        for _, key in ipairs(auraKeys) do
+            local aura = t.group.aura[key]
+            local hasSpell = type(aura.spellId) == "number" and aura.spellId > 0
+            if type(aura.spellIds) == "table" then
+                for _, spellId in ipairs(aura.spellIds) do
+                    if type(spellId) == "number" and spellId > 0 then hasSpell = true end
+                end
+            end
+            if hasSpell then
+                groups.num = groups.num + 1
+                groups.aura[groups.num] = aura
+            end
+        end
+        -- 队伍偏移从 1 开始；预留插件实际处理的 30 人后再追加姓名板。
+        if groups.num > 0 then
+            index = index + 30 * groups.num + 1
+        else
+            blocks.groups = nil
+        end
+    end
+
+    if type(t.nameplates) == "table" then
+        -- 生命值/距离/战斗固定占用每个单位的前三格，光环从第四格开始。
+        blocks.nameplates = {
+            start = index,
+            healthPercent = 1,
+            range = 2,
+            combat = 3,
+            num = 3,
+            auras = {},
+        }
+        if type(t.nameplates.auras) == "table" then
+            for _, aura in ipairs(t.nameplates.auras) do
+                if type(aura) == "table" and (aura.spellId or aura.spellIds) then
+                    tinsert(blocks.nameplates.auras, {
+                        name = aura.name,
+                        spellId = aura.spellId,
+                        spellIds = aura.spellIds,
+                    })
+                end
+            end
+        end
+        blocks.nameplates.auraStart = blocks.nameplates.num + 1
+        blocks.nameplates.num = blocks.nameplates.num + #blocks.nameplates.auras
+        local maxPixels = self.MainPixelMaxCount or self.MainPixelCount
+        local nameplateEnd = index + 20 * blocks.nameplates.num
+        if nameplateEnd - 1 > maxPixels then
+            print("LoadPlayerBlocks: 姓名板像素超出主像素行 " .. maxPixels .. " 格上限，已停用姓名板")
+            blocks.nameplates = nil
+        else
+            index = nameplateEnd
+        end
+    end
+
+    -- 先按实际占用选定容量档位（可能改变格宽），再重建光环容器，避免容器按旧格宽定位。
+    if self.ApplyMainPixelCapacity then
+        self:ApplyMainPixelCapacity(index - 1)
     end
 
     self.blocks = blocks
@@ -228,41 +306,20 @@ function Fuyutsui:LoadPlayerBlocks(specIndex)
     if self.ReleaseGroupAuraContainers then
         self:ReleaseGroupAuraContainers()
     end
+    if self.LoadNameplatePixels then
+        self:LoadNameplatePixels(blocks.nameplates)
+        self:RefreshNameplatePixels()
+    end
 end
 
--- 解析 dynamicSpells：common + [specIndex] 追加；旧纯数组原样返回
-local function ResolveDynamicSpells(dynamicSpells, specIndex)
-    if not dynamicSpells then
-        return {}
-    end
-    local common = dynamicSpells.common
-    local bySpec = specIndex and dynamicSpells[specIndex]
-    if type(common) == "table" or type(bySpec) == "table" then
-        local result = {}
-        if type(common) == "table" then
-            for _, spell in ipairs(common) do
-                result[#result + 1] = spell
-            end
-        end
-        if type(bySpec) == "table" then
-            for _, spell in ipairs(bySpec) do
-                result[#result + 1] = spell
-            end
-        end
-        return result
-    end
-    return dynamicSpells
-end
-
--- 载入玩家宏（按当前职业与专精从 ClassMacros 选取）
+-- 载入玩家宏（按当前职业选取；宏本身不再按专精分组）
 function Fuyutsui:LoadPlayerMacros()
     local classFile = UnitClassBase("player")
     local m = self.ClassMacros and self.ClassMacros[classFile]
     if not m then
         return
     end
-    local specIndex = self.state and self.state.specIndex or C_SpecializationInfo.GetSpecialization()
-    local dynamicSpells = ResolveDynamicSpells(m.dynamicSpells, specIndex)
+    local dynamicSpells = m.dynamicSpells
     self.MacrosList = {
         dynamicSpells = dynamicSpells,
         staticSpells = m.staticSpells,

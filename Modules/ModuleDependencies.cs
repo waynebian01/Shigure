@@ -25,11 +25,13 @@ public sealed class ModuleConfigSnapshot
 {
     public ModuleSpecSnapshot Spec { get; set; } = new();
     public List<ModuleSpellListEntrySnapshot> SpellsList { get; set; } = new();
+    public List<ModuleItemListEntrySnapshot> ItemsList { get; set; } = new();
 
     public ModuleConfigSnapshot Clone() => new()
     {
         Spec = Spec?.Clone() ?? new ModuleSpecSnapshot(),
-        SpellsList = (SpellsList ?? []).Where(entry => entry is not null).Select(entry => entry.Clone()).ToList()
+        SpellsList = (SpellsList ?? []).Where(entry => entry is not null).Select(entry => entry.Clone()).ToList(),
+        ItemsList = (ItemsList ?? []).Where(entry => entry is not null).Select(entry => entry.Clone()).ToList()
     };
 }
 
@@ -116,9 +118,19 @@ public sealed class ModuleSpellListEntrySnapshot
     public ModuleSpellListEntrySnapshot Clone() => (ModuleSpellListEntrySnapshot)MemberwiseClone();
 }
 
+public sealed class ModuleItemListEntrySnapshot
+{
+    public long ItemId { get; set; }
+    public int Index { get; set; }
+    public string Name { get; set; } = string.Empty;
+
+    public ModuleItemListEntrySnapshot Clone() => (ModuleItemListEntrySnapshot)MemberwiseClone();
+}
+
 public sealed class ModuleGroupSnapshot
 {
-    public int Num { get; set; } = 5;
+    public List<string>? State { get; set; }
+    // 兼容旧模块快照；新快照通过 State 保存字段及其顺序。
     public int? HealthPercent { get; set; }
     public int? Role { get; set; }
     public int? Dispel { get; set; }
@@ -126,7 +138,7 @@ public sealed class ModuleGroupSnapshot
 
     public ModuleGroupSnapshot Clone() => new()
     {
-        Num = Num,
+        State = State is null ? null : new List<string>(State),
         HealthPercent = HealthPercent,
         Role = Role,
         Dispel = Dispel,
@@ -136,14 +148,12 @@ public sealed class ModuleGroupSnapshot
 
 public sealed class ModuleGroupAuraSnapshot
 {
-    public int Offset { get; set; }
     public string Name { get; set; } = string.Empty;
     public long? SpellId { get; set; }
     public List<long> SpellIds { get; set; } = new();
 
     public ModuleGroupAuraSnapshot Clone() => new()
     {
-        Offset = Offset,
         Name = Name,
         SpellId = SpellId,
         SpellIds = new List<long>(SpellIds ?? [])
@@ -152,8 +162,10 @@ public sealed class ModuleGroupAuraSnapshot
 
 public sealed class ModuleMacrosSnapshot
 {
+    // 兼容历史模块文件；新格式只使用 DynamicCommon 作为职业级动态宏列表。
     public bool UsesSpecDynamicSpells { get; set; }
     public List<string> DynamicCommon { get; set; } = new();
+    // 旧版专精动态宏，仅在导入牧师/圣骑士模块时迁移一次。
     public List<string> DynamicForSpec { get; set; } = new();
     public List<ModuleMacroEntrySnapshot> StaticSpells { get; set; } = new();
     public List<ModuleMacroEntrySnapshot> SpecialSpells { get; set; } = new();

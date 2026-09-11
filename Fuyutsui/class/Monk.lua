@@ -161,9 +161,7 @@ Fuyutsui.ClassBlocks = {
             { spellId = 399491, name = "神龙之赐", castCount = 10 },
         },
         group = {
-            num = 5,
-            healthPercent = 1,
-            role = 2,
+            state = { "healthPercent", "role" },
         },
     },
     [3] = {

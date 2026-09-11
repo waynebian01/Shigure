@@ -5,9 +5,17 @@ local macroKind = {}
 local bindingOwner = CreateFrame("Frame")
 
 local modifiers = {
-    "CTRL", "ALT", "SHIFT",
-    "ALT-CTRL", "ALT-SHIFT", "CTRL-SHIFT",
-    "ALT-CTRL-SHIFT"
+    "RCTRL", "RALT", "RSHIFT",
+    "RALT-RCTRL", "RALT-RSHIFT", "RCTRL-RSHIFT",
+    "RALT-RCTRL-RSHIFT",
+    "LCTRL", "LALT", "LSHIFT",
+    "LALT-LCTRL", "LALT-LSHIFT", "LCTRL-LSHIFT",
+    "LALT-LCTRL-LSHIFT",
+    "LALT-RCTRL", "RALT-LCTRL",
+    "LALT-RSHIFT", "RALT-LSHIFT",
+    "LCTRL-RSHIFT", "RCTRL-LSHIFT",
+    "LALT-LCTRL-RSHIFT", "LALT-RCTRL-LSHIFT", "LALT-RCTRL-RSHIFT",
+    "RALT-LCTRL-LSHIFT", "RALT-LCTRL-RSHIFT", "RALT-RCTRL-LSHIFT"
 }
 
 local keys = {
@@ -15,8 +23,7 @@ local keys = {
     "NUMPAD6", "NUMPAD7", "NUMPAD8", "NUMPAD9", "NUMPAD0",
     "NUMPADDECIMAL", "NUMPADPLUS", "NUMPADMINUS", "NUMPADMULTIPLY", "NUMPADDIVIDE",
     "F1", "F2", "F3", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12",
-    ",", ".", "/", ";", "'", "[", "]", "\\",
-    "7", "8", "9", "0", "=", "-",
+    ",", ".", ";", "'", "[", "]", "\\", "=", "-",
     "INSERT", "DELETE", "HOME", "END", "PAGEUP", "PAGEDOWN",
     "UP", "DOWN", "LEFT", "RIGHT"
 }

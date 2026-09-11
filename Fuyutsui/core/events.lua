@@ -66,6 +66,7 @@ end
 function Fuyutsui:UNIT_PET(_, unit)
     if unit == "player" then
         self:RefreshPlayerPetState()
+        self:UpdateSpellKnown()
     end
 end
 
@@ -73,11 +74,13 @@ function Fuyutsui:PLAYER_REGEN_DISABLED()
     self:RefreshTargetReactionState()
     state.combat = true
     state.combatStartTime = GetTime()
+    self:RefreshPlayerCombatDuration()
 end
 
 function Fuyutsui:PLAYER_REGEN_ENABLED()
     self:RefreshTargetReactionState()
     state.combat = false
+    self:RefreshPlayerCombatDuration()
 end
 
 function Fuyutsui:PLAYER_STARTED_MOVING()
@@ -417,12 +420,18 @@ end
 
 function Fuyutsui:NAME_PLATE_UNIT_ADDED(_, unit)
     self:CacheNameplateUnit(unit)
+    if self.RefreshNameplatePixels then
+        self:RefreshNameplatePixels()
+    end
     self:RefreshTargetReactionState()
     self:RefreshBossReactionAndRangeStates()
 end
 
 function Fuyutsui:NAME_PLATE_UNIT_REMOVED(_, unit)
     nameplate[unit] = nil
+    if self.ClearNameplatePixelSlot then
+        self:ClearNameplatePixelSlot(unit)
+    end
     self:RefreshTargetReactionState()
 end
 
@@ -520,6 +529,7 @@ function Fuyutsui:OnUpdate(elapsed)
         RunUpdateSafely(self, "RefreshMouseoverRangeState")
 
         RunUpdateSafely(self, "RefreshEnemyCounts")
+        RunUpdateSafely(self, "RefreshNameplatePixels")
         RunUpdateSafely(self, "UpdateItemCooldown")
         self.timeElapsed = 0
     end
@@ -531,7 +541,7 @@ function Fuyutsui:OnUpdate(elapsed)
         self.timeElapsed1 = 0
     end
 
-    RunUpdateSafely(self, "RefreshPlayerCastStateBlocks")   
+    RunUpdateSafely(self, "RefreshPlayerCastStateBlocks")
     RunUpdateSafely(self, "RefreshUnitCastStateBlocks", "target")
     RunUpdateSafely(self, "RefreshUnitCastStateBlocks", "focus")
     RunUpdateSafely(self, "RefreshUnitCastStateBlocks", "mouseover")

@@ -474,7 +474,7 @@ internal sealed class SpellIconPackageDownloadService : IDisposable
             var version = typeof(SpellIconPackageDownloadService).Assembly.GetName().Version;
             if (version is null || version.Build < 0 || version.Revision < 0)
             {
-                return "1.2.1.22";
+                return "1.2.1.24";
             }
 
             return $"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}";

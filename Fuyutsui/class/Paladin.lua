@@ -117,13 +117,10 @@ Fuyutsui.ClassBlocks = {
             [241304] = { name = "治疗药水", isEquipped = false },
         },
         group = {
-            num = 6,
-            healthPercent = 1,
-            role = 2,
-            dispel = 3,
+            state = { "healthPercent", "role", "dispel" },
             aura = {
-                [4] = { name = "圣光道标", spellIds = { 53563, 156910, 1244893 }, },
-                [5] = { name = "永恒之火", spellId = 156322, },
+                { name = "圣光道标", spellIds = { 53563, 156910, 1244893 }, },
+                { name = "永恒之火", spellId = 156322, },
             },
         },
     },
@@ -235,9 +232,7 @@ Fuyutsui.ClassBlocks = {
             [241308] = { name = "圣光潜力", isEquipped = false },
         },
         group = {
-            num = 3,
-            healthPercent = 1,
-            role = 2,
+            state = { "healthPercent", "role" },
         },
     },
     [3] = {
@@ -326,9 +321,7 @@ Fuyutsui.ClassBlocks = {
             [241304] = { name = "治疗药水", isEquipped = false },
         },
         group = {
-            num = 3,
-            healthPercent = 1,
-            role = 2,
+            state = { "healthPercent", "role" },
         },
     },
 } -- 创建圣骑士宏{

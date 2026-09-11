@@ -295,9 +295,7 @@ Fuyutsui.ClassBlocks = {
             { spellId = 1261867, name = "野性之心" },
         },
         group = {
-            num = 7,
-            healthPercent = 1,
-            role = 2,
+            state = { "healthPercent", "role" },
         },
     },
 }

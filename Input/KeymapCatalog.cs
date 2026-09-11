@@ -6,7 +6,7 @@ namespace Shigure;
 /// <summary>
 /// 从职业 keymap 文件构建模块编辑器可选择的技能与目标(unit)目录。
 /// 同名技能只保留一个；unit 去重后升序排列。
-/// 专精格式会聚合顶层回退与所有专精映射；有效条目规则与 KeymapService 保持一致。
+/// 只读取职业级 keymap；有效条目规则与 KeymapService 保持一致。
 /// </summary>
 public sealed class KeymapCatalog
 {
@@ -215,16 +215,6 @@ public sealed class KeymapCatalog
             var seenSpells = new HashSet<string>(StringComparer.Ordinal);
             var seenUnits = new HashSet<int>();
             AddMap(root);
-            if (JsonHelpers.Get(root, "专精") is JsonObject specRoot)
-            {
-                foreach (var (_, node) in specRoot)
-                {
-                    if (node is JsonObject specMap)
-                    {
-                        AddMap(specMap);
-                    }
-                }
-            }
 
             units.Sort();
             foreach (var spellUnits in unitsBySpell.Values)

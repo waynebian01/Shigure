@@ -61,6 +61,49 @@ internal static class UnitSummary
         };
     }
 
+    public static string Describe(ModuleEnemyCountField count, Func<long, string?>? resolveAuraName = null)
+    {
+        var parts = new List<string>();
+        if (count.HealthFilter != EnemyThresholdFilterKind.None)
+        {
+            parts.Add($"血量{ThresholdOperator(count.HealthFilter)}{DescribeThreshold(count.HealthThreshold, count.HealthThresholdField, 0)}");
+        }
+
+        if (count.AuraFilter != EnemyAuraFilterKind.None)
+        {
+            var ids = count.AuraSpellIds ?? [];
+            var aura = ids.Count > 0 ? FormatAura(ids[0], resolveAuraName) : "?";
+            var auras = ids.Count > 0
+                ? string.Join("/", ids.Select(id => FormatAura(id, resolveAuraName)))
+                : "?";
+            parts.Add(count.AuraFilter switch
+            {
+                EnemyAuraFilterKind.WithAura => $"带[{aura}]",
+                EnemyAuraFilterKind.WithoutAura => $"不带[{aura}]",
+                EnemyAuraFilterKind.WithAnyAura => $"带任一[{auras}]",
+                EnemyAuraFilterKind.WithoutAnyAura => $"不带任一[{auras}]",
+                _ => string.Empty
+            });
+        }
+
+        if (count.RangeFilter != EnemyThresholdFilterKind.None)
+        {
+            parts.Add($"距离{ThresholdOperator(count.RangeFilter)}{DescribeThreshold(count.RangeThreshold, count.RangeThresholdField, 0)}");
+        }
+
+        if (count.CombatFilter != EnemyCombatFilterKind.None)
+        {
+            parts.Add(count.CombatFilter == EnemyCombatFilterKind.InCombat ? "战斗中" : "不在战斗中");
+        }
+
+        return parts.Count == 0
+            ? "敌人数(血量>0)"
+            : $"{string.Join("且", parts)} 的敌人数";
+    }
+
+    private static string ThresholdOperator(EnemyThresholdFilterKind filter)
+        => filter == EnemyThresholdFilterKind.Above ? ">" : "<";
+
     private static string FormatAura(long spellId, Func<long, string?>? resolveAuraName)
     {
         var name = resolveAuraName?.Invoke(spellId);

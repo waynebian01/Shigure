@@ -7,7 +7,7 @@ local roleMap = Fuyutsui.roleMap
 local groupHealthCurves = Fuyutsui.groupHealthCurves
 local ColorValue0 = CreateColor(0, 0, 0, 1)
 local updateIndex = 1
-local GROUP_MAX_MEMBERS = 40
+local GROUP_MAX_MEMBERS = 30
 
 -- 治疗法术直接选择登录时预创建的生命曲线，禁止在战斗中创建曲线。
 local helpfulSpellCurves = {
@@ -40,7 +40,7 @@ function Fuyutsui:RefreshGroupMemberHealth(unit)
     local blocks = self.blocks
     local group = self.group
     local obj = group[unit]
-    if not blocks or not blocks.groups or not obj then return end
+    if not blocks or not blocks.groups or not blocks.groups.healthPercent or not obj then return end
     local index = blocks.groups.start + (obj.index - 1) * blocks.groups.num + blocks.groups.healthPercent
     local healthPercent = UnitHealthPercent(unit, true, obj.curve or groupHealthCurves.default)
     ---@diagnostic disable-next-line: param-type-mismatch
@@ -59,7 +59,7 @@ function Fuyutsui:RefreshNextGroupMemberState()
     local blocks = self.blocks
     local group = self.group
     local groupList = self.groupList
-    if not blocks or not blocks.groups then return end
+    if not blocks or not blocks.groups or not blocks.groups.role then return end
     local numUnits = #groupList
     if numUnits < 1 then
         updateIndex = 1

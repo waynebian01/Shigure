@@ -1317,7 +1317,6 @@
     },
     "group": {
       "start": 52,
-      "num": 7,
       "生命值": {
         "step": 1,
         "type": "int"

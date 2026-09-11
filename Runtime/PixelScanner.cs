@@ -15,8 +15,10 @@ public sealed record ScreenScanResult(
 
 public sealed class PixelScanner : IRuntimeScreenScanner
 {
-    private const int TopRowBlockCount = 510;
-    private const int TopRowFirstSchemeMax = 255;
+    private const int TopRowBlockCount = MainPixelLayout.MaxCapacity;
+    private const int TopRowSchemeSpan = MainPixelLayout.SchemeSpan;
+    // 第 1 格总在客户区最左侧（最小档位下也只有几个像素宽），搜索窗口不随档位放大，避免误认游戏画面。
+    private const int TopRowStartSearchWidth = 510;
     private const int HealAbsorbMaxRows = 6;
     private const int HealAbsorbMaxUnits = 30;
     private readonly WowProcessLocator _processLocator;
@@ -104,6 +106,7 @@ public sealed class PixelScanner : IRuntimeScreenScanner
         }
     }
 
+
     private static Dictionary<int, int> ScanTopRow(int baseX, int baseY, int width)
     {
         var rowData = new Dictionary<int, int>();
@@ -111,7 +114,7 @@ public sealed class PixelScanner : IRuntimeScreenScanner
         var pixels = ReadPixels(top);
 
         var startX = -1;
-        for (var x = 0; x < Math.Min(TopRowBlockCount, width); x++)
+        for (var x = 0; x < Math.Min(TopRowStartSearchWidth, width); x++)
         {
             var color = Color.FromArgb(pixels[x]);
             if (TryDecodeTopRowBlock(color, out var step, out _) && step == 1)
@@ -129,6 +132,12 @@ public sealed class PixelScanner : IRuntimeScreenScanner
         for (var x = startX; x < width; x++)
         {
             var color = Color.FromArgb(pixels[x]);
+            // 插件在当前容量档位的最后一格画恒定纯红；读到它就是整行的终点。
+            if (IsTopRowEndMarker(color))
+            {
+                break;
+            }
+
             if (TryDecodeTopRowBlock(color, out var step, out var value))
             {
                 rowData[step] = value;
@@ -352,23 +361,21 @@ public sealed class PixelScanner : IRuntimeScreenScanner
     private static bool IsRedGreenMarker(Color color) => color.R == 1 && color.G == 1 && color.B == 0;
     private static bool IsWhite(Color color) => color.R == 255 && color.G == 255 && color.B == 255;
     private static bool IsGrayEndMarker(Color color) => color.R == 200 && color.G == 200 && color.B == 200;
+    private static bool IsTopRowEndMarker(Color color)
+        => color.R == MainPixelLayout.EndMarkerRed && color.G == 0 && color.B == 0;
 
     private static bool TryDecodeTopRowBlock(Color color, out int step, out int value)
     {
         step = 0;
         value = 0;
 
-        if (color.G is < 1 or > TopRowFirstSchemeMax)
+        if (color.G is < 1 or > TopRowSchemeSpan || color.R > MainPixelLayout.MaxScheme)
         {
             return false;
         }
 
-        step = color.R switch
-        {
-            0 => color.G,
-            1 => TopRowFirstSchemeMax + color.G,
-            _ => 0
-        };
+        // 红通道是索引方案序号：0 → 1..255，1 → 256..510，2 → 511..765，3 → 766..1020。
+        step = (color.R * TopRowSchemeSpan) + color.G;
 
         if (step is < 1 or > TopRowBlockCount)
         {

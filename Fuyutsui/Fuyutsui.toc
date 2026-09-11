@@ -1,7 +1,7 @@
 ## Interface: 120100
 
 ## Title: Fuyutsui
-## Version: 1.2.1.22
+## Version: 1.2.1.24
 ## Author: Wayne
 ## IconTexture: Interface\AddOns\Fuyutsui\core\Spell_Misc_EmotionHappy.blp
 ## OptionalDeps: LibRangeCheck-3.0
@@ -30,6 +30,7 @@ core/core.lua
 core/config.lua
 core/curves.lua
 core/block.lua
+core/nameplates.lua
 core/stateblocks.lua
 core/commands.lua
 core/quickbutton.lua

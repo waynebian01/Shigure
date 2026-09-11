@@ -6,7 +6,7 @@ using static Shigure.LuaLiteParser;
 namespace Shigure;
 
 /// <summary>
-/// 读写 Fuyutsui class/*.lua 中的 ClassBlocks（states/auras/spells/items/group），
+/// 读写 Fuyutsui class/*.lua 中的 ClassBlocks（states/auras/spells/items/group/nameplates），
 /// 同时读写 spellsList 与 itemsList；保存时替换 ClassBlocks 表字面量，并原位更新列表条目。
 /// </summary>
 internal static class ClassBlocksStore
@@ -94,6 +94,7 @@ internal static class ClassBlocksStore
         public List<AuraEntry> FocusHelpfulAuras { get; } = new();
         public List<SpellEntry> Spells { get; } = new();
         public GroupBlocks? Group { get; set; }
+        public NameplateBlocks? Nameplates { get; set; }
     }
 
     public sealed class AuraEntry
@@ -117,19 +118,21 @@ internal static class ClassBlocksStore
 
     public sealed class GroupBlocks
     {
-        public int Num { get; set; } = 5;
-        public int? HealthPercent { get; set; } = 1;
-        public int? Role { get; set; } = 2;
-        public int? Dispel { get; set; }
+        public List<string> State { get; } = new();
         public List<GroupAuraEntry> Auras { get; } = new();
     }
 
     public sealed class GroupAuraEntry
     {
-        public int Offset { get; set; }
         public string Name { get; set; } = string.Empty;
         public long? SpellId { get; set; }
         public List<long> SpellIds { get; } = new();
+    }
+
+    // 生命值/距离是固定像素，配置里只剩光环列表。
+    public sealed class NameplateBlocks
+    {
+        public List<AuraEntry> Auras { get; } = new();
     }
 
     public static ClassFileDocument Load(string filePath)
@@ -538,7 +541,8 @@ internal static class ClassBlocksStore
             || spec.GetTable("auras") is not null
             || spec.GetTable("spells") is not null
             || spec.GetTable("items") is not null
-            || spec.GetTable("group") is not null;
+            || spec.GetTable("group") is not null
+            || spec.GetTable("nameplates") is not null;
 
         if (!isModern)
         {
@@ -643,26 +647,20 @@ internal static class ClassBlocksStore
 
         if (spec.GetTable("group") is { } group)
         {
-            var groupBlocks = new GroupBlocks
-            {
-                Num = (int)(group.GetNumber("num") ?? 5),
-                HealthPercent = group.GetNumber("healthPercent") is { } hp ? (int)hp : null,
-                Role = group.GetNumber("role") is { } role ? (int)role : null,
-                Dispel = group.GetNumber("dispel") is { } dispel ? (int)dispel : null
-            };
+            var groupBlocks = new GroupBlocks();
+            groupBlocks.State.AddRange(GroupStateLayout.Read(group));
 
             if (group.GetTable("aura") is { } auraOffsets)
             {
-                foreach (var (key, value) in auraOffsets.Entries)
+                foreach (var (key, value) in auraOffsets.Entries.OrderBy(pair => pair.Key is long n ? n : long.MaxValue))
                 {
-                    if (key is not long offset || value is not TableValue auraInfo)
+                    if (key is not long || value is not TableValue auraInfo)
                     {
                         continue;
                     }
 
                     var entry = new GroupAuraEntry
                     {
-                        Offset = (int)offset,
                         Name = auraInfo.GetString("name")?.Trim() ?? string.Empty
                     };
                     if (auraInfo.GetNumber("spellId") is { } sid)
@@ -684,10 +682,16 @@ internal static class ClassBlocksStore
                     groupBlocks.Auras.Add(entry);
                 }
 
-                groupBlocks.Auras.Sort((a, b) => a.Offset.CompareTo(b.Offset));
             }
 
             result.Group = groupBlocks;
+        }
+
+        if (spec.GetTable("nameplates") is { } nameplates)
+        {
+            var blocks = new NameplateBlocks();
+            AppendAuraList(nameplates.GetTable("auras"), blocks.Auras);
+            result.Nameplates = blocks;
         }
 
         return result;
@@ -904,28 +908,19 @@ internal static class ClassBlocksStore
         if (spec.Group is { } group)
         {
             sb.Append(indent).AppendLine("group = {");
-            sb.Append(indent).Append("    num = ").Append(group.Num).AppendLine(",");
-            if (group.HealthPercent is { } hp)
+            sb.Append(indent).Append("    state = {");
+            foreach (var field in group.State)
             {
-                sb.Append(indent).Append("    healthPercent = ").Append(hp).AppendLine(",");
+                sb.Append(" \"").Append(Escape(field)).Append("\",");
             }
-
-            if (group.Role is { } role)
-            {
-                sb.Append(indent).Append("    role = ").Append(role).AppendLine(",");
-            }
-
-            if (group.Dispel is { } dispel)
-            {
-                sb.Append(indent).Append("    dispel = ").Append(dispel).AppendLine(",");
-            }
+            sb.AppendLine(" },");
 
             if (group.Auras.Count > 0)
             {
                 sb.Append(indent).AppendLine("    aura = {");
-                foreach (var aura in group.Auras.OrderBy(a => a.Offset))
+                foreach (var aura in group.Auras)
                 {
-                    sb.Append(indent).Append("        [").Append(aura.Offset).Append("] = {");
+                    sb.Append(indent).Append("        {");
                     if (!string.IsNullOrWhiteSpace(aura.Name))
                     {
                         sb.Append(" name = \"").Append(Escape(aura.Name)).Append("\",");
@@ -933,6 +928,23 @@ internal static class ClassBlocksStore
 
                     WriteSpellIdFields(sb, aura.SpellId, aura.SpellIds);
                     sb.AppendLine(" },");
+                }
+
+                sb.Append(indent).AppendLine("    },");
+            }
+
+            sb.Append(indent).AppendLine("},");
+        }
+
+        if (spec.Nameplates is { } nameplates)
+        {
+            sb.Append(indent).AppendLine("nameplates = {");
+            if (nameplates.Auras.Count > 0)
+            {
+                sb.Append(indent).AppendLine("    auras = {");
+                foreach (var aura in nameplates.Auras)
+                {
+                    WriteAuraEntry(sb, aura, indent + "        ");
                 }
 
                 sb.Append(indent).AppendLine("    },");

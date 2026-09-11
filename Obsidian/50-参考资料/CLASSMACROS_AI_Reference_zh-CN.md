@@ -1,13 +1,13 @@
 ---
 title: "Fuyutsui core/classmacros.lua：AI 宏规则参考"
-summary: "说明 ClassMacros 的动态、静态、特殊宏声明，以及 CreateMacro 的 350 槽展开与覆盖绑定顺序。"
+summary: "说明 ClassMacros 的职业级动态、静态、特殊宏声明，以及 CreateMacro 的 1170 槽展开与覆盖绑定顺序。"
 language: "zh-CN"
 primary_file: "core/classmacros.lua"
 related:
   - "[[20-Fuyutsui/00-Fuyutsui-MOC|Fuyutsui MOC]]"
   - "[[40-跨项目/03-Shigure-ClassMacros到keymap与按键契约|ClassMacros 到 keymap 与按键契约]]"
   - "[[30-Shigure/09-Shigure-Fuyutsui配置宏编辑与同步|Shigure Fuyutsui 配置宏编辑与同步]]"
-purpose: "供 AI 理解、审查、新增职业宏时作为单一事实来源；说明 ClassMacros 三表规则、按专精解析 dynamicSpells、MacroBodies 查表与 CreateMacro 展开逻辑"
+purpose: "供 AI 理解、审查、新增职业宏时作为单一事实来源；说明 ClassMacros 三表规则、职业级 dynamicSpells、MacroBodies 查表与 CreateMacro 展开逻辑"
 tags:
   - "project/fuyutsui"
   - "doc/reference"
@@ -41,10 +41,9 @@ verified_at: "2026-08-09"
 1. `Fuyutsui.MacroBodies`：命名宏体查表（药水等）。
 2. `Fuyutsui.ClassMacros[classFile]`：各职业的三份列表（`dynamicSpells` / `staticSpells` / `specialSpells`）。
 
-运行时由 `main.lua:LoadPlayerMacros()` 按 `UnitClassBase("player")` 与当前专精取出列表，再调用：
+运行时由 `main.lua:LoadPlayerMacros()` 按 `UnitClassBase("player")` 取出职业级列表，再调用：
 
 ```lua
--- ResolveDynamicSpells 先拼出当前专精的 dynamic 数组
 Fuyutsui:CreateMacro(dynamicSpells, m.staticSpells, m.specialSpells)
 ```
 
@@ -56,8 +55,8 @@ Fuyutsui:CreateMacro(dynamicSpells, m.staticSpells, m.specialSpells)
 
 1. **键名必须是** `UnitClassBase` 返回值：`WARRIOR` / `PALADIN` / `HUNTER` / `ROGUE` / `PRIEST` / `DEATHKNIGHT` / `SHAMAN` / `MAGE` / `WARLOCK` / `MONK` / `DRUID` / `DEMONHUNTER` / `EVOKER`。
 2. 每个职业表**必须有**三个字段：`dynamicSpells`、`staticSpells`、`specialSpells`（可为空表 `{}`）。字段顺序建议与文件一致：dynamic → static → special。
-3. `staticSpells` / `specialSpells` 一律用**数组**（`{"牺牲祝福", "代祷", "圣盾术"}`），**不要**再写 `[n] = "..."` 稀疏键值表。`dynamicSpells` 见 §5：可为纯数组，或 `{ common = {...}, [specIndex] = {...} }`。
-4. **需要点名队友/团队成员**的治疗、驱散、护盾等 → 放 `dynamicSpells`（顺序敏感；专精差异用 `common` + `[spec]`）。
+3. `dynamicSpells`、`staticSpells`、`specialSpells` 一律用**职业级数组**（例如 `{"牺牲祝福", "代祷", "圣盾术"}`），**不要**再写 `[n] = "..."` 稀疏键值表。
+4. **需要点名队友/团队成员**的治疗、驱散、护盾等 → 放 `dynamicSpells`（顺序敏感；牧师和圣骑士的专精宏已按顺序合并到职业数组）。
 5. **普通单体施法**（目标默认、或条件写在法术名里）→ 放 `staticSpells`，只写法术/条件字符串，**不要**自己加 `/cast `。
 6. **完整宏文本**（`/castsequence`、`/stopcasting`、`/cancelaura` 等）→ 可直接写在 `staticSpells`（以 `/` 开头）或追加到 `specialSpells`；以 `/` 开头的字符串**不会**再加 `/cast `。
 7. 药水等复用宏体 → 在列表里写**名称**（如 `"银月城生命药水"`），并在 `Fuyutsui.MacroBodies` 中登记；创建时用表内值。
@@ -75,8 +74,7 @@ classmacros.lua
         ▼
 main.lua:LoadPlayerMacros()
         │  classFile = UnitClassBase("player")
-        │  specIndex = state.specIndex（或 GetSpecialization）
-        │  dynamic = ResolveDynamicSpells(m.dynamicSpells, specIndex)
+        │  dynamic = m.dynamicSpells（职业级数组）
         │  MacrosList = { dynamicSpells=dynamic, staticSpells, specialSpells }
         ▼
 macro.lua:CreateMacro(dynamic, static, special)
@@ -94,7 +92,7 @@ macro.lua:CreateMacro(dynamic, static, special)
 - `core/player.lua:GetCharacterSpecInfo()`（角色/专精信息初次加载）
 - `core/player.lua:UpdatePlayerSpecInfo()`（切换专精后重建 blocks **并**重建宏）
 
-切换专精时会删除旧覆盖绑定后按当前专精重新创建；**不保证**专精间 static 键位不变（dynamic 长度变化会整体平移后续槽位）。
+切换专精时会删除旧覆盖绑定后按当前职业数组重新创建；同一职业的宏槽位不随专精切换改变。
 
 ## 3. 热键池（`macroKind`）
 
@@ -104,7 +102,7 @@ macro.lua:CreateMacro(dynamic, static, special)
 |---|---|
 | `CTRL` → `ALT` → `SHIFT` → `ALT-CTRL` → `ALT-SHIFT` → `CTRL-SHIFT` → `ALT-CTRL-SHIFT` | 小键盘 0–9 / 小数点 / + / − / × / ÷；`F1–F3,F5–F12`（**无 F4**）；`, . / ; ' [ ] \`；`7 8 9 0 =`；末尾 `-`、`INSERT` `DELETE` `HOME` `END` `PAGEUP` `PAGEDOWN`、`UP` `DOWN` `LEFT` `RIGHT`。不加反引号、`NUMPADENTER`。 |
 
-- 总槽位数 = `7 × 50 = 350`。
+- 总槽位数 = `26 × 45 = 1170`。
 - 按钮名：`s1`、`s2`、…（与 `macroKind` 下标一致）。
 - 当前键池定义直接见 `Fuyutsui/core/macro.lua`（ID 1 = `CTRL-NUMPAD1`，以此类推）。
 
@@ -168,7 +166,7 @@ for each entry in specialSpells:
 
 ## 5. `dynamicSpells` 规则
 
-### 5.1 数据结构（两种格式）
+### 5.1 数据结构（职业级数组）
 
 **旧格式（纯数组，仍兼容）**：
 
@@ -176,29 +174,24 @@ for each entry in specialSpells:
 dynamicSpells = { "法术A", "法术B", "法术C" }  -- 数组，1-based，顺序 = 组号
 ```
 
-**新格式（共用 + 按专精追加）**：
+**当前格式**：
 
 ```lua
-dynamicSpells = {
-    common = { "纯净术", "快速治疗" },   -- 所有专精共用，排在前面
-    [1] = { "真言术：盾", "苦修" },      -- 专精 1（戒律）追加
-    [2] = { "愈合祷言", "圣言术：静" },  -- 专精 2（神圣）追加
-    -- 未列出的专精（如暗影 [3]）只使用 common
-},
+dynamicSpells = { "纯净术", "快速治疗", "真言术：盾", "苦修" },
 ```
 
-`main.lua:ResolveDynamicSpells` 规则：
+旧版 `common` / `[specIndex]` 结构仅作为导入迁移输入，运行时不再解析：
 
 | 表内容 | 解析结果 |
 |---|---|
-| 存在 `common` 表，或 `dynamicSpells[specIndex]` 为表 | `concat(common or {}, bySpec or {})` |
-| 否则（纯字符串数组） | 原样返回该表 |
+| 纯字符串数组 | 原样使用该职业数组 |
+| 仍存在专精表 | 转换器报错，模块导入按兼容规则迁移 |
 
-注意：新格式里 `[1]` / `[2]` 的值必须是**法术名数组**，不能是单个字符串；否则会与旧格式混淆判断。
+牧师和圣骑士的历史专精数组已按 `common → 专精 1 → 专精 2` 顺序合并，并仅对完全相同的宏名称去重；唤魔师等其他职业的历史专精宏会被丢弃。
 
 - 用**纯法术名**（中文），不要写 `/cast`，不要写 `@raid`（展开逻辑会加）。
 - 每组固定占 **30** 个连续热键，对应 `raid1` … `raid30`。
-- 专精间解析后长度可以不同；**不做空串占位对齐**，static 键位会随之偏移。
+- 职业数组长度决定该职业后续 static/special 宏的偏移；专精切换不会改变宏表。
 
 ### 5.2 单组内 30 键展开
 
@@ -225,11 +218,11 @@ dynamicSpells = {
 - 只打当前目标 / 自身 / 鼠标指向 / 焦点 → 用 `staticSpells` + 条件前缀。
 - 需要 sequence / stopcasting / cancelaura → 在 `staticSpells` 写以 `/` 开头的完整文本，或放入 `specialSpells`。
 
-专精差异：共用技能写 `common`；仅某专精需要的点名技能写进 `[specIndex]`。
+专精差异：需要保留的宏直接按约定顺序合并进职业数组；宏系统不再写入 `[specIndex]`。
 
 ### 5.4 现有职业占用（便于估算偏移）
 
-下表「解析后长度」指 `ResolveDynamicSpells` 之后的数组长度（随专精变化的职业取常见治疗专精）：
+下表「动态长度」指职业级 `dynamicSpells` 数组长度：
 
 | 职业键 | 格式 | 解析后长度（示例） | 动态槽 | static 第 1 项全局 `i` |
 |---|---|---:|---:|---:|
@@ -432,7 +425,7 @@ staticSpells = {
 | 文件 | 职责 | 改宏时 |
 |---|---|---|
 | `core/macro.lua` | 热键表、`ClearMacros`、顺序占键、`resolveMacroBody`、安全按钮 | 仅当要改分配规则/键池时才动；须与 C# `FuyutsuiKeymapConverter` 同序 |
-| `main.lua` | `ResolveDynamicSpells`、`LoadPlayerMacros` 选职业+专精 | 一般不动 |
+| `main.lua` | `LoadPlayerMacros` 按职业读取宏列表 | 一般不动 |
 | `core/player.lua` | 加载/切换专精时调用 `LoadPlayerMacros` | 一般不动 |
 | `core/keybinds.lua` / `config.lua` keymap | 动作条扫描 → 像素协议 | **另一套**按键编码，与 ClassMacros 覆盖绑定无关 |
 | `class/*.lua` | ClassBlocks 色块 | 不放宏 |

@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using static Shigure.LuaLiteParser;
@@ -498,17 +498,17 @@ internal static class FuyutsuiConfigConverter
         {
             var groupJson = new JsonObject
             {
-                ["start"] = index,
-                ["num"] = (int)(group.GetNumber("num") ?? 5)
+                ["start"] = index
             };
-
-            AddGroupOffset(groupJson, group.GetNumber("healthPercent"), "生命值");
-            AddGroupOffset(groupJson, group.GetNumber("role"), "职责");
-            AddGroupOffset(groupJson, group.GetNumber("dispel"), "驱散");
+            var groupFieldCount = 0;
+            foreach (var field in GroupStateLayout.Read(group))
+            {
+                AddGroupOffset(groupJson, ++groupFieldCount, GroupStateLayout.DisplayName(field));
+            }
 
             if (group.GetTable("aura") is { } auraOffsets)
             {
-                foreach (var (key, value) in auraOffsets.Entries)
+                foreach (var (key, value) in auraOffsets.Entries.OrderBy(pair => pair.Key is long n ? n : long.MaxValue))
                 {
                     var offset = key switch
                     {
@@ -540,7 +540,7 @@ internal static class FuyutsuiConfigConverter
                     }
 
                     groupJson[$"auras.{canonicalId}.{SpellFieldKey.AuraValue}"] = AuraField(
-                        (int)offset.Value,
+                        ++groupFieldCount,
                         auraName,
                         canonicalId.Value,
                         "group",
@@ -549,7 +549,75 @@ internal static class FuyutsuiConfigConverter
                 }
             }
 
-            result["group"] = groupJson;
+            if (groupFieldCount > 0)
+            {
+                result["group"] = groupJson;
+                // 自动计算的步长与插件一致，预留插件实际处理的 30 个成员。
+                index += 30 * groupFieldCount + 1;
+            }
+        }
+
+        if (spec.GetTable("nameplates") is { } nameplates)
+        {
+            // 生命值/距离/战斗是固定偏移，与插件 LoadPlayerBlocks 的分配保持一致。
+            var nameplateJson = new JsonObject
+            {
+                ["start"] = index,
+                ["healthPercent"] = NameplateStateLayout.HealthPercentOffset,
+                ["range"] = NameplateStateLayout.RangeOffset,
+                ["combat"] = NameplateStateLayout.CombatOffset,
+                ["auraStart"] = NameplateStateLayout.AuraStartOffset
+            };
+            var fieldCount = NameplateStateLayout.FixedFieldCount;
+            if (nameplates.GetTable("auras") is { } nameplateAuras)
+            {
+                var auraArray = new JsonArray();
+                foreach (var item in nameplateAuras.IPairs())
+                {
+                    if (item is not TableValue aura)
+                    {
+                        continue;
+                    }
+
+                    var ids = ReadAuraIds(aura);
+                    if (ids.Count == 0)
+                    {
+                        warnings.Add($"{label}: nameplates aura 缺少有效 spellId，已跳过");
+                        continue;
+                    }
+
+                    var auraJson = new JsonObject
+                    {
+                        ["name"] = aura.GetString("name")?.Trim() ?? string.Empty,
+                        ["spellId"] = ids[0]
+                    };
+                    if (ids.Count > 1)
+                    {
+                        var aliases = new JsonArray();
+                        foreach (var id in ids.Skip(1))
+                        {
+                            aliases.Add(id);
+                        }
+
+                        auraJson["spellIds"] = aliases;
+                    }
+
+                    auraArray.Add(auraJson);
+                }
+
+                nameplateJson["auras"] = auraArray;
+                fieldCount += auraArray.Count;
+            }
+
+            nameplateJson["num"] = fieldCount;
+            if (index + 20 * fieldCount - 1 > MainPixelLayout.MaxCapacity)
+            {
+                warnings.Add($"{label}: 姓名板需要 {20 * fieldCount} 格，超过主像素行 {MainPixelLayout.MaxCapacity} 格上限，已停用姓名板");
+            }
+            else
+            {
+                result["nameplates"] = nameplateJson;
+            }
         }
 
         return (result, warnings);

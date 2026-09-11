@@ -43,7 +43,7 @@ verified_at: 2026-08-09
 
 ## AI 快速摘要
 
-> `ReadKeybindings()` 延迟 0.5 秒扫描动作槽 1..180，把可识别的 macro/spell 记录为 `Fuyutsui.keybindings[spellID] = {key, slot, keycode, icon, name}`。这是游戏内诊断缓存；Shigure 的实际发送映射来自 `ClassMacros` 转换出的 keymap，而不是读取该 Lua 表。插件自己的安全宏按钮使用 7 种修饰键×50 个基础键，共 350 个顺序槽。
+> `ReadKeybindings()` 延迟 0.5 秒扫描动作槽 1..180，把可识别的 macro/spell 记录为 `Fuyutsui.keybindings[spellID] = {key, slot, keycode, icon, name}`。这是游戏内诊断缓存；Shigure 的实际发送映射来自 `ClassMacros` 转换出的职业级 keymap，而不是读取该 Lua 表。插件自己的安全宏按钮使用 26 组左右修饰键×45 个基础键，共 1170 个顺序槽。
 
 ## 范围与非范围
 
@@ -97,14 +97,14 @@ OnEnable / UPDATE_BINDINGS / SPELLS_CHANGED / ACTIONBAR_*GRID
 
 - 修饰键顺序：`CTRL`、`ALT`、`SHIFT`、`ALT-CTRL`、`ALT-SHIFT`、`CTRL-SHIFT`、`ALT-CTRL-SHIFT`。
 - 基础键 50 个：小键盘、F 键（无 F4）、标点、部分数字，以及末尾的 `-`、`INSERT`、`DELETE`、`HOME`、`END`、`PAGEUP`、`PAGEDOWN`、`UP`、`DOWN`、`LEFT`、`RIGHT`。不加反引号、`NUMPADENTER`。
-- 总容量 `7 × 50 = 350`。
+- 总容量 `26 × 45 = 1170`。
 - 第 `i` 槽创建名为 `s{i}` 的 `SecureActionButtonTemplate`，通过 `SetOverrideBindingClick()` 绑定对应按键。
 
 宏体解析顺序：先查 `Fuyutsui.MacroBodies` 的命名宏体；字符串以 `/` 开头则原样使用；否则包装为 `/cast <字符串>`。
 
 ## ClassMacros 到按钮的确定顺序
 
-`LoadPlayerMacros()` 合并当前职业的 common + 当前专精 dynamic 列表后，`CreateMacro()` 按实际源码顺序消费最多 350 个槽：
+`LoadPlayerMacros()` 读取当前职业的 dynamic 数组后，`CreateMacro()` 按实际源码顺序消费最多 1170 个槽：
 
 1. `dynamicSpells`：每个定义固定占 30 槽，展开 raid1..raid30，并兼容 party/player 条件。
 2. `staticSpells`：每项占 1 槽；空字符串只保留占位，不创建按钮。
@@ -118,7 +118,7 @@ OnEnable / UPDATE_BINDINGS / SPELLS_CHANGED / ACTIONBAR_*GRID
 - Lua `macroKind[i]` 与 C# 生成 keymap 的第 `i` 项必须逐项相同，包括修饰键文本顺序。
 - 每个 dynamic 条目始终占 30 槽，即使某些宏体为空。
 - static/special 空项同样占位；删除占位会让后续所有键左移。
-- 总展开数不得超过 350；超出部分 `nextSlot()` 静默不创建。
+- 总展开数不得超过 1170；超出部分 `nextSlot()` 静默不创建。
 - 游戏内动作条 `Fuyutsui.keybindings` 不是跨进程契约源，不能拿它替换生成 keymap。
 
 ## 失败模式与当前风险
@@ -143,9 +143,9 @@ OnEnable / UPDATE_BINDINGS / SPELLS_CHANGED / ACTIONBAR_*GRID
 - `Fuyutsui/core/config.lua:228-345`：动作条范围与 keycode 表。
 - `Fuyutsui/core/keybinds.lua:1-53`：1..180 扫描和本地缓存。
 - `Fuyutsui/core/events.lua:314-328`：重新扫描触发事件。
-- `Fuyutsui/core/macro.lua`：350 键池、安全按钮和三段展开顺序。
+- `Fuyutsui/core/macro.lua`：1170 键池、安全按钮和三段展开顺序。
 - `Fuyutsui/core/classmacros.lua:1-7`：命名宏体。
-- `Fuyutsui/main.lua:197-236`：当前专精 dynamic 合并与宏创建入口。
+- `Fuyutsui/main.lua:197-236`：当前职业 dynamic 数组与宏创建入口。
 
 ## 知识图谱
 

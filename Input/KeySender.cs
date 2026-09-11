@@ -48,8 +48,8 @@ public sealed class KeySender : IRuntimeKeyOutput
             return Fail("目标窗口已切换，等待重新扫描后再发送按键");
         }
 
-        // ParseHotkey 只产出去重后的 CTRL/ALT/SHIFT, 三者都在虚拟键表里且映射到互异 VK,
-        // 故 Resolve 不会为 null、结果天然去重。
+        // ParseHotkey 产出去重后的普通或左右修饰键；它们都在虚拟键表中，
+        // 因此可以按实际左右键码发送，且结果天然去重。
         var modVks = mods.Select(m => WindowsVirtualKeyMap.Resolve(m)!.Value).ToList();
 
         var succeeded = true;
@@ -67,9 +67,9 @@ public sealed class KeySender : IRuntimeKeyOutput
             }
         }
 
-        foreach (var vk in modVks)
+        for (var i = 0; i < modVks.Count; i++)
         {
-            SendMessage(vk, keyUp: false);
+            SendMessage(modVks[i], keyUp: false, IsExtendedKey(mods[i]));
         }
 
         SendMessage(vkMain.Value, keyUp: false, mainExtended);
@@ -77,7 +77,7 @@ public sealed class KeySender : IRuntimeKeyOutput
 
         for (var i = modVks.Count - 1; i >= 0; i--)
         {
-            SendMessage(modVks[i], keyUp: true);
+            SendMessage(modVks[i], keyUp: true, IsExtendedKey(mods[i]));
         }
 
         if (succeeded)
@@ -113,6 +113,48 @@ public sealed class KeySender : IRuntimeKeyOutput
 
     private static bool TryConsumeModifierPrefix(ref string remaining, out string modifier)
     {
+        if (StartsWithIgnoreCase(remaining, "LCTRL-"))
+        {
+            remaining = remaining["LCTRL-".Length..];
+            modifier = "LCTRL";
+            return true;
+        }
+
+        if (StartsWithIgnoreCase(remaining, "RCTRL-"))
+        {
+            remaining = remaining["RCTRL-".Length..];
+            modifier = "RCTRL";
+            return true;
+        }
+
+        if (StartsWithIgnoreCase(remaining, "LALT-"))
+        {
+            remaining = remaining["LALT-".Length..];
+            modifier = "LALT";
+            return true;
+        }
+
+        if (StartsWithIgnoreCase(remaining, "RALT-"))
+        {
+            remaining = remaining["RALT-".Length..];
+            modifier = "RALT";
+            return true;
+        }
+
+        if (StartsWithIgnoreCase(remaining, "LSHIFT-"))
+        {
+            remaining = remaining["LSHIFT-".Length..];
+            modifier = "LSHIFT";
+            return true;
+        }
+
+        if (StartsWithIgnoreCase(remaining, "RSHIFT-"))
+        {
+            remaining = remaining["RSHIFT-".Length..];
+            modifier = "RSHIFT";
+            return true;
+        }
+
         if (StartsWithIgnoreCase(remaining, "CONTROL-"))
         {
             remaining = remaining["CONTROL-".Length..];
@@ -156,7 +198,9 @@ public sealed class KeySender : IRuntimeKeyOutput
         => value.StartsWith(prefix, StringComparison.OrdinalIgnoreCase);
 
     private static bool IsExtendedKey(string keyName)
-        => keyName.Equals("NUMPADDIVIDE", StringComparison.OrdinalIgnoreCase)
+        => keyName.Equals("RCTRL", StringComparison.OrdinalIgnoreCase)
+            || keyName.Equals("RALT", StringComparison.OrdinalIgnoreCase)
+            || keyName.Equals("NUMPADDIVIDE", StringComparison.OrdinalIgnoreCase)
             || keyName.Equals("INSERT", StringComparison.OrdinalIgnoreCase)
             || keyName.Equals("DELETE", StringComparison.OrdinalIgnoreCase)
             || keyName.Equals("HOME", StringComparison.OrdinalIgnoreCase)

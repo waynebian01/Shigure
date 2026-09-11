@@ -87,15 +87,20 @@ internal sealed class ModuleDependencyService
                     SpellId = entry.SpellId,
                     Index = entry.Index,
                     Name = entry.Name
+                }).ToList(),
+                ItemsList = configDocument.ItemsList.Select(entry => new ModuleItemListEntrySnapshot
+                {
+                    ItemId = entry.ItemId,
+                    Index = entry.Index,
+                    Name = entry.Name
                 }).ToList()
             },
             Macros = new ModuleMacrosSnapshot
             {
-                UsesSpecDynamicSpells = macros.UsesSpecDynamicSpells,
-                DynamicCommon = new List<string>(macros.DynamicCommon),
-                DynamicForSpec = macros.UsesSpecDynamicSpells
-                    ? new List<string>(macros.DynamicBySpec.GetValueOrDefault(specId.Value) ?? [])
-                    : [],
+                DynamicCommon = new List<string>(macros.DynamicSpells),
+                // 旧字段保留为空，仅用于兼容读取历史模块文件。
+                UsesSpecDynamicSpells = false,
+                DynamicForSpec = [],
                 StaticSpells = CompactMacroSnapshots(macros.StaticSpells.Select(CaptureMacro), isSpecial: false),
                 SpecialSpells = CompactMacroSnapshots(macros.SpecialSpells.Select(CaptureMacro), isSpecial: true)
             }
@@ -172,7 +177,8 @@ internal sealed class ModuleDependencyService
         var counters = new MergeCounters();
         MergeSpec(localSpec, snapshot.Config.Spec, counters);
         MergeSpellsList(configDocument.SpellsList, snapshot.Config.SpellsList, counters);
-        MergeMacros(localMacros, snapshot.SpecId, snapshot.Macros, counters);
+        MergeItemsList(configDocument.ItemsList, snapshot.Config.ItemsList, counters);
+        MergeMacros(localMacros, snapshot.ClassId, snapshot.Macros, counters);
         EnsureMacroCapacity(snapshot.ClassId, localMacros);
 
         if (!counters.HasConfigChanges && counters.MacrosAdded == 0)
@@ -268,6 +274,11 @@ internal sealed class ModuleDependencyService
         if ((snapshot.Config.SpellsList ?? []).Any(spell => !IsValidSpellId(spell.SpellId)))
         {
             throw new InvalidDataException("依赖快照包含缺少有效 spellId 的技能列表条目。");
+        }
+
+        if ((snapshot.Config.ItemsList ?? []).Any(item => !IsValidItemId(item.ItemId)))
+        {
+            throw new InvalidDataException("依赖快照包含缺少有效 itemId 的物品列表条目。");
         }
     }
 
@@ -404,13 +415,9 @@ internal sealed class ModuleDependencyService
         }).ToList(),
         Group = spec.Group is null ? null : new ModuleGroupSnapshot
         {
-            Num = spec.Group.Num,
-            HealthPercent = spec.Group.HealthPercent,
-            Role = spec.Group.Role,
-            Dispel = spec.Group.Dispel,
+            State = new List<string>(spec.Group.State),
             Auras = spec.Group.Auras.Select(entry => new ModuleGroupAuraSnapshot
             {
-                Offset = entry.Offset,
                 Name = entry.Name,
                 SpellId = entry.SpellId,
                 SpellIds = new List<long>(entry.SpellIds)
@@ -720,25 +727,24 @@ internal sealed class ModuleDependencyService
         IReadOnlySet<string> reservedNames,
         MergeCounters counters)
     {
-        foreach (var item in incoming.OrderBy(item => item.ItemId))
+        CompactLocalItems(local, counters);
+
+        foreach (var item in incoming.OrderBy(entry => entry.ItemId))
         {
-            var byId = local.FirstOrDefault(existing => existing.ItemId == item.ItemId);
-            if (byId is not null)
+            if (!IsValidItemId(item.ItemId))
             {
-                if (!string.Equals(byId.Name, item.Name, StringComparison.Ordinal))
-                {
-                    counters.Conflicts.Add(
-                        $"物品 itemId {item.ItemId} 的名称不同：本地“{byId.Name}”、模块“{item.Name}”，已保留本地。");
-                }
-                else if (byId.IsEquipped != item.IsEquipped)
-                {
-                    counters.Conflicts.Add(
-                        $"物品“{item.Name}”的 isEquipped 不同：本地 {byId.IsEquipped}、模块 {item.IsEquipped}，已保留本地。");
-                }
                 continue;
             }
 
-            var byName = local.FirstOrDefault(existing => string.Equals(existing.Name, item.Name, StringComparison.Ordinal));
+            var byId = local.FirstOrDefault(existing => existing.ItemId == item.ItemId);
+            if (byId is not null)
+            {
+                MergeItemMetadata(byId, item, counters);
+                continue;
+            }
+
+            var byName = local.FirstOrDefault(existing =>
+                string.Equals(existing.Name, item.Name, StringComparison.Ordinal));
             if (byName is not null)
             {
                 counters.Conflicts.Add(
@@ -762,6 +768,74 @@ internal sealed class ModuleDependencyService
         }
 
         local.Sort((left, right) => (left.ItemId ?? long.MaxValue).CompareTo(right.ItemId ?? long.MaxValue));
+    }
+
+    private static void CompactLocalItems(
+        List<ClassBlocksStore.ItemEntry> local,
+        MergeCounters counters)
+    {
+        for (var index = 0; index < local.Count; index++)
+        {
+            var current = local[index];
+            if (current.ItemId is not > 0)
+            {
+                continue;
+            }
+
+            var existing = local.Take(index).FirstOrDefault(item => item.ItemId == current.ItemId);
+            if (existing is null)
+            {
+                continue;
+            }
+
+            MergeItemMetadata(existing, current, counters);
+            local.RemoveAt(index--);
+            counters.ConfigUpdated++;
+        }
+    }
+
+    private static void MergeItemMetadata(
+        ClassBlocksStore.ItemEntry target,
+        ModuleItemSnapshot incoming,
+        MergeCounters counters)
+        => MergeItemMetadataCore(target, incoming.Name, incoming.IsEquipped, counters);
+
+    private static void MergeItemMetadata(
+        ClassBlocksStore.ItemEntry target,
+        ClassBlocksStore.ItemEntry incoming,
+        MergeCounters counters)
+        => MergeItemMetadataCore(target, incoming.Name, incoming.IsEquipped, counters);
+
+    private static void MergeItemMetadataCore(
+        ClassBlocksStore.ItemEntry target,
+        string? incomingName,
+        bool incomingIsEquipped,
+        MergeCounters counters)
+    {
+        var changed = false;
+        if (!target.IsEquipped && incomingIsEquipped)
+        {
+            target.IsEquipped = true;
+            changed = true;
+        }
+
+        if (string.IsNullOrWhiteSpace(target.Name) && !string.IsNullOrWhiteSpace(incomingName))
+        {
+            target.Name = incomingName.Trim();
+            changed = true;
+        }
+        else if (!string.IsNullOrWhiteSpace(target.Name)
+                 && !string.IsNullOrWhiteSpace(incomingName)
+                 && !string.Equals(target.Name, incomingName.Trim(), StringComparison.Ordinal))
+        {
+            counters.Conflicts.Add(
+                $"物品 itemId {target.ItemId} 的名称不同：本地“{target.Name}”、模块“{incomingName.Trim()}”，已保留本地。");
+        }
+
+        if (changed)
+        {
+            counters.ConfigUpdated++;
+        }
     }
 
     private static void MergeSpellMetadata(
@@ -912,6 +986,8 @@ internal sealed class ModuleDependencyService
 
     private static bool IsValidSpellId(long spellId) => spellId > 0;
 
+    private static bool IsValidItemId(long itemId) => itemId > 0;
+
     private static string DisplayName(string? name, long? spellId)
         => string.IsNullOrWhiteSpace(name) ? spellId?.ToString() ?? "未命名" : name.Trim();
 
@@ -960,40 +1036,82 @@ internal sealed class ModuleDependencyService
         }
     }
 
+    private static void MergeItemsList(
+        List<ClassBlocksStore.ItemsListEntry> local,
+        IEnumerable<ModuleItemListEntrySnapshot>? incoming,
+        MergeCounters counters)
+    {
+        CompactLocalItemsList(local, counters);
+
+        foreach (var entry in incoming ?? [])
+        {
+            if (!IsValidItemId(entry.ItemId))
+            {
+                continue;
+            }
+
+            var byId = local.FirstOrDefault(item => item.ItemId == entry.ItemId);
+            if (byId is not null)
+            {
+                // itemId 是跨模块稳定标识；索引是当前职业文件的本地编码。
+                // 同一 itemId 已存在时保留本地索引/名称，不因来源索引不同产生冲突。
+                continue;
+            }
+
+            local.Add(new ClassBlocksStore.ItemsListEntry
+            {
+                ItemId = entry.ItemId,
+                Index = entry.Index,
+                Name = entry.Name,
+                OriginalItemId = 0
+            });
+            counters.ConfigAdded++;
+        }
+    }
+
+    private static void CompactLocalItemsList(
+        List<ClassBlocksStore.ItemsListEntry> local,
+        MergeCounters counters)
+    {
+        var seen = new HashSet<long>();
+        for (var index = 0; index < local.Count; index++)
+        {
+            if (seen.Add(local[index].ItemId))
+            {
+                continue;
+            }
+
+            local.RemoveAt(index--);
+            counters.ConfigUpdated++;
+        }
+    }
+
     private static void MergeMacros(
         ClassMacrosStore.ClassMacros local,
-        int specId,
+        int classId,
         ModuleMacrosSnapshot incoming,
         MergeCounters counters)
     {
-        var commonNames = new HashSet<string>(local.DynamicCommon.Select(NormalizeMacroText), StringComparer.Ordinal);
-        foreach (var value in incoming.DynamicCommon)
+        var commonNames = new HashSet<string>(local.DynamicSpells.Select(NormalizeMacroText), StringComparer.Ordinal);
+        foreach (var value in incoming.DynamicCommon ?? [])
         {
             var normalized = NormalizeMacroText(value);
             if (normalized.Length > 0 && commonNames.Add(normalized))
             {
-                local.DynamicCommon.Add(value.Trim());
+                local.DynamicSpells.Add(value.Trim());
                 counters.MacrosAdded++;
             }
         }
 
-        if (incoming.UsesSpecDynamicSpells && incoming.DynamicForSpec.Count > 0)
+        // 历史模块的专精动态宏只对牧师/圣骑士迁移到职业宏；其他职业按新规则丢弃。
+        if (incoming.UsesSpecDynamicSpells && classId is 2 or 5)
         {
-            local.UsesSpecDynamicSpells = true;
-            if (!local.DynamicBySpec.TryGetValue(specId, out var specMacros))
-            {
-                specMacros = new List<string>();
-                local.DynamicBySpec[specId] = specMacros;
-            }
-
-            var resolved = new HashSet<string>(local.DynamicCommon.Select(NormalizeMacroText), StringComparer.Ordinal);
-            resolved.UnionWith(specMacros.Select(NormalizeMacroText));
-            foreach (var value in incoming.DynamicForSpec)
+            foreach (var value in incoming.DynamicForSpec ?? [])
             {
                 var normalized = NormalizeMacroText(value);
-                if (normalized.Length > 0 && resolved.Add(normalized))
+                if (normalized.Length > 0 && commonNames.Add(normalized))
                 {
-                    specMacros.Add(value.Trim());
+                    local.DynamicSpells.Add(value.Trim());
                     counters.MacrosAdded++;
                 }
             }
@@ -1151,17 +1269,12 @@ internal sealed class ModuleDependencyService
 
     private static void EnsureMacroCapacity(int classId, ClassMacrosStore.ClassMacros macros)
     {
-        foreach (var (specId, specName) in ClassNames.GetSpecs(classId))
+        var slots = checked(macros.DynamicSpells.Count * 30 + macros.StaticSpells.Count + macros.SpecialSpells.Count);
+        if (slots > FuyutsuiKeymapConverter.MacroSlotCapacity)
         {
-            var dynamicCount = macros.UsesSpecDynamicSpells
-                ? macros.DynamicCommon.Count + (macros.DynamicBySpec.GetValueOrDefault(specId)?.Count ?? 0)
-                : macros.DynamicCommon.Count;
-            var slots = checked(dynamicCount * 30 + macros.StaticSpells.Count + macros.SpecialSpells.Count);
-            if (slots > FuyutsuiKeymapConverter.MacroSlotCapacity)
-            {
-                throw new InvalidOperationException(
-                    $"宏容量超限：{ClassNames.GetClassAndSpecName(classId, specId).ClassName} {specName} 合并后 {slots} 个槽位，最大 {FuyutsuiKeymapConverter.MacroSlotCapacity}。模块未导入。");
-            }
+            var className = ClassNames.GetClassAndSpecName(classId, null).ClassName ?? $"职业{classId}";
+            throw new InvalidOperationException(
+                $"宏容量超限：{className} 合并后 {slots} 个槽位，最大 {FuyutsuiKeymapConverter.MacroSlotCapacity}。模块未导入。");
         }
     }
 

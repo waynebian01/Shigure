@@ -47,6 +47,8 @@ verified_at: 2026-08-09
 
 ## 事件框架
 
+姓名板事件 `NAME_PLATE_UNIT_ADDED` / `NAME_PLATE_UNIT_REMOVED` 维护固定的 `nameplate1..20` 槽位；0.2 秒刷新周期同步更新敌对姓名板的生命值、距离和配置光环像素。
+
 `core/core.lua:6-19` 创建 `FuyutsuiEventFrame` 并暴露注册/注销包装。分发器在 `core/core.lua:190-220`：
 
 ```text

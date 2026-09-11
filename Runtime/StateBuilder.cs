@@ -60,7 +60,68 @@ public sealed class StateBuilder : IRuntimeStateBuilder
             result["group"] = group;
         }
 
+        if (JsonHelpers.Get(stateConfig, "nameplates") is JsonObject nameplateConfig)
+        {
+            result["nameplates"] = BuildNameplates(nameplateConfig, rowData);
+        }
+
         return new GameState(result);
+    }
+
+    private static Dictionary<string, IReadOnlyDictionary<string, object?>> BuildNameplates(
+        JsonObject config,
+        IReadOnlyDictionary<int, int> rowData)
+    {
+        var result = new Dictionary<string, IReadOnlyDictionary<string, object?>>();
+        var start = JsonHelpers.GetInt(JsonHelpers.Get(config, "start")) ?? 0;
+        var fieldCount = JsonHelpers.GetInt(JsonHelpers.Get(config, "num")) ?? 0;
+        // 生命值/距离/战斗/光环起点都是固定偏移，与插件分配一致。
+        const int healthOffset = NameplateStateLayout.HealthPercentOffset;
+        const int rangeOffset = NameplateStateLayout.RangeOffset;
+        const int combatOffset = NameplateStateLayout.CombatOffset;
+        const int auraStart = NameplateStateLayout.AuraStartOffset;
+        var auraConfigs = JsonHelpers.Get(config, "auras") as JsonArray;
+
+        for (var slot = 1; slot <= 20; slot++)
+        {
+            var firstPixel = start + (slot - 1) * fieldCount;
+            var present = start > 0 && fieldCount > 0 && rowData.ContainsKey(firstPixel);
+            int ReadField(int offset) => present && offset > 0 && offset <= fieldCount
+                && rowData.TryGetValue(firstPixel + offset - 1, out var value) ? value : 0;
+            var values = new Dictionary<string, object?>
+            {
+                ["存在"] = present,
+                ["生命值"] = ReadField(healthOffset),
+                ["距离"] = ReadField(rangeOffset),
+                // 插件用 1 表示 UnitAffectingCombat 为真，这里还原成布尔值。
+                ["战斗"] = ReadField(combatOffset) != 0
+            };
+
+            if (auraConfigs is not null)
+            {
+                for (var auraIndex = 0; auraIndex < auraConfigs.Count; auraIndex++)
+                {
+                    var value = ReadField(auraStart + auraIndex);
+                    var ordinalKey = $"光环{auraIndex + 1}";
+                    values[ordinalKey] = value;
+                    if (auraConfigs[auraIndex] is JsonObject aura)
+                    {
+                        var name = JsonHelpers.GetString(JsonHelpers.Get(aura, "name"));
+                        if (!string.IsNullOrWhiteSpace(name) && !values.ContainsKey(name))
+                        {
+                            values[name] = value;
+                        }
+
+                        // 按 spellId 再暴露一份, 供敌人数量字段与队伍光环用同一套键查找。
+                        AddNameplateAuraIds(values, aura, value);
+                    }
+                }
+            }
+
+            result[slot.ToString()] = values;
+        }
+
+        return result;
     }
 
     private static Dictionary<string, object?> BuildFieldMap(
@@ -111,7 +172,9 @@ public sealed class StateBuilder : IRuntimeStateBuilder
         IReadOnlyDictionary<int, int> healAbsorbData)
     {
         var start = JsonHelpers.GetInt(JsonHelpers.Get(groupConfig, "start")) ?? 26;
-        var numParams = JsonHelpers.GetInt(JsonHelpers.Get(groupConfig, "num")) ?? 5;
+        var numParams = groupConfig
+            .Where(pair => pair.Key is not "start" and not "num" && pair.Value is JsonObject field && field.ContainsKey("step"))
+            .Count();
         var group = new Dictionary<string, IReadOnlyDictionary<string, object?>>();
 
         for (var i = 1; i <= 30; i++)
@@ -158,6 +221,33 @@ public sealed class StateBuilder : IRuntimeStateBuilder
         }
 
         return group;
+    }
+
+    // 姓名板光环配置形如 { name, spellId, spellIds? }; 规范 ID 与别名都写成 auras.{spellId}.value。
+    private static void AddNameplateAuraIds(
+        IDictionary<string, object?> target,
+        JsonObject aura,
+        object? value)
+    {
+        var canonicalId = JsonHelpers.GetLong(JsonHelpers.Get(aura, "spellId"));
+        if (canonicalId is > 0)
+        {
+            target[SpellFieldKey.AuraMember(canonicalId.Value)] = value;
+        }
+
+        if (JsonHelpers.Get(aura, "spellIds") is not JsonArray aliases)
+        {
+            return;
+        }
+
+        foreach (var node in aliases)
+        {
+            var alias = JsonHelpers.GetLong(node);
+            if (alias is > 0 && alias != canonicalId)
+            {
+                target[SpellFieldKey.AuraMember(alias.Value)] = value;
+            }
+        }
     }
 
     private static void AddAuraAliases(

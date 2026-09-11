@@ -1,18 +1,19 @@
 --[[
 摘要：
     Fuyutsui 快捷控件：panel.lua 蓝本——barLayer 爆发计时条（BurstTime 时长驱动，
-    左键 +15 秒 / 右键取消 / 中键永久爆发）+ 双按钮行（自动/单体、不喝药/爆发药）。
+    左键 +15 秒 / 右键取消 / 中键永久爆发）+ 三按钮行（自动/单体、不喝药/爆发药、计时器）。
 描述：
     面板无标题栏、位置可拖动并记忆（quickButtonPoint/RelPoint/X/Y，无存档时默认 CENTER +
     quickButtonCX/quickButtonCY），采用 PhantomProject 手法：WindowBorder 1px 边框 + WindowBg
     内缩填充。上层为爆发计时条 barLayer：轨道全透明、填充 SliderLeft 蓝，纯进度条无文字，
     显示值 clamp(BurstTime-now, 0, 15) 按比例收缩、归零隐藏（Hide 而非 SetWidth(0)，防 1px
     残段）；点击静默、按按键分派：左键 +15 秒 / 右键取消（now-1）/ 中键 +3600 秒长计时 /
-    其余按键 +15 秒，并同步写 c.cooldowns；悬停显示三行按键说明 Tooltip。下层为两个等宽切换
-    按钮（自动↔单体 / 不喝药↔爆发药，BUTTON_BORDER=1 边框 + 内缩填充，悬停边框
-    亮、按下填充暗，GameFontHighlightSmall 取字体文件/阴影、字号 12），点击 = 翻转配置属性 +
-    SwitchAoeMode/SwitchPotion（打印提示 + 刷新 stateblock 像素），按钮显示态
-    完全由 RefreshQuickToggleAppearance 按 GetCharConfig() 派生（不引入 local isOn 机制）。
+    其余按键 +15 秒，并同步写 c.cooldowns；悬停显示三行按键说明 Tooltip。    下层为三个等宽按钮（自动↔单体 / 不喝药↔爆发药 / 计时器，BUTTON_BORDER=1 边框 + 内缩填充，悬停边框
+    亮、按下填充暗，GameFontHighlightSmall 取字体文件/阴影、字号 12）。前两枚点击 = 翻转配置属性 +
+    SwitchAoeMode/SwitchPotion（打印提示 + 刷新 stateblock 像素），显示态完全由
+    RefreshQuickToggleAppearance 按 GetCharConfig() 派生（不引入 local isOn 机制）。计时器按钮
+    默认显示「计时器」，左击开始/右击关闭，运行中每秒刷新已过秒数，超过 255 秒自动关闭；
+    与 /fu timer [on|off] 共用 StartTimer/StopTimer。
     爆发状态模型：Fuyutsui.BurstTime（GetTime 纪元时间戳）为命名空间级唯一真相、初始 0 = 未
     开启；独立匿名 driver frame（UIParent 顶层常驻，与面板可见性解耦——/fu hide 隐藏面板期间
     爆发到期 c.cooldowns 仍归零）每帧派生 c.cooldowns = (BurstTime > GetTime()) and 1 or 0，
@@ -34,12 +35,14 @@
     2026-08-18：整体重写——旧单按钮 50x64 四行文字（爆/群/模/药）UI 移除，改为 panel.lua
         蓝本面板（barLayer 计时条 + 双按钮行）；爆发状态模型升级为 Fuyutsui.BurstTime
         时间戳驱动，独立 driver frame 派生 c.cooldowns；/fu cd 命令与新模型适配
+    2026-09-04：第三枚计时器按钮（左击开始 / 右击关闭，超过 255 秒自动关闭）；面板加宽至 180；
+        与 /fu timer [on|off] 共用 StartTimer/StopTimer
 --]]
 
 local addon, ns = ... -- 保持 Fuyutsui 文件惯例，本文件不引用 addon/ns
 
 -- 固定 UI 像素尺寸常量（文件头集中定义，所有尺寸直接引用，不做缩放换算）
-local PANEL_WIDTH = 120   -- 面板总宽（固定 UI 像素）
+local PANEL_WIDTH = 180   -- 面板总宽（固定 UI 像素；三枚等宽按钮）
 local ROW_HEIGHT = 16     -- 单行高度：计时条行与按钮行各占一行
 local BAR_HEIGHT = 10     -- 计时条高度（严格垂直居中于 ROW_HEIGHT 行内）
 local SPACING = 2         -- 计时条与层边、两行之间、按钮之间的间距
@@ -117,22 +120,38 @@ function Fuyutsui:ShowQuickToggleButton()
     print("|cff00ff00[Fuyutsui]|r 快捷控件已显示。")
 end
 
--- 双按钮显示态的唯一刷新入口：按 GetCharConfig() 配置派生（命令改配置与按钮点击共用单一数据源）
+-- 计时器按钮显示态：未运行显示「计时器」，运行中显示已过秒数（与 StartTimer/StopTimer 共用）
+function Fuyutsui:RefreshTimerAppearance()
+    local f = self.quickToggleFrame
+    local label = f and f.timerButton and f.timerButton.label
+    if not label then return end
+    if self.IsTimerRunning and self:IsTimerRunning() then
+        label:SetText(tostring(self:GetTimerElapsed() or 0))
+        label:SetTextColor(StateYellow:GetRGB())
+    else
+        label:SetText("计时器")
+        label:SetTextColor(StateGreen:GetRGB())
+    end
+end
+
+-- 切换按钮显示态的唯一刷新入口：按 GetCharConfig() 配置派生（命令改配置与按钮点击共用单一数据源）
 function Fuyutsui:RefreshQuickToggleAppearance()
     local f = self.quickToggleFrame
     if not f or not f.buttons then return end
     local c = self:GetCharConfig()
-    if not c then return end
-    for _, button in ipairs(f.buttons) do
-        local def = button.def
-        if def.isOn(c) then
-            button.label:SetText(def.onText)
-            button.label:SetTextColor(def.onColor:GetRGB())
-        else
-            button.label:SetText(def.offText)
-            button.label:SetTextColor(def.offColor:GetRGB())
+    if c then
+        for _, button in ipairs(f.buttons) do
+            local def = button.def
+            if def.isOn(c) then
+                button.label:SetText(def.onText)
+                button.label:SetTextColor(def.onColor:GetRGB())
+            else
+                button.label:SetText(def.offText)
+                button.label:SetTextColor(def.offColor:GetRGB())
+            end
         end
     end
+    self:RefreshTimerAppearance()
 end
 
 local function SaveQuickButtonPosition(self)
@@ -284,14 +303,15 @@ function Fuyutsui:InitQuickToggleButton()
     end)
     -- 计时条层结束
 
-    -- 两个状态切换按钮：各占一半可用宽度，按钮间距 SPACING
+    -- 三个等宽按钮：自动/单体、不喝药/爆发药、计时器
     local buttonRow = CreateFrame("Frame", nil, f) -- 按钮行层：位于计时条层下方 SPACING 处，高 ROW_HEIGHT
     buttonRow:SetPoint("TOPLEFT", barLayer, "BOTTOMLEFT", 0, -SPACING)
     buttonRow:SetPoint("TOPRIGHT", barLayer, "BOTTOMRIGHT", 0, -SPACING)
     buttonRow:SetHeight(ROW_HEIGHT)
 
     local contentWidth = PANEL_WIDTH - 2 * PANEL_BORDER  -- 面板内缩边框后的内容区宽度
-    local buttonWidth = (contentWidth - SPACING) / 2 -- 单个按钮宽：扣除按钮间距后，两按钮各占一半
+    local buttonCount = 3
+    local buttonWidth = (contentWidth - (buttonCount - 1) * SPACING) / buttonCount
 
     -- 字体：从 GameFontHighlightSmall 取字体文件/样式标志与阴影，只取一次供所有按钮使用
     local fontFile, _, fontFlags = GameFontHighlightSmall:GetFont()                    -- 字体文件路径与样式标志（居中位丢弃）
@@ -322,7 +342,7 @@ function Fuyutsui:InitQuickToggleButton()
     }
 
     local prevButton -- 上一枚创建的按钮：用于把后续按钮依次锚在其右侧
-    local buttons = {} -- 两按钮数组（aoe/potion 顺序），RefreshQuickToggleAppearance 逐项刷新显示态
+    local buttons = {} -- 切换按钮数组（aoe/potion 顺序），RefreshQuickToggleAppearance 逐项刷新显示态
     for i, def in ipairs(buttonDefs) do
         local button = CreateFrame("Button", nil, buttonRow)
 
@@ -380,6 +400,69 @@ function Fuyutsui:InitQuickToggleButton()
         buttons[i] = button
     end
     f.buttons = buttons
+
+    -- 计时器按钮：默认「计时器」，左击开始 / 右击关闭，运行中显示已过秒数
+    local timerButton = CreateFrame("Button", nil, buttonRow)
+
+    local timerBg = timerButton:CreateTexture(nil, "BACKGROUND")
+    timerBg:SetAllPoints()
+    timerBg:SetColorTexture(ButtonBorder:GetRGB())
+
+    local timerArt = timerButton:CreateTexture(nil, "ARTWORK")
+    timerArt:SetPoint("TOPLEFT", timerButton, "TOPLEFT", BUTTON_BORDER, -BUTTON_BORDER)
+    timerArt:SetPoint("BOTTOMRIGHT", timerButton, "BOTTOMRIGHT", -BUTTON_BORDER, BUTTON_BORDER)
+    timerArt:SetColorTexture(ButtonMouseUp:GetRGB())
+
+    local timerLabel = timerButton:CreateFontString(nil, "OVERLAY")
+    timerLabel:SetFont(fontFile or "Fonts\\FRIZQT__.TTF", FONT_SIZE, fontFlags)
+    timerLabel:SetShadowColor(shadowR, shadowG, shadowB, shadowA)
+    timerLabel:SetShadowOffset(shadowOffX, shadowOffY)
+    timerLabel:SetJustifyH("CENTER")
+    timerLabel:SetJustifyV("MIDDLE")
+    timerLabel:SetPoint("CENTER")
+
+    local function ShowTimerTooltip()
+        GameTooltip:SetOwner(timerButton, "ANCHOR_RIGHT", SPACING, 0)
+        GameTooltip:SetFrameStrata("TOOLTIP")
+        GameTooltip:SetFrameLevel(1000)
+        GameTooltip:SetText("计时器", 0, 1, 0.6, 1, true)
+        GameTooltip:AddLine("左键：开始计时", 0.8, 0.8, 0.8, true)
+        GameTooltip:AddLine("右键：关闭计时器", 0.8, 0.8, 0.8, true)
+        GameTooltip:Show()
+    end
+
+    timerButton:SetScript("OnEnter", function()
+        timerBg:SetColorTexture(ButtonHighlight:GetRGB())
+        ShowTimerTooltip()
+    end)
+    timerButton:SetScript("OnLeave", function()
+        timerBg:SetColorTexture(ButtonBorder:GetRGB())
+        GameTooltip:Hide()
+    end)
+    timerButton:SetScript("OnMouseDown", function()
+        timerArt:SetColorTexture(ButtonMouseDown:GetRGB())
+    end)
+    timerButton:SetScript("OnMouseUp", function()
+        timerArt:SetColorTexture(ButtonMouseUp:GetRGB())
+    end)
+
+    timerButton:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+    timerButton:SetScript("OnClick", function(_, mouseButton)
+        if mouseButton == "LeftButton" then
+            if Fuyutsui.StartTimer then Fuyutsui:StartTimer() end
+        elseif mouseButton == "RightButton" then
+            if Fuyutsui.StopTimer then Fuyutsui:StopTimer() end
+        end
+    end)
+
+    timerButton:SetSize(buttonWidth, ROW_HEIGHT)
+    if prevButton then
+        timerButton:SetPoint("TOPLEFT", prevButton, "TOPRIGHT", SPACING, 0)
+    else
+        timerButton:SetPoint("TOPLEFT", buttonRow, "TOPLEFT", 0, 0)
+    end
+    timerButton.label = timerLabel
+    f.timerButton = timerButton
     -- 按钮行结束
 
     self.quickToggleFrame = f

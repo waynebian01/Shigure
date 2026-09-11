@@ -9,9 +9,9 @@
     <AssemblyName>Shigure</AssemblyName>
     <RootNamespace>Shigure</RootNamespace>
     <Company>Arasaka Corporation</Company>
-    <Version>1.2.1.22</Version>
-    <AssemblyVersion>1.2.1.22</AssemblyVersion>
-    <FileVersion>1.2.1.22</FileVersion>
+    <Version>1.2.1.24</Version>
+    <AssemblyVersion>1.2.1.24</AssemblyVersion>
+    <FileVersion>1.2.1.24</FileVersion>
     <ApplicationIcon>Assets\arasaka-icon.ico</ApplicationIcon>
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
   </PropertyGroup>
@@ -41,6 +41,17 @@
 
   <ItemGroup>
     <PackageReference Include="Svg" Version="3.4.8" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="tests\**\*.cs" />
+    <EmbeddedResource Remove="tests\**\*" />
+    <None Remove="tests\**\*" />
+    <!-- artifacts\ 是测试项目构建时的中间/输出目录（.gitignore 已忽略）；
+         其中的 AssemblyInfo.cs 会被默认通配符吸入主项目，导致特性重复(CS0579)。 -->
+    <Compile Remove="artifacts\**\*.cs" />
+    <EmbeddedResource Remove="artifacts\**\*" />
+    <None Remove="artifacts\**\*" />
   </ItemGroup>
 
 </Project>

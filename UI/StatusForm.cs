@@ -2199,15 +2199,12 @@ public sealed class StatusForm : Form
                 continue;
             }
 
+            // 同一光环会以 光环N / 名称 / auras.{id}.value 三种键暴露给条件求值, 页面只展示名称那份。
             var summary = string.Join("  ", data
-                .Where(pair => pair.Key is not "存在" && !pair.Key.StartsWith("光环", StringComparison.Ordinal))
+                .Where(pair => pair.Key is not "存在"
+                    && !pair.Key.StartsWith("光环", StringComparison.Ordinal)
+                    && !SpellFieldKey.TryParseAuraMember(pair.Key, out _, out _))
                 .Select(pair => $"{pair.Key}: {UiTheme.FormatValue(pair.Value)}"));
-            var auraValues = data.Where(pair => pair.Key.StartsWith("光环", StringComparison.Ordinal));
-            var auraSummary = string.Join("  ", auraValues.Select(pair => $"{pair.Key}: {UiTheme.FormatValue(pair.Value)}"));
-            if (!string.IsNullOrWhiteSpace(auraSummary))
-            {
-                summary = string.IsNullOrWhiteSpace(summary) ? auraSummary : summary + "  " + auraSummary;
-            }
 
             items.Add(new ListViewItem([$"nameplate{slot}", summary]));
         }

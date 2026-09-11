@@ -147,8 +147,8 @@ public static class UnitSelector
     }
 
     /// <summary>
-    /// 解析敌人数量字段为整数: 统计姓名板中生命值 &gt; 0 且满足全部已启用筛选(生命值 / 光环 / 距离 / 战斗)的敌人。
-    /// 姓名板未配置生命值时该字段恒为 0, 结果也恒为 0。
+    /// 解析敌人数量字段为整数: 统计姓名板中距离 &gt; 0 且满足全部已启用筛选(生命值 / 光环 / 距离 / 战斗)的敌人。
+    /// 姓名板未配置距离时该字段恒为 0, 结果也恒为 0。
     /// </summary>
     public static int Resolve(ModuleEnemyCountField count, GameState state)
     {
@@ -169,29 +169,27 @@ public static class UnitSelector
                 continue;
             }
 
-            // 默认基线: 只统计存在且生命值 > 0 的敌人。
+            // 默认基线: 只统计存在且距离 > 0 的敌人。
             if (GetField(data, "存在") is bool present && !present)
             {
                 continue;
             }
 
-            if (!TryInt(GetField(data, "生命值"), out var health) || health <= 0)
+            if (!TryInt(GetField(data, "距离"), out var range) || range <= 0)
             {
                 continue;
             }
 
-            if (!MatchesThreshold(count.HealthFilter, health, healthThreshold))
+            if (count.HealthFilter != EnemyThresholdFilterKind.None
+                && (!TryInt(GetField(data, "生命值"), out var health)
+                    || !MatchesThreshold(count.HealthFilter, health, healthThreshold)))
             {
                 continue;
             }
 
-            if (count.RangeFilter != EnemyThresholdFilterKind.None)
+            if (!MatchesThreshold(count.RangeFilter, range, rangeThreshold))
             {
-                if (!TryInt(GetField(data, "距离"), out var range)
-                    || !MatchesThreshold(count.RangeFilter, range, rangeThreshold))
-                {
-                    continue;
-                }
+                continue;
             }
 
             if (!MatchesAuraFilter(data, count.AuraFilter, auras))

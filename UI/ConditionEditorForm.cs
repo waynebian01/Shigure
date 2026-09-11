@@ -164,6 +164,8 @@ public sealed class ConditionEditorForm : Form
     ];
 
     private readonly IReadOnlyList<ConditionField> _fields;
+    // 「值」侧可直接引用的动态数值字段(动态单位的数量/生命值、动态数值), 与手动数字二选一。
+    private readonly IReadOnlyList<ConditionField> _valueReferenceFields;
     private readonly IReadOnlyList<ConditionSpell> _spells;
     private readonly IReadOnlyList<ConditionItem> _items;
     private readonly Func<IReadOnlyList<ConditionField>>? _conditionFieldsProvider;
@@ -206,6 +208,11 @@ public sealed class ConditionEditorForm : Form
     {
         // 保存独立快照，避免父级字段集合后续刷新时影响当前弹窗；子弹窗则通过 provider 取得最新目录。
         _fields = fields.ToArray();
+        _valueReferenceFields = _fields
+            .Where(field => field.Type == ConditionFieldType.Int
+                && field.Category is ConditionFieldCategory.DynamicValue
+                    or ConditionFieldCategory.DynamicUnit)
+            .ToArray();
         _spells = (spells ?? []).ToArray();
         _items = (items ?? []).ToArray();
         _conditionFieldsProvider = conditionFieldsProvider;
@@ -710,6 +717,17 @@ public sealed class ConditionEditorForm : Form
         }
 
         if (e.ColumnIndex == _conditionsGrid.Columns[ValueColumn]!.Index
+            && cell is ReferenceValueCell
+            && _valueReferenceFields.FirstOrDefault(field => string.Equals(
+                field.Name,
+                e.Value?.ToString()?.Trim(),
+                StringComparison.OrdinalIgnoreCase)) is { } reference)
+        {
+            cell.ToolTipText = $"引用动态数值: {reference.DisplayName}";
+            return;
+        }
+
+        if (e.ColumnIndex == _conditionsGrid.Columns[ValueColumn]!.Index
             && IsCastOrChannelTimeField(SelectedField(_conditionsGrid.Rows[e.RowIndex]))
             && decimal.TryParse(
                 e.Value?.ToString(),
@@ -754,14 +772,21 @@ public sealed class ConditionEditorForm : Form
         }
 
         var cell = _conditionsGrid.Rows[e.RowIndex].Cells[e.ColumnIndex];
-        if (cell is BossValueCell)
+        if (cell is BossValueCell or ReferenceValueCell)
         {
             var buttonBounds = UiTheme.GetDropDownButtonBounds(
                 _conditionsGrid,
                 new Rectangle(0, 0, cell.Size.Width, cell.Size.Height));
             if (buttonBounds.Contains(e.X, e.Y))
             {
-                ShowBossNumberDropDown(e.RowIndex, e.ColumnIndex);
+                if (cell is BossValueCell)
+                {
+                    ShowBossNumberDropDown(e.RowIndex, e.ColumnIndex);
+                }
+                else
+                {
+                    ShowValueReferenceDropDown(e.RowIndex, e.ColumnIndex);
+                }
             }
             else if (!cell.ReadOnly)
             {
@@ -796,6 +821,15 @@ public sealed class ConditionEditorForm : Form
             e.Handled = true;
             e.SuppressKeyPress = true;
             ShowBossNumberDropDown(bossCell.RowIndex, bossCell.ColumnIndex);
+            return;
+        }
+
+        if (_conditionsGrid.CurrentCell is ReferenceValueCell referenceCell
+            && (e.KeyCode == Keys.F4 || e.KeyCode == Keys.Down && e.Alt))
+        {
+            e.Handled = true;
+            e.SuppressKeyPress = true;
+            ShowValueReferenceDropDown(referenceCell.RowIndex, referenceCell.ColumnIndex);
             return;
         }
 
@@ -979,7 +1013,7 @@ public sealed class ConditionEditorForm : Form
 
 
         var cell = _conditionsGrid.Rows[e.RowIndex].Cells[e.ColumnIndex];
-        if (cell is BossValueCell)
+        if (cell is BossValueCell or ReferenceValueCell)
         {
             UiTheme.PaintDataGridViewComboBoxCell(_conditionsGrid, e, showButton: true);
             return;
@@ -1519,7 +1553,82 @@ public sealed class ConditionEditorForm : Form
             text = "0";
         }
 
-        row.Cells[ValueColumn] = new DataGridViewTextBoxCell { Value = text };
+        row.Cells[ValueColumn] = SupportsValueReference(row, field)
+            ? new ReferenceValueCell { Value = text }
+            : new DataGridViewTextBoxCell { Value = text };
+    }
+
+    // 数值字段的值既可手填数字, 也可引用动态数值字段; in/not in 是字面量列表, 不参与。
+    private bool SupportsValueReference(DataGridViewRow row, FieldItem? field)
+    {
+        return _valueReferenceFields.Count > 0
+            && field is not null
+            && (field.IsCustom || field.Type == ConditionFieldType.Int)
+            && !IsRuleSettingField(field)
+            && !ConditionExpression.IsInOperator(row.Cells[OperatorColumn].Value?.ToString());
+    }
+
+    private void ShowValueReferenceDropDown(int rowIndex, int columnIndex)
+    {
+        CloseConditionComboDropDown();
+        _conditionsGrid.EndEdit();
+        if (rowIndex < 0 || rowIndex >= _conditionsGrid.Rows.Count
+            || _conditionsGrid.Rows[rowIndex].Cells[columnIndex] is not ReferenceValueCell cell)
+        {
+            return;
+        }
+
+        _conditionsGrid.CurrentCell = cell;
+        var currentValue = cell.Value?.ToString()?.Trim() ?? string.Empty;
+        // 首项回到手动数字: 当前填的是数字就保留, 填的是引用名则回落到 0。
+        var manualValue = currentValue.Length > 0 && TryParseIntegerText(currentValue, out var number)
+            ? number.ToString("0", CultureInfo.InvariantCulture)
+            : "0";
+        var options = new List<UiDropDownOption>
+        {
+            new(manualValue, "手动输入数字", LeadingText: manualValue)
+        };
+        options.AddRange(_valueReferenceFields.Select(field =>
+            new UiDropDownOption(field.Name, field.DisplayName)));
+
+        var cellBounds = _conditionsGrid.GetCellDisplayRectangle(columnIndex, rowIndex, cutOverflow: true);
+        ToolStripDropDown? dropDown = null;
+        dropDown = UiDropDownPopup.Show(
+            _conditionsGrid,
+            cellBounds,
+            options,
+            currentValue,
+            selected =>
+            {
+                var value = selected.Value?.ToString() ?? string.Empty;
+                cell.Value = value;
+                _conditionsGrid.InvalidateCell(cell);
+                UpdatePreview();
+                if (string.Equals(value, manualValue, StringComparison.Ordinal))
+                {
+                    BeginInvoke(() => BeginEditValueCell(cell));
+                }
+            },
+            preferredWidth: 300,
+            closed: () =>
+            {
+                if (ReferenceEquals(_conditionComboDropDown, dropDown))
+                {
+                    _conditionComboDropDown = null;
+                }
+            });
+        _conditionComboDropDown = dropDown;
+    }
+
+    private void BeginEditValueCell(DataGridViewCell cell)
+    {
+        if (IsDisposed || Disposing || cell.DataGridView is null || cell.ReadOnly)
+        {
+            return;
+        }
+
+        _conditionsGrid.CurrentCell = cell;
+        _conditionsGrid.BeginEdit(selectAll: true);
     }
 
     private void ConfigureSpellValueCell(DataGridViewRow row, string? rawValue, bool preserveRaw)
@@ -1987,4 +2096,7 @@ public sealed class ConditionEditorForm : Form
     }
 
     private sealed class BossValueCell : DataGridViewTextBoxCell;
+
+    // 值列: 可手填数字, 也可从动态数值字段中选一个作为引用。
+    private sealed class ReferenceValueCell : DataGridViewTextBoxCell;
 }

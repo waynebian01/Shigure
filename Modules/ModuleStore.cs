@@ -1585,7 +1585,8 @@ public static class ModuleConditionEvaluator
             return true;
         }
         var op = comparison.Groups["op"].Value;
-        var right = ParseLiteral(comparison.Groups["value"].Value.Trim());
+        var rawRight = comparison.Groups["value"].Value.Trim();
+        var right = ParseLiteral(rawRight);
         if (SpellIdConditionFields.Contains(comparisonField))
         {
             if (op is not ("==" or "!="))
@@ -1622,8 +1623,46 @@ public static class ModuleConditionEvaluator
 
             right = localItemIndex;
         }
+        else if (TryResolveValueReference(state, left, rawRight, right, failedSpells, insertItems, out var referenced))
+        {
+            right = referenced;
+        }
 
         return TryCompare(left, op, right, out matched, out error);
+    }
+
+    // 比较式右侧允许引用另一个数值字段(如动态单位的数量), 让 "无痛敌人 <= 有效敌人数量" 这类字段间比较可用。
+    // 仅当右侧是未加引号、也未被解析成数字/布尔/空的裸名称, 且能解析出数值时才替换; 否则保持原有字面量语义。
+    private static bool TryResolveValueReference(
+        GameState state,
+        object? left,
+        string rawValue,
+        object? literal,
+        IReadOnlyDictionary<int, long>? failedSpells,
+        IReadOnlyDictionary<int, long>? insertItems,
+        out object? value)
+    {
+        value = null;
+        // 左侧不是数值时(字符串状态、未解析字段等)保持原样, 右侧继续按字面量比较。
+        if (left is null or bool
+            || !TryToDouble(left, out _)
+            || literal is not string name
+            || name.Length == 0
+            || rawValue.StartsWith('"')
+            || rawValue.StartsWith('\''))
+        {
+            return false;
+        }
+
+        var resolved = ResolveValue(state, name, failedSpells, insertItems);
+        // 布尔量除外: 右侧写状态名时仍按原来的字符串比较处理。
+        if (resolved is null or bool || !TryToDouble(resolved, out _))
+        {
+            return false;
+        }
+
+        value = resolved;
+        return true;
     }
 
     private static bool IsStructuredSpellReference(string fieldName)

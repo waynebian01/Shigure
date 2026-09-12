@@ -144,6 +144,10 @@ public sealed class UnitEditorForm : Form
     private Panel _enemyCombatFilterRow = null!;
     private Panel _enemyAuraRow = null!;
     private Panel _enemyAurasRow = null!;
+    private UiCardPanel _enemyHealthSection = null!;
+    private UiCardPanel _enemyAuraSection = null!;
+    private UiCardPanel _enemyRangeSection = null!;
+    private UiCardPanel _enemyCombatSection = null!;
     private Panel _thresholdModeRow = null!;
     private Panel _thresholdRow = null!;
     private Label _thresholdLabel = null!;
@@ -470,18 +474,10 @@ public sealed class UnitEditorForm : Form
 
         _paramPanel.Controls.AddRange([_thresholdModeRow, _thresholdRow, _thresholdFieldRow, _lowestHealthAuraFilterRow, _lowestHealthRoleFilterRow, _roleRow, _reverseRow, _auraRow, _aurasRow, _auraCountRow, _dispelRow]);
         _paramPanel.Controls.AddRange([
-            _enemyHealthFilterRow,
-            _enemyHealthThreshold.ModeRow,
-            _enemyHealthThreshold.ValueRow,
-            _enemyHealthThreshold.FieldRow,
-            _enemyAuraFilterRow,
-            _enemyAuraRow,
-            _enemyAurasRow,
-            _enemyRangeFilterRow,
-            _enemyRangeThreshold.ModeRow,
-            _enemyRangeThreshold.ValueRow,
-            _enemyRangeThreshold.FieldRow,
-            _enemyCombatFilterRow
+            _enemyHealthSection,
+            _enemyAuraSection,
+            _enemyRangeSection,
+            _enemyCombatSection
         ]);
     }
 
@@ -544,6 +540,75 @@ public sealed class UnitEditorForm : Form
         _enemyCombatFilterRow = BuildLabeledRow("战斗筛选", _enemyCombatFilterBox);
         _enemyAuraRow = BuildLabeledRow("光环", _enemyAuraBox);
         _enemyAurasRow = BuildLabeledRow("光环 (可多选)", _enemyAurasBox, 116);
+
+        _enemyHealthSection = BuildFilterSection(
+            "生命值",
+            _enemyHealthFilterRow,
+            _enemyHealthThreshold.ModeRow,
+            _enemyHealthThreshold.ValueRow,
+            _enemyHealthThreshold.FieldRow);
+        _enemyAuraSection = BuildFilterSection(
+            "光环",
+            _enemyAuraFilterRow,
+            _enemyAuraRow,
+            _enemyAurasRow);
+        _enemyRangeSection = BuildFilterSection(
+            "距离",
+            _enemyRangeFilterRow,
+            _enemyRangeThreshold.ModeRow,
+            _enemyRangeThreshold.ValueRow,
+            _enemyRangeThreshold.FieldRow);
+        _enemyCombatSection = BuildFilterSection("战斗", _enemyCombatFilterRow);
+    }
+
+    private static UiCardPanel BuildFilterSection(string title, params Control[] rows)
+    {
+        var section = new UiCardPanel
+        {
+            Width = RowWidth + 8,
+            AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink,
+            Padding = new Padding(4, 4, 4, 6),
+            Margin = new Padding(0, 3, 0, 7),
+            ColumnCount = 1,
+            RowCount = 2
+        };
+        section.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        section.RowStyles.Add(new RowStyle(SizeType.Absolute, 26));
+        section.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+
+        var titleLabel = new Label
+        {
+            Dock = DockStyle.Fill,
+            AutoEllipsis = true,
+            ForeColor = UiTheme.Text,
+            Text = title,
+            TextAlign = ContentAlignment.MiddleLeft,
+            Padding = new Padding(4, 0, 0, 0),
+            Font = new Font("Microsoft YaHei UI", 9F, FontStyle.Bold, GraphicsUnit.Point),
+            Margin = new Padding(0)
+        };
+
+        var body = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink,
+            BackColor = Color.Transparent,
+            FlowDirection = FlowDirection.TopDown,
+            WrapContents = false,
+            Margin = new Padding(0),
+            Padding = new Padding(0)
+        };
+
+        foreach (var row in rows)
+        {
+            body.Controls.Add(row);
+        }
+
+        section.Controls.Add(titleLabel, 0, 0);
+        section.Controls.Add(body, 0, 1);
+        return section;
     }
 
     private void InitializeThresholdGroup(ThresholdGroup group, string valueLabel, int defaultValue)
@@ -815,6 +880,10 @@ public sealed class UnitEditorForm : Form
         var rangeFilter = SelectedEnemyRangeFilter() != EnemyThresholdFilterKind.None;
         var auraFilter = SelectedEnemyAuraFilter();
 
+        _enemyHealthSection.Visible = true;
+        _enemyAuraSection.Visible = true;
+        _enemyRangeSection.Visible = true;
+        _enemyCombatSection.Visible = true;
         _enemyHealthFilterRow.Visible = true;
         _enemyAuraFilterRow.Visible = true;
         _enemyRangeFilterRow.Visible = true;
@@ -827,6 +896,10 @@ public sealed class UnitEditorForm : Form
 
     private void SetEnemyRowsVisible(bool visible)
     {
+        _enemyHealthSection.Visible = visible;
+        _enemyAuraSection.Visible = visible;
+        _enemyRangeSection.Visible = visible;
+        _enemyCombatSection.Visible = visible;
         _enemyHealthFilterRow.Visible = visible;
         _enemyAuraFilterRow.Visible = visible;
         _enemyRangeFilterRow.Visible = visible;

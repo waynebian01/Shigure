@@ -1073,6 +1073,9 @@ internal static class UiTheme
         grid.AllowUserToResizeRows = false;
         grid.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
         grid.ShowCellToolTips = true;
+        // 常规表格使用整行选中以便编辑/重排；禁用内置整行复制，改由下方处理器只复制当前单元格。
+        grid.ClipboardCopyMode = DataGridViewClipboardCopyMode.Disable;
+        grid.KeyDown += OnDataGridViewKeyDown;
 
         void ApplyMetrics()
         {
@@ -1101,6 +1104,25 @@ internal static class UiTheme
 
             grid.Rows[e.RowIndex].Cells[e.ColumnIndex].ToolTipText = e.Value.ToString();
         };
+    }
+
+    private static void OnDataGridViewKeyDown(object? sender, KeyEventArgs e)
+    {
+        if (sender is not DataGridView grid
+            || !e.Control
+            || e.KeyCode != Keys.C
+            || e.Alt
+            || e.Shift
+            || grid.CurrentCell is not { } cell
+            || cell.OwningRow is null
+            || cell.OwningRow.IsNewRow)
+        {
+            return;
+        }
+
+        Clipboard.SetText(cell.FormattedValue?.ToString() ?? string.Empty);
+        e.Handled = true;
+        e.SuppressKeyPress = true;
     }
 
     // 避免 WinForms 按系统主题绘制高亮白色方块，统一成深色圆角按钮和青色箭头。

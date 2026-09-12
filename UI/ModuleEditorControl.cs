@@ -1374,6 +1374,19 @@ public sealed class ModuleEditorControl : UserControl
             return null;
         }
 
+        // 模块规则中的技能名来自当前职业 keymap；若与物品同名，优先使用职业技能列表的 spellId。
+        if (_currentClassSpellIdsByName.TryGetValue(normalized, out var spellIds))
+        {
+            foreach (var spellId in spellIds)
+            {
+                var icon = SpellIconCatalog.Get(spellId);
+                if (icon is not null)
+                {
+                    return icon;
+                }
+            }
+        }
+
         if (_currentSpecItemIdsByName.TryGetValue(normalized, out var itemIds))
         {
             foreach (var itemId in itemIds)
@@ -1399,18 +1412,6 @@ public sealed class ModuleEditorControl : UserControl
         if (officialItemIcon is not null)
         {
             return officialItemIcon;
-        }
-
-        if (_currentClassSpellIdsByName.TryGetValue(normalized, out var spellIds))
-        {
-            foreach (var spellId in spellIds)
-            {
-                var icon = SpellIconCatalog.Get(spellId);
-                if (icon is not null)
-                {
-                    return icon;
-                }
-            }
         }
 
         return SpellIconCatalog.Get(normalized);

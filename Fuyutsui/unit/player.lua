@@ -83,7 +83,7 @@ function Fuyutsui:RefreshPlayerCombatDuration()
         if combatTime < 0 then
             combatTime = 0
         end
-        state.combatTime = math.min(1, combatTime / 255)
+        state.combatTime = math.min(255, math.ceil(combatTime)) / 255
         local elapsedSec = math.floor(combatTime)
         state.combatTimerSec = ((elapsedSec % 60) + 1) / 255
         state.combatTimerMin = math.min(255, math.floor(elapsedSec / 60)) / 255
@@ -270,6 +270,7 @@ end
 function Fuyutsui:RefreshPlayerPetState()
     self:RefreshUnitTypeState("pet")
     self:RefreshUnitHealthState("pet")
+    self:RefreshUnitPowerState("pet")
 end
 
 function Fuyutsui:RefreshPlayerMountedState()

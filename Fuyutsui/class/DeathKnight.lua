@@ -77,17 +77,17 @@ Fuyutsui.ClassBlocks = {
                 { name = "白骨之盾", spellId = 195181, maxApps = 12, },
                 { name = "符文刃舞", spellId = 81256, },
                 { name = "吸血鬼之血", spellId = 55233, },
-                { name = "冰封之韧", spellId = 48792, },
+                { name = "冰封之韧", spellIds = { 58130, 58837, 292152, 48792 }, },
                 { name = "枯萎凋零", spellId = 188290, },
-                { name = "破灭", spellId = 441416, },
-                { name = "午夜舞步", spellId = 1264407, },
-                { name = "沸点", spellId = 1265968, },
-                { name = "赤色天灾", spellId = 81136, },
+                { name = "破灭", spellIds = { 441426, 447954, 441424, 441378, 441416 }, },
+                { name = "午夜舞步", spellIds = { 1264351, 1264405, 1264568, 1264407 }, },
+                { name = "沸点", spellIds = { 1265790, 1265982, 1265968 }, },
+                { name = "赤色天灾", spellIds = { 81141, 81136 }, },
                 { name = "鲜血护盾", spellId = 77535, maxApps = 50, },
-                { name = "鲜血禁闭", spellId = 273947, maxApps = 5, },
+                { name = "鲜血禁闭", spellIds = { 273946, 273947 }, maxApps = 5, },
                 { name = "鲜血女王的精华", spellId = 433925, maxApps = 7, },
-                { name = "埋骨之所", spellId = 219786, },
-                { name = "巫妖之躯", spellId = 49039, },
+                { name = "埋骨之所", spellIds = { 219788, 219786 }, },
+                { name = "巫妖之躯", spellIds = { 50397, 287081, 49039 }, },
                 { name = "血债", spellId = 1310372, maxApps = 10, },
             },
             target = {
@@ -120,6 +120,11 @@ Fuyutsui.ClassBlocks = {
             [123456] = { name = "物品名称", isEquipped = true },
             [241288] = { name = "鲁莽药水", isEquipped = false },
             [241308] = { name = "圣光潜力", isEquipped = false },
+        },
+        nameplates = {
+            auras = {
+                { name = "血之疫病", spellId = 55078, },
+            },
         },
     },
     [2] = {
@@ -202,7 +207,6 @@ Fuyutsui.ClassBlocks = {
                 { name = "冷酷严冬", spellId = 1233152, },
                 { name = "强效打击", spellId = 1269300, },
                 { name = "冰霜之柱", spellIds = { 281214, 316849 }, },
-                { name = "冰龙吐息", spellId = 12449658, },
                 { name = "冰龙吐息", spellIds = { 152279, 155166, 155168, 174552, 175546, 175796, 1226969, 1231316 }, },
                 { name = "断裂之痕", spellIds = { 377101, 377098, 377103 }, maxApps = 5, },
                 { name = "掠霜使者", spellIds = { 1230301, 1230306, 1233351, 1233609 }, },
@@ -228,6 +232,8 @@ Fuyutsui.ClassBlocks = {
         },
         items = {
             [241288] = { name = "鲁莽药水", isEquipped = false },
+        },
+        nameplates = {
         },
     },
     [3] = {
@@ -301,6 +307,32 @@ Fuyutsui.ClassBlocks = {
                 "引导",
                 "引导可打断",
             },
+            ["宠物"] = {
+                "存在",
+            },
+        },
+        auras = {
+            player = {
+                { name = "次级食尸鬼", spellId = 1254252, maxApps = 8, },
+                { name = "脓疮毒镰", spellIds = { 458128, 455397, 459238, 1235165, 1241077 }, },
+                { name = "脓疮毒镰可用", spellId = 458123, },
+                { name = "末日突降", spellIds = { 81340, 49530, 461135 }, },
+                { name = "瘟疫降临", spellIds = { 1271975, 1242616, 1271967, 1271974 }, },
+                { name = "割魂索命", spellIds = { 377514, 1242654, 1235261, 1244519 }, },
+                { name = "食尸鬼狂热", spellIds = { 377588, 377587, 377589 }, },
+                { name = "萨莱因之赐", spellIds = { 434153, 434152 }, },
+                { name = "暗影之爪", spellIds = { 1241569, 207311, 1241567 }, },
+                { name = "禁断知识", spellIds = { 1242223, 1242158 }, },
+                { name = "脏腑之力", spellIds = { 434157, 434159, 461130, 1234532, 1237848 }, },
+                { name = "鲜血女王的精华", spellId = 433925, maxApps = 7, },
+                { name = "亡者指挥官", spellIds = { 390259, 390260, 390264 }, },
+            },
+            target = {
+                harmful = {
+                    { name = "恐惧瘟疫", spellId = 1240996, },
+                    { name = "恶性病变", spellId = 191587, },
+                },
+            },
         },
         spells = {
             { spellId = 49576, name = "死亡之握" },
@@ -314,10 +346,16 @@ Fuyutsui.ClassBlocks = {
             { spellId = 343294, name = "灵魂收割" },
             { spellId = 43265, name = "枯萎凋零", charge = true, maxCharge = 2 },
             { spellId = 55090, name = "天灾打击", castCount = 20 },
+            { spellId = 47528, name = "心灵冰冻" },
         },
         items = {
             [241288] = { name = "鲁莽药水", isEquipped = false },
             [241304] = { name = "治疗药水", isEquipped = false },
+        },
+        nameplates = {
+            auras = {
+                { name = "恶性病变", spellId = 191587, },
+            },
         },
     },
 }
@@ -413,13 +451,7 @@ Fuyutsui.spellsList = {
     [368970]  = { index = 253, name = "扫尾" },
     [357214]  = { index = 254, name = "翼击" },
     [436344]  = { index = 255, name = "艾泽里特涌动" },
-    [1230301] = { index = 28, name = "掠霜使者" },
     [1271967] = { index = 43, name = "瘟疫降临" },
-    [1230306] = { index = 43, name = "掠霜使者" },
-    [1233351] = { index = 44, name = "掠霜使者" },
-    [1233609] = { index = 45, name = "掠霜使者" },
-    [1233619] = { index = 46, name = "掠霜使者" },
-    [1233621] = { index = 47, name = "掠霜使者" },
 }
 
 Fuyutsui.itemsList = {

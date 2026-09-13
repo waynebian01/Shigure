@@ -156,7 +156,7 @@ local dispelAbilities = {
 
 local offensiveDispelAbilities = {
     [1] = { 528, 370, 378773 },
-    [9] = { 2908 },
+    [9] = { 2908, 450432 },
 }
 
 local function HasLearnedAnySpell(spellIDs)

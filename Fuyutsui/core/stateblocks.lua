@@ -18,6 +18,14 @@ local function GetHealthChannel(cache)
     return value or 0
 end
 
+local function GetUnitPowerChannel(unit)
+    if not UnitExists(unit) then return 0 end
+    local powerPercent = UnitPowerPercent(unit, nil, nil, Fuyutsui.curve100)
+    ---@diagnostic disable-next-line: param-type-mismatch
+    local _, _, b = powerPercent:GetRGB()
+    return b
+end
+
 local ColorValue0 = CreateColor(0, 0, 0, 1)
 local ColorValue1 = CreateColor(0, 0, 1 / 255, 1)
 
@@ -240,6 +248,7 @@ local stateBlockGetters = {
         ["类型"] = function() return target.type or 0 end,
         ["驱散类型"] = function() return 0 end,
         ["生命值"] = function() return GetHealthChannel(target) end,
+        ["能量值"] = function() return GetUnitPowerChannel("target") end,
         ["距离"] = function()
             if not target.maxRange then return nil end
             return target.maxRange / 255
@@ -254,6 +263,7 @@ local stateBlockGetters = {
         ["类型"] = function() return focus.type or 0 end,
         ["驱散类型"] = function() return 0 end,
         ["生命值"] = function() return GetHealthChannel(focus) end,
+        ["能量值"] = function() return GetUnitPowerChannel("focus") end,
         ["距离"] = function()
             if not focus.maxRange then return nil end
             return focus.maxRange / 255
@@ -268,6 +278,7 @@ local stateBlockGetters = {
         ["类型"] = function() return mouseover.type or 0 end,
         ["驱散类型"] = function() return 0 end,
         ["生命值"] = function() return GetHealthChannel(mouseover) end,
+        ["能量值"] = function() return GetUnitPowerChannel("mouseover") end,
         ["距离"] = function()
             if not mouseover.maxRange then return nil end
             return mouseover.maxRange / 255
@@ -281,6 +292,7 @@ local stateBlockGetters = {
     ["宠物"] = {
         ["存在"] = function() return pet.exists or 0 end,
         ["生命值"] = function() return GetHealthChannel(pet) end,
+        ["能量值"] = function() return GetUnitPowerChannel("pet") end,
         ["施法(倒计时)"] = function(self) return self:GetUnitCastPixel("pet", "cast") end,
         ["施法(正计时)"] = function(self) return self:GetUnitCastPixel("pet", "castElapsed") end,
         ["施法可打断"] = function(self) return self:GetUnitInterruptiblePixel("pet", "cast") end,
@@ -298,6 +310,7 @@ for index = 1, 5 do
         ["类型"] = function() return cache.type or 0 end,
         ["驱散类型"] = function() return 0 end,
         ["生命值"] = function() return GetHealthChannel(cache) end,
+        ["能量值"] = function() return GetUnitPowerChannel(unit) end,
         ["距离"] = function()
             if not cache.maxRange then return nil end
             return cache.maxRange / 255

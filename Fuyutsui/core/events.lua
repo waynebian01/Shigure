@@ -316,13 +316,21 @@ function Fuyutsui:UNIT_HEAL_PREDICTION(_, unit)
 end
 
 function Fuyutsui:UNIT_POWER_UPDATE(_, unit, powerType)
-    if unit ~= "player" then return end
-    self:UpdatePlayerPower(powerType)
-    if powerType == "COMBO_POINTS" then
-        C_Timer.After(0, function()
-            self:RefreshChargedComboPoints()
-        end)
+    if unit == "player" then
+        self:UpdatePlayerPower(powerType)
+        if powerType == "COMBO_POINTS" then
+            C_Timer.After(0, function()
+                self:RefreshChargedComboPoints()
+            end)
+        end
+        return
     end
+
+    self:RefreshUnitPowerState(unit)
+end
+
+function Fuyutsui:UNIT_MAXPOWER(_, unit)
+    self:RefreshUnitPowerState(unit)
 end
 
 function Fuyutsui:UNIT_POWER_POINT_CHARGE(_, unit)

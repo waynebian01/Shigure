@@ -222,11 +222,18 @@ function Fuyutsui:RefreshUnitHealthState(unit)
     self:UpdateStateBlock(category, "生命值")
 end
 
+function Fuyutsui:RefreshUnitPowerState(unit)
+    local category = unitZHMap[unit]
+    if not category then return end
+    self:UpdateStateBlock(category, "能量值")
+end
+
 function Fuyutsui:RefreshUnitState(unit)
     self:ResetTrackedUnitCastState(unit)
     self:RefreshUnitReactionState(unit)
     self:RefreshUnitDeathState(unit)
     self:RefreshUnitHealthState(unit)
+    self:RefreshUnitPowerState(unit)
 end
 
 -- 目标兼容包装
@@ -248,6 +255,10 @@ end
 
 function Fuyutsui:RefreshTargetHealthState()
     self:RefreshUnitHealthState("target")
+end
+
+function Fuyutsui:RefreshTargetPowerState()
+    self:RefreshUnitPowerState("target")
 end
 
 function Fuyutsui:RefreshTargetState()
@@ -275,6 +286,10 @@ function Fuyutsui:RefreshFocusHealthState()
     self:RefreshUnitHealthState("focus")
 end
 
+function Fuyutsui:RefreshFocusPowerState()
+    self:RefreshUnitPowerState("focus")
+end
+
 function Fuyutsui:RefreshFocusState()
     self:RefreshUnitState("focus")
 end
@@ -298,6 +313,10 @@ end
 
 function Fuyutsui:RefreshMouseoverHealthState()
     self:RefreshUnitHealthState("mouseover")
+end
+
+function Fuyutsui:RefreshMouseoverPowerState()
+    self:RefreshUnitPowerState("mouseover")
 end
 
 function Fuyutsui:RefreshMouseoverState()

@@ -270,6 +270,7 @@ end
 function Fuyutsui:RefreshPlayerPetState()
     self:RefreshUnitTypeState("pet")
     self:RefreshUnitHealthState("pet")
+    self:RefreshUnitPowerState("pet")
 end
 
 function Fuyutsui:RefreshPlayerMountedState()

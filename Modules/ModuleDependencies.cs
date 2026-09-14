@@ -3,7 +3,7 @@ namespace Shigure;
 /// <summary>随模块分发的职业配置与宏快照。</summary>
 public sealed class ModuleDependencySnapshot
 {
-    public const int CurrentSchemaVersion = 2;
+    public const int CurrentSchemaVersion = 3;
 
     public int SchemaVersion { get; set; } = CurrentSchemaVersion;
     public int ClassId { get; set; }
@@ -112,7 +112,6 @@ public sealed class ModuleSpellSnapshot
 public sealed class ModuleSpellListEntrySnapshot
 {
     public long SpellId { get; set; }
-    public int Index { get; set; }
     public string Name { get; set; } = string.Empty;
 
     public ModuleSpellListEntrySnapshot Clone() => (ModuleSpellListEntrySnapshot)MemberwiseClone();

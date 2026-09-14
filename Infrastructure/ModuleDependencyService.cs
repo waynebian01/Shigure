@@ -3,6 +3,8 @@ namespace Shigure;
 
 internal sealed class ModuleDependencyService
 {
+    private const int MaxSpellsListIndex = 255;
+
     private static readonly string[] StateCategories =
     [
         ClassStateCatalog.CategoryState,
@@ -85,7 +87,6 @@ internal sealed class ModuleDependencyService
                 SpellsList = configDocument.SpellsList.Select(entry => new ModuleSpellListEntrySnapshot
                 {
                     SpellId = entry.SpellId,
-                    Index = entry.Index,
                     Name = entry.Name
                 }).ToList(),
                 ItemsList = configDocument.ItemsList.Select(entry => new ModuleItemListEntrySnapshot
@@ -997,6 +998,10 @@ internal sealed class ModuleDependencyService
         MergeCounters counters)
     {
         CompactLocalSpellsList(local, counters);
+        var usedIndices = local
+            .Where(item => item.Index is >= 1 and <= MaxSpellsListIndex)
+            .Select(item => item.Index)
+            .ToHashSet();
 
         foreach (var entry in incoming)
         {
@@ -1008,13 +1013,22 @@ internal sealed class ModuleDependencyService
                 continue;
             }
 
+            var index = Enumerable.Range(1, MaxSpellsListIndex)
+                .FirstOrDefault(candidate => !usedIndices.Contains(candidate));
+            if (index == 0)
+            {
+                throw new InvalidOperationException(
+                    $"技能列表索引 1–{MaxSpellsListIndex} 已全部使用，无法导入 spellId {entry.SpellId}。");
+            }
+
             local.Add(new ClassBlocksStore.SpellsListEntry
             {
                 SpellId = entry.SpellId,
-                Index = entry.Index,
+                Index = index,
                 Name = entry.Name,
                 OriginalSpellId = 0
             });
+            usedIndices.Add(index);
             counters.ConfigAdded++;
         }
     }

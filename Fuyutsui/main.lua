@@ -31,7 +31,6 @@ function Fuyutsui:RefreshPlayerState()
     self:RefreshBossUnitStates()
     self:RefreshEnemyCounts()
     self:RebuildGroupRoster()
-    self:RefreshAllPlayerPowers()
     C_Timer.After(1, function()
         self:RefreshPlayerConfigStateBlocks()
         self.isInitialized = true

@@ -38,6 +38,18 @@ public sealed class StateBuilder : IRuntimeStateBuilder
             }
         }
 
+        if (result.TryGetValue("战斗计时(分)", out var combatMinutes)
+            && result.TryGetValue("战斗计时(秒)", out var combatSeconds)
+            && combatMinutes is int minutes
+            && combatSeconds is int seconds)
+        {
+            var totalSeconds = (long)minutes * 60 + seconds;
+            result[ShigureConditionFields.TotalCombatTimeSeconds] = (int)Math.Clamp(
+                totalSeconds,
+                int.MinValue,
+                int.MaxValue);
+        }
+
         if (itemIds.Count > 0)
         {
             result["$itemIds"] = itemIds;

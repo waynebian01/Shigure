@@ -165,6 +165,7 @@ end
 
 function Fuyutsui:RefreshAllPlayerPowers()
     state.power = {}
+    self.powerCurves = {}
     for powerType in pairs(EnumPowerType) do
         self:CreatePowerCurve(powerType)
         self:UpdatePlayerPower(powerType)

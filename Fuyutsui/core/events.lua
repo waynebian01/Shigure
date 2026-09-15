@@ -4,6 +4,56 @@ local isSec = issecretvalue
 
 local state = Fuyutsui.state
 local nameplate = Fuyutsui.nameplate
+local playerCountdownTicker = nil
+local playerCountdownRemaining = 0
+
+local function SyncPlayerCountdownPixel()
+    state.playerCountdown = math.min(255, playerCountdownRemaining) / 255
+    Fuyutsui:UpdateStateBlock("特殊", "倒数")
+end
+
+function Fuyutsui:StopPlayerCountdown()
+    if playerCountdownTicker then
+        playerCountdownTicker:Cancel()
+        playerCountdownTicker = nil
+    end
+    playerCountdownRemaining = 0
+    SyncPlayerCountdownPixel()
+end
+
+function Fuyutsui:StartPlayerCountdown(timeRemaining)
+    if playerCountdownTicker then
+        playerCountdownTicker:Cancel()
+        playerCountdownTicker = nil
+    end
+
+    if isSec(timeRemaining) then
+        playerCountdownRemaining = 0
+        SyncPlayerCountdownPixel()
+        return
+    end
+
+    playerCountdownRemaining = math.max(0, math.ceil(tonumber(timeRemaining) or 0))
+    SyncPlayerCountdownPixel()
+    if playerCountdownRemaining == 0 then return end
+
+    playerCountdownTicker = C_Timer.NewTicker(1, function()
+        playerCountdownRemaining = math.max(0, playerCountdownRemaining - 1)
+        SyncPlayerCountdownPixel()
+        if playerCountdownRemaining == 0 then
+            playerCountdownTicker:Cancel()
+            playerCountdownTicker = nil
+        end
+    end)
+end
+
+function Fuyutsui:START_PLAYER_COUNTDOWN(_, initiatedBy, timeRemaining, totalTime, informChat, initiatedByName)
+    self:StartPlayerCountdown(timeRemaining)
+end
+
+function Fuyutsui:CANCEL_PLAYER_COUNTDOWN(_, initiatedBy, informChat, initiatedByName)
+    self:StopPlayerCountdown()
+end
 
 function Fuyutsui:RefreshZoneState()
     state.mapID = C_Map.GetBestMapForUnit("player") or 0

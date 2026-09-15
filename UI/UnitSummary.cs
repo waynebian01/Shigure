@@ -197,6 +197,7 @@ internal static class UnitSummary
                 EnemyAuraFilterKind.WithoutAnyAura => $"不带任一[{auras}]",
                 _ => string.Empty
             });
+
         }
 
         return parts.Count == 0 ? "队友人数" : $"{string.Join("且", parts)} 的队友人数";
@@ -225,6 +226,13 @@ internal static class UnitSummary
                 EnemyAuraFilterKind.WithoutAnyAura => $"不带任一[{auras}]",
                 _ => string.Empty
             });
+
+            if (count.AuraFilter == EnemyAuraFilterKind.WithAura
+                && count.AuraDurationFilter is AuraDurationFilterKind.Above or AuraDurationFilterKind.Below)
+            {
+                var op = count.AuraDurationFilter == AuraDurationFilterKind.Above ? ">" : "<";
+                parts.Add($"[{aura}]光环时间{op}{count.AuraDurationThreshold.GetValueOrDefault()}秒");
+            }
         }
 
         if (count.RangeFilter != EnemyThresholdFilterKind.None)
@@ -265,6 +273,7 @@ internal static class UnitSummary
                 EnemyAuraFilterKind.WithoutAnyAura => $"不带任一[{auras}]",
                 _ => string.Empty
             });
+
         }
 
         if (field.Target == AverageHealthTargetKind.Allies && field.RoleFilter is not null)

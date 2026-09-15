@@ -216,6 +216,7 @@ local stateBlockGetters = {
     ["特殊"] = {
         ["计时器"] = function() return state.timer or 0 end,
         ["循环计时器"] = function() return state.loopTimer or 0 end,
+        ["倒数"] = function() return state.playerCountdown or 0 end,
         ["战斗计时(秒)"] = function() return state.combatTimerSec or 0 end,
         ["战斗计时(分)"] = function() return state.combatTimerMin or 0 end,
         ["酒池"] = function() return state.staggerPercent or 0 end,

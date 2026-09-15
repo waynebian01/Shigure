@@ -151,6 +151,8 @@ function Fuyutsui:OnEnable()
     self:RegisterEvent("UNIT_AURA")
     self:RegisterEvent("CINEMATIC_STOP")
     self:RegisterEvent("STOP_MOVIE")
+    self:RegisterEvent("START_PLAYER_COUNTDOWN")
+    self:RegisterEvent("CANCEL_PLAYER_COUNTDOWN")
     if self.StartFrameUpdates then
         self:StartFrameUpdates()
     end

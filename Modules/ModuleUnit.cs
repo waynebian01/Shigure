@@ -217,7 +217,7 @@ public enum AllyDispelFilterKind
     WithoutType
 }
 
-/// <summary>队友单位的光环持续时间筛选方式。</summary>
+/// <summary>光环持续时间筛选方式。</summary>
 public enum AuraDurationFilterKind
 {
     None,
@@ -246,6 +246,9 @@ public sealed class ModuleEnemyCountField
     public EnemyAuraFilterKind AuraFilter { get; set; } = EnemyAuraFilterKind.None;
     /// <summary>单光环筛选取 [0]; 任一/无任一筛选取整个列表。</summary>
     public List<long>? AuraSpellIds { get; set; }
+    /// <summary>仅在“有某一个光环”时生效，按该光环的剩余秒数筛选。</summary>
+    public AuraDurationFilterKind AuraDurationFilter { get; set; } = AuraDurationFilterKind.None;
+    public int? AuraDurationThreshold { get; set; }
 
     public EnemyThresholdFilterKind RangeFilter { get; set; } = EnemyThresholdFilterKind.None;
     public int? RangeThreshold { get; set; }
@@ -263,6 +266,8 @@ public sealed class ModuleEnemyCountField
             HealthThresholdField = HealthThresholdField,
             AuraFilter = AuraFilter,
             AuraSpellIds = AuraSpellIds is null ? null : new List<long>(AuraSpellIds),
+            AuraDurationFilter = AuraDurationFilter,
+            AuraDurationThreshold = AuraDurationThreshold,
             RangeFilter = RangeFilter,
             RangeThreshold = RangeThreshold,
             RangeThresholdField = RangeThresholdField,

@@ -122,6 +122,13 @@ public sealed class UnitEditorForm : Form
         new("持续最短", AuraDurationFilterKind.Shortest)
     ];
 
+    private static readonly AuraDurationFilterItem[] AuraTimeFilterOptions =
+    [
+        new("不筛选光环时间", AuraDurationFilterKind.None),
+        new("光环时间大于", AuraDurationFilterKind.Above),
+        new("光环时间小于", AuraDurationFilterKind.Below)
+    ];
+
     private static readonly EnemyCombatFilterItem[] EnemyCombatFilterOptions =
     [
         new("不筛选战斗", EnemyCombatFilterKind.None),
@@ -173,6 +180,8 @@ public sealed class UnitEditorForm : Form
     private readonly UiDropDown _enemyHealthFilterBox = new();
     private readonly UiDropDown _healthTargetBox = new();
     private readonly UiDropDown _enemyAuraFilterBox = new();
+    private readonly UiDropDown _enemyAuraTimeFilterBox = new();
+    private readonly NumericUpDown _enemyAuraTimeBox = new();
     private readonly UiDropDown _enemyRangeFilterBox = new();
     private readonly UiDropDown _enemyCombatFilterBox = new();
     private readonly UiDropDown _enemyAuraBox = new();
@@ -194,6 +203,8 @@ public sealed class UnitEditorForm : Form
     private Panel _enemyHealthFilterRow = null!;
     private Panel _healthTargetRow = null!;
     private Panel _enemyAuraFilterRow = null!;
+    private Panel _enemyAuraTimeFilterRow = null!;
+    private Panel _enemyAuraTimeRow = null!;
     private Panel _enemyRangeFilterRow = null!;
     private Panel _enemyCombatFilterRow = null!;
     private Panel _enemyAuraRow = null!;
@@ -671,6 +682,18 @@ public sealed class UnitEditorForm : Form
             }
         };
 
+        UiTheme.StyleComboBox(_enemyAuraTimeFilterBox);
+        _enemyAuraTimeFilterBox.DropDownWidth = 220;
+        _enemyAuraTimeFilterBox.Items.AddRange(AuraTimeFilterOptions.Cast<object>().ToArray());
+        _enemyAuraTimeFilterBox.SelectedIndex = 0;
+        _enemyAuraTimeFilterBox.SelectedIndexChanged += (_, _) => UpdateParamVisibility();
+
+        _enemyAuraTimeBox.Minimum = 0;
+        _enemyAuraTimeBox.Maximum = 254;
+        _enemyAuraTimeBox.Value = 1;
+        UiTheme.StyleNumericUpDown(_enemyAuraTimeBox);
+        _enemyAuraTimeBox.ValueChanged += (_, _) => UpdatePreview();
+
         UiTheme.StyleComboBox(_auraDurationFilterBox);
         _auraDurationFilterBox.DropDownWidth = 220;
         _auraDurationFilterBox.Items.AddRange(AuraDurationFilterOptions.Cast<object>().ToArray());
@@ -687,6 +710,8 @@ public sealed class UnitEditorForm : Form
         _enemyHealthFilterRow = BuildLabeledRow("生命值筛选", _enemyHealthFilterBox);
         _healthTargetRow = BuildLabeledRow("目标选择", _healthTargetBox);
         _enemyAuraFilterRow = BuildLabeledRow("光环筛选", _enemyAuraFilterBox);
+        _enemyAuraTimeFilterRow = BuildLabeledRow("时间筛选", _enemyAuraTimeFilterBox);
+        _enemyAuraTimeRow = BuildLabeledRow("时间值 (秒)", _enemyAuraTimeBox);
         _enemyRangeFilterRow = BuildLabeledRow("距离筛选", _enemyRangeFilterBox);
         _enemyCombatFilterRow = BuildLabeledRow("战斗筛选", _enemyCombatFilterBox);
         _enemyAuraRow = BuildLabeledRow("光环", _enemyAuraBox);
@@ -707,6 +732,8 @@ public sealed class UnitEditorForm : Form
             _enemyAuraFilterRow,
             _enemyAuraRow,
             _enemyAurasRow,
+            _enemyAuraTimeFilterRow,
+            _enemyAuraTimeRow,
             _auraOrderRow);
         _auraDurationSection = BuildFilterSection(
             "光环时长",
@@ -1205,6 +1232,8 @@ public sealed class UnitEditorForm : Form
         var healthFilter = SelectedEnemyHealthFilter() != EnemyThresholdFilterKind.None;
         var rangeFilter = SelectedEnemyRangeFilter() != EnemyThresholdFilterKind.None;
         var auraFilter = SelectedEnemyAuraFilter();
+        var auraTimeFilter = SelectedAuraTimeFilter();
+        var allowAuraTime = IsEnemyCountCategory && auraFilter == EnemyAuraFilterKind.WithAura;
 
         _enemyHealthSection.Visible = true;
         _enemyAuraSection.Visible = true;
@@ -1220,6 +1249,9 @@ public sealed class UnitEditorForm : Form
         SetThresholdGroupVisible(_enemyRangeThreshold, enemyTarget && rangeFilter);
         _enemyAuraRow.Visible = auraFilter is EnemyAuraFilterKind.WithAura or EnemyAuraFilterKind.WithoutAura;
         _enemyAurasRow.Visible = auraFilter is EnemyAuraFilterKind.WithAnyAura or EnemyAuraFilterKind.WithoutAnyAura;
+        _enemyAuraTimeFilterRow.Visible = allowAuraTime;
+        _enemyAuraTimeRow.Visible = allowAuraTime
+            && auraTimeFilter is AuraDurationFilterKind.Above or AuraDurationFilterKind.Below;
         _auraDurationFilterRow.Visible = allowAuraDuration;
         _auraDurationAuraRow.Visible = allowAuraDuration;
     }
@@ -1252,6 +1284,8 @@ public sealed class UnitEditorForm : Form
         _enemyCombatFilterRow.Visible = visible;
         _enemyAuraRow.Visible = visible;
         _enemyAurasRow.Visible = visible;
+        _enemyAuraTimeFilterRow.Visible = visible;
+        _enemyAuraTimeRow.Visible = visible;
         _auraDurationFilterRow.Visible = visible;
         _auraDurationAuraRow.Visible = visible;
         SetThresholdGroupVisible(_enemyHealthThreshold, visible);
@@ -1347,6 +1381,9 @@ public sealed class UnitEditorForm : Form
             Name = name,
             HealthFilter = SelectedEnemyHealthFilter(),
             AuraFilter = SelectedEnemyAuraFilter(),
+            AuraDurationFilter = SelectedEnemyAuraFilter() == EnemyAuraFilterKind.WithAura
+                ? SelectedAuraTimeFilter()
+                : AuraDurationFilterKind.None,
             RangeFilter = SelectedEnemyRangeFilter(),
             CombatFilter = SelectedEnemyCombatFilter()
         };
@@ -1371,6 +1408,10 @@ public sealed class UnitEditorForm : Form
             EnemyAuraFilterKind.WithAnyAura or EnemyAuraFilterKind.WithoutAnyAura => CheckedAuras(_enemyAurasBox),
             _ => null
         };
+        count.AuraDurationThreshold = count.AuraDurationFilter is AuraDurationFilterKind.Above
+            or AuraDurationFilterKind.Below
+                ? (int)_enemyAuraTimeBox.Value
+                : null;
 
         return count;
     }
@@ -1594,12 +1635,17 @@ public sealed class UnitEditorForm : Form
             SelectEnemyThresholdFilter(_enemyHealthFilterBox, enemyCount.HealthFilter);
             SelectEnemyThresholdFilter(_enemyRangeFilterBox, enemyCount.RangeFilter);
             SelectEnemyAuraFilter(enemyCount.AuraFilter);
+            SelectAuraTimeFilter(enemyCount.AuraDurationFilter);
             SelectEnemyCombatFilter(enemyCount.CombatFilter);
             SeedThresholdGroup(_enemyHealthThreshold, enemyCount.HealthFilter, enemyCount.HealthThreshold, enemyCount.HealthThresholdField);
             SeedThresholdGroup(_enemyRangeThreshold, enemyCount.RangeFilter, enemyCount.RangeThreshold, enemyCount.RangeThresholdField);
             var auraSpellIds = enemyCount.AuraSpellIds ?? [];
             SelectAura(_enemyAuraBox, auraSpellIds.Count > 0 ? auraSpellIds[0] : null);
             CheckAuras(_enemyAurasBox, auraSpellIds);
+            if (enemyCount.AuraDurationThreshold is { } auraDurationThreshold)
+            {
+                _enemyAuraTimeBox.Value = Clamp(auraDurationThreshold, _enemyAuraTimeBox);
+            }
             return;
         }
 
@@ -1768,6 +1814,14 @@ public sealed class UnitEditorForm : Form
                     enemyCount.RangeThreshold,
                     enemyCount.RangeThresholdField))
             {
+                return;
+            }
+
+            if (enemyCount.AuraDurationFilter is AuraDurationFilterKind.Above or AuraDurationFilterKind.Below
+                && (enemyCount.AuraFilter != EnemyAuraFilterKind.WithAura
+                    || enemyCount.AuraDurationThreshold is null))
+            {
+                MessageBox.Show("请选择一个光环并输入光环时间。", "Shigure", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -2275,6 +2329,10 @@ public sealed class UnitEditorForm : Form
         => (_auraDurationFilterBox.SelectedItem as AuraDurationFilterItem)?.Kind
             ?? AuraDurationFilterKind.None;
 
+    private AuraDurationFilterKind SelectedAuraTimeFilter()
+        => (_enemyAuraTimeFilterBox.SelectedItem as AuraDurationFilterItem)?.Kind
+            ?? AuraDurationFilterKind.None;
+
     private bool HasUnitValueTarget()
         => IsUnitCategory
             && (SelectedHealthTarget() == UnitSelectorKind.LowestHealth
@@ -2503,6 +2561,20 @@ public sealed class UnitEditorForm : Form
         }
 
         _auraDurationFilterBox.SelectedIndex = 0;
+    }
+
+    private void SelectAuraTimeFilter(AuraDurationFilterKind kind)
+    {
+        for (var i = 0; i < _enemyAuraTimeFilterBox.Items.Count; i++)
+        {
+            if (_enemyAuraTimeFilterBox.Items[i] is AuraDurationFilterItem item && item.Kind == kind)
+            {
+                _enemyAuraTimeFilterBox.SelectedIndex = i;
+                return;
+            }
+        }
+
+        _enemyAuraTimeFilterBox.SelectedIndex = 0;
     }
 
     private void SelectUnitTargetControls(ModuleUnit unit)

@@ -368,6 +368,15 @@ public static class UnitSelector
             return 0;
         }
 
+        var durationAuraSpellId = count.AuraFilter == EnemyAuraFilterKind.WithAura && auras.Count > 0
+            ? auras[0]
+            : (long?)null;
+        if (count.AuraDurationFilter is AuraDurationFilterKind.Above or AuraDurationFilterKind.Below
+            && durationAuraSpellId is null)
+        {
+            return 0;
+        }
+
         var result = 0;
         for (var i = 1; i <= 20; i++)
         {
@@ -400,6 +409,15 @@ public static class UnitSelector
             }
 
             if (!MatchesAuraFilter(data, count.AuraFilter, auras))
+            {
+                continue;
+            }
+
+            if (!MatchesAuraDuration(
+                    data,
+                    count.AuraDurationFilter,
+                    durationAuraSpellId,
+                    count.AuraDurationThreshold.GetValueOrDefault()))
             {
                 continue;
             }

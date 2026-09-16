@@ -1105,11 +1105,6 @@
       "type": "int",
       "category": "配置开关"
     },
-    "小爆发开关": {
-      "step": 23,
-      "type": "int",
-      "category": "配置开关"
-    },
     "AOE开关": {
       "step": 24,
       "type": "int",

@@ -94,7 +94,7 @@ public sealed class StateBuilder : IRuntimeStateBuilder
         const int auraStart = NameplateStateLayout.AuraStartOffset;
         var auraConfigs = JsonHelpers.Get(config, "auras") as JsonArray;
 
-        for (var slot = 1; slot <= 20; slot++)
+        for (var slot = 1; slot <= NameplateStateLayout.SlotCount; slot++)
         {
             var firstPixel = start + (slot - 1) * fieldCount;
             var present = start > 0 && fieldCount > 0 && rowData.ContainsKey(firstPixel);

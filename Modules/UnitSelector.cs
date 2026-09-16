@@ -378,7 +378,7 @@ public static class UnitSelector
         }
 
         var result = 0;
-        for (var i = 1; i <= 20; i++)
+        for (var i = 1; i <= NameplateStateLayout.SlotCount; i++)
         {
             if (!nameplates.TryGetValue(i.ToString(), out var data))
             {
@@ -484,7 +484,7 @@ public static class UnitSelector
 
         long total = 0;
         var count = 0;
-        for (var i = 1; i <= 20; i++)
+        for (var i = 1; i <= NameplateStateLayout.SlotCount; i++)
         {
             if (!state.Nameplates.TryGetValue(i.ToString(), out var data)
                 || GetField(data, "存在") is bool present && !present

@@ -259,7 +259,7 @@ public sealed class ConditionFieldCatalog
         if (JsonHelpers.Get(stateConfig, "nameplates") is JsonObject nameplates)
         {
             var auraCount = (JsonHelpers.Get(nameplates, "auras") as JsonArray)?.Count ?? 0;
-            for (var slot = 1; slot <= 20; slot++)
+            for (var slot = 1; slot <= NameplateStateLayout.SlotCount; slot++)
             {
                 var prefix = $"nameplates.{slot}.";
                 AddField(fields, seen, prefix + "存在", $"姓名板{slot} / 存在", ConditionFieldType.Bool, ConditionFieldCategory.State, "姓名板");

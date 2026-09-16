@@ -1634,7 +1634,7 @@ public sealed class ClassConfigEditorControl : UserControl
             }
         }
         _nameplatePixelSummary.Text = _nameplateEnabledBox.Checked
-            ? $"20 × {fields} = {20 * fields} 格"
+            ? $"{NameplateStateLayout.SlotCount} × {fields} = {NameplateStateLayout.SlotCount * fields} 格"
             : "未启用";
     }
 

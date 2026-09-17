@@ -41,6 +41,7 @@ function Fuyutsui:InitializeSpecializationState()
     self:UpdateItemCooldown()
     self:UpdateStateBlock("状态", "职业")
     self:UpdateStateBlock("状态", "专精")
+    self:UpdateStateBlock("特殊", "倒数")
 end
 
 function Fuyutsui:RebuildSpecializationState()
@@ -59,6 +60,7 @@ function Fuyutsui:RebuildSpecializationState()
     self:UpdateStateBlock("状态", "专精")
     self:UpdateStateBlock("特殊", "计时器")
     self:UpdateStateBlock("特殊", "循环计时器")
+    self:UpdateStateBlock("特殊", "倒数")
     self:UpdateStateBlock("特殊", "战斗计时(秒)")
     self:UpdateStateBlock("特殊", "战斗计时(分)")
 end
@@ -165,6 +167,7 @@ end
 
 function Fuyutsui:RefreshAllPlayerPowers()
     state.power = {}
+    self.powerCurves = {}
     for powerType in pairs(EnumPowerType) do
         self:CreatePowerCurve(powerType)
         self:UpdatePlayerPower(powerType)

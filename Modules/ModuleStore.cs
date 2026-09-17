@@ -23,6 +23,7 @@ public sealed class ModuleDefinition
     public List<ModuleUnit> Units { get; set; } = new();
     public List<ModuleCountField> Counts { get; set; } = new();
     public List<ModuleEnemyCountField> EnemyCounts { get; set; } = new();
+    public List<ModuleAverageHealthField> AverageHealthFields { get; set; } = new();
     public List<ModuleValueAdjustment> ValueAdjustments { get; set; } = new();
     public List<ModuleRule> Rules { get; set; } = new();
     public ModuleDependencySnapshot? Dependencies { get; set; }
@@ -46,6 +47,7 @@ public sealed class ModuleDefinition
             Units = Units.Select(unit => unit.Clone()).ToList(),
             Counts = Counts.Select(count => count.Clone()).ToList(),
             EnemyCounts = EnemyCounts.Select(count => count.Clone()).ToList(),
+            AverageHealthFields = AverageHealthFields.Select(field => field.Clone()).ToList(),
             ValueAdjustments = ValueAdjustments.Select(adjustment => adjustment.Clone()).ToList(),
             Rules = Rules.Select(rule => rule.Clone()).ToList(),
             Dependencies = Dependencies?.Clone()
@@ -672,22 +674,35 @@ public sealed class ModuleStore
         module.Units ??= new List<ModuleUnit>();
         module.Counts ??= new List<ModuleCountField>();
         module.EnemyCounts ??= new List<ModuleEnemyCountField>();
+        module.AverageHealthFields ??= new List<ModuleAverageHealthField>();
         module.ValueAdjustments ??= new List<ModuleValueAdjustment>();
         module.Units.RemoveAll(unit => string.IsNullOrWhiteSpace(unit.Name));
         module.Counts.RemoveAll(count => string.IsNullOrWhiteSpace(count.Name));
         module.EnemyCounts.RemoveAll(count => string.IsNullOrWhiteSpace(count.Name));
+        module.AverageHealthFields.RemoveAll(field => string.IsNullOrWhiteSpace(field.Name));
         module.ValueAdjustments.RemoveAll(adjustment => string.IsNullOrWhiteSpace(adjustment.Field));
         foreach (var unit in module.Units)
         {
+            UpgradeLegacyUnitFilters(unit);
             unit.Name = unit.Name.Trim();
             unit.HealthName = string.IsNullOrWhiteSpace(unit.HealthName) ? null : unit.HealthName.Trim();
             unit.HealthThresholdField = string.IsNullOrWhiteSpace(unit.HealthThresholdField) ? null : unit.HealthThresholdField.Trim();
+            unit.HealingAbsorbThresholdField = string.IsNullOrWhiteSpace(unit.HealingAbsorbThresholdField)
+                ? null
+                : unit.HealingAbsorbThresholdField.Trim();
+            unit.AuraDurationThresholdField = string.IsNullOrWhiteSpace(unit.AuraDurationThresholdField)
+                ? null
+                : unit.AuraDurationThresholdField.Trim();
         }
 
         foreach (var count in module.Counts)
         {
+            UpgradeLegacyCountFilters(count);
             count.Name = count.Name.Trim();
             count.HealthThresholdField = string.IsNullOrWhiteSpace(count.HealthThresholdField) ? null : count.HealthThresholdField.Trim();
+            count.HealingAbsorbThresholdField = string.IsNullOrWhiteSpace(count.HealingAbsorbThresholdField)
+                ? null
+                : count.HealingAbsorbThresholdField.Trim();
         }
 
         foreach (var count in module.EnemyCounts)
@@ -695,6 +710,13 @@ public sealed class ModuleStore
             count.Name = count.Name.Trim();
             count.HealthThresholdField = string.IsNullOrWhiteSpace(count.HealthThresholdField) ? null : count.HealthThresholdField.Trim();
             count.RangeThresholdField = string.IsNullOrWhiteSpace(count.RangeThresholdField) ? null : count.RangeThresholdField.Trim();
+        }
+
+        foreach (var field in module.AverageHealthFields)
+        {
+            field.Name = field.Name.Trim();
+            field.HealthThresholdField = string.IsNullOrWhiteSpace(field.HealthThresholdField) ? null : field.HealthThresholdField.Trim();
+            field.RangeThresholdField = string.IsNullOrWhiteSpace(field.RangeThresholdField) ? null : field.RangeThresholdField.Trim();
         }
 
         foreach (var adjustment in module.ValueAdjustments)
@@ -760,6 +782,219 @@ public sealed class ModuleStore
             {
                 rule.SubConditions = null;
             }
+        }
+    }
+
+    private static void UpgradeLegacyCountFilters(ModuleCountField count)
+    {
+        if (count.FilterVersion == ModuleCountField.CurrentFilterVersion)
+        {
+            return;
+        }
+
+        count.HealthFilter = count.Kind is CountKind.UnitsBelowHealth
+            or CountKind.UnitsWithoutAuraBelowHealth
+            or CountKind.UnitsWithAuraBelowHealth
+                ? EnemyThresholdFilterKind.Below
+                : EnemyThresholdFilterKind.None;
+        count.PositiveHealthOnly = count.HealthFilter != EnemyThresholdFilterKind.None;
+        count.HealingAbsorbFilter = count.Kind is CountKind.UnitsAboveHealingAbsorb
+            or CountKind.UnitsWithoutAuraAboveHealingAbsorb
+            or CountKind.UnitsWithAuraAboveHealingAbsorb
+                ? EnemyThresholdFilterKind.Above
+                : EnemyThresholdFilterKind.None;
+        if (count.HealingAbsorbFilter != EnemyThresholdFilterKind.None)
+        {
+            count.HealingAbsorbThreshold = count.HealthThreshold;
+            count.HealingAbsorbThresholdField = count.HealthThresholdField;
+            count.HealthThreshold = null;
+            count.HealthThresholdField = null;
+        }
+
+        count.AuraFilter = count.Kind switch
+        {
+            CountKind.UnitsWithoutAuraBelowHealth or CountKind.UnitsWithoutAuraAboveHealingAbsorb
+                => EnemyAuraFilterKind.WithoutAura,
+            CountKind.UnitsWithAura or CountKind.UnitsWithAuraBelowHealth
+                or CountKind.UnitsWithAuraAboveHealingAbsorb
+                => EnemyAuraFilterKind.WithAura,
+            _ => EnemyAuraFilterKind.None
+        };
+        count.AuraSpellIds = count.AuraSpellId is { } auraSpellId ? [auraSpellId] : null;
+        count.FilterVersion = ModuleCountField.CurrentFilterVersion;
+    }
+
+    private static void UpgradeLegacyUnitFilters(ModuleUnit unit)
+    {
+        if (unit.FilterVersion == ModuleUnit.CurrentFilterVersion)
+        {
+            return;
+        }
+
+        if (unit.FilterVersion == 1)
+        {
+            if (unit.Kind is UnitSelectorKind.UnitWithAura or UnitSelectorKind.UnitWithAuraShortest)
+            {
+                unit.AuraDurationSpellId = unit.AuraSpellIds is { Count: > 0 }
+                    ? unit.AuraSpellIds[0]
+                    : null;
+                unit.AuraDurationFilter = unit.Kind == UnitSelectorKind.UnitWithAura
+                    ? AuraDurationFilterKind.Longest
+                    : AuraDurationFilterKind.Shortest;
+                unit.Kind = UnitSelectorKind.UnitWithRole;
+                unit.Reverse = false;
+            }
+            else if (unit.AuraDurationFilter != AuraDurationFilterKind.None)
+            {
+                unit.AuraDurationSpellId = unit.AuraSpellIds is { Count: > 0 }
+                    ? unit.AuraSpellIds[0]
+                    : null;
+            }
+
+            unit.FilterVersion = 2;
+        }
+
+        if (unit.FilterVersion == 2)
+        {
+            UpgradeUnitTargetSelectionV3(unit);
+            unit.FilterVersion = ModuleUnit.CurrentFilterVersion;
+            return;
+        }
+
+        var legacyKind = unit.Kind;
+        var lowestHealth = legacyKind is UnitSelectorKind.LowestHealth
+            or UnitSelectorKind.LowestHealthWithAnyAura
+            or UnitSelectorKind.LowestHealthWithoutAnyAura
+            or UnitSelectorKind.LowestHealthWithoutAura
+            or UnitSelectorKind.LowestHealthWithAura
+            or UnitSelectorKind.LowestHealthWithAuraCount;
+        var highestAbsorb = legacyKind is UnitSelectorKind.HighestHealingAbsorb
+            or UnitSelectorKind.HighestHealingAbsorbWithAnyAura
+            or UnitSelectorKind.HighestHealingAbsorbWithoutAnyAura
+            or UnitSelectorKind.HighestHealingAbsorbWithoutAura
+            or UnitSelectorKind.HighestHealingAbsorbWithAura
+            or UnitSelectorKind.HighestHealingAbsorbWithAuraCount;
+
+        unit.Kind = lowestHealth
+            ? UnitSelectorKind.LowestHealth
+            : highestAbsorb
+                ? UnitSelectorKind.HighestHealingAbsorb
+                : legacyKind switch
+                {
+                    UnitSelectorKind.UnitWithRoleWithoutAura => UnitSelectorKind.UnitWithRole,
+                    UnitSelectorKind.UnitWithDispelType => UnitSelectorKind.UnitWithRole,
+                    UnitSelectorKind.UnitWithAura or UnitSelectorKind.UnitWithAuraShortest
+                        => UnitSelectorKind.UnitWithRole,
+                    _ => legacyKind
+                };
+
+        unit.HealthFilter = lowestHealth
+            ? EnemyThresholdFilterKind.Below
+            : EnemyThresholdFilterKind.None;
+        if (lowestHealth && unit.HealthThreshold is null && string.IsNullOrWhiteSpace(unit.HealthThresholdField))
+        {
+            unit.HealthThreshold = 100;
+        }
+
+        unit.HealingAbsorbFilter = highestAbsorb
+            ? EnemyThresholdFilterKind.Above
+            : EnemyThresholdFilterKind.None;
+        if (highestAbsorb)
+        {
+            unit.HealingAbsorbThreshold = unit.HealthThreshold ?? 0;
+            unit.HealingAbsorbThresholdField = unit.HealthThresholdField;
+            unit.HealthThreshold = null;
+            unit.HealthThresholdField = null;
+        }
+
+        if (legacyKind is UnitSelectorKind.UnitWithRole or UnitSelectorKind.UnitWithRoleWithoutAura)
+        {
+            unit.RoleFilter = unit.Role is null ? null : UnitRoleFilterKind.Include;
+        }
+
+        unit.AuraFilter = legacyKind switch
+        {
+            UnitSelectorKind.LowestHealthWithAnyAura
+                or UnitSelectorKind.HighestHealingAbsorbWithAnyAura
+                => EnemyAuraFilterKind.WithAnyAura,
+            UnitSelectorKind.LowestHealthWithoutAnyAura
+                or UnitSelectorKind.HighestHealingAbsorbWithoutAnyAura
+                => EnemyAuraFilterKind.WithoutAnyAura,
+            UnitSelectorKind.LowestHealthWithoutAura
+                or UnitSelectorKind.UnitWithRoleWithoutAura
+                or UnitSelectorKind.HighestHealingAbsorbWithoutAura
+                => EnemyAuraFilterKind.WithoutAura,
+            UnitSelectorKind.LowestHealthWithAura
+                or UnitSelectorKind.LowestHealthWithAuraCount
+                or UnitSelectorKind.HighestHealingAbsorbWithAura
+                or UnitSelectorKind.HighestHealingAbsorbWithAuraCount
+                => EnemyAuraFilterKind.WithAura,
+            _ => EnemyAuraFilterKind.None
+        };
+
+        if (legacyKind is UnitSelectorKind.LowestHealthWithAuraCount
+            or UnitSelectorKind.HighestHealingAbsorbWithAuraCount)
+        {
+            unit.AuraDurationFilter = AuraDurationFilterKind.Equal;
+            unit.AuraDurationSpellId = unit.AuraSpellIds is { Count: > 0 }
+                ? unit.AuraSpellIds[0]
+                : null;
+            unit.AuraDurationThreshold = unit.AuraCount ?? 0;
+        }
+
+        if (legacyKind is UnitSelectorKind.UnitWithAura or UnitSelectorKind.UnitWithAuraShortest)
+        {
+            unit.AuraDurationFilter = legacyKind == UnitSelectorKind.UnitWithAura
+                ? AuraDurationFilterKind.Longest
+                : AuraDurationFilterKind.Shortest;
+            unit.AuraDurationSpellId = unit.AuraSpellIds is { Count: > 0 }
+                ? unit.AuraSpellIds[0]
+                : null;
+        }
+
+        if (legacyKind == UnitSelectorKind.UnitWithDispelType)
+        {
+            unit.DispelFilter = AllyDispelFilterKind.WithType;
+        }
+
+        UpgradeUnitTargetSelectionV3(unit);
+        unit.FilterVersion = ModuleUnit.CurrentFilterVersion;
+    }
+
+    private static void UpgradeUnitTargetSelectionV3(ModuleUnit unit)
+    {
+        if (unit.AuraDurationFilter is AuraDurationFilterKind.Longest or AuraDurationFilterKind.Shortest)
+        {
+            unit.Kind = UnitSelectorKind.UnitWithRole;
+            unit.Reverse = false;
+            return;
+        }
+
+        unit.Kind = unit.Kind switch
+        {
+            UnitSelectorKind.LowestHealthWithAnyAura
+                or UnitSelectorKind.LowestHealthWithoutAnyAura
+                or UnitSelectorKind.LowestHealthWithoutAura
+                or UnitSelectorKind.LowestHealthWithAura
+                or UnitSelectorKind.LowestHealthWithAuraCount
+                => UnitSelectorKind.LowestHealth,
+            UnitSelectorKind.HighestHealingAbsorbWithAnyAura
+                or UnitSelectorKind.HighestHealingAbsorbWithoutAnyAura
+                or UnitSelectorKind.HighestHealingAbsorbWithoutAura
+                or UnitSelectorKind.HighestHealingAbsorbWithAura
+                or UnitSelectorKind.HighestHealingAbsorbWithAuraCount
+                => UnitSelectorKind.HighestHealingAbsorb,
+            UnitSelectorKind.LowestHealth or UnitSelectorKind.HighestHealingAbsorb
+                => unit.Kind,
+            _ => UnitSelectorKind.UnitWithRole
+        };
+
+        if (unit.Kind == UnitSelectorKind.UnitWithRole
+            && unit.RoleFilter is null
+            && unit.DispelFilter == AllyDispelFilterKind.None
+            && unit.AuraFilter == EnemyAuraFilterKind.None)
+        {
+            unit.Reverse = false;
         }
     }
 
@@ -1105,6 +1340,14 @@ public static class ModuleLogic
             }
         }
 
+        foreach (var field in module.AverageHealthFields)
+        {
+            if (!string.IsNullOrWhiteSpace(field.Name))
+            {
+                counts[field.Name] = UnitSelector.Resolve(field, state);
+            }
+        }
+
         state.Values["$counts"] = counts;
     }
 
@@ -1173,6 +1416,16 @@ public static class ModuleLogic
             {
                 fields.Add(unit.HealthThresholdField.Trim());
             }
+
+            if (!string.IsNullOrWhiteSpace(unit.HealingAbsorbThresholdField))
+            {
+                fields.Add(unit.HealingAbsorbThresholdField.Trim());
+            }
+
+            if (!string.IsNullOrWhiteSpace(unit.AuraDurationThresholdField))
+            {
+                fields.Add(unit.AuraDurationThresholdField.Trim());
+            }
         }
 
         foreach (var count in module.Counts)
@@ -1180,6 +1433,11 @@ public static class ModuleLogic
             if (!string.IsNullOrWhiteSpace(count.HealthThresholdField))
             {
                 fields.Add(count.HealthThresholdField.Trim());
+            }
+
+            if (!string.IsNullOrWhiteSpace(count.HealingAbsorbThresholdField))
+            {
+                fields.Add(count.HealingAbsorbThresholdField.Trim());
             }
         }
 
@@ -1193,6 +1451,19 @@ public static class ModuleLogic
             if (!string.IsNullOrWhiteSpace(count.RangeThresholdField))
             {
                 fields.Add(count.RangeThresholdField.Trim());
+            }
+        }
+
+        foreach (var field in module.AverageHealthFields)
+        {
+            if (!string.IsNullOrWhiteSpace(field.HealthThresholdField))
+            {
+                fields.Add(field.HealthThresholdField.Trim());
+            }
+
+            if (!string.IsNullOrWhiteSpace(field.RangeThresholdField))
+            {
+                fields.Add(field.RangeThresholdField.Trim());
             }
         }
 

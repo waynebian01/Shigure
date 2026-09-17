@@ -6,6 +6,7 @@ namespace Shigure;
 /// </summary>
 internal static class NameplateStateLayout
 {
+    public const int SlotCount = 40;
     public const int HealthPercentOffset = 1;
     public const int RangeOffset = 2;
     public const int CombatOffset = 3;

@@ -285,7 +285,7 @@ function Fuyutsui:LoadPlayerBlocks(specIndex)
         blocks.nameplates.auraStart = blocks.nameplates.num + 1
         blocks.nameplates.num = blocks.nameplates.num + #blocks.nameplates.auras
         local maxPixels = self.MainPixelMaxCount or self.MainPixelCount
-        local nameplateEnd = index + 20 * blocks.nameplates.num
+        local nameplateEnd = index + self.NameplateSlotCount * blocks.nameplates.num
         if nameplateEnd - 1 > maxPixels then
             print("LoadPlayerBlocks: 姓名板像素超出主像素行 " .. maxPixels .. " 格上限，已停用姓名板")
             blocks.nameplates = nil

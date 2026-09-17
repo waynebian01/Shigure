@@ -403,7 +403,8 @@ Fuyutsui.spellsList = {
     [1263824] = { index = 40, name = "吞噬" },
     [383269]  = { index = 41, name = "灾殃坟茔" },
     [1242174] = { index = 42, name = "死灵缠绕" },
-
+    [1271967] = { index = 43, name = "瘟疫降临" },
+    
     -- 种族
     [384255]  = { index = 210, name = "切换天赋" },
     [200749]  = { index = 211, name = "切换专精" },
@@ -451,7 +452,7 @@ Fuyutsui.spellsList = {
     [368970]  = { index = 253, name = "扫尾" },
     [357214]  = { index = 254, name = "翼击" },
     [436344]  = { index = 255, name = "艾泽里特涌动" },
-    [1271967] = { index = 43, name = "瘟疫降临" },
+
 }
 
 Fuyutsui.itemsList = {

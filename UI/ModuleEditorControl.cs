@@ -59,6 +59,7 @@ public sealed class ModuleEditorControl : UserControl
     private readonly List<ModuleUnit> _units = new();
     private readonly List<ModuleCountField> _counts = new();
     private readonly List<ModuleEnemyCountField> _enemyCounts = new();
+    private readonly List<ModuleAverageHealthField> _averageHealthFields = new();
     private readonly List<ModuleValueAdjustment> _valueAdjustments = new();
     private readonly Dictionary<string, List<long>> _currentClassSpellIdsByName =
         new(StringComparer.Ordinal);
@@ -1805,6 +1806,14 @@ public sealed class ModuleEditorControl : UserControl
             }
         }
 
+        foreach (var field in _averageHealthFields)
+        {
+            if (!string.IsNullOrWhiteSpace(field.Name))
+            {
+                AddAdjustmentField(fields, seen, field.Name, $"平均血量: {field.Name}", ConditionFieldCategory.DynamicValue);
+            }
+        }
+
         // 公式结果和其它不属于状态/技能/光环/动态单位的命名目标都是动态数值。
         foreach (var fieldName in GetAdjustmentTargetFields())
         {
@@ -1897,6 +1906,10 @@ public sealed class ModuleEditorControl : UserControl
         {
             _enemyCounts.Add(enemyCount);
         }
+        else if (editor.ResultAverageHealth is { } averageHealth)
+        {
+            _averageHealthFields.Add(averageHealth);
+        }
 
         RefreshUnitsList();
         RefreshUnitDependentUi();
@@ -1914,7 +1927,8 @@ public sealed class ModuleEditorControl : UserControl
         var existingUnit = kind == UnitRowKind.Unit ? _units[index] : null;
         var existingCount = kind == UnitRowKind.Count ? _counts[index] : null;
         var existingEnemyCount = kind == UnitRowKind.EnemyCount ? _enemyCounts[index] : null;
-        var ownName = existingUnit?.Name ?? existingCount?.Name ?? existingEnemyCount?.Name;
+        var existingAverageHealth = kind == UnitRowKind.AverageHealth ? _averageHealthFields[index] : null;
+        var ownName = existingUnit?.Name ?? existingCount?.Name ?? existingEnemyCount?.Name ?? existingAverageHealth?.Name;
         var ownHealthName = existingUnit?.HealthName;
 
         using var editor = new UnitEditorForm(
@@ -1924,7 +1938,8 @@ public sealed class ModuleEditorControl : UserControl
             CollectTakenNames(ownName, ownHealthName),
             existingUnit,
             existingCount,
-            existingEnemyCount);
+            existingEnemyCount,
+            existingAverageHealth);
         if (editor.ShowDialog(FindForm()) != DialogResult.OK)
         {
             return;
@@ -1944,6 +1959,10 @@ public sealed class ModuleEditorControl : UserControl
         else if (editor.ResultEnemyCount is { } enemyCount)
         {
             _enemyCounts.Add(enemyCount);
+        }
+        else if (editor.ResultAverageHealth is { } averageHealth)
+        {
+            _averageHealthFields.Add(averageHealth);
         }
 
         RefreshUnitsList();
@@ -1979,10 +1998,13 @@ public sealed class ModuleEditorControl : UserControl
             case UnitRowKind.EnemyCount:
                 _enemyCounts.RemoveAt(index);
                 break;
+            case UnitRowKind.AverageHealth:
+                _averageHealthFields.RemoveAt(index);
+                break;
         }
     }
 
-    // ListView 行顺序: 先全部单位, 再全部数量, 最后全部敌人数量。把选中行映射回对应列表索引。
+    // ListView 行顺序: 队友单位、队友数量、敌人数量、平均血量。把选中行映射回对应列表索引。
     private (UnitRowKind Kind, int Index) GetSelectedUnitRef()
     {
         if (_unitsList.SelectedIndices.Count == 0)
@@ -2003,7 +2025,15 @@ public sealed class ModuleEditorControl : UserControl
         }
 
         var enemyIndex = countIndex - _counts.Count;
-        return enemyIndex < _enemyCounts.Count ? (UnitRowKind.EnemyCount, enemyIndex) : (UnitRowKind.None, -1);
+        if (enemyIndex < _enemyCounts.Count)
+        {
+            return (UnitRowKind.EnemyCount, enemyIndex);
+        }
+
+        var averageIndex = enemyIndex - _enemyCounts.Count;
+        return averageIndex < _averageHealthFields.Count
+            ? (UnitRowKind.AverageHealth, averageIndex)
+            : (UnitRowKind.None, -1);
     }
 
     private void RefreshUnitsList()
@@ -2019,8 +2049,11 @@ public sealed class ModuleEditorControl : UserControl
         {
             var name = string.IsNullOrWhiteSpace(unit.HealthName) ? unit.Name : $"{unit.Name} / {unit.HealthName}";
             var summary = UnitSummary.Describe(unit, ResolveGroupAuraName);
-            var item = new ListViewItem([name, "单位", summary]) { ToolTipText = $"{name}\n{summary}" };
-            var missing = (unit.AuraSpellIds ?? []).Where(id => !availableAuraIds.Contains(id)).ToArray();
+            var item = new ListViewItem([name, "队友单位", summary]) { ToolTipText = $"{name}\n{summary}" };
+            var referencedAuraIds = (unit.AuraSpellIds ?? [])
+                .Concat(unit.AuraDurationSpellId is { } durationAuraSpellId ? [durationAuraSpellId] : [])
+                .Distinct();
+            var missing = referencedAuraIds.Where(id => !availableAuraIds.Contains(id)).ToArray();
             if (unit.AuraNames is { Count: > 0 })
             {
                 item.BackColor = UiTheme.DangerSoft;
@@ -2039,18 +2072,19 @@ public sealed class ModuleEditorControl : UserControl
         foreach (var count in _counts)
         {
             var summary = UnitSummary.Describe(count, ResolveGroupAuraName);
-            var item = new ListViewItem([count.Name, "数量", summary]) { ToolTipText = $"{count.Name}\n{summary}" };
+            var item = new ListViewItem([count.Name, "队友数量", summary]) { ToolTipText = $"{count.Name}\n{summary}" };
+            var missing = (count.AuraSpellIds ?? []).Where(id => !availableAuraIds.Contains(id)).ToArray();
             if (!string.IsNullOrWhiteSpace(count.AuraName))
             {
                 item.BackColor = UiTheme.DangerSoft;
                 item.ForeColor = UiTheme.Danger;
                 item.ToolTipText += $"\n旧名称光环引用尚未转换：{count.AuraName}";
             }
-            else if (count.AuraSpellId is { } id && !availableAuraIds.Contains(id))
+            else if (missing.Length > 0)
             {
                 item.BackColor = UiTheme.DangerSoft;
                 item.ForeColor = UiTheme.Danger;
-                item.ToolTipText += $"\n队伍不存在 spellId 为 {id} 的光环";
+                item.ToolTipText += $"\n队伍不存在 spellId 为 {string.Join("、", missing)} 的光环";
             }
             _unitsList.Items.Add(item);
         }
@@ -2070,6 +2104,28 @@ public sealed class ModuleEditorControl : UserControl
                 item.BackColor = UiTheme.DangerSoft;
                 item.ForeColor = UiTheme.Danger;
                 item.ToolTipText += $"\n姓名板不存在 spellId 为 {string.Join("、", missing)} 的光环";
+            }
+
+            _unitsList.Items.Add(item);
+        }
+
+        foreach (var field in _averageHealthFields)
+        {
+            var enemyTarget = field.Target == AverageHealthTargetKind.Enemies;
+            var summary = UnitSummary.Describe(
+                field,
+                enemyTarget ? ResolveNameplateAuraName : ResolveGroupAuraName);
+            var item = new ListViewItem([field.Name, "平均血量", summary])
+            {
+                ToolTipText = $"{field.Name}\n{summary}"
+            };
+            var availableIds = enemyTarget ? availableNameplateAuraIds : availableAuraIds;
+            var missing = (field.AuraSpellIds ?? []).Where(id => !availableIds.Contains(id)).ToArray();
+            if (missing.Length > 0)
+            {
+                item.BackColor = UiTheme.DangerSoft;
+                item.ForeColor = UiTheme.Danger;
+                item.ToolTipText += $"\n{(enemyTarget ? "姓名板" : "队伍")}不存在 spellId 为 {string.Join("、", missing)} 的光环";
             }
 
             _unitsList.Items.Add(item);
@@ -2171,6 +2227,11 @@ public sealed class ModuleEditorControl : UserControl
             taken.Add(count.Name);
         }
 
+        foreach (var field in _averageHealthFields)
+        {
+            taken.Add(field.Name);
+        }
+
         foreach (var field in _fieldCatalog.GetFields(classId, specId))
         {
             taken.Add(field.Name);
@@ -2212,7 +2273,8 @@ public sealed class ModuleEditorControl : UserControl
         None,
         Unit,
         Count,
-        EnemyCount
+        EnemyCount,
+        AverageHealth
     }
 
     private sealed record RuleRowValues(
@@ -3784,6 +3846,14 @@ public sealed class ModuleEditorControl : UserControl
             }
         }
 
+        foreach (var field in _averageHealthFields)
+        {
+            if (!string.IsNullOrWhiteSpace(field.Name) && seen.Add(field.Name))
+            {
+                fields.Add(new ConditionField(field.Name, $"平均血量: {field.Name}", ConditionFieldType.Int, ConditionFieldCategory.DynamicValue));
+            }
+        }
+
         foreach (var fieldName in GetAdjustmentTargetFields())
         {
             if (seen.Add(fieldName))
@@ -3977,6 +4047,8 @@ public sealed class ModuleEditorControl : UserControl
         _counts.AddRange(module.Counts.Select(count => count.Clone()));
         _enemyCounts.Clear();
         _enemyCounts.AddRange(module.EnemyCounts.Select(count => count.Clone()));
+        _averageHealthFields.Clear();
+        _averageHealthFields.AddRange(module.AverageHealthFields.Select(field => field.Clone()));
         _valueAdjustments.Clear();
         _valueAdjustments.AddRange(module.ValueAdjustments.Select(adjustment => adjustment.Clone()));
         SelectClass(module.Match.ClassId);
@@ -4049,6 +4121,7 @@ public sealed class ModuleEditorControl : UserControl
         _units.Clear();
         _counts.Clear();
         _enemyCounts.Clear();
+        _averageHealthFields.Clear();
         _valueAdjustments.Clear();
         RefreshUnitsList();
         SelectClass(null);
@@ -4211,6 +4284,7 @@ public sealed class ModuleEditorControl : UserControl
         module.Units = _units.Select(unit => unit.Clone()).ToList();
         module.Counts = _counts.Select(count => count.Clone()).ToList();
         module.EnemyCounts = _enemyCounts.Select(count => count.Clone()).ToList();
+        module.AverageHealthFields = _averageHealthFields.Select(field => field.Clone()).ToList();
         if (!TryReadValueAdjustments(out var valueAdjustments, out var adjustmentError))
         {
             MessageBox.Show(adjustmentError, "Shigure", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -4295,6 +4369,7 @@ public sealed class ModuleEditorControl : UserControl
             .SelectMany(unit => new[] { unit.Name, unit.HealthName })
             .Concat(module.Counts.Select(count => count.Name))
             .Concat(module.EnemyCounts.Select(count => count.Name))
+            .Concat(module.AverageHealthFields.Select(field => field.Name))
             .Where(name => !string.IsNullOrWhiteSpace(name))
             .Select(name => name!.Trim())
             .Distinct(StringComparer.Ordinal)
@@ -4347,6 +4422,12 @@ public sealed class ModuleEditorControl : UserControl
                 ids.Add(id);
             }
             unit.AuraSpellIds = ids.Distinct().ToList();
+            if (unit.AuraDurationFilter != AuraDurationFilterKind.None
+                && unit.AuraDurationSpellId is null
+                && unit.AuraSpellIds.Count > 0)
+            {
+                unit.AuraDurationSpellId = unit.AuraSpellIds[0];
+            }
             unit.AuraNames = null;
         }
         for (var countIndex = 0; countIndex < module.Counts.Count; countIndex++)
@@ -4362,6 +4443,7 @@ public sealed class ModuleEditorControl : UserControl
                 return false;
             }
             count.AuraSpellId = id;
+            count.AuraSpellIds = [id];
             count.AuraName = null;
         }
 

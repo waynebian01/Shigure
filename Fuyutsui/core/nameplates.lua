@@ -3,7 +3,7 @@ local addon, ns = ...
 -- 接在队伍后面的主像素：每单位 num 格，依次为已配置的生命值、距离、战斗、光环。
 -- index = start + (slot - 1) * num + offset - 1；沿用主像素 R/G 索引与 B 数值。
 -- 不存在的单位整段置黑（无索引），无需增加存在标记格。
-local NAMEPLATE_SLOT_COUNT = 20
+local NAMEPLATE_SLOT_COUNT = 40
 local auraContainers = {}
 local pixelConfig
 
@@ -96,7 +96,7 @@ function Fuyutsui:RefreshNameplatePixels()
 
     for slot = 1, NAMEPLATE_SLOT_COUNT do
         local unit = "nameplate" .. slot
-        local hostile = UnitExists(unit) and UnitCanAttack("player", unit) and not UnitCanAssist("player", unit)
+        local hostile = UnitExists(unit) and not UnitIsFriend("player", unit)
         if not hostile then
             ReleaseAuraContainer(slot)
             ClearSlot(slot)
@@ -112,8 +112,12 @@ function Fuyutsui:RefreshNameplatePixels()
                 self:CreateTexture(PixelIndex(config, slot, config.healthPercent), value)
             end
             if config.range then
-                local _, maxRange = self:GetUnitRangeBounds(unit)
-                self:CreateTexture(PixelIndex(config, slot, config.range), math.max(0, math.min(255, maxRange or 0)) / 255)
+                local maxRange = 0
+                if UnitCanAttack("player", unit) then
+                    maxRange = select(2, self:GetUnitRangeBounds(unit))
+                end
+                self:CreateTexture(PixelIndex(config, slot, config.range),
+                    math.max(0, math.min(255, maxRange or 0)) / 255)
             end
             if config.combat then
                 -- 战斗状态只有 0/1 两种取值，用 1/255 表示「战斗中」。

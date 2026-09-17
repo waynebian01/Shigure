@@ -527,7 +527,7 @@ public sealed class StatusForm : Form
         AddNavGroup(nav, "监控");
         AddNavItem(nav, SettingsPage.Status, SettingsNavIcon.Status, "状态", CreatePageShell("状态", string.Empty, BuildStatusPage()));
         AddNavItem(nav, SettingsPage.Party, SettingsNavIcon.Party, "队伍", CreatePageShell("队伍", "当前队伍单位与扫描字段摘要", BuildFixedWidthSectionPage("队伍成员", _partyList, "实时队伍数据")));
-        AddNavItem(nav, SettingsPage.Nameplates, SettingsNavIcon.Party, "姓名板", CreatePageShell("姓名板", "20 个敌对姓名板与配置字段", BuildFixedWidthSectionPage("姓名板", _nameplateList, "实时姓名板数据")));
+        AddNavItem(nav, SettingsPage.Nameplates, SettingsNavIcon.Party, "姓名板", CreatePageShell("姓名板", $"{NameplateStateLayout.SlotCount} 个敌对姓名板与配置字段", BuildFixedWidthSectionPage("姓名板", _nameplateList, "实时姓名板数据")));
         AddNavItem(nav, SettingsPage.Logic, SettingsNavIcon.Logic, "逻辑", CreatePageShell("逻辑", "运行时推荐目标与调试值", BuildFixedWidthSectionPage("逻辑信息", _unitInfoList, "当前模块的决策输出")));
         AddNavItem(nav, SettingsPage.Logs, SettingsNavIcon.Logs, "日志", CreatePageShell("日志", "运行、模块匹配与施放记录", BuildLogPage()));
         AddNavGroup(nav, "说明");
@@ -2183,7 +2183,7 @@ public sealed class StatusForm : Form
     private void UpdateNameplateList(RenderSnapshot snapshot)
     {
         var items = new List<ListViewItem>();
-        for (var slot = 1; slot <= 20; slot++)
+        for (var slot = 1; slot <= NameplateStateLayout.SlotCount; slot++)
         {
             var key = slot.ToString();
             if (snapshot.State?.Nameplates.TryGetValue(key, out var data) != true || data is null)

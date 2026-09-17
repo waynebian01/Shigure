@@ -21,10 +21,15 @@ public enum ConditionFieldCategory
 
 public static class ShigureConditionFields
 {
+    public const string TotalCombatTimeSeconds = "总战斗时间(秒)";
+
     // 仅供条件编辑器承载规则级配置，不会写入条件表达式参与状态求值。
     public const string Delay = "$shigure.delay";
     public const string LogicDelay = "$shigure.logicDelay";
     public const string ContinueLogic = "$shigure.continueLogic";
+
+    public static bool IsRuleSetting(string? fieldName)
+        => fieldName is Delay or LogicDelay or ContinueLogic;
 }
 
 public sealed record ConditionField(
@@ -199,6 +204,18 @@ public sealed class ConditionFieldCatalog
             }
         }
 
+        if (HasStateField(stateConfig, "战斗计时(分)")
+            && HasStateField(stateConfig, "战斗计时(秒)"))
+        {
+            AddField(
+                fields,
+                seen,
+                ShigureConditionFields.TotalCombatTimeSeconds,
+                ShigureConditionFields.TotalCombatTimeSeconds,
+                ConditionFieldType.Int,
+                ConditionFieldCategory.Shigure);
+        }
+
         if (JsonHelpers.Get(stateConfig, "auras") is JsonObject auras)
         {
             foreach (var (auraName, node) in auras)
@@ -242,7 +259,7 @@ public sealed class ConditionFieldCatalog
         if (JsonHelpers.Get(stateConfig, "nameplates") is JsonObject nameplates)
         {
             var auraCount = (JsonHelpers.Get(nameplates, "auras") as JsonArray)?.Count ?? 0;
-            for (var slot = 1; slot <= 20; slot++)
+            for (var slot = 1; slot <= NameplateStateLayout.SlotCount; slot++)
             {
                 var prefix = $"nameplates.{slot}.";
                 AddField(fields, seen, prefix + "存在", $"姓名板{slot} / 存在", ConditionFieldType.Bool, ConditionFieldCategory.State, "姓名板");
@@ -441,6 +458,9 @@ public sealed class ConditionFieldCatalog
     private static bool IsItemCooldownField(long? itemId, string? classification)
         => itemId is > 0
            || string.Equals(classification, ClassStateCatalog.CategoryItem, StringComparison.Ordinal);
+
+    private static bool HasStateField(JsonObject stateConfig, string name)
+        => JsonHelpers.Get(stateConfig, name) is JsonObject field && field.ContainsKey("step");
 
     private static void AddField(
         List<ConditionField> fields,

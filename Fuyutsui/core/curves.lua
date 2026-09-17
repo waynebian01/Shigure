@@ -2,7 +2,7 @@ local addon, ns = ...
 
 local EnumPowerType = Fuyutsui.EnumPowerType
 local curveCache = {}
-local powerCurves = {}
+Fuyutsui.powerCurves = {}
 
 function Fuyutsui:CreateColorCurve(point, b)
     local curve = C_CurveUtil.CreateColorCurve()
@@ -32,16 +32,14 @@ function Fuyutsui:CreateColorCurveScaling(b)
 end
 
 function Fuyutsui:CreatePowerCurve(powerType)
-    if powerCurves[powerType] then return end
+    if self.powerCurves[powerType] then return end
     local powerMax = UnitPowerMax("player", EnumPowerType[powerType])
     if powerMax >= 300 then
-        powerCurves[powerType] = self:CreateColorCurve(1, 100)
+        self.powerCurves[powerType] = self:CreateColorCurve(1, 100)
     else
-        powerCurves[powerType] = self:CreateColorCurve(1, powerMax)
+        self.powerCurves[powerType] = self:CreateColorCurve(1, powerMax)
     end
 end
-
-Fuyutsui.powerCurves = powerCurves
 
 -- 队伍生命曲线必须在进入战斗前创建。战斗中只选择既有曲线，
 -- 避免首次施放对应治疗法术时临时调用 C_CurveUtil.CreateColorCurve。

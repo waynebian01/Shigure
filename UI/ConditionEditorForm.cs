@@ -643,7 +643,10 @@ public sealed class ConditionEditorForm : Form
         if (_conditionsGrid.Columns[TypeColumn] is DataGridViewComboBoxColumn typeColumn)
         {
             typeColumn.Items.AddRange(CategoryItems
-                .Where(item => item.Category != ConditionFieldCategory.Shigure || _allowRuleSettings)
+                .Where(item => item.Category != ConditionFieldCategory.Shigure
+                    || _allowRuleSettings
+                    || _fields.Any(field => field.Category == ConditionFieldCategory.Shigure
+                        && !ShigureConditionFields.IsRuleSetting(field.Name)))
                 .Select(item => item.Display)
                 .ToArray());
         }
@@ -1367,6 +1370,7 @@ public sealed class ConditionEditorForm : Form
 
         foreach (var field in _fields.Where(field =>
                      field.Category == category
+                     && (_allowRuleSettings || !ShigureConditionFields.IsRuleSetting(field.Name))
                      && (category is not (ConditionFieldCategory.State
                              or ConditionFieldCategory.Aura
                              or ConditionFieldCategory.Spell)
@@ -2013,7 +2017,8 @@ public sealed class ConditionEditorForm : Form
 
     private static bool IsRuleSettingField(FieldItem? field)
     {
-        return IsDelayField(field) || IsLogicDelayField(field) || IsContinueLogicField(field);
+        return field?.Category == ConditionFieldCategory.Shigure
+            && ShigureConditionFields.IsRuleSetting(field.Name);
     }
 
     private static bool IsRuleSettingField(FieldItem? field, string fieldName)

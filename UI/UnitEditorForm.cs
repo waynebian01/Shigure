@@ -24,7 +24,9 @@ public sealed class UnitEditorForm : Form
         new("1: 魔法", 1),
         new("2: 诅咒", 2),
         new("3: 疾病", 3),
-        new("4: 中毒", 4)
+        new("4: 中毒", 4),
+        new("9: 激怒", 9),
+        new("11: 流血", 11)
     ];
 
     private static readonly LowestHealthAuraFilterItem[] LowestHealthAuraFilterOptions =

@@ -757,8 +757,9 @@ local function AddDurationAuraSlotPair(container, slotKeyPrefix, filter, include
     })
 end
 
-function Fuyutsui:AddNameplateAuraPixelSlots(container, slotKeyPrefix, includeSpellIDs, index)
-    AddDurationAuraSlotPair(container, slotKeyPrefix, "HARMFUL|PLAYER", includeSpellIDs, index)
+function Fuyutsui:AddNameplateAuraPixelSlots(container, slotKeyPrefix, includeSpellIDs, index, isPlayer)
+    local filter = isPlayer == true and "HARMFUL|PLAYER" or "HARMFUL"
+    AddDurationAuraSlotPair(container, slotKeyPrefix, filter, includeSpellIDs, index)
 end
 
 local function ApplyUnitAuraReactionFilters(container, unit)

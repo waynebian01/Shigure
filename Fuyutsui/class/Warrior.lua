@@ -25,6 +25,7 @@ Fuyutsui.ClassBlocks = {
             },
             ["特殊"] = {
                 "英勇打击",
+                "计时器",
             },
             ["能量"] = {
                 "怒气值",
@@ -44,7 +45,6 @@ Fuyutsui.ClassBlocks = {
                 "引导",
                 "引导可打断",
                 "距离",
-
             },
             ["焦点"] = {
                 "施法(倒计时)",
@@ -53,7 +53,6 @@ Fuyutsui.ClassBlocks = {
                 "引导",
                 "引导可打断",
                 "距离",
-
             },
             ["鼠标"] = {
                 "类型",
@@ -69,36 +68,36 @@ Fuyutsui.ClassBlocks = {
         },
         auras = {
             player = {
-                { name = "天神下凡", spellId = 107574, },
-                { name = "猝死", spellId = 52437, maxApps = 2, },
-                { name = "破坏者", spellId = 228920, },
-                { name = "间接伤害", spellId = 334783, maxApps = 3, },
-                { name = "巨人神力", spellId = 440989, maxApps = 10, },
-                { name = "刽子手的精准", spellId = 386633, maxApps = 2, },
-                { name = "英勇之力", spellId = 1292058, maxApps = 5, },
-                { name = "战争大师", spellId = 1269394, maxApps = 5, },
-                { name = "横扫攻击", spellId = 260708, maxApps = 12, },
-                { name = "粉碎连击", spellId = 1261189, maxApps = 2, },
-                { name = "趁虚而入", spellId = 456120, maxApps = 2, },
-                { name = "殒命在即", spellId = 445606, maxApps = 3, },
-                { name = "处刑者", spellId = 445584, maxApps = 5, },
-                { name = "武技神威", spellId = 316440, maxApps = 3, },
-                { name = "剑刃风暴", spellIds = { 446035 }, },
+                { name = "天神下凡", spellId = 107574, isPlayer = true,},
+                { name = "猝死", spellId = 52437, maxApps = 2, isPlayer = true,},
+                { name = "破坏者", spellId = 228920, isPlayer = true,},
+                { name = "间接伤害", spellId = 334783, maxApps = 3, isPlayer = true,},
+                { name = "巨人神力", spellId = 440989, maxApps = 10, isPlayer = true,},
+                { name = "刽子手的精准", spellId = 386633, maxApps = 2, isPlayer = true,},
+                { name = "英勇之力", spellId = 1292058, maxApps = 5, isPlayer = true,},
+                { name = "战争大师", spellId = 1269394, maxApps = 5, isPlayer = true,},
+                { name = "横扫攻击", spellId = 260708, maxApps = 12, isPlayer = true,},
+                { name = "粉碎连击", spellId = 1261189, maxApps = 2, isPlayer = true,},
+                { name = "趁虚而入", spellId = 456120, maxApps = 2, isPlayer = true,},
+                { name = "殒命在即", spellId = 445606, maxApps = 3, isPlayer = true,},
+                { name = "处刑者", spellId = 445584, maxApps = 5, isPlayer = true,},
+                { name = "武技神威", spellId = 316440, maxApps = 3, isPlayer = true,},
+                { name = "剑刃风暴", spellIds = { 446035 }, isPlayer = true,},
             },
             target = {
                 harmful = {
-                    { name = "撕裂", spellId = 388539, },
-                    { name = "巨人打击", spellId = 208086, },
-                    { name = "重伤", spellId = 262115, },
-                    { name = "崩毁", spellId = 447513, maxApps = 10, },
+                    { name = "撕裂", spellId = 388539, isPlayer = true,},
+                    { name = "巨人打击", spellId = 208086, isPlayer = true,},
+                    { name = "重伤", spellId = 262115, isPlayer = true,},
+                    { name = "崩毁", spellId = 447513, maxApps = 10, isPlayer = true,},
                 },
             },
             focus = {
                 harmful = {
-                    { name = "撕裂", spellId = 388539, },
-                    { name = "巨人打击", spellId = 208086, },
-                    { name = "重伤", spellId = 262115, },
-                    { name = "崩毁", spellId = 447513, maxApps = 10, },
+                    { name = "撕裂", spellId = 388539, isPlayer = true,},
+                    { name = "巨人打击", spellId = 208086, isPlayer = true,},
+                    { name = "重伤", spellId = 262115, isPlayer = true,},
+                    { name = "崩毁", spellId = 447513, maxApps = 10, isPlayer = true,},
                 },
             },
         },
@@ -163,7 +162,6 @@ Fuyutsui.ClassBlocks = {
                 "引导",
                 "引导可打断",
                 "距离",
-
             },
             ["焦点"] = {
                 "施法(倒计时)",
@@ -172,7 +170,6 @@ Fuyutsui.ClassBlocks = {
                 "引导",
                 "引导可打断",
                 "距离",
-
             },
             ["鼠标"] = {
                 "类型",
@@ -188,18 +185,18 @@ Fuyutsui.ClassBlocks = {
         },
         auras = {
             player = {
-                { name = "狂暴", spellId = 184362, },
-                { name = "猝死", spellId = 52437, maxApps = 2, },
-                { name = "强化旋风斩", spellId = 85739, maxApps = 4, },
-                { name = "鲁莽", spellId = 1719, },
-                { name = "天神下凡", spellId = 107574, },
-                { name = "劈斩", spellId = 383873, },
-                { name = "能量爆发", spellId = 437121, },
-                { name = "雷霆轰击", spellId = 435615, maxApps = 2, },
+                { name = "狂暴", spellId = 184362, isPlayer = true,},
+                { name = "猝死", spellId = 52437, maxApps = 2, isPlayer = true,},
+                { name = "强化旋风斩", spellId = 85739, maxApps = 4, isPlayer = true,},
+                { name = "鲁莽", spellId = 1719, isPlayer = true,},
+                { name = "天神下凡", spellId = 107574, isPlayer = true,},
+                { name = "劈斩", spellId = 383873, isPlayer = true,},
+                { name = "能量爆发", spellId = 437121, isPlayer = true,},
+                { name = "雷霆轰击", spellId = 435615, maxApps = 2, isPlayer = true,},
             },
             target = {
                 harmful = {
-                    { name = "撕裂", spellId = 772, },
+                    { name = "撕裂", spellId = 772, isPlayer = true,},
                 },
             },
         },
@@ -263,7 +260,6 @@ Fuyutsui.ClassBlocks = {
                 "引导",
                 "引导可打断",
                 "距离",
-
             },
             ["焦点"] = {
                 "施法(倒计时)",
@@ -272,7 +268,6 @@ Fuyutsui.ClassBlocks = {
                 "引导",
                 "引导可打断",
                 "距离",
-
             },
             ["鼠标"] = {
                 "类型",
@@ -288,8 +283,8 @@ Fuyutsui.ClassBlocks = {
         },
         auras = {
             player = {
-                { name = "盾牌格挡", spellId = 132404, },
-                { name = "无视苦痛", spellId = 190456, },
+                { name = "盾牌格挡", spellId = 132404, isPlayer = true,},
+                { name = "无视苦痛", spellId = 190456, isPlayer = true,},
             },
         },
         spells = {

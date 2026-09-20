@@ -52,7 +52,7 @@ local function CreateNameplateAuraContainer(slot, unit, config)
         end
         local index = PixelIndex(config, slot, config.auraStart + auraIndex - 1)
         Fuyutsui:AddNameplateAuraPixelSlots(
-            container, "nameplate_" .. slot .. "_aura_" .. auraIndex, includeSpellIDs, index
+            container, "nameplate_" .. slot .. "_aura_" .. auraIndex, includeSpellIDs, index, aura.isPlayer
         )
     end
     container:Show()

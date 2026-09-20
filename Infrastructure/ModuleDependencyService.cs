@@ -231,7 +231,8 @@ internal sealed class ModuleDependencyService
             snapshot.Config.Spec.TargetHarmfulAuras,
             snapshot.Config.Spec.TargetHelpfulAuras,
             snapshot.Config.Spec.FocusHarmfulAuras,
-            snapshot.Config.Spec.FocusHelpfulAuras
+            snapshot.Config.Spec.FocusHelpfulAuras,
+            snapshot.Config.Spec.Nameplates?.Auras ?? []
         };
         if (auraGroups.SelectMany(entries => entries ?? [])
             .Any(aura => !GetAuraSpellIds(aura.SpellId, aura.SpellIds).Any()))
@@ -423,6 +424,10 @@ internal sealed class ModuleDependencyService
                 SpellId = entry.SpellId,
                 SpellIds = new List<long>(entry.SpellIds)
             }).ToList()
+        },
+        Nameplates = spec.Nameplates is null ? null : new ModuleNameplateSnapshot
+        {
+            Auras = spec.Nameplates.Auras.Select(CaptureAura).ToList()
         }
     };
 
@@ -431,7 +436,8 @@ internal sealed class ModuleDependencyService
         Name = entry.Name,
         SpellId = entry.SpellId,
         SpellIds = new List<long>(entry.SpellIds),
-        MaxApps = entry.MaxApps
+        MaxApps = entry.MaxApps,
+        IsPlayer = entry.IsPlayer
     };
 
     private static ModuleMacroEntrySnapshot CaptureMacro(ClassMacrosStore.ArrayEntry entry) => new()
@@ -501,8 +507,28 @@ internal sealed class ModuleDependencyService
         MergeAuras(local.TargetHelpfulAuras, incoming.TargetHelpfulAuras, "目标增益", counters);
         MergeAuras(local.FocusHarmfulAuras, incoming.FocusHarmfulAuras, "焦点减益", counters);
         MergeAuras(local.FocusHelpfulAuras, incoming.FocusHelpfulAuras, "焦点增益", counters);
+        MergeNameplates(local, incoming.Nameplates, counters);
         MergeSpells(local.Spells, incoming.Spells, counters);
         // 队伍配置属于本地扫描布局；模块快照只为文件兼容保留，导入时不得比较或修改。
+    }
+
+    private static void MergeNameplates(
+        ClassBlocksStore.SpecBlocks local,
+        ModuleNameplateSnapshot? incoming,
+        MergeCounters counters)
+    {
+        if (incoming is null)
+        {
+            return;
+        }
+
+        if (local.Nameplates is null)
+        {
+            local.Nameplates = new ClassBlocksStore.NameplateBlocks();
+            counters.ConfigAdded++;
+        }
+
+        MergeAuras(local.Nameplates.Auras, incoming.Auras ?? [], "姓名板光环", counters);
     }
 
     private static void MergeStrings(List<string> local, IEnumerable<string> incoming, MergeCounters counters)
@@ -539,7 +565,8 @@ internal sealed class ModuleDependencyService
             {
                 Name = entry.Name,
                 SpellId = entry.SpellId,
-                MaxApps = entry.MaxApps
+                MaxApps = entry.MaxApps,
+                IsPlayer = entry.IsPlayer ?? true
             };
             added.SpellIds.AddRange(entry.SpellIds);
             local.Add(added);
@@ -601,6 +628,7 @@ internal sealed class ModuleDependencyService
             incoming.SpellId,
             incoming.SpellIds,
             incoming.MaxApps,
+            incoming.IsPlayer,
             label,
             counters);
     }
@@ -617,6 +645,7 @@ internal sealed class ModuleDependencyService
             incoming.SpellId,
             incoming.SpellIds,
             incoming.MaxApps,
+            incoming.IsPlayer ?? true,
             label,
             counters);
     }
@@ -627,6 +656,7 @@ internal sealed class ModuleDependencyService
         long? incomingSpellId,
         IEnumerable<long>? incomingSpellIds,
         int? incomingMaxApps,
+        bool incomingIsPlayer,
         string label,
         MergeCounters counters)
     {
@@ -664,6 +694,13 @@ internal sealed class ModuleDependencyService
         {
             target.Name = incomingName;
             changed = true;
+        }
+
+        if (target.IsPlayer != incomingIsPlayer)
+        {
+            counters.Conflicts.Add(
+                $"{label}“{DisplayName(incomingName, incomingSpellId)}”的玩家施放筛选存在差异："
+                + $"本地 {target.IsPlayer}、模块 {incomingIsPlayer}，已保留本地。");
         }
 
         if (changed)

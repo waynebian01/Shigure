@@ -69,6 +69,7 @@ public sealed class MainForm : Form, IMessageFilter
     private NotifyIcon _trayIcon = null!;
     private ContextMenuStrip _trayMenu = null!;
     private ToolStripMenuItem _trayToggleMenuItem = null!;
+    private ToolStripMenuItem _trayModuleMenuItem = null!;
     private Icon? _trayDefaultIcon;
     private Icon? _trayEnabledIcon;
     private bool? _trayIconShowsEnabled;
@@ -2202,11 +2203,25 @@ public sealed class MainForm : Form, IMessageFilter
             return;
         }
 
-        _selectedModuleId = _moduleComboBox.SelectedItem is ModuleSelectionOption option
-            ? option.ModuleId
-            : null;
+        var option = _moduleComboBox.SelectedItem as ModuleSelectionOption ?? ModuleSelectionOption.Auto;
+        await SelectModuleAsync(option.ModuleId, option.Text, refreshSelector: false);
+    }
+
+    private async Task SelectModuleAsync(string? moduleId, string displayText, bool refreshSelector)
+    {
+        if (string.Equals(_selectedModuleId, moduleId, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        _selectedModuleId = moduleId;
         SaveUiCache();
-        AppendLog($"模块选择: {(_selectedModuleId is null ? "自动选择" : _moduleComboBox.Text)}");
+        if (refreshSelector)
+        {
+            RefreshModuleSelector(_lastSnapshot, forceRefresh: true);
+        }
+
+        AppendLog($"模块选择: {displayText}");
         await RestartRuntimeAfterSettingChangeAsync();
     }
 
@@ -2823,10 +2838,14 @@ public sealed class MainForm : Form, IMessageFilter
         _trayToggleMenuItem.Click += (_, _) => ToggleEnabled();
         var settingsMenuItem = CreateTrayMenuItem("设置");
         settingsMenuItem.Click += (_, _) => ShowSettingsView();
+        _trayModuleMenuItem = CreateTrayMenuItem("模块");
+        _trayModuleMenuItem.DropDownOpening += (_, _) => RefreshTrayModuleMenu();
+        ConfigureTrayModuleDropDown();
         var exitMenuItem = CreateTrayMenuItem("退出");
         exitMenuItem.ForeColor = UiTheme.Danger;
         exitMenuItem.Click += (_, _) => RequestExit();
-        _trayMenu.Items.AddRange([showMainMenuItem, _trayToggleMenuItem, settingsMenuItem, exitMenuItem]);
+        _trayMenu.Items.AddRange(
+            [showMainMenuItem, _trayToggleMenuItem, _trayModuleMenuItem, settingsMenuItem, exitMenuItem]);
         _trayMenu.Opening += (_, _) => UpdateTrayToggleMenuItem(_runtimeSession.IsRunning);
         UiTheme.ApplyControlRoundedRegion(_trayMenu, 10);
 
@@ -2847,6 +2866,60 @@ public sealed class MainForm : Form, IMessageFilter
                 ShowMainWindow();
             }
         };
+    }
+
+    private void ConfigureTrayModuleDropDown()
+    {
+        var dropDown = _trayModuleMenuItem.DropDown;
+        dropDown.BackColor = UiTheme.SurfaceRaised;
+        dropDown.ForeColor = UiTheme.Text;
+        dropDown.Font = _trayMenu.Font;
+        dropDown.Padding = new Padding(6);
+        dropDown.Renderer = _trayMenu.Renderer;
+
+        if (dropDown is ToolStripDropDownMenu menu)
+        {
+            menu.ShowImageMargin = false;
+            menu.ShowCheckMargin = true;
+        }
+    }
+
+    private void RefreshTrayModuleMenu()
+    {
+        foreach (var item in _trayModuleMenuItem.DropDownItems.Cast<ToolStripItem>().ToArray())
+        {
+            _trayModuleMenuItem.DropDownItems.Remove(item);
+            item.Dispose();
+        }
+
+        var hasValidState = _lastSnapshot?.State?.GetBool("有效性") == true;
+        var (classId, specId, partyType, heroTalent, _) = GetModuleFilter(_lastSnapshot, hasValidState);
+        var modules = !hasValidState
+            ? _moduleStore.GetModules()
+            : _moduleStore.FindMatches(classId, specId, partyType, heroTalent);
+
+        _trayModuleMenuItem.DropDownItems.Add(CreateTrayModuleChoiceItem(ModuleSelectionOption.Auto));
+        foreach (var module in modules)
+        {
+            _trayModuleMenuItem.DropDownItems.Add(
+                CreateTrayModuleChoiceItem(new ModuleSelectionOption(module.Id, module.Name)));
+        }
+    }
+
+    private ToolStripMenuItem CreateTrayModuleChoiceItem(ModuleSelectionOption option)
+    {
+        var selected = string.Equals(_selectedModuleId, option.ModuleId, StringComparison.OrdinalIgnoreCase);
+        var item = new ToolStripMenuItem(option.Text)
+        {
+            AutoSize = false,
+            Size = new Size(260, 38),
+            Padding = new Padding(14, 0, 14, 0),
+            ForeColor = selected ? UiTheme.Accent : UiTheme.Text,
+            Checked = selected,
+            CheckOnClick = false
+        };
+        item.Click += async (_, _) => await SelectModuleAsync(option.ModuleId, option.Text, refreshSelector: true);
+        return item;
     }
 
     private void ShowMainWindow()

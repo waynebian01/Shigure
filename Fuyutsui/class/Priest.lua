@@ -238,6 +238,7 @@ Fuyutsui.ClassBlocks = {
             { spellId = 586, name = "渐隐术" },
             { spellId = 528, name = "驱散魔法" },
             { spellId = 10060, name = "能量灌注" },
+            { spellId = 357214, name = "飞翼打击" },
         },
         items = {
             [5512] = { name = "治疗石", isEquipped = false },

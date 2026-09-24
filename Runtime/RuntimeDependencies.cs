@@ -9,7 +9,7 @@ public sealed record LogicDecision(
     string? RateLimitKey = null,
     int LogicDelayMs = 0);
 
-internal interface IRuntimeScreenScanner
+internal interface IRuntimeScreenScanner : IDisposable
 {
     ScreenScanResult ScanScreenData();
 }

@@ -7,10 +7,17 @@ public enum SendMode
     Hold
 }
 
+public enum CaptureMethod
+{
+    WindowsGraphicsCapture,
+    ScreenCopy
+}
+
 public sealed record AppOptions(
     string ToggleKey,
     SendMode Mode,
     string? ModuleId,
+    CaptureMethod CaptureMethod,
     TimeSpan LogicInterval,
     TimeSpan RenderInterval)
 {
@@ -51,7 +58,13 @@ public sealed record AppOptions(
             }
         }
 
-        return new AppOptions(toggleKey, mode, moduleId, logicInterval, renderInterval);
+        return new AppOptions(
+            toggleKey,
+            mode,
+            moduleId,
+            CaptureMethod.WindowsGraphicsCapture,
+            logicInterval,
+            renderInterval);
     }
 
     private static SendMode ParseMode(string value)

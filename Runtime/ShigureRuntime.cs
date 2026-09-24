@@ -91,23 +91,23 @@ public sealed class ShigureRuntime
 
     public async Task RunAsync(CancellationToken cancellationToken = default)
     {
-        var toggleVk = _triggerKeyState.ResolveVirtualKey(_options.ToggleKey);
-        if (toggleVk is null)
-        {
-            _currentStep = $"无法识别触发键: {_options.ToggleKey}";
-            PublishSnapshot();
-            return;
-        }
-
-        var previousPressed = false;
-        var lastLogicAt = DateTimeOffset.MinValue;
-        var lastRenderAt = DateTimeOffset.MinValue;
-        var lastToggleAt = DateTimeOffset.MinValue;
-        _currentStep = "已启动";
-        PublishSnapshot();
-
         try
         {
+            var toggleVk = _triggerKeyState.ResolveVirtualKey(_options.ToggleKey);
+            if (toggleVk is null)
+            {
+                _currentStep = $"无法识别触发键: {_options.ToggleKey}";
+                PublishSnapshot();
+                return;
+            }
+
+            var previousPressed = false;
+            var lastLogicAt = DateTimeOffset.MinValue;
+            var lastRenderAt = DateTimeOffset.MinValue;
+            var lastToggleAt = DateTimeOffset.MinValue;
+            _currentStep = "已启动";
+            PublishSnapshot();
+
             while (!cancellationToken.IsCancellationRequested)
             {
                 DrainPendingCommands();
@@ -164,6 +164,7 @@ public sealed class ShigureRuntime
             _logicPausedUntil = DateTimeOffset.MinValue;
             _currentStep = "已停止";
             PublishSnapshot();
+            _scanner.Dispose();
         }
     }
 

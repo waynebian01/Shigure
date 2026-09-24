@@ -112,6 +112,7 @@ internal sealed class UiCacheState
     public int MainBarSizeVersion { get; set; }
     public string? ToggleKey { get; set; }
     public string? SelectedModuleId { get; set; }
+    public string? CaptureMethod { get; set; }
     public List<DefaultModuleSelection>? DefaultModules { get; set; }
     public Dictionary<string, int>? ModuleRulesGridColumns { get; set; }
     public Dictionary<string, Dictionary<string, int>>? ColumnWidths { get; set; }

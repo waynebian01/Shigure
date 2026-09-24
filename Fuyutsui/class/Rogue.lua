@@ -50,6 +50,7 @@ Fuyutsui.ClassBlocks = {
                 "引导",
                 "引导可打断",
                 "驱散类型",
+                "距离",
             },
             ["焦点"] = {
                 "施法(倒计时)",
@@ -57,6 +58,7 @@ Fuyutsui.ClassBlocks = {
                 "施法可打断",
                 "引导",
                 "引导可打断",
+                "距离",
             },
             ["鼠标"] = {
                 "类型",
@@ -135,6 +137,7 @@ Fuyutsui.ClassBlocks = {
             { spellId = 1298826, name = "蓟叶茶", charge = true, maxCharge = 3 },
             { spellId = 1329, name = "毁伤", forcedKnown = true },
             { spellId = 8676, name = "伏击" },
+            { spellId = 25046, name = "奥术洪流" },
         },
         items = {
             [273797] = { name = "破损的阿曼尼旗帜", isEquipped = true },

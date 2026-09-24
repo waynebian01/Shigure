@@ -48,6 +48,7 @@ public sealed class MainForm : Form, IMessageFilter
 
     private Button _toggleKeyButton = null!;
     private UiDropDown _modeComboBox = null!;
+    private UiDropDown _captureMethodComboBox = null!;
     private UiDropDown _moduleComboBox = null!;
     private Label _moduleFilterLabel = null!;
     private Label _moduleCountLabel = null!;
@@ -1014,6 +1015,25 @@ public sealed class MainForm : Form, IMessageFilter
             CreateRowDescription("开关：按一次切换；单击：每次触发发送一次；按住：持续按下时运行"),
             modeActions));
 
+        _captureMethodComboBox = new UiDropDown();
+        UiTheme.StyleComboBox(_captureMethodComboBox);
+        _captureMethodComboBox.Items.AddRange(new object[]
+        {
+            "Windows 图形捕获（WGC）",
+            "屏幕截图（原版）"
+        });
+        _captureMethodComboBox.SelectedIndex = 0;
+        SizeActionControl(_captureMethodComboBox, 260);
+        _settingsToolTip.SetToolTip(
+            _captureMethodComboBox,
+            "WGC 可在游戏窗口被遮挡时继续读取；原版读取显示器实际画面，会受遮挡影响");
+        var captureActions = CreateActionsHost();
+        captureActions.Controls.Add(_captureMethodComboBox);
+        stack.Controls.Add(CreateSettingRow(
+            "画面捕获",
+            CreateRowDescription("WGC 支持窗口被遮挡；窗口最小化或捕获停止时会暂停扫描"),
+            captureActions));
+
         stack.Controls.Add(CreateSectionHeader("配置同步"));
 
         _configSourceLabel = CreateRowDescription("项目目录是唯一配置源；尚未执行手动更新");
@@ -1873,13 +1893,26 @@ public sealed class MainForm : Form, IMessageFilter
             SendMode.Hold => 2,
             _ => 0
         };
+        _captureMethodComboBox.SelectedIndex = ParseCaptureMethod(_uiCache.CaptureMethod) switch
+        {
+            CaptureMethod.ScreenCopy => 1,
+            _ => 0
+        };
         RefreshModuleSelector(_lastSnapshot, forceRefresh: false);
     }
 
     private void WireSettingEvents()
     {
         _modeComboBox.SelectedIndexChanged += HandleSettingCommitted;
+        _captureMethodComboBox.SelectedIndexChanged += HandleCaptureMethodChanged;
         _moduleComboBox.SelectedIndexChanged += HandleModuleSelectionChanged;
+    }
+
+    private async void HandleCaptureMethodChanged(object? sender, EventArgs e)
+    {
+        _uiCache.CaptureMethod = ReadCaptureMethod().ToString();
+        SaveUiCache();
+        await RestartRuntimeAfterSettingChangeAsync();
     }
 
     private async void HandleSettingCommitted(object? sender, EventArgs e)
@@ -1961,7 +1994,10 @@ public sealed class MainForm : Form, IMessageFilter
 
         ResetRuntimeLogState();
         SetRuntimeControls(running: true);
-        AppendLog($"运行已{(restart ? "重启" : "启动")}: {_processLocator.DescribeConfiguredProcesses()} / {options.ToggleKey} / {ModeLabel(options.Mode)}");
+        AppendLog(
+            $"运行已{(restart ? "重启" : "启动")}: " +
+            $"{_processLocator.DescribeConfiguredProcesses()} / {options.ToggleKey} / {ModeLabel(options.Mode)} / " +
+            CaptureMethodLabel(options.CaptureMethod));
         return true;
     }
 
@@ -2021,7 +2057,13 @@ public sealed class MainForm : Form, IMessageFilter
             ? "XBUTTON2"
             : _toggleKeyName.Trim();
 
-        return _initialOptions with { ToggleKey = toggleKey, Mode = ReadMode(), ModuleId = _selectedModuleId };
+        return _initialOptions with
+        {
+            ToggleKey = toggleKey,
+            Mode = ReadMode(),
+            ModuleId = _selectedModuleId,
+            CaptureMethod = ReadCaptureMethod()
+        };
     }
 
     private SendMode ReadMode()
@@ -2797,6 +2839,7 @@ public sealed class MainForm : Form, IMessageFilter
         _uiCache.MainBarSizeVersion = MainBarSizeVersion;
         _uiCache.ToggleKey = _toggleKeyName;
         _uiCache.SelectedModuleId = _selectedModuleId;
+        _uiCache.CaptureMethod = ReadCaptureMethod().ToString();
         UiCacheStore.Save(_uiCache);
     }
 
@@ -2867,6 +2910,20 @@ public sealed class MainForm : Form, IMessageFilter
             }
         };
     }
+
+    private CaptureMethod ReadCaptureMethod()
+        => _captureMethodComboBox.SelectedIndex == 1
+            ? CaptureMethod.ScreenCopy
+            : CaptureMethod.WindowsGraphicsCapture;
+
+    private static CaptureMethod ParseCaptureMethod(string? value)
+        => Enum.TryParse<CaptureMethod>(value, ignoreCase: true, out var method)
+            && Enum.IsDefined(method)
+                ? method
+                : CaptureMethod.WindowsGraphicsCapture;
+
+    private static string CaptureMethodLabel(CaptureMethod method)
+        => method == CaptureMethod.ScreenCopy ? "屏幕截图（原版）" : "Windows 图形捕获（WGC）";
 
     private void ConfigureTrayModuleDropDown()
     {

@@ -45,7 +45,7 @@ verified_at: "2026-08-09"
 |---|---|---|---|
 | 主色块 | `FuyutsuiColorBars` | `y=0` | 510 格业务像素（状态/冷却/队伍等） |
 | 横向计数条 | `FuyutsuiCountBars` | `y=-BLOCK_HEIGHT` | 充能、`castCount`、玩家光环 `maxApps` |
-| 治疗吸收网格 | `FuyutsuiHealAbsorbBars` | `y=-(BLOCK_HEIGHT+BAR_HEIGHT)` | 最多 30 个队伍单位治疗吸收 |
+| 治疗吸收网格 | `FuyutsuiHealAbsorbBars` | `y=-(BLOCK_HEIGHT+BAR_HEIGHT)` | 最多 40 个队伍单位治疗吸收 |
 
 外部程序扫描这几行像素；插件侧**不要**在战斗里对 secret 生命/吸收做算术，横向吸收条走 `UnitHealPredictionCalculator` 直通 `StatusBar:SetValue`。
 
@@ -185,7 +185,7 @@ Fuyutsui:ClearAllFuyutsuiBars()  -- 清 CountBars + Aura + HealAbsorb 绑定
 
 ### 6.1 网格
 
-- 槽位 `1..30`；`row = floor((slot-1)/5)`，`col = (slot-1)%5`（0-based）
+- 槽位 `1..40`；`row = floor((slot-1)/5)`，`col = (slot-1)%5`（0-based）
 - 仅绑定 `groupList` 前 `min(#list, 30)` 个单位；其余整槽 `Hide`
 - 每槽子 Frame：前锚点 1 + 条身 100 + 终点色块 1（`BAR_END_COLOR`）
 

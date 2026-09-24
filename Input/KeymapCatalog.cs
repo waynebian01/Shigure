@@ -212,6 +212,9 @@ public sealed class KeymapCatalog
                 return KeymapEntries.Empty;
             }
 
+            var unitMappingVersion = JsonHelpers.GetInt(
+                JsonHelpers.Get(root, ReservedUnit.MappingVersionPropertyName)) ?? 3;
+
             var seenSpells = new HashSet<string>(StringComparer.Ordinal);
             var seenUnits = new HashSet<int>();
             AddMap(root);
@@ -243,9 +246,10 @@ public sealed class KeymapCatalog
                     }
 
                     var rawUnit = JsonHelpers.GetInt(JsonHelpers.Get(entry, "unit")) ?? 0;
-                    var normalizedMacro = MacroConditionText.NormalizeLegacyUnit(
+                    var normalizedMacro = MacroConditionText.NormalizeKeymapUnit(
                         rawUnit,
-                        JsonHelpers.GetString(JsonHelpers.Get(entry, "宏条件")));
+                        JsonHelpers.GetString(JsonHelpers.Get(entry, "宏条件")),
+                        unitMappingVersion);
                     var unit = normalizedMacro.Unit;
                     var macroCondition = normalizedMacro.Condition;
                     if (seenSpells.Add(spell))

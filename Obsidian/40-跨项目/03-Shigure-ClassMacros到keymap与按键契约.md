@@ -51,7 +51,7 @@ verified_at: "2026-08-10"
 当前宏顺序是：
 
 ```text
-dynamicSpells（每项展开 30 个团队槽）
+dynamicSpells（每项展开 40 个团队槽）
   → staticSpells
   → specialSpells
 ```
@@ -78,7 +78,7 @@ dynamicSpells（每项展开 30 个团队槽）
 | 数据 | 含义 | 槽位行为 |
 |---|---|---|
 | `Fuyutsui.MacroBodies` | 可复用的命名宏体 | 被条目按名称解析，不单独占槽 |
-| `dynamicSpells` | 对队伍/团队单位展开的技能 | 每个条目连续占 30 个单位槽 |
+| `dynamicSpells` | 对队伍/团队单位展开的技能 | 每个条目连续占 40 个单位槽 |
 | `staticSpells` | 普通技能或可解析宏条目 | 每项占一个槽，空字符串保留位置 |
 | `specialSpells` | 完整特殊宏文本；行尾注释是手工技能名 | 在 static 之后逐项占槽，保留顺序；Shigure 固定映射为无目标、无宏条件 |
 
@@ -108,14 +108,16 @@ keymap 是生成物；宏 Lua 与两端一致的展开算法才是来源。
 | 编号 | 语义 |
 |---:|---|
 | `0` | 无目标 |
-| `1..30` | 队伍/团队槽位，也是 dynamic 展开的 30 个目标 |
-| `31` | 玩家 |
-| `32` | 当前目标 |
-| `33` | 焦点 |
-| `34` | 地面/光标位置 |
-| `35` | 鼠标指向 |
+| `1..40` | 队伍/团队槽位，也是 dynamic 展开的 40 个目标 |
+| `41` | 玩家 |
+| `42` | 当前目标 |
+| `43` | 焦点 |
+| `44` | 地面/光标位置 |
+| `45` | 鼠标指向 |
+| `46..50` | 首领 boss1..5 |
+| `51..55` | 竞技场单位 arena1..5 |
 
-当前 module `UnitMappingVersion` 是 3。历史记录中的单位 `36/37` 会由 `MacroConditionText.NormalizeLegacyUnit` 转成 `unit=0` 加 `channeling/nochanneling` 宏条件。新数据不得继续把 36/37 当真实单位。
+当前 module `UnitMappingVersion` 是 4。历史记录中的单位 `36/37` 会由迁移器转成 `unit=0` 加 `channeling/nochanneling` 宏条件；v4 中 36/37 是真实团队槽位，keymap 通过版本字段区分两种语义。
 
 ## 运行与生成链路
 
@@ -130,7 +132,7 @@ keymap 是生成物；宏 Lua 与两端一致的展开算法才是来源。
 ### Shigure
 
 1. `ClassMacrosStore` 与 `LuaLiteParser` 读取同一 `ClassMacros` 表，并保留数组空槽和行尾注释。
-2. `FuyutsuiKeymapConverter` 按 dynamic 每项 30 槽，再 static、special 的顺序遍历同一 key pool。
+2. `FuyutsuiKeymapConverter` 按 dynamic 每项 40 槽，再 static、special 的顺序遍历同一 key pool。
 3. 转换器从 dynamic/static 条目提取技能名、单位与可选宏条件；special 不解析正文，只读取行尾注释中的手工技能名，并固定写成无目标、无宏条件。
 4. `KeymapService` 根据当前职业/专精选择数据，并以 unit、spell、condition 查找 hotkey。
 5. module 可直接提供 hotkey，或提供技能/动态单位后通过 keymap 解析；特殊动作可能先从 `GameState` 解析实际技能。
@@ -140,11 +142,11 @@ keymap 是生成物；宏 Lua 与两端一致的展开算法才是来源。
 ## 关键不变量
 
 - Fuyutsui `CreateMacro` 和 Shigure KeymapConverter 必须使用同一个 key pool、同一遍历顺序和同一空槽保留规则。
-- 一个 dynamic 条目固定占 30 个连续目标槽；不能只按实际队伍人数缩短。
+- 一个 dynamic 条目固定占 40 个连续目标槽；不能只按实际队伍人数缩短。
 - Lua 与 C# 必须按同一职业数组顺序展开，否则从第一个条目开始整体偏移。
 - 空 static/special 槽若用于稳定偏移，转换和序列化时不得自动删除。
 - 技能名、单位和宏条件共同决定 keymap 命中；只按技能名查找可能选错目标宏。
-- module 单位迁移必须在规则解析前完成，当前保存版本为 3。
+- module 单位迁移必须在规则解析前完成，当前保存版本为 4。
 - 宏槽总数不能超过 key pool；溢出不得静默复用已有按键。
 - 生成 keymap 后必须让运行时和编辑器目录重新加载。
 - 生成 keymap 的内置宏源与游戏加载的部署副本必须一致；保存后的单文件部署失败必须显式提示。
@@ -154,7 +156,7 @@ keymap 是生成物；宏 Lua 与两端一致的展开算法才是来源。
 
 | 失败 | 表现 |
 |---|---|
-| dynamic 一端按 30 槽、另一端按实际人数 | 第一个 dynamic 后所有热键错位 |
+| dynamic 一端未按 40 槽、另一端按实际人数 | 第一个 dynamic 后所有热键错位 |
 | 职业数组顺序不同 | 该职业从首个差异处开始发送错误按键 |
 | 序列化删除空数组项 | 后续 static/special 槽全部前移 |
 | 宏文本无法提取技能名 | keymap 缺项，module 命中但无 hotkey |

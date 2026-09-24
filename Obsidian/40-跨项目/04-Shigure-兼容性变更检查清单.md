@@ -116,7 +116,7 @@ verified_at: "2026-08-10"
 - [ ] `step=1` 起始锚点是否仍可精确识别。
 - [ ] 第 2、3 格的职业/专精启动语义是否保持。
 - [ ] CountBars 红/红绿/白/灰标记、段顺序和 `G-1` 是否变化。
-- [ ] 治疗吸收最多 6 行、30 单位及 `G-1/B=unit` 是否变化。
+- [ ] 治疗吸收最多 8 行、40 单位及 `G-1/B=unit` 是否变化。
 - [ ] 窗口缩放、DPI、分辨率或 UI 缩放是否影响整数像素采样。
 
 ### ClassBlocks/config
@@ -131,7 +131,7 @@ verified_at: "2026-08-10"
 
 ### ClassMacros/keymap/module
 
-- [ ] dynamic 是否仍按每项 30 槽展开。
+- [ ] dynamic 是否仍按每项 40 槽展开。
 - [ ] `common + 当前 spec` 的合并顺序是否一致。
 - [ ] static/special 空槽是否被完整保留。
 - [ ] key pool 顺序和容量是否在两端一致且未溢出。
@@ -192,7 +192,7 @@ verified_at: "2026-08-10"
 ## 已知文档偏差状态
 
 - 旧外部 Fuyutsui 资料曾把 `auracontainer.lua` 列入结构；当前内置目录没有该文件，加载事实以 `Fuyutsui.toc` 为准。
-- Shigure README 曾写 `UnitMappingVersion = 2`；已于 2026-08-10 修正为当前版本 3。迁移事实以 `ModuleStore.cs` 与 `ReservedUnit.cs` 为准。
+- `UnitMappingVersion` 当前为 4；迁移事实以 `ModuleStore.cs` 与 `ReservedUnit.cs` 为准。
 - [[50-参考资料/OPTIMIZATION_zh-CN|Fuyutsui 优化建议]] 是拆分前源码的静态审计，保留历史价值，但其中 `main.lua` 千行行号不能用于当前定位。
 - [[50-参考资料/AuraContainer_AI_Reference_zh-CN|AuraContainer 参考]] 固定到特定 PTR build；正式服或新构建的 API 结论必须重新验证。
 

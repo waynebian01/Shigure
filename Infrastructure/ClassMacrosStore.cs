@@ -30,7 +30,7 @@ internal static class ClassMacrosStore
 
     public sealed class ClassMacros
     {
-        /// <summary>职业级动态宏；每个条目占用 30 个团队点名槽位。</summary>
+        /// <summary>职业级动态宏；每个条目占用 40 个团队点名槽位。</summary>
         public List<string> DynamicSpells { get; } = new();
         public List<ArrayEntry> StaticSpells { get; } = new();
         public List<ArrayEntry> SpecialSpells { get; } = new();

@@ -124,11 +124,11 @@ public sealed class PixelScanner : IRuntimeScreenScanner
 
     /// <summary>
     /// 扫描 CountBars 下方的治疗吸收网格。
-    /// 与层数条相同：读纯白块右侧第一个非白像素；G-1 为吸收值，B 为单位编号（1..30）。
+    /// 与层数条相同：读纯白块右侧第一个非白像素；G-1 为吸收值，B 为单位编号（1..40）。
     /// </summary>
     private static Dictionary<int, int> ScanHealAbsorbGrid(int baseX, int baseY, int width, int height, int countBarsY)
     {
-        var rows = Math.Min(6, Math.Max(0, height - countBarsY - 1));
+        var rows = Math.Min(8, Math.Max(0, height - countBarsY - 1));
         if (rows == 0)
         {
             return new Dictionary<int, int>();

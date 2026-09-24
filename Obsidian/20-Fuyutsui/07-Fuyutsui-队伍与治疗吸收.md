@@ -41,7 +41,7 @@ verified_at: 2026-08-28
 
 ## AI 快速摘要
 
-> `UpdateGroup()` 按小队/团队单位顺序重建 `groupList` 与 `group`，每名成员占 `ClassBlocks.group.num` 个顶部像素。总 `OnUpdate` 每帧只刷新一名成员的生命、职责和有效范围，以摊平成本；队伍光环/驱散由本地 AuraContainer 写入同一成员块。治疗吸收不是成员块字段，而是独立的 30 槽、5 列×6 行网格。
+> `UpdateGroup()` 按小队/团队单位顺序重建 `groupList` 与 `group`，每名成员占 `ClassBlocks.group.num` 个顶部像素。总 `OnUpdate` 每帧只刷新一名成员的生命、职责和有效范围，以摊平成本；队伍光环/驱散由本地 AuraContainer 写入同一成员块。治疗吸收不是成员块字段，而是独立的 40 槽、5 列×8 行网格。
 
 ## 范围与非范围
 
@@ -116,7 +116,7 @@ GROUP_ROSTER_UPDATE / 专精重建
 
 `FuyutsuiHealAbsorbBars` 是第三类独立视觉输出：
 
-- 最多 30 槽，5 列、6 行。
+- 最多 40 槽，5 列、8 行。
 - 每槽宽 102 单元：1 个前锚点、100 个条身、1 个灰色终点。
 - 行号和单位编号编码在 RGB 中，以便扫描器找到槽并验证身份。
 - 前锚点：`R=row, G=unitValue, B=0`（字节语义）。

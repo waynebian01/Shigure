@@ -7,7 +7,7 @@ local roleMap = Fuyutsui.roleMap
 local groupHealthCurves = Fuyutsui.groupHealthCurves
 local ColorValue0 = CreateColor(0, 0, 0, 1)
 local updateIndex = 1
-local GROUP_MAX_MEMBERS = 30
+local GROUP_MAX_MEMBERS = 40
 
 -- 治疗法术直接选择登录时预创建的生命曲线，禁止在战斗中创建曲线。
 local helpfulSpellCurves = {

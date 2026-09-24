@@ -11,8 +11,8 @@ internal static class PixelScanDecoder
     private const int TopRowSchemeSpan = MainPixelLayout.SchemeSpan;
     // 第 1 格总在客户区最左侧（最小档位下也只有几个像素宽），搜索窗口不随档位放大，避免误认游戏画面。
     private const int TopRowStartSearchWidth = 510;
-    private const int HealAbsorbMaxRows = 6;
-    private const int HealAbsorbMaxUnits = 30;
+    private const int HealAbsorbMaxRows = 8;
+    private const int HealAbsorbMaxUnits = GroupStateLayout.SlotCount;
 
     public static Dictionary<int, int> DecodeTopRow(ReadOnlySpan<int> pixels)
     {

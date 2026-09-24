@@ -3424,7 +3424,9 @@ public sealed class ClassConfigEditorControl : UserControl
                 fields++;
             }
         }
-        _groupPixelSummary.Text = _groupEnabledBox.Checked ? $"每人 {fields} 格，30 人共 {30 * fields} 格" : "未启用";
+        _groupPixelSummary.Text = _groupEnabledBox.Checked
+            ? $"每人 {fields} 格，{GroupStateLayout.SlotCount} 人共 {GroupStateLayout.SlotCount * fields} 格"
+            : "未启用";
     }
 
     private List<ClassBlocksStore.AuraEntry> GetCurrentAuraList()

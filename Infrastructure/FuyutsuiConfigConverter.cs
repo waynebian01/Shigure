@@ -552,8 +552,8 @@ internal static class FuyutsuiConfigConverter
             if (groupFieldCount > 0)
             {
                 result["group"] = groupJson;
-                // 自动计算的步长与插件一致，预留插件实际处理的 30 个成员。
-                index += 30 * groupFieldCount + 1;
+                // 自动计算的步长与插件一致，预留插件实际处理的 40 个成员。
+                index += GroupStateLayout.SlotCount * groupFieldCount + 1;
             }
         }
 

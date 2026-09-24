@@ -1,6 +1,6 @@
 ---
 title: Shigure 模块存储、匹配与版本迁移
-summary: 说明模块 JSON 模型、递归加载、匹配优先级、安全保存删除，以及 UnitMappingVersion 1→2→3 的迁移规则。
+summary: 说明模块 JSON 模型、递归加载、匹配优先级、安全保存删除，以及 UnitMappingVersion 1→2→3→4 的迁移规则。
 aliases:
   - ModuleStore
   - Shigure 模块系统
@@ -33,7 +33,7 @@ verified_at: 2026-08-09
 # Shigure 模块存储、匹配与版本迁移
 
 > [!abstract] AI 快速摘要
-> 模块是本地 JSON 数据，不是可执行代码。`ModuleStore` 递归读取模块目录，规范化并在内存中迁移旧单位编号；选择时先要求职业/专精/队伍/英雄天赋匹配，再按非通配字段数量决定具体度。当前 `CurrentUnitMappingVersion` 是 **3**。一个关键源码事实是模块根级 `Enabled` 目前完全未参与匹配或执行，不能用它停用模块。
+> 模块是本地 JSON 数据，不是可执行代码。`ModuleStore` 递归读取模块目录，规范化并在内存中迁移旧单位编号；选择时先要求职业/专精/队伍/英雄天赋匹配，再按非通配字段数量决定具体度。当前 `CurrentUnitMappingVersion` 是 **4**。一个关键源码事实是模块根级 `Enabled` 目前完全未参与匹配或执行，不能用它停用模块。
 
 ## 图谱位置
 
@@ -50,7 +50,7 @@ verified_at: 2026-08-09
 | 字段组 | 作用 |
 |---|---|
 | `Id`, `Name`, `Author`, `Version`, `RecommendedTalent` | 身份和展示元数据 |
-| `UnitMappingVersion` | 单位编号/宏条件迁移版本，当前目标为 3 |
+| `UnitMappingVersion` | 单位编号/宏条件迁移版本，当前目标为 4 |
 | `Enabled` | JSON/UI 元数据；**当前运行时忽略** |
 | `Match` | 职业、专精、队伍类型、英雄天赋约束 |
 | `Units`, `Counts` | 动态单位与统计定义 |
@@ -79,24 +79,27 @@ verified_at: 2026-08-09
 
 UI 记住的手动模块 ID 即使当前不匹配也可能保留；状态以后重新匹配时它会再次生效。模块根级 `Enabled` 没有出现在过滤条件中。
 
-## 单位映射版本 3
+## 单位映射版本 4
 
 当前保留单位：
 
 | 编号 | 含义 |
 |---:|---|
 | 0 | 无固定单位/由宏条件决定 |
-| 1..30 | 小队/团队槽位 |
-| 31 | player |
-| 32 | target |
-| 33 | focus |
-| 34 | cursor/ground |
-| 35 | mouseover |
+| 1..40 | 小队/团队槽位 |
+| 41 | player |
+| 42 | target |
+| 43 | focus |
+| 44 | cursor/ground |
+| 45 | mouseover |
+| 46..50 | boss1..5 |
+| 51..55 | arena1..5 |
 
 迁移按版本递进：
 
 - `< 2`：旧编号 31 调整为 cursor 34，旧编号 34 调整为 player 31。
 - `< 3`：旧编号 36/37 不再是独立单位，改成 unit 0，并分别补为 `channeling` / `nochanneling` 宏条件。
+- `< 4`：v3 的保留单位 31..35 调整为 41..45，为团队槽 31..40 让出编号。
 - 旧动作名 `插入法术` 规范化为 `自动插入法术`。
 
 README 曾写映射版本 2，已于 2026-08-09 修正；旧副本可能仍含该历史值。新增编号或改变含义必须同时更新 `ReservedUnit`、迁移器、Keymap 转换器、模块编辑器和跨项目宏契约。
@@ -117,7 +120,7 @@ README 曾写映射版本 2，已于 2026-08-09 修正；旧副本可能仍含�
 | `Enabled:false` 仍运行 | 根级 `ModuleDefinition.Enabled` 当前是死元数据 |
 | 手选模块未运行 | 手选项也必须匹配当前职业/专精/队伍/英雄天赋 |
 | 自动选择了意外模块 | 比较 specificity；同具体度再按名称排序 |
-| 旧单位目标错位 | 检查 `UnitMappingVersion` 和 1→2→3 迁移后的内存值 |
+| 旧单位目标错位 | 检查 `UnitMappingVersion` 和 1→2→3→4 迁移后的内存值 |
 | 保存后手工字段消失 | 模块 UI 不保留规则 `Hotkey`/`Step`；见 UI 页面 |
 
 ## 修改影响

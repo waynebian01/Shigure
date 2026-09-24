@@ -41,7 +41,7 @@ verified_at: 2026-08-09
 
 ## AI 快速摘要
 
-> `ClassBlocks[specIndex]` 是布局输入，`LoadPlayerBlocks()` 按固定顺序把它展开到 `Fuyutsui.blocks`。主状态行固定有 510 个一像素高的槽位：索引 1..255 编为 `R=0, G=index`，索引 256..510 编为 `R=1, G=index-255`，这里的通道值指 8 位 RGB 字节；`B` 承载状态值。插件另有横向 `CountBars` 和 30 槽治疗吸收网格，共三类输出，不能当成一条连续索引流。
+> `ClassBlocks[specIndex]` 是布局输入，`LoadPlayerBlocks()` 按固定顺序把它展开到 `Fuyutsui.blocks`。主状态行按实际占用在 510/765/1020 格之间选择档位，每 255 格切换一次红通道方案，`B` 承载状态值。插件另有横向 `CountBars` 和 40 槽治疗吸收网格，共三类输出，不能当成一条连续索引流。
 
 ## 范围与非范围
 
@@ -133,7 +133,7 @@ Lua 传给 `SetColorTexture` 时再除以 255。因此第 255 槽是 `(0,255,B)`
 ### 3. 队伍治疗吸收网格
 
 - Frame：`FuyutsuiHealAbsorbBars`。
-- 最多 30 个成员，5 列、6 行；每槽为 1 个成员锚点、100 个条身单元和 1 个终点。
+- 最多 40 个成员，5 列、8 行；每槽为 1 个成员锚点、100 个条身单元和 1 个终点。
 - 玩家锚点值为 1，`party1..4` 为 2..5，`raidN` 为 N；锚点帮助消费端确认槽身份。
 
 详细扫描几何见 [[40-跨项目/01-Shigure-像素生产消费契约]]。
@@ -168,7 +168,7 @@ Lua 传给 `SetColorTexture` 时再除以 255。因此第 255 槽是 `(0,255,B)`
 - `Fuyutsui/main.lua:39-195`：`ClassBlocks` 展开顺序和 group 起点。
 - `Fuyutsui/core/block.lua:8-126`：510 主行、两段索引编码和纹理写入。
 - `Fuyutsui/core/block.lua:134-284`：CountBars 预留、绘制和清理。
-- `Fuyutsui/core/block.lua:299-457`：30 槽治疗吸收网格。
+- `Fuyutsui/core/block.lua`：40 槽治疗吸收网格。
 - `Fuyutsui/core/stateblocks.lua:84-291`：状态键规则、getter 路由和写入入口。
 - `Fuyutsui/class/DeathKnight.lua:27-33`、`Fuyutsui/class/Evoker.lua:153-154`：当前重复键实例。
 

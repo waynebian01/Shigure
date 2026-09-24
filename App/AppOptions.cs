@@ -18,6 +18,7 @@ public sealed record AppOptions(
     SendMode Mode,
     string? ModuleId,
     CaptureMethod CaptureMethod,
+    TimeSpan ScanInterval,
     TimeSpan LogicInterval,
     TimeSpan RenderInterval)
 {
@@ -26,6 +27,7 @@ public sealed record AppOptions(
         var toggleKey = "XBUTTON2";
         var mode = SendMode.Switch;
         string? moduleId = null;
+        var scanInterval = TimeSpan.FromMilliseconds(100);
         var logicInterval = TimeSpan.FromMilliseconds(100);
         var renderInterval = TimeSpan.FromMilliseconds(100);
 
@@ -63,6 +65,7 @@ public sealed record AppOptions(
             mode,
             moduleId,
             CaptureMethod.WindowsGraphicsCapture,
+            scanInterval,
             logicInterval,
             renderInterval);
     }

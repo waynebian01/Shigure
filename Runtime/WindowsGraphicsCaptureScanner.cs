@@ -23,6 +23,7 @@ internal sealed class WindowsGraphicsCaptureScanner : IRuntimeScreenScanner
     private static readonly TimeSpan StaleFrameTimeout = TimeSpan.FromSeconds(1);
     private static readonly Guid GraphicsCaptureItemInteropId = new("3628E81B-3CAC-4C60-B7F4-23CE0E0C3356");
     private static readonly Guid GraphicsCaptureItemId = new("79C3F95B-31F7-4EC2-A464-632EF5D30760");
+    private static readonly Guid GraphicsCaptureSession3Id = new("F2CDD966-22AE-5EA1-9596-3A289344C3BE");
     private static readonly Guid Direct3DDxgiInterfaceAccessId = new("A9B3D012-3DF2-4EE3-B8D1-8695F457D3C1");
     private const string GraphicsCaptureItemRuntimeClass = "Windows.Graphics.Capture.GraphicsCaptureItem";
 
@@ -209,6 +210,8 @@ internal sealed class WindowsGraphicsCaptureScanner : IRuntimeScreenScanner
                 // 较旧系统没有此属性；指针通常不位于编码像素区域，不阻止捕获。
             }
 
+            TryDisableSystemCaptureBorder(session);
+
             _captureItem = item;
             _framePool = framePool;
             _captureSession = session;
@@ -276,6 +279,30 @@ internal sealed class WindowsGraphicsCaptureScanner : IRuntimeScreenScanner
         finally
         {
             WinRT.MarshalInterface<WinRtDirect3DDevice>.DisposeAbi(devicePointer);
+        }
+    }
+
+    private static void TryDisableSystemCaptureBorder(GraphicsCaptureSession session)
+    {
+        // IsBorderRequired 从 UniversalApiContract v12（Windows build 20348）开始提供。
+        // 项目仍以 19041 SDK 编译，因此通过对应 WinRT 接口调用新属性；系统不支持或拒绝时保留默认边框。
+        if (!OperatingSystem.IsWindowsVersionAtLeast(10, 0, 20348))
+        {
+            return;
+        }
+
+        try
+        {
+            using var session3 = ((WinRT.IWinRTObject)session).NativeObject.As(GraphicsCaptureSession3Id);
+            var vtable = Marshal.ReadIntPtr(session3.ThisPtr);
+            // IInspectable 占 6 个槽位；IGraphicsCaptureSession3 的 get/put_IsBorderRequired 紧随其后。
+            var setterPointer = Marshal.ReadIntPtr(vtable, 7 * IntPtr.Size);
+            var setter = Marshal.GetDelegateForFunctionPointer<SetBooleanPropertyDelegate>(setterPointer);
+            Marshal.ThrowExceptionForHR(setter(session3.ThisPtr, 0));
+        }
+        catch
+        {
+            // 黄色捕获边框只影响显示；不能关闭时仍继续使用 WGC，避免捕获功能因此失效。
         }
     }
 
@@ -601,6 +628,9 @@ internal sealed class WindowsGraphicsCaptureScanner : IRuntimeScreenScanner
 
     [UnmanagedFunctionPointer(CallingConvention.StdCall)]
     private delegate int GetInterfaceDelegate(nint @this, ref Guid iid, out nint result);
+
+    [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+    private delegate int SetBooleanPropertyDelegate(nint @this, byte value);
 
     [DllImport("combase.dll", ExactSpelling = true)]
     private static extern int WindowsCreateString(

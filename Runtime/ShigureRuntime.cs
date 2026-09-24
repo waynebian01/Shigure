@@ -26,6 +26,7 @@ public sealed class ShigureRuntime
     private bool _clickPending;
     private readonly Dictionary<string, DateTimeOffset> _lastRuleSentAt = new(StringComparer.Ordinal);
     private DateTimeOffset _logicPausedUntil = DateTimeOffset.MinValue;
+    private nint _latestTargetWindowHandle;
 
     internal ShigureRuntime(
         AppOptions options,
@@ -102,6 +103,7 @@ public sealed class ShigureRuntime
             }
 
             var previousPressed = false;
+            var lastScanAt = DateTimeOffset.MinValue;
             var lastLogicAt = DateTimeOffset.MinValue;
             var lastRenderAt = DateTimeOffset.MinValue;
             var lastToggleAt = DateTimeOffset.MinValue;
@@ -138,6 +140,12 @@ public sealed class ShigureRuntime
                 }
 
                 previousPressed = pressed;
+
+                if (now - lastScanAt >= _options.ScanInterval)
+                {
+                    lastScanAt = now;
+                    TickScan();
+                }
 
                 if (now - lastLogicAt >= _options.LogicInterval)
                 {
@@ -195,13 +203,14 @@ public sealed class ShigureRuntime
         }
     }
 
-    private void TickLogic()
+    private void TickScan()
     {
         var scan = _scanner.ScanScreenData();
         _scanFailureReason = scan.FailureReason;
 
         if (scan.RowData is null)
         {
+            _latestTargetWindowHandle = 0;
             _state = null;
             _classId = null;
             _specId = null;
@@ -217,6 +226,7 @@ public sealed class ShigureRuntime
             return;
         }
 
+        _latestTargetWindowHandle = scan.TargetWindowHandle;
         _state = _stateBuilder.Build(scan.RowData, scan.BarData, scan.HealAbsorbData);
         _classId = _state.GetInt("职业");
         _specId = _state.GetInt("专精");
@@ -226,6 +236,14 @@ public sealed class ShigureRuntime
             _moduleName = null;
             _currentStep = "等待游戏状态";
             _unitInfo = new Dictionary<string, object?>();
+            return;
+        }
+    }
+
+    private void TickLogic()
+    {
+        if (_state is null || !_state.GetBool("有效性"))
+        {
             return;
         }
 
@@ -255,7 +273,7 @@ public sealed class ShigureRuntime
         {
             if (_clickPending)
             {
-                TrySendDecisions(decisions, scan.TargetWindowHandle);
+                TrySendDecisions(decisions, _latestTargetWindowHandle);
             }
 
             _enabled = false;
@@ -263,7 +281,7 @@ public sealed class ShigureRuntime
             return;
         }
 
-        TrySendDecisions(decisions, scan.TargetWindowHandle);
+        TrySendDecisions(decisions, _latestTargetWindowHandle);
     }
 
     private void TrySendDecisions(IReadOnlyList<LogicDecision> decisions, nint targetWindowHandle)

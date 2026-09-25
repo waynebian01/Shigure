@@ -190,7 +190,7 @@ public enum EnemyCombatFilterKind
     NotInCombat
 }
 
-/// <summary>敌人数量的光环筛选方式。</summary>
+/// <summary>单位与数量字段的光环筛选方式。</summary>
 public enum EnemyAuraFilterKind
 {
     /// <summary>不筛选。</summary>
@@ -206,7 +206,10 @@ public enum EnemyAuraFilterKind
     WithAnyAura,
 
     /// <summary>不带所选任何光环。</summary>
-    WithoutAnyAura
+    WithoutAnyAura,
+
+    /// <summary>同时带有所选全部光环；至少需要两个光环。</summary>
+    WithAllAuras
 }
 
 /// <summary>队友驱散类型筛选方式。</summary>

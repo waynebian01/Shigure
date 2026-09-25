@@ -118,6 +118,7 @@ internal static class UnitSummary
                 EnemyAuraFilterKind.WithoutAura => $"不带[{aura}]",
                 EnemyAuraFilterKind.WithAnyAura => $"带任一[{auras}]",
                 EnemyAuraFilterKind.WithoutAnyAura => $"不带任一[{auras}]",
+                EnemyAuraFilterKind.WithAllAuras => $"同时带有[{auras}]",
                 _ => string.Empty
             });
         }
@@ -195,6 +196,7 @@ internal static class UnitSummary
                 EnemyAuraFilterKind.WithoutAura => $"不带[{aura}]",
                 EnemyAuraFilterKind.WithAnyAura => $"带任一[{auras}]",
                 EnemyAuraFilterKind.WithoutAnyAura => $"不带任一[{auras}]",
+                EnemyAuraFilterKind.WithAllAuras => $"同时带有[{auras}]",
                 _ => string.Empty
             });
 
@@ -224,6 +226,7 @@ internal static class UnitSummary
                 EnemyAuraFilterKind.WithoutAura => $"不带[{aura}]",
                 EnemyAuraFilterKind.WithAnyAura => $"带任一[{auras}]",
                 EnemyAuraFilterKind.WithoutAnyAura => $"不带任一[{auras}]",
+                EnemyAuraFilterKind.WithAllAuras => $"同时带有[{auras}]",
                 _ => string.Empty
             });
 
@@ -271,6 +274,7 @@ internal static class UnitSummary
                 EnemyAuraFilterKind.WithoutAura => $"不带[{aura}]",
                 EnemyAuraFilterKind.WithAnyAura => $"带任一[{auras}]",
                 EnemyAuraFilterKind.WithoutAnyAura => $"不带任一[{auras}]",
+                EnemyAuraFilterKind.WithAllAuras => $"同时带有[{auras}]",
                 _ => string.Empty
             });
 

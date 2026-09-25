@@ -144,6 +144,7 @@ public sealed class UnitEditorForm : Form
         new("有某一个光环", EnemyAuraFilterKind.WithAura),
         new("没有某一个光环", EnemyAuraFilterKind.WithoutAura),
         new("有任一光环 (多选)", EnemyAuraFilterKind.WithAnyAura),
+        new("同时拥有光环 (多选)", EnemyAuraFilterKind.WithAllAuras),
         new("没有任一光环 (多选)", EnemyAuraFilterKind.WithoutAnyAura)
     ];
 
@@ -653,8 +654,7 @@ public sealed class UnitEditorForm : Form
 
         UiTheme.StyleComboBox(_enemyAuraFilterBox);
         _enemyAuraFilterBox.DropDownWidth = 220;
-        _enemyAuraFilterBox.Items.AddRange(EnemyAuraFilterOptions.Cast<object>().ToArray());
-        _enemyAuraFilterBox.SelectedIndex = 0;
+        PopulateEnemyAuraFilterOptions();
         _enemyAuraFilterBox.SelectedIndexChanged += (_, _) => UpdateParamVisibility();
         InitializeUnitOrderBox(_auraOrderBox);
 
@@ -1003,6 +1003,7 @@ public sealed class UnitEditorForm : Form
 
     private void PopulateSelectors()
     {
+        PopulateEnemyAuraFilterOptions();
         _selectorBox.Items.Clear();
         // 只有平均血量需要在页头选择统计对象；队友单位的目标选择已移动到各筛选卡片。
         var hasSelector = IsAverageHealthCategory;
@@ -1037,6 +1038,30 @@ public sealed class UnitEditorForm : Form
         }
 
         PopulateFilterAuras();
+    }
+
+    private void PopulateEnemyAuraFilterOptions()
+    {
+        var selected = SelectedEnemyAuraFilter();
+        var countCategory = IsCountCategory || IsEnemyCountCategory;
+        _enemyAuraFilterBox.BeginUpdate();
+        try
+        {
+            _enemyAuraFilterBox.Items.Clear();
+            foreach (var option in EnemyAuraFilterOptions)
+            {
+                if (option.Kind != EnemyAuraFilterKind.WithAllAuras || countCategory)
+                {
+                    _enemyAuraFilterBox.Items.Add(option);
+                }
+            }
+
+            SelectEnemyAuraFilter(selected);
+        }
+        finally
+        {
+            _enemyAuraFilterBox.EndUpdate();
+        }
     }
 
     // 值名称只对"生命值最低"单位有意义(把该单位的 生命值 暴露成数值条件字段)。
@@ -1250,7 +1275,9 @@ public sealed class UnitEditorForm : Form
         SetThresholdGroupVisible(_enemyHealthThreshold, healthFilter);
         SetThresholdGroupVisible(_enemyRangeThreshold, enemyTarget && rangeFilter);
         _enemyAuraRow.Visible = auraFilter is EnemyAuraFilterKind.WithAura or EnemyAuraFilterKind.WithoutAura;
-        _enemyAurasRow.Visible = auraFilter is EnemyAuraFilterKind.WithAnyAura or EnemyAuraFilterKind.WithoutAnyAura;
+        _enemyAurasRow.Visible = auraFilter is EnemyAuraFilterKind.WithAnyAura
+            or EnemyAuraFilterKind.WithoutAnyAura
+            or EnemyAuraFilterKind.WithAllAuras;
         _enemyAuraTimeFilterRow.Visible = allowAuraTime;
         _enemyAuraTimeRow.Visible = allowAuraTime
             && auraTimeFilter is AuraDurationFilterKind.Above or AuraDurationFilterKind.Below;
@@ -1407,7 +1434,8 @@ public sealed class UnitEditorForm : Form
         count.AuraSpellIds = count.AuraFilter switch
         {
             EnemyAuraFilterKind.WithAura or EnemyAuraFilterKind.WithoutAura => SingleAuraList(_enemyAuraBox),
-            EnemyAuraFilterKind.WithAnyAura or EnemyAuraFilterKind.WithoutAnyAura => CheckedAuras(_enemyAurasBox),
+            EnemyAuraFilterKind.WithAnyAura or EnemyAuraFilterKind.WithoutAnyAura or EnemyAuraFilterKind.WithAllAuras
+                => CheckedAuras(_enemyAurasBox),
             _ => null
         };
         count.AuraDurationThreshold = count.AuraDurationFilter is AuraDurationFilterKind.Above
@@ -1452,7 +1480,8 @@ public sealed class UnitEditorForm : Form
         count.AuraSpellIds = count.AuraFilter switch
         {
             EnemyAuraFilterKind.WithAura or EnemyAuraFilterKind.WithoutAura => SingleAuraList(_enemyAuraBox),
-            EnemyAuraFilterKind.WithAnyAura or EnemyAuraFilterKind.WithoutAnyAura => CheckedAuras(_enemyAurasBox),
+            EnemyAuraFilterKind.WithAnyAura or EnemyAuraFilterKind.WithoutAnyAura or EnemyAuraFilterKind.WithAllAuras
+                => CheckedAuras(_enemyAurasBox),
             _ => null
         };
         return count;
@@ -2053,6 +2082,12 @@ public sealed class UnitEditorForm : Form
         if (auraFilter != EnemyAuraFilterKind.None && (auraSpellIds is null || auraSpellIds.Count == 0))
         {
             MessageBox.Show("请选择光环。", "Shigure", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return false;
+        }
+
+        if (auraFilter == EnemyAuraFilterKind.WithAllAuras && auraSpellIds!.Count < 2)
+        {
+            MessageBox.Show("“同时拥有光环”至少需要选择 2 个光环。", "Shigure", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             return false;
         }
 

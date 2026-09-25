@@ -1320,7 +1320,9 @@ internal sealed class ModuleDependencyService
 
     private static void EnsureMacroCapacity(int classId, ClassMacrosStore.ClassMacros macros)
     {
-        var slots = checked(macros.DynamicSpells.Count * 30 + macros.StaticSpells.Count + macros.SpecialSpells.Count);
+        var slots = checked(macros.DynamicSpells.Count * GroupStateLayout.SlotCount
+            + macros.StaticSpells.Count
+            + macros.SpecialSpells.Count);
         if (slots > FuyutsuiKeymapConverter.MacroSlotCapacity)
         {
             var className = ClassNames.GetClassAndSpecName(classId, null).ClassName ?? $"职业{classId}";

@@ -7,10 +7,18 @@ public enum SendMode
     Hold
 }
 
+public enum CaptureMethod
+{
+    WindowsGraphicsCapture,
+    ScreenCopy
+}
+
 public sealed record AppOptions(
     string ToggleKey,
     SendMode Mode,
     string? ModuleId,
+    CaptureMethod CaptureMethod,
+    TimeSpan ScanInterval,
     TimeSpan LogicInterval,
     TimeSpan RenderInterval)
 {
@@ -19,6 +27,7 @@ public sealed record AppOptions(
         var toggleKey = "XBUTTON2";
         var mode = SendMode.Switch;
         string? moduleId = null;
+        var scanInterval = TimeSpan.FromMilliseconds(100);
         var logicInterval = TimeSpan.FromMilliseconds(100);
         var renderInterval = TimeSpan.FromMilliseconds(100);
 
@@ -51,7 +60,14 @@ public sealed record AppOptions(
             }
         }
 
-        return new AppOptions(toggleKey, mode, moduleId, logicInterval, renderInterval);
+        return new AppOptions(
+            toggleKey,
+            mode,
+            moduleId,
+            CaptureMethod.WindowsGraphicsCapture,
+            scanInterval,
+            logicInterval,
+            renderInterval);
     }
 
     private static SendMode ParseMode(string value)

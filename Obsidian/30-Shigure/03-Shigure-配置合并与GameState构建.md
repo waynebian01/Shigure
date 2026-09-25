@@ -75,7 +75,7 @@ RowData[2,3]
   -> BuildStateConfig(classId, specId)
   -> 标量字段
   -> spells / auras
-  -> group[1..30]
+  -> group[1..40]
   -> GameState(fields, spells, auras, group)
 ```
 

@@ -8,6 +8,7 @@ internal static class NativeMethods
     public delegate bool EnumWindowsProc(nint hWnd, nint lParam);
 
     public const uint ProcessQueryLimitedInformation = 0x1000;
+    public const uint DwmwaExtendedFrameBounds = 9;
 
     public const uint WmKeyDown = 0x0100;
     public const uint WmKeyUp = 0x0101;
@@ -112,6 +113,17 @@ internal static class NativeMethods
     [DllImport("user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     public static extern bool GetClientRect(nint hWnd, out Rect lpRect);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool GetWindowRect(nint hWnd, out Rect lpRect);
+
+    [DllImport("dwmapi.dll")]
+    public static extern int DwmGetWindowAttribute(
+        nint hWnd,
+        uint dwAttribute,
+        out Rect pvAttribute,
+        int cbAttribute);
 
     [DllImport("user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]

@@ -96,7 +96,7 @@ Program.Main
 ## 必须记住的不变量
 
 - 顶行协议有效步骤为 `1..510`；步骤 1 是锚点，2/3 是职业/专精。
-- `ModuleDefinition.CurrentUnitMappingVersion` 当前是 **3**；README 曾写 2，已于 2026-08-09 修正，旧副本仍需警惕该历史值。
+- `ModuleDefinition.CurrentUnitMappingVersion` 当前是 **4**；v4 将团队扩展到 40 槽，并把旧保留单位 31..35 迁移到 41..45。
 - 扫描器和按键发送器共享 `WowProcessLocator`：按进程名筛选、按 Z 顺序取首个可见窗口；发送前还会核对本轮扫描句柄，窗口切换时等待重新扫描。
 - 项目内置 `Fuyutsui/` 是权威源，游戏 AddOns 目录只是单向部署副本，不从游戏目录反向合并。
 - 模块、条件和公式都是受限数据解释器，不执行 C#；模块仍可直接指定要发送的 Hotkey。
@@ -108,7 +108,7 @@ Program.Main
 
 | 旧说明 | 源码事实 |
 |---|---|
-| README 曾写 `UnitMappingVersion = 2`（2026-08-10 已修正） | 当前常量为 3，并包含 2→3 的通道宏条件迁移；不要从旧副本恢复旧值。 |
+| README 曾写过旧 `UnitMappingVersion` | 当前常量为 4，并包含逐级迁移；不要从旧副本恢复旧值。 |
 | README 概括“缺失/非数字比较为 false” | 配置中存在但像素缺失的数值已在 `StateBuilder` 中变为 0，随后可能满足 `< 50`。真正无法解析的值才按 false 处理。 |
 | README 概括组员统计都会跳过角色 0/生命 0 | 各选择器约束不同；光环、角色、驱散、吸收路径没有统一执行这两个过滤。 |
 | README 把旧稀疏 ClassBlocks 称为只读 | Store 实际对旧专精返回空数据并拒绝保存，不能视作完整旧格式查看器。 |

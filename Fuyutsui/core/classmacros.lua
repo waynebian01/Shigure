@@ -12,7 +12,7 @@ Fuyutsui.MacroBodies = {
 -- 全职业宏表：按 UnitClassBase 键索引
 -- 由 LoadPlayerMacros 按当前职业选取
 -- dynamicSpells、staticSpells、specialSpells 均为职业级列表
--- 创建顺序：dynamicSpells（每组 30 键）→ staticSpells → specialSpells
+-- 创建顺序：dynamicSpells（每组 40 键）→ staticSpells → specialSpells
 Fuyutsui.ClassMacros = {
     WARRIOR = {
         dynamicSpells = {},

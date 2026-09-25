@@ -38,7 +38,7 @@ local AURA_BAR_STRATA = "TOOLTIP"
 local AURA_BAR_LEVEL = 9004
 
 -- 队伍治疗吸收条（FuyutsuiHealAbsorbBars）
-local HEAL_ABSORB_MAX_SLOTS = 30  -- 最大槽位数
+local HEAL_ABSORB_MAX_SLOTS = 40  -- 最大槽位数
 local HEAL_ABSORB_COLS = 5        -- 每行列数
 local HEAL_ABSORB_BAR_UNITS = 100 -- 单条条身单元数
 local HEAL_ABSORB_WIDTH_SCALE = 0.7 -- 单元宽度相对横向条的缩放比例
@@ -367,10 +367,10 @@ end
 
 --[[============================================================================
     队伍治疗吸收条（FuyutsuiHealAbsorbBars）
-    布局：主色块 + 计数条下方；每行 5 条、最多 30 条
+    布局：主色块 + 计数条下方；每行 5 条、最多 40 条
     单槽：前锚点 1 + 条身 100 + 终点色块 1（列宽 102）
     编码：
-      行 r：第 1 行=0 … 第 6 行=5（同行条身背景 r 统一）
+      行 r：第 1 行=0 … 第 8 行=7（同行条身背景 r 统一）
       前锚点：(r=行号/255, g=单位编号/255, b=0)
         player=1, party1..4=2..5, raidN=N
       条身背景：(r=行号/255, g=相对索引1..100/255, b=单位编号/255)

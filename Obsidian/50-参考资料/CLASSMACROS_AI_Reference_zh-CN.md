@@ -49,7 +49,7 @@ Fuyutsui:CreateMacro(dynamicSpells, m.staticSpells, m.specialSpells)
 
 `CreateMacro` 开头会先 `ClearMacros()`（清覆盖绑定 + 清空已有按钮 `macrotext`），再按新列表从头占键。真正创建按钮、拼宏文本、绑定热键的逻辑在 `core/macro.lua`。
 
-**创建顺序（依次占键）**：`dynamicSpells`（每组 30 键）→ `staticSpells` → `specialSpells`。
+**创建顺序（依次占键）**：`dynamicSpells`（每组 40 键）→ `staticSpells` → `specialSpells`。
 
 ## 1. AI 必须遵守的规则
 
@@ -79,7 +79,7 @@ main.lua:LoadPlayerMacros()
         ▼
 macro.lua:CreateMacro(dynamic, static, special)
         │  0. ClearMacros()：ClearOverrideBindings + 清空 macrotext
-        │  1. dynamic：每组 × 30 键
+        │  1. dynamic：每组 × 40 键
         │  2. static：ipairs 依次占键（resolveMacroBody）
         │  3. special：接在 static 后依次占键（resolveMacroBody）
         │  SetOverrideBindingClick + macrotext → 按钮 s1..sN
@@ -118,7 +118,7 @@ i = 1
 
 -- 1. dynamicSpells（已是解析后的纯数组）
 for each spell in dynamicSpells:
-    for raidIdx = 1..30:
+    for raidIdx = 1..40:
         按 §5 生成 macroBody（spell 为空则不建按钮）
         占用 macroKind[i]，i = i + 1
 
@@ -195,7 +195,7 @@ dynamicSpells = { "纯净术", "快速治疗", "真言术：盾", "苦修" },
 
 ### 5.2 单组内 30 键展开
 
-设组内相对位 `raidIdx = 1..30`，法术名为 `spell`：
+设组内相对位 `raidIdx = 1..40`，法术名为 `spell`：
 
 | raidIdx | 生成的 `macrotext` |
 |---:|---|

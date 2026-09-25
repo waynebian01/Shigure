@@ -92,7 +92,13 @@ local function GetUnitIdentityIndex(unit)
         end
     end
 
-    return 51
+    for index = 1, 5 do
+        if AreSameUnits(unit, "arena" .. index) then
+            return 50 + index
+        end
+    end
+
+    return 56
 end
 
 local function EncodeUnitType(unit)

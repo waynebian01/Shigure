@@ -257,9 +257,9 @@ function Fuyutsui:LoadPlayerBlocks(specIndex)
                 groups.aura[groups.num] = aura
             end
         end
-        -- 队伍偏移从 1 开始；预留插件实际处理的 30 人后再追加姓名板。
+        -- 队伍偏移从 1 开始；预留插件实际处理的 40 人后再追加姓名板。
         if groups.num > 0 then
-            index = index + 30 * groups.num + 1
+            index = index + 40 * groups.num + 1
         else
             blocks.groups = nil
         end

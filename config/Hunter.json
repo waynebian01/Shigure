@@ -94,6 +94,26 @@
     "254": 357214,
     "255": 436344
   },
+  "一键物品": {
+    "1": 241288,
+    "2": 241289,
+    "3": 241300,
+    "4": 241301,
+    "5": 241304,
+    "6": 241305,
+    "7": 241308,
+    "8": 241309,
+    "9": 245897,
+    "10": 245898,
+    "11": 245902,
+    "12": 245903,
+    "13": 245916,
+    "14": 245917,
+    "15": 245918,
+    "16": 245919,
+    "17": 271883,
+    "18": 271884
+  },
   "1": {
     "队伍类型": {
       "step": 4,
@@ -235,79 +255,94 @@
       "type": "int",
       "category": "目标"
     },
-    "焦点施法(倒计时)": {
+    "目标驱散类型": {
       "step": 32,
       "type": "int",
-      "category": "焦点"
+      "category": "目标"
     },
-    "焦点施法(正计时)": {
+    "焦点施法(倒计时)": {
       "step": 33,
       "type": "int",
       "category": "焦点"
     },
-    "焦点施法可打断": {
+    "焦点施法(正计时)": {
       "step": 34,
       "type": "int",
       "category": "焦点"
     },
-    "焦点引导": {
+    "焦点施法可打断": {
       "step": 35,
       "type": "int",
       "category": "焦点"
     },
-    "焦点引导可打断": {
+    "焦点引导": {
       "step": 36,
       "type": "int",
       "category": "焦点"
     },
-    "鼠标类型": {
+    "焦点引导可打断": {
       "step": 37,
       "type": "int",
-      "category": "鼠标"
+      "category": "焦点"
     },
-    "鼠标驱散类型": {
+    "鼠标类型": {
       "step": 38,
       "type": "int",
       "category": "鼠标"
     },
-    "鼠标生命值": {
+    "鼠标驱散类型": {
       "step": 39,
       "type": "int",
       "category": "鼠标"
     },
-    "鼠标距离": {
+    "鼠标生命值": {
       "step": 40,
       "type": "int",
       "category": "鼠标"
     },
-    "鼠标施法(倒计时)": {
+    "鼠标距离": {
       "step": 41,
       "type": "int",
       "category": "鼠标"
     },
-    "鼠标施法(正计时)": {
+    "鼠标施法(倒计时)": {
       "step": 42,
       "type": "int",
       "category": "鼠标"
     },
-    "鼠标施法可打断": {
+    "鼠标施法(正计时)": {
       "step": 43,
       "type": "int",
       "category": "鼠标"
     },
-    "鼠标引导": {
+    "鼠标施法可打断": {
       "step": 44,
       "type": "int",
       "category": "鼠标"
     },
-    "鼠标引导可打断": {
+    "鼠标引导": {
       "step": 45,
       "type": "int",
       "category": "鼠标"
     },
+    "鼠标引导可打断": {
+      "step": 46,
+      "type": "int",
+      "category": "鼠标"
+    },
+    "宠物存在": {
+      "step": 47,
+      "type": "int",
+      "category": "宠物"
+    },
+    "宠物生命值": {
+      "step": 48,
+      "type": "int",
+      "category": "宠物"
+    },
     "auras": {
       "player.471877.value": {
-        "step": 46,
+        "step": 49,
         "type": "int",
         "category": "玩家",
         "displayName": "猎群领袖之嚎",
@@ -319,7 +354,7 @@
         ]
       },
       "player.1299389.value": {
-        "step": 47,
+        "step": 50,
         "type": "int",
         "category": "玩家",
         "displayName": "眼镜蛇利牙",
@@ -344,7 +379,7 @@
         "bar": 1
       },
       "player.1276720.value": {
-        "step": 48,
+        "step": 51,
         "type": "int",
         "category": "玩家",
         "displayName": "自然之友",
@@ -356,7 +391,7 @@
         ]
       },
       "player.268877.value": {
-        "step": 49,
+        "step": 52,
         "type": "int",
         "category": "玩家",
         "displayName": "野兽顺劈",
@@ -368,7 +403,7 @@
         ]
       },
       "player.471878.value": {
-        "step": 50,
+        "step": 53,
         "type": "int",
         "category": "玩家",
         "displayName": "龙",
@@ -380,7 +415,7 @@
         ]
       },
       "player.472324.value": {
-        "step": 51,
+        "step": 54,
         "type": "int",
         "category": "玩家",
         "displayName": "猪",
@@ -392,7 +427,7 @@
         ]
       },
       "player.472325.value": {
-        "step": 52,
+        "step": 55,
         "type": "int",
         "category": "玩家",
         "displayName": "熊",
@@ -404,7 +439,7 @@
         ]
       },
       "target.harmful.259556.value": {
-        "step": 53,
+        "step": 56,
         "type": "int",
         "category": "目标减益",
         "displayName": "猎人印记",
@@ -418,7 +453,7 @@
     },
     "spells": {
       "53480.cooldown": {
-        "step": 54,
+        "step": 57,
         "type": "int",
         "displayName": "牺牲咆哮",
         "spellId": 53480,
@@ -426,7 +461,7 @@
         "displayType": "冷却"
       },
       "109304.cooldown": {
-        "step": 55,
+        "step": 58,
         "type": "int",
         "displayName": "意气风发",
         "spellId": 109304,
@@ -434,7 +469,7 @@
         "displayType": "冷却"
       },
       "19577.cooldown": {
-        "step": 56,
+        "step": 59,
         "type": "int",
         "displayName": "胁迫",
         "spellId": 19577,
@@ -442,7 +477,7 @@
         "displayType": "冷却"
       },
       "5116.cooldown": {
-        "step": 57,
+        "step": 60,
         "type": "int",
         "displayName": "震荡射击",
         "spellId": 5116,
@@ -450,7 +485,7 @@
         "displayType": "冷却"
       },
       "19801.cooldown": {
-        "step": 58,
+        "step": 61,
         "type": "int",
         "displayName": "宁神射击",
         "spellId": 19801,
@@ -458,7 +493,7 @@
         "displayType": "冷却"
       },
       "187698.cooldown": {
-        "step": 59,
+        "step": 62,
         "type": "int",
         "displayName": "焦油陷进",
         "spellId": 187698,
@@ -466,7 +501,7 @@
         "displayType": "冷却"
       },
       "1513.cooldown": {
-        "step": 60,
+        "step": 63,
         "type": "int",
         "displayName": "恐吓野兽",
         "spellId": 1513,
@@ -474,7 +509,7 @@
         "displayType": "冷却"
       },
       "109248.cooldown": {
-        "step": 61,
+        "step": 64,
         "type": "int",
         "displayName": "束缚射击",
         "spellId": 109248,
@@ -482,7 +517,7 @@
         "displayType": "冷却"
       },
       "195645.cooldown": {
-        "step": 62,
+        "step": 65,
         "type": "int",
         "displayName": "摔绊",
         "spellId": 195645,
@@ -490,7 +525,7 @@
         "displayType": "冷却"
       },
       "34026.cooldown": {
-        "step": 63,
+        "step": 66,
         "type": "int",
         "displayName": "杀戮命令",
         "spellId": 34026,
@@ -498,7 +533,7 @@
         "displayType": "冷却"
       },
       "34026.chargeCooldown": {
-        "step": 64,
+        "step": 67,
         "type": "int",
         "displayName": "杀戮命令充能",
         "spellId": 34026,
@@ -506,7 +541,7 @@
         "displayType": "充能"
       },
       "217200.cooldown": {
-        "step": 65,
+        "step": 68,
         "type": "int",
         "displayName": "倒刺射击",
         "spellId": 217200,
@@ -514,7 +549,7 @@
         "displayType": "冷却"
       },
       "217200.chargeCooldown": {
-        "step": 66,
+        "step": 69,
         "type": "int",
         "displayName": "倒刺射击充能",
         "spellId": 217200,
@@ -522,7 +557,7 @@
         "displayType": "充能"
       },
       "147362.cooldown": {
-        "step": 67,
+        "step": 70,
         "type": "int",
         "displayName": "反制射击",
         "spellId": 147362,
@@ -530,7 +565,7 @@
         "displayType": "冷却"
       },
       "19574.cooldown": {
-        "step": 68,
+        "step": 71,
         "type": "int",
         "displayName": "狂野怒火",
         "spellId": 19574,
@@ -538,7 +573,7 @@
         "displayType": "冷却"
       },
       "1264359.cooldown": {
-        "step": 69,
+        "step": 72,
         "type": "int",
         "displayName": "狂野鞭笞",
         "spellId": 1264359,

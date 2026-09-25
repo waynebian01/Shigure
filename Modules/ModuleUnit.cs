@@ -68,7 +68,7 @@ public enum UnitRoleFilterKind
 }
 
 /// <summary>
-/// 模块内定义的命名动态单位。运行时由 <see cref="UnitSelector"/> 解析为 group 槽位("1".."30")。
+/// 模块内定义的命名动态单位。运行时由 <see cref="UnitSelector"/> 解析为 group 槽位("1".."40")。
 /// 单光环类用 AuraSpellIds[0]; WithAnyAura 用整个列表。
 /// </summary>
 public sealed class ModuleUnit

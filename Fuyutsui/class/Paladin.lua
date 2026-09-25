@@ -69,28 +69,28 @@ Fuyutsui.ClassBlocks = {
         },
         auras = {
             player = {
-                { name = "神圣壁垒", spellId = 432502, isPlayer = true,},
-                { name = "圣洁武器", spellId = 432496, isPlayer = true,},
-                { name = "神圣意志", spellId = 223819, isPlayer = true,},
-                { name = "苍穹之遗", spellId = 387178, isPlayer = true,},
-                { name = "圣光灌注", spellId = 54149, maxApps = 2, isPlayer = true,},
-                { name = "晨光", spellId = 431522, maxApps = 3, isPlayer = true,},
-                { name = "晨光-恢复", spellId = 431831, maxApps = 3, isPlayer = true,},
-                { name = "神性之手", spellId = 414273, maxApps = 2, isPlayer = true,},
-                { name = "复仇之怒", spellId = 31884, maxApps = 2, isPlayer = true,},
-                { name = "觉醒", spellId = 414193, isPlayer = true,},
-                { name = "美德道标", spellId = 200025, isPlayer = true,},
+                { name = "神圣壁垒", spellId = 432502, isPlayer = true, },
+                { name = "圣洁武器", spellId = 432496, isPlayer = true, },
+                { name = "神圣意志", spellId = 223819, isPlayer = true, },
+                { name = "苍穹之遗", spellId = 387178, isPlayer = true, },
+                { name = "圣光灌注", spellId = 54149, maxApps = 2, isPlayer = true, },
+                { name = "晨光", spellId = 431522, maxApps = 3, isPlayer = true, },
+                { name = "晨光-恢复", spellId = 431831, maxApps = 3, isPlayer = true, },
+                { name = "神性之手", spellId = 414273, maxApps = 2, isPlayer = true, },
+                { name = "复仇之怒", spellId = 31884, maxApps = 2, isPlayer = true, },
+                { name = "觉醒", spellId = 414193, isPlayer = true, },
+                { name = "美德道标", spellId = 200025, isPlayer = true, },
             },
             target = {
                 harmful = {
-                    { name = "失格者", spellId = 414022, isPlayer = true,},
-                    { name = "奉献", spellId = 204242, isPlayer = true,},
+                    { name = "失格者", spellId = 414022, isPlayer = true, },
+                    { name = "奉献", spellId = 204242, isPlayer = true, },
                 },
             },
             focus = {
                 harmful = {
-                    { name = "失格者", spellId = 414022, isPlayer = true,},
-                    { name = "奉献", spellId = 204242, isPlayer = true,},
+                    { name = "失格者", spellId = 414022, isPlayer = true, },
+                    { name = "奉献", spellId = 204242, isPlayer = true, },
                 },
             },
         },
@@ -197,12 +197,12 @@ Fuyutsui.ClassBlocks = {
         },
         auras = {
             player = {
-                { name = "闪耀之光", spellId = 327510, maxApps = 2, isPlayer = true,},
-                { name = "小闪耀之光", spellId = 182104, maxApps = 3, isPlayer = true,},
-                { name = "正义盾击", spellId = 132403, isPlayer = true,},
-                { name = "奉献", spellId = 188370, isPlayer = true,},
-                { name = "圣言祭礼", spellId = 433550, isPlayer = true,},
-                { name = "虔诚光环", spellId = 135893, isPlayer = true,},
+                { name = "闪耀之光", spellId = 327510, maxApps = 2, isPlayer = true, },
+                { name = "小闪耀之光", spellId = 182104, maxApps = 3, isPlayer = true, },
+                { name = "正义盾击", spellId = 132403, isPlayer = true, },
+                { name = "奉献", spellId = 188370, isPlayer = true, },
+                { name = "圣言祭礼", spellId = 433550, isPlayer = true, },
+                { name = "虔诚光环", spellId = 135893, isPlayer = true, },
             },
         },
         spells = {
@@ -264,6 +264,8 @@ Fuyutsui.ClassBlocks = {
             },
             ["特殊"] = {
                 "自律",
+                "战斗计时(秒)",
+                "战斗计时(分)",
             },
             ["能量"] = {
                 "法力值",
@@ -318,12 +320,16 @@ Fuyutsui.ClassBlocks = {
             { spellId = 343527, name = "处决宣判" },
             { spellId = 255937, name = "灰烬觉醒" },
             { spellId = 31884, name = "复仇之怒" },
+            { spellId = 96231, name = "责难" },
         },
         items = {
             [241304] = { name = "治疗药水", isEquipped = false },
+            [270175] = { name = "乌拉特克贪婪之心", isEquipped = true },
         },
         group = {
             state = { "healthPercent", "role", },
+        },
+        nameplates = {
         },
     },
 } -- 创建圣骑士宏{

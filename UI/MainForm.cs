@@ -48,6 +48,9 @@ public sealed class MainForm : Form, IMessageFilter
 
     private Button _toggleKeyButton = null!;
     private UiDropDown _modeComboBox = null!;
+    private UiDropDown _captureMethodComboBox = null!;
+    private NumericUpDown _scanIntervalBox = null!;
+    private NumericUpDown _logicIntervalBox = null!;
     private UiDropDown _moduleComboBox = null!;
     private Label _moduleFilterLabel = null!;
     private Label _moduleCountLabel = null!;
@@ -125,6 +128,7 @@ public sealed class MainForm : Form, IMessageFilter
     private bool _shutdownStarted;
     private bool _shutdownCompleted;
     private bool _wasWowProcessWindowAvailable;
+    private bool _borderlessCaptureAccessRequested;
 
     private sealed record ProjectConfigUpdateResult(
         FuyutsuiConfigConverter.UpdateResult Config,
@@ -228,6 +232,11 @@ public sealed class MainForm : Form, IMessageFilter
     protected override async void OnShown(EventArgs e)
     {
         base.OnShown(e);
+        if (ReadCaptureMethod() == CaptureMethod.WindowsGraphicsCapture)
+        {
+            await EnsureBorderlessCaptureAccessAsync();
+        }
+
         var runtimeDataGenerated = await GenerateRuntimeDataAtStartupIfMissingAsync();
         var dependenciesUpdated = await ImportModuleDependenciesAsync(reloadStore: true, showFeedback: true);
         if (!dependenciesUpdated && !runtimeDataGenerated)
@@ -948,6 +957,39 @@ public sealed class MainForm : Form, IMessageFilter
             control.Margin = new Padding(0, 0, rightGap, 0);
         }
 
+        NumericUpDown CreateIntervalBox(int minimum, int defaultValue = 100)
+        {
+            var box = new NumericUpDown
+            {
+                Minimum = minimum,
+                Maximum = 2000,
+                Increment = 10,
+                Value = defaultValue,
+                DecimalPlaces = 0,
+                ThousandsSeparator = true,
+                TextAlign = HorizontalAlignment.Right
+            };
+            UiTheme.StyleNumericUpDown(box);
+            SizeActionControl(box, 150, rightGap: 10);
+            return box;
+        }
+
+        FlowLayoutPanel CreateIntervalActions(NumericUpDown box, string toolTip)
+        {
+            _settingsToolTip.SetToolTip(box, toolTip);
+            var actions = CreateActionsHost();
+            actions.Controls.Add(box);
+            actions.Controls.Add(new Label
+            {
+                Text = "毫秒",
+                AutoSize = true,
+                ForeColor = UiTheme.Muted,
+                BackColor = Color.Transparent,
+                Margin = new Padding(0, 7, 0, 0)
+            });
+            return actions;
+        }
+
         UiCardPanel CreateSettingRow(string title, Control description, Control actions)
         {
             var card = new UiCardPanel
@@ -1013,6 +1055,39 @@ public sealed class MainForm : Form, IMessageFilter
             "发送模式",
             CreateRowDescription("开关：按一次切换；单击：每次触发发送一次；按住：持续按下时运行"),
             modeActions));
+
+        _captureMethodComboBox = new UiDropDown();
+        UiTheme.StyleComboBox(_captureMethodComboBox);
+        _captureMethodComboBox.Items.AddRange(new object[]
+        {
+            "Windows 图形捕获",
+            "屏幕截图"
+        });
+        _captureMethodComboBox.SelectedIndex = 0;
+        SizeActionControl(_captureMethodComboBox, 260);
+        _settingsToolTip.SetToolTip(
+            _captureMethodComboBox,
+            "WGC 可在游戏窗口被遮挡时继续读取；原版读取显示器实际画面，会受遮挡影响");
+        var captureActions = CreateActionsHost();
+        captureActions.Controls.Add(_captureMethodComboBox);
+        stack.Controls.Add(CreateSettingRow(
+            "画面捕获",
+            CreateRowDescription("WGC 支持窗口被遮挡；窗口最小化或捕获停止时会暂停扫描"),
+            captureActions));
+
+        stack.Controls.Add(CreateSectionHeader("性能"));
+
+        _scanIntervalBox = CreateIntervalBox(minimum: 50);
+        stack.Controls.Add(CreateSettingRow(
+            "扫描频率",
+            CreateRowDescription("两次读取游戏画面之间的间隔；数值越小，状态更新越及时，资源占用越高"),
+            CreateIntervalActions(_scanIntervalBox, "扫描间隔，范围 50–2000 毫秒")));
+
+        _logicIntervalBox = CreateIntervalBox(minimum: 50);
+        stack.Controls.Add(CreateSettingRow(
+            "计算频率",
+            CreateRowDescription("两次模块规则计算之间的间隔；计算使用最近一次扫描到的状态"),
+            CreateIntervalActions(_logicIntervalBox, "计算间隔，范围 50–2000 毫秒")));
 
         stack.Controls.Add(CreateSectionHeader("配置同步"));
 
@@ -1873,17 +1948,63 @@ public sealed class MainForm : Form, IMessageFilter
             SendMode.Hold => 2,
             _ => 0
         };
+        _captureMethodComboBox.SelectedIndex = ParseCaptureMethod(_uiCache.CaptureMethod) switch
+        {
+            CaptureMethod.ScreenCopy => 1,
+            _ => 0
+        };
+        _scanIntervalBox.Value = ReadCachedInterval(
+            _uiCache.ScanIntervalMs,
+            _initialOptions.ScanInterval,
+            _scanIntervalBox);
+        _logicIntervalBox.Value = ReadCachedInterval(
+            _uiCache.LogicIntervalMs,
+            _initialOptions.LogicInterval,
+            _logicIntervalBox);
         RefreshModuleSelector(_lastSnapshot, forceRefresh: false);
     }
 
     private void WireSettingEvents()
     {
         _modeComboBox.SelectedIndexChanged += HandleSettingCommitted;
+        _captureMethodComboBox.SelectedIndexChanged += HandleCaptureMethodChanged;
+        _scanIntervalBox.ValueChanged += HandlePerformanceSettingChanged;
+        _logicIntervalBox.ValueChanged += HandlePerformanceSettingChanged;
         _moduleComboBox.SelectedIndexChanged += HandleModuleSelectionChanged;
+    }
+
+    private async void HandleCaptureMethodChanged(object? sender, EventArgs e)
+    {
+        _uiCache.CaptureMethod = ReadCaptureMethod().ToString();
+        SaveUiCache();
+        if (ReadCaptureMethod() == CaptureMethod.WindowsGraphicsCapture)
+        {
+            await EnsureBorderlessCaptureAccessAsync();
+        }
+
+        await RestartRuntimeAfterSettingChangeAsync();
+    }
+
+    private async Task EnsureBorderlessCaptureAccessAsync()
+    {
+        if (_borderlessCaptureAccessRequested)
+        {
+            return;
+        }
+
+        _borderlessCaptureAccessRequested = true;
+        var result = await BorderlessCaptureAccess.RequestAsync();
+        AppendLog(result.Message);
     }
 
     private async void HandleSettingCommitted(object? sender, EventArgs e)
     {
+        await RestartRuntimeAfterSettingChangeAsync();
+    }
+
+    private async void HandlePerformanceSettingChanged(object? sender, EventArgs e)
+    {
+        SaveUiCache();
         await RestartRuntimeAfterSettingChangeAsync();
     }
 
@@ -1961,7 +2082,12 @@ public sealed class MainForm : Form, IMessageFilter
 
         ResetRuntimeLogState();
         SetRuntimeControls(running: true);
-        AppendLog($"运行已{(restart ? "重启" : "启动")}: {_processLocator.DescribeConfiguredProcesses()} / {options.ToggleKey} / {ModeLabel(options.Mode)}");
+        AppendLog(
+            $"运行已{(restart ? "重启" : "启动")}: " +
+            $"{_processLocator.DescribeConfiguredProcesses()} / {options.ToggleKey} / {ModeLabel(options.Mode)} / " +
+            $"{CaptureMethodLabel(options.CaptureMethod)} / " +
+            $"扫描 {options.ScanInterval.TotalMilliseconds:0} ms / " +
+            $"计算 {options.LogicInterval.TotalMilliseconds:0} ms");
         return true;
     }
 
@@ -2021,7 +2147,15 @@ public sealed class MainForm : Form, IMessageFilter
             ? "XBUTTON2"
             : _toggleKeyName.Trim();
 
-        return _initialOptions with { ToggleKey = toggleKey, Mode = ReadMode(), ModuleId = _selectedModuleId };
+        return _initialOptions with
+        {
+            ToggleKey = toggleKey,
+            Mode = ReadMode(),
+            ModuleId = _selectedModuleId,
+            CaptureMethod = ReadCaptureMethod(),
+            ScanInterval = ReadInterval(_scanIntervalBox),
+            LogicInterval = ReadInterval(_logicIntervalBox)
+        };
     }
 
     private SendMode ReadMode()
@@ -2797,6 +2931,9 @@ public sealed class MainForm : Form, IMessageFilter
         _uiCache.MainBarSizeVersion = MainBarSizeVersion;
         _uiCache.ToggleKey = _toggleKeyName;
         _uiCache.SelectedModuleId = _selectedModuleId;
+        _uiCache.CaptureMethod = ReadCaptureMethod().ToString();
+        _uiCache.ScanIntervalMs = decimal.ToInt32(_scanIntervalBox.Value);
+        _uiCache.LogicIntervalMs = decimal.ToInt32(_logicIntervalBox.Value);
         UiCacheStore.Save(_uiCache);
     }
 
@@ -2866,6 +3003,32 @@ public sealed class MainForm : Form, IMessageFilter
                 ShowMainWindow();
             }
         };
+    }
+
+    private CaptureMethod ReadCaptureMethod()
+        => _captureMethodComboBox.SelectedIndex == 1
+            ? CaptureMethod.ScreenCopy
+            : CaptureMethod.WindowsGraphicsCapture;
+
+    private static CaptureMethod ParseCaptureMethod(string? value)
+        => Enum.TryParse<CaptureMethod>(value, ignoreCase: true, out var method)
+            && Enum.IsDefined(method)
+                ? method
+                : CaptureMethod.WindowsGraphicsCapture;
+
+    private static string CaptureMethodLabel(CaptureMethod method)
+        => method == CaptureMethod.ScreenCopy ? "屏幕截图" : "Windows 图形捕获";
+
+    private static TimeSpan ReadInterval(NumericUpDown box)
+        => TimeSpan.FromMilliseconds(decimal.ToInt32(box.Value));
+
+    private static decimal ReadCachedInterval(
+        int? cachedMilliseconds,
+        TimeSpan fallback,
+        NumericUpDown box)
+    {
+        var milliseconds = cachedMilliseconds ?? (int)Math.Round(fallback.TotalMilliseconds);
+        return Math.Min(box.Maximum, Math.Max(box.Minimum, milliseconds));
     }
 
     private void ConfigureTrayModuleDropDown()

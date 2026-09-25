@@ -80,6 +80,26 @@
     "254": 357214,
     "255": 436344
   },
+  "一键物品": {
+    "1": 241288,
+    "2": 241289,
+    "3": 241300,
+    "4": 241301,
+    "5": 241304,
+    "6": 241305,
+    "7": 241308,
+    "8": 241309,
+    "9": 245897,
+    "10": 245898,
+    "11": 245902,
+    "12": 245903,
+    "13": 245916,
+    "14": 245917,
+    "15": 245918,
+    "16": 245919,
+    "17": 271883,
+    "18": 271884
+  },
   "1": {
     "队伍类型": {
       "step": 4,
@@ -166,15 +186,15 @@
       "type": "int",
       "category": "状态"
     },
-    "酒池": {
+    "敌人数量": {
       "step": 21,
       "type": "int",
       "category": "状态"
     },
-    "敌人数量": {
+    "酒池": {
       "step": 22,
       "type": "int",
-      "category": "状态"
+      "category": "特殊"
     },
     "能量值": {
       "step": 23,
@@ -1007,79 +1027,89 @@
       "type": "int",
       "category": "目标"
     },
-    "焦点施法(倒计时)": {
+    "目标能量值": {
       "step": 33,
       "type": "int",
-      "category": "焦点"
+      "category": "目标"
     },
-    "焦点施法(正计时)": {
+    "焦点施法(倒计时)": {
       "step": 34,
       "type": "int",
       "category": "焦点"
     },
-    "焦点施法可打断": {
+    "焦点施法(正计时)": {
       "step": 35,
       "type": "int",
       "category": "焦点"
     },
-    "焦点引导": {
+    "焦点施法可打断": {
       "step": 36,
       "type": "int",
       "category": "焦点"
     },
-    "焦点引导可打断": {
+    "焦点引导": {
       "step": 37,
       "type": "int",
       "category": "焦点"
     },
-    "鼠标类型": {
+    "焦点引导可打断": {
       "step": 38,
       "type": "int",
-      "category": "鼠标"
+      "category": "焦点"
     },
-    "鼠标驱散类型": {
+    "焦点能量值": {
       "step": 39,
       "type": "int",
-      "category": "鼠标"
+      "category": "焦点"
     },
-    "鼠标生命值": {
+    "鼠标类型": {
       "step": 40,
       "type": "int",
       "category": "鼠标"
     },
-    "鼠标距离": {
+    "鼠标驱散类型": {
       "step": 41,
       "type": "int",
       "category": "鼠标"
     },
-    "鼠标施法(倒计时)": {
+    "鼠标生命值": {
       "step": 42,
       "type": "int",
       "category": "鼠标"
     },
-    "鼠标施法(正计时)": {
+    "鼠标距离": {
       "step": 43,
       "type": "int",
       "category": "鼠标"
     },
-    "鼠标施法可打断": {
+    "鼠标施法(倒计时)": {
       "step": 44,
       "type": "int",
       "category": "鼠标"
     },
-    "鼠标引导": {
+    "鼠标施法(正计时)": {
       "step": 45,
       "type": "int",
       "category": "鼠标"
     },
-    "鼠标引导可打断": {
+    "鼠标施法可打断": {
       "step": 46,
+      "type": "int",
+      "category": "鼠标"
+    },
+    "鼠标引导": {
+      "step": 47,
+      "type": "int",
+      "category": "鼠标"
+    },
+    "鼠标引导可打断": {
+      "step": 48,
       "type": "int",
       "category": "鼠标"
     },
     "auras": {
       "player.1291484.value": {
-        "step": 47,
+        "step": 49,
         "type": "int",
         "category": "玩家",
         "displayName": "乾元镇踏",
@@ -1104,7 +1134,7 @@
         "bar": 3
       },
       "player.1249625.value": {
-        "step": 48,
+        "step": 50,
         "type": "int",
         "category": "玩家",
         "displayName": "乾元之巅",
@@ -1129,7 +1159,7 @@
         "bar": 4
       },
       "player.1261724.value": {
-        "step": 49,
+        "step": 51,
         "type": "int",
         "category": "玩家",
         "displayName": "虎眼酒",
@@ -1154,7 +1184,7 @@
         "bar": 5
       },
       "player.432180.value": {
-        "step": 50,
+        "step": 52,
         "type": "int",
         "category": "玩家",
         "displayName": "风之舞蹈",
@@ -1179,7 +1209,7 @@
         "bar": 6
       },
       "player.196741.value": {
-        "step": 51,
+        "step": 53,
         "type": "int",
         "category": "玩家",
         "displayName": "连击",
@@ -1204,7 +1234,7 @@
         "bar": 7
       },
       "player.116768.value": {
-        "step": 52,
+        "step": 54,
         "type": "int",
         "category": "玩家",
         "displayName": "幻灭踢强化",
@@ -1229,7 +1259,7 @@
         "bar": 8
       },
       "player.325202.value": {
-        "step": 53,
+        "step": 55,
         "type": "int",
         "category": "玩家",
         "displayName": "赤精之舞",
@@ -1254,7 +1284,7 @@
         "bar": 9
       },
       "player.1250554.value": {
-        "step": 54,
+        "step": 56,
         "type": "int",
         "category": "玩家",
         "displayName": "疾风呼啸踢可用",
@@ -1266,7 +1296,7 @@
         ]
       },
       "player.443421.value": {
-        "step": 55,
+        "step": 57,
         "type": "int",
         "category": "玩家",
         "displayName": "青龙之心",
@@ -1295,7 +1325,7 @@
         "bar": 10
       },
       "player.443028.value": {
-        "step": 56,
+        "step": 58,
         "type": "int",
         "category": "玩家",
         "displayName": "天神御身",
@@ -1307,7 +1337,7 @@
         ]
       },
       "player.1249753.value": {
-        "step": 57,
+        "step": 59,
         "type": "int",
         "category": "玩家",
         "displayName": "组合拳-旭日东升踢",
@@ -1319,7 +1349,7 @@
         ]
       },
       "player.1249754.value": {
-        "step": 58,
+        "step": 60,
         "type": "int",
         "category": "玩家",
         "displayName": "组合拳-神鹤引项踢",
@@ -1331,7 +1361,7 @@
         ]
       },
       "player.1249756.value": {
-        "step": 59,
+        "step": 61,
         "type": "int",
         "category": "玩家",
         "displayName": "组合拳-猛虎掌",
@@ -1343,7 +1373,7 @@
         ]
       },
       "player.1249757.value": {
-        "step": 60,
+        "step": 62,
         "type": "int",
         "category": "玩家",
         "displayName": "组合拳-幻灭踢",
@@ -1355,7 +1385,7 @@
         ]
       },
       "player.1249758.value": {
-        "step": 61,
+        "step": 63,
         "type": "int",
         "category": "玩家",
         "displayName": "组合拳-怒雷破",
@@ -1367,7 +1397,7 @@
         ]
       },
       "player.1249759.value": {
-        "step": 62,
+        "step": 64,
         "type": "int",
         "category": "玩家",
         "displayName": "组合拳-切空踢",
@@ -1379,7 +1409,7 @@
         ]
       },
       "player.1249762.value": {
-        "step": 63,
+        "step": 65,
         "type": "int",
         "category": "玩家",
         "displayName": "组合拳-风火雷电",
@@ -1391,7 +1421,7 @@
         ]
       },
       "player.1249763.value": {
-        "step": 64,
+        "step": 66,
         "type": "int",
         "category": "玩家",
         "displayName": "组合拳-乾元镇踏",
@@ -1403,7 +1433,7 @@
         ]
       },
       "player.1249764.value": {
-        "step": 65,
+        "step": 67,
         "type": "int",
         "category": "玩家",
         "displayName": "组合拳-碎玉闪电",
@@ -1415,7 +1445,7 @@
         ]
       },
       "player.1249765.value": {
-        "step": 66,
+        "step": 68,
         "type": "int",
         "category": "玩家",
         "displayName": "组合拳-升龙霸",
@@ -1427,7 +1457,7 @@
         ]
       },
       "player.1249766.value": {
-        "step": 67,
+        "step": 69,
         "type": "int",
         "category": "玩家",
         "displayName": "组合拳-风领主之击",
@@ -1439,7 +1469,7 @@
         ]
       },
       "player.1297033.value": {
-        "step": 68,
+        "step": 70,
         "type": "int",
         "category": "玩家",
         "displayName": "121套装BUFF",
@@ -1451,7 +1481,7 @@
         ]
       },
       "player.1248992.value": {
-        "step": 69,
+        "step": 71,
         "type": "int",
         "category": "玩家",
         "displayName": "可以释放天神御身",
@@ -1463,7 +1493,7 @@
         ]
       },
       "player.1249790.value": {
-        "step": 70,
+        "step": 72,
         "type": "int",
         "category": "玩家",
         "displayName": "组合拳天神御身",
@@ -1477,7 +1507,7 @@
     },
     "spells": {
       "122470.cooldown": {
-        "step": 71,
+        "step": 73,
         "type": "int",
         "displayName": "业报之触",
         "spellId": 122470,
@@ -1485,7 +1515,7 @@
         "displayType": "冷却"
       },
       "107428.cooldown": {
-        "step": 72,
+        "step": 74,
         "type": "int",
         "displayName": "旭日东升踢",
         "spellId": 107428,
@@ -1493,7 +1523,7 @@
         "displayType": "冷却"
       },
       "1249625.cooldown": {
-        "step": 73,
+        "step": 75,
         "type": "int",
         "displayName": "乾元之巅",
         "spellId": 1249625,
@@ -1501,7 +1531,7 @@
         "displayType": "冷却"
       },
       "1249625.chargeCooldown": {
-        "step": 74,
+        "step": 76,
         "type": "int",
         "displayName": "乾元之巅充能",
         "spellId": 1249625,
@@ -1518,7 +1548,7 @@
         "displayType": "充能层数"
       },
       "218164.cooldown": {
-        "step": 75,
+        "step": 77,
         "type": "int",
         "displayName": "清创生血",
         "spellId": 218164,
@@ -1526,7 +1556,7 @@
         "displayType": "冷却"
       },
       "152175.cooldown": {
-        "step": 76,
+        "step": 78,
         "type": "int",
         "displayName": "升龙霸",
         "spellId": 152175,
@@ -1534,7 +1564,7 @@
         "displayType": "冷却"
       },
       "101545.cooldown": {
-        "step": 77,
+        "step": 79,
         "type": "int",
         "displayName": "翔龙在天",
         "spellId": 101545,
@@ -1542,7 +1572,7 @@
         "displayType": "冷却"
       },
       "113656.cooldown": {
-        "step": 78,
+        "step": 80,
         "type": "int",
         "displayName": "怒雷破",
         "spellId": 113656,
@@ -1550,7 +1580,7 @@
         "displayType": "冷却"
       },
       "322109.cooldown": {
-        "step": 79,
+        "step": 81,
         "type": "int",
         "displayName": "轮回之触",
         "spellId": 322109,
@@ -1558,7 +1588,7 @@
         "displayType": "冷却"
       },
       "119381.cooldown": {
-        "step": 80,
+        "step": 82,
         "type": "int",
         "displayName": "扫堂腿",
         "spellId": 119381,
@@ -1566,7 +1596,7 @@
         "displayType": "冷却"
       },
       "322101.cooldown": {
-        "step": 81,
+        "step": 83,
         "type": "int",
         "displayName": "移花接木",
         "spellId": 322101,
@@ -1574,7 +1604,7 @@
         "displayType": "冷却"
       },
       "101643.cooldown": {
-        "step": 82,
+        "step": 84,
         "type": "int",
         "displayName": "魂体双分",
         "spellId": 101643,
@@ -1582,7 +1612,7 @@
         "displayType": "冷却"
       },
       "119996.cooldown": {
-        "step": 83,
+        "step": 85,
         "type": "int",
         "displayName": "魂体双分：转移",
         "spellId": 119996,
@@ -1590,7 +1620,7 @@
         "displayType": "冷却"
       },
       "116705.cooldown": {
-        "step": 84,
+        "step": 86,
         "type": "int",
         "displayName": "切喉手",
         "spellId": 116705,
@@ -1598,7 +1628,7 @@
         "displayType": "冷却"
       },
       "198898.cooldown": {
-        "step": 85,
+        "step": 87,
         "type": "int",
         "displayName": "赤精之歌",
         "spellId": 198898,
@@ -1606,7 +1636,7 @@
         "displayType": "冷却"
       },
       "116844.cooldown": {
-        "step": 86,
+        "step": 88,
         "type": "int",
         "displayName": "平心之环",
         "spellId": 116844,
@@ -1614,7 +1644,7 @@
         "displayType": "冷却"
       },
       "115078.cooldown": {
-        "step": 87,
+        "step": 89,
         "type": "int",
         "displayName": "分筋错骨",
         "spellId": 115078,
@@ -1622,7 +1652,7 @@
         "displayType": "冷却"
       },
       "123904.cooldown": {
-        "step": 88,
+        "step": 90,
         "type": "int",
         "displayName": "白虎下凡",
         "spellId": 123904,
@@ -1630,7 +1660,7 @@
         "displayType": "冷却"
       },
       "443028.cooldown": {
-        "step": 89,
+        "step": 91,
         "type": "int",
         "displayName": "天神御身",
         "spellId": 443028,
@@ -1638,7 +1668,7 @@
         "displayType": "冷却"
       },
       "392983.cooldown": {
-        "step": 90,
+        "step": 92,
         "type": "int",
         "displayName": "风领主之击",
         "spellId": 392983,
@@ -1646,7 +1676,7 @@
         "displayType": "冷却"
       },
       "443591.cooldown": {
-        "step": 91,
+        "step": 93,
         "type": "int",
         "displayName": "众神聚心",
         "spellId": 443591,
@@ -1654,7 +1684,7 @@
         "displayType": "冷却"
       },
       "1272696.cooldown": {
-        "step": 92,
+        "step": 94,
         "type": "int",
         "displayName": "乾元镇踏",
         "spellId": 1272696,
@@ -1662,7 +1692,7 @@
         "displayType": "冷却"
       },
       "1272696.chargeCooldown": {
-        "step": 93,
+        "step": 95,
         "type": "int",
         "displayName": "乾元镇踏充能",
         "spellId": 1272696,

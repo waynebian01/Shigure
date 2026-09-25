@@ -84,7 +84,7 @@ states → auras → spells → items → group
 | `auras` | player、target harmful/helpful、focus harmful/helpful | 按 spell ID 创建光环像素槽，可选层数条 |
 | `spells` | `spellId`、charge、maxCharge、castCount 等 | 冷却、充能回充以及派生 CountBars |
 | `items` | `[itemId] = { name, isEquipped }` | 背包物品或已装备物品的冷却状态 |
-| `group` | `num`、生命值/职责/驱散偏移、成员光环 | 从 `start` 起按成员步长布局最多 30 个单位 |
+| `group` | `num`、生命值/职责/驱散偏移、成员光环 | 从 `start` 起按成员步长布局最多 40 个单位 |
 
 只有当前玩家职业的 Lua 文件会实际写入 `Fuyutsui.ClassBlocks`。
 

@@ -561,6 +561,7 @@ public static class UnitSelector
             EnemyAuraFilterKind.WithoutAura => !HasAura(data, auraSpellIds[0]),
             EnemyAuraFilterKind.WithAnyAura => HasAnyAura(data, auraSpellIds),
             EnemyAuraFilterKind.WithoutAnyAura => !HasAnyAura(data, auraSpellIds),
+            EnemyAuraFilterKind.WithAllAuras => auraSpellIds.Count >= 2 && HasAllAuras(data, auraSpellIds),
             _ => true
         };
     }
@@ -614,7 +615,8 @@ public static class UnitSelector
         => filter is EnemyAuraFilterKind.WithAura
             or EnemyAuraFilterKind.WithoutAura
             or EnemyAuraFilterKind.WithAnyAura
-            or EnemyAuraFilterKind.WithoutAnyAura;
+            or EnemyAuraFilterKind.WithoutAnyAura
+            or EnemyAuraFilterKind.WithAllAuras;
 
     /// <summary>在职责 != 0 的单位里, 取生命值 &lt; 阈值且满足 predicate 的最低血量单位（含 0 和负数）。</summary>
     private static string? LowestHealth(
@@ -872,6 +874,19 @@ public static class UnitSelector
         }
 
         return false;
+    }
+
+    private static bool HasAllAuras(IReadOnlyDictionary<string, object?> data, IEnumerable<long> auraSpellIds)
+    {
+        foreach (var spellId in auraSpellIds)
+        {
+            if (!HasAura(data, spellId))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private static bool GroupContainsAuraField(

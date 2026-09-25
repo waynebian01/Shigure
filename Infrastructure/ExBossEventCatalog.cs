@@ -16,13 +16,24 @@ internal sealed record ExBossEventInfo(
 
 internal sealed record ExBossMechanicType(int Value, string Name);
 
+internal sealed record ExTrashEventInfo(
+    int Key,
+    long SpellId,
+    string Name,
+    string MechanicType,
+    IReadOnlyList<ExTrashEventLocation> Locations);
+
+internal sealed record ExTrashEventLocation(int MapId, string MapName, int NpcId, string MobName);
+
 /// <summary>
 /// EXBoss 事件键目录。说明页与条件编辑器共用该目录，确保显示内容和像素编码一致。
 /// </summary>
 internal static class ExBossEventCatalog
 {
     private const string ResourceSuffix = ".wiki.EXBoss技能分类.json";
+    private const string TrashResourceSuffix = ".wiki.EX小怪技能分类.json";
     private static readonly Lazy<IReadOnlyList<ExBossEventInfo>> LazyEvents = new(LoadEvents);
+    private static readonly Lazy<IReadOnlyList<ExTrashEventInfo>> LazyTrashEvents = new(LoadTrashEvents);
 
     public static IReadOnlyList<ExBossMechanicType> MechanicTypes { get; } =
     [
@@ -36,6 +47,7 @@ internal static class ExBossEventCatalog
     ];
 
     public static IReadOnlyList<ExBossEventInfo> Events => LazyEvents.Value;
+    public static IReadOnlyList<ExTrashEventInfo> TrashEvents => LazyTrashEvents.Value;
 
     public static ExBossMechanicType? FindMechanicType(string? value)
         => int.TryParse(value?.Trim(), out var number)
@@ -45,6 +57,11 @@ internal static class ExBossEventCatalog
     public static ExBossEventInfo? FindEvent(string? value)
         => int.TryParse(value?.Trim(), out var key)
             ? Events.FirstOrDefault(item => item.Key == key)
+            : null;
+
+    public static ExTrashEventInfo? FindTrashEvent(string? value)
+        => int.TryParse(value?.Trim(), out var key)
+            ? TrashEvents.FirstOrDefault(item => item.Key == key)
             : null;
 
     private static IReadOnlyList<ExBossEventInfo> LoadEvents()
@@ -85,6 +102,71 @@ internal static class ExBossEventCatalog
                     ReadString(item, "mapName"),
                     ReadInt(item, "encounterId"),
                     ReadString(item, "bossName")));
+            }
+
+            return events
+                .Where(item => item.Key > 0)
+                .OrderBy(item => item.Key)
+                .ToArray();
+        }
+        catch (JsonException)
+        {
+            return [];
+        }
+        catch (IOException)
+        {
+            return [];
+        }
+    }
+
+    private static IReadOnlyList<ExTrashEventInfo> LoadTrashEvents()
+    {
+        var assembly = typeof(ExBossEventCatalog).Assembly;
+        var resourceName = assembly.GetManifestResourceNames().FirstOrDefault(name =>
+            name.EndsWith(TrashResourceSuffix, StringComparison.Ordinal));
+        if (resourceName is null)
+        {
+            return [];
+        }
+
+        try
+        {
+            using var stream = assembly.GetManifestResourceStream(resourceName);
+            if (stream is null)
+            {
+                return [];
+            }
+
+            using var document = JsonDocument.Parse(stream);
+            if (!document.RootElement.TryGetProperty("eventKeyTable", out var table)
+                || table.ValueKind != JsonValueKind.Array)
+            {
+                return [];
+            }
+
+            var events = new List<ExTrashEventInfo>(table.GetArrayLength());
+            foreach (var item in table.EnumerateArray())
+            {
+                var locations = new List<ExTrashEventLocation>();
+                if (item.TryGetProperty("locations", out var locationTable)
+                    && locationTable.ValueKind == JsonValueKind.Array)
+                {
+                    foreach (var location in locationTable.EnumerateArray())
+                    {
+                        locations.Add(new ExTrashEventLocation(
+                            ReadInt(location, "mapId"),
+                            ReadString(location, "mapName"),
+                            ReadInt(location, "npcId"),
+                            ReadString(location, "mobName")));
+                    }
+                }
+
+                events.Add(new ExTrashEventInfo(
+                    ReadInt(item, "key"),
+                    ReadLong(item, "spellId"),
+                    ReadString(item, "name"),
+                    ReadString(item, "mechanicType"),
+                    locations));
             }
 
             return events

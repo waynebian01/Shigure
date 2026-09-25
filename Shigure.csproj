@@ -35,6 +35,8 @@
     <EmbeddedResource Include="Assets\Spell\*.jpg" Exclude="Assets\Spell\icon-*.jpg" />
     <EmbeddedResource Include="Assets\Spell\*.png" />
     <EmbeddedResource Include="wiki\EXBoss技能分类.json" />
+    <EmbeddedResource Include="wiki\EX小怪技能分类.json" />
+    <EmbeddedResource Include="wiki\BigWigs团队首领事件.json" />
     <None Include="config\*.json" CopyToOutputDirectory="PreserveNewest" />
     <None Include="keymap\*.json" CopyToOutputDirectory="PreserveNewest" />
     <None Include="wow_process.txt" CopyToOutputDirectory="PreserveNewest" />

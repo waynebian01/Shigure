@@ -88,6 +88,9 @@ function Fuyutsui:OnEnable()
     if self.InitializeExBossTimelineBridge then
         self:InitializeExBossTimelineBridge()
     end
+    if self.InitializeBigWigsTimelineBridge then
+        self:InitializeBigWigsTimelineBridge()
+    end
     self:UpdateSpellKnown()
     self:RefreshPlayerState()
     self:ReadKeybindings()

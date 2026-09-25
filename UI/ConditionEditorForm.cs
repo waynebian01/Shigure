@@ -147,6 +147,10 @@ public sealed class ConditionEditorForm : Form
     private const string DeleteColumn = "Delete";
     private const string ExBossTypeField = "EX首领技能类型";
     private const string ExBossEventField = "EX首领技能事件";
+    private const string ExTrashTypeField = "EX小怪技能类型";
+    private const string ExTrashEventField = "EX小怪技能事件";
+    private const string BigWigsTypeField = "BigWigs首领技能类型";
+    private const string BigWigsEventField = "BigWigs首领技能事件";
     private const string Unclassified = "未分类";
     private const int ConditionRowHeight = 46;
 
@@ -722,10 +726,29 @@ public sealed class ConditionEditorForm : Form
         }
 
         if (e.ColumnIndex == _conditionsGrid.Columns[ValueColumn]!.Index
-            && cell is ExBossTypeValueCell
+            && cell is ExBossTypeValueCell or ExTrashTypeValueCell
             && ExBossEventCatalog.FindMechanicType(e.Value?.ToString()) is { } mechanicType)
         {
             cell.ToolTipText = $"类型 {mechanicType.Value}: {mechanicType.Name}";
+            return;
+        }
+
+        if (e.ColumnIndex == _conditionsGrid.Columns[ValueColumn]!.Index
+            && cell is BigWigsTypeValueCell
+            && BigWigsEventCatalog.FindEventType(e.Value?.ToString()) is { } bigWigsType)
+        {
+            cell.ToolTipText = $"类型 {bigWigsType.Value}: {bigWigsType.Name}";
+            return;
+        }
+
+        if (e.ColumnIndex == _conditionsGrid.Columns[ValueColumn]!.Index
+            && cell is BigWigsEventValueCell
+            && BigWigsEventCatalog.FindEvent(e.Value?.ToString()) is { } bigWigsEvent)
+        {
+            var location = bigWigsEvent.MapName.Length > 0
+                ? $" · {bigWigsEvent.MapName} / {bigWigsEvent.BossName}"
+                : string.Empty;
+            cell.ToolTipText = $"spellID {bigWigsEvent.SpellId}{location}";
             return;
         }
 
@@ -734,6 +757,16 @@ public sealed class ConditionEditorForm : Form
             && ExBossEventCatalog.FindEvent(e.Value?.ToString()) is { } eventInfo)
         {
             cell.ToolTipText = $"eventID {eventInfo.EventId} · spellID {eventInfo.SpellId} · {eventInfo.MechanicType} · {eventInfo.MapName} / {eventInfo.BossName}";
+            return;
+        }
+
+        if (e.ColumnIndex == _conditionsGrid.Columns[ValueColumn]!.Index
+            && cell is ExTrashEventValueCell
+            && ExBossEventCatalog.FindTrashEvent(e.Value?.ToString()) is { } trashEvent)
+        {
+            var locations = string.Join("；", trashEvent.Locations.Select(location =>
+                $"{location.MapName} / {location.MobName}"));
+            cell.ToolTipText = $"spellID {trashEvent.SpellId} · {trashEvent.MechanicType} · {locations}";
             return;
         }
 
@@ -793,7 +826,10 @@ public sealed class ConditionEditorForm : Form
         }
 
         var cell = _conditionsGrid.Rows[e.RowIndex].Cells[e.ColumnIndex];
-        if (cell is BossValueCell or ReferenceValueCell or ExBossTypeValueCell or ExBossEventValueCell)
+        if (cell is BossValueCell or ReferenceValueCell
+            or ExBossTypeValueCell or ExBossEventValueCell
+            or ExTrashTypeValueCell or ExTrashEventValueCell
+            or BigWigsTypeValueCell or BigWigsEventValueCell)
         {
             var buttonBounds = UiTheme.GetDropDownButtonBounds(
                 _conditionsGrid,
@@ -804,7 +840,9 @@ public sealed class ConditionEditorForm : Form
                 {
                     ShowBossNumberDropDown(e.RowIndex, e.ColumnIndex);
                 }
-                else if (cell is ExBossTypeValueCell or ExBossEventValueCell)
+                else if (cell is ExBossTypeValueCell or ExBossEventValueCell
+                    or ExTrashTypeValueCell or ExTrashEventValueCell
+                    or BigWigsTypeValueCell or BigWigsEventValueCell)
                 {
                     ShowExBossValueDropDown(e.RowIndex, e.ColumnIndex);
                 }
@@ -841,6 +879,8 @@ public sealed class ConditionEditorForm : Form
     private void OnConditionsGridKeyDown(object? sender, KeyEventArgs e)
     {
         if (_conditionsGrid.CurrentCell is ExBossTypeValueCell or ExBossEventValueCell
+                or ExTrashTypeValueCell or ExTrashEventValueCell
+                or BigWigsTypeValueCell or BigWigsEventValueCell
             && (e.KeyCode == Keys.F4 || e.KeyCode == Keys.Down && e.Alt))
         {
             e.Handled = true;
@@ -1021,7 +1061,9 @@ public sealed class ConditionEditorForm : Form
         }
 
         var cell = _conditionsGrid.Rows[rowIndex].Cells[columnIndex];
-        if (cell is not (ExBossTypeValueCell or ExBossEventValueCell))
+        if (cell is not (ExBossTypeValueCell or ExBossEventValueCell
+            or ExTrashTypeValueCell or ExTrashEventValueCell
+            or BigWigsTypeValueCell or BigWigsEventValueCell))
         {
             return;
         }
@@ -1029,7 +1071,16 @@ public sealed class ConditionEditorForm : Form
         _conditionsGrid.CurrentCell = cell;
         List<UiDropDownOption> options;
         var preferredWidth = 320;
-        if (cell is ExBossTypeValueCell)
+        if (cell is BigWigsTypeValueCell)
+        {
+            options = BigWigsEventCatalog.EventTypes
+                .Select(item => new UiDropDownOption(
+                    item.Value.ToString(CultureInfo.InvariantCulture),
+                    item.Name,
+                    LeadingText: item.Value.ToString(CultureInfo.InvariantCulture)))
+                .ToList();
+        }
+        else if (cell is ExBossTypeValueCell or ExTrashTypeValueCell)
         {
             options = ExBossEventCatalog.MechanicTypes
                 .Select(item => new UiDropDownOption(
@@ -1045,10 +1096,30 @@ public sealed class ConditionEditorForm : Form
             [
                 new UiDropDownOption("0", "无事件 / 未安装 EXBoss", LeadingText: "0")
             ];
-            options.AddRange(ExBossEventCatalog.Events.Select(item => new UiDropDownOption(
-                item.Key.ToString(CultureInfo.InvariantCulture),
-                $"{item.Name} · {item.MechanicType} · {item.MapName} / {item.BossName}",
-                LeadingText: item.Key.ToString(CultureInfo.InvariantCulture))));
+            if (cell is BigWigsEventValueCell)
+            {
+                options[0] = new UiDropDownOption("0", "无事件 / 未安装 BigWigs", LeadingText: "0");
+                options.AddRange(BigWigsEventCatalog.Events.Select(item => new UiDropDownOption(
+                    item.Key.ToString(CultureInfo.InvariantCulture),
+                    item.MapName.Length > 0
+                        ? $"{item.Name} · spellID {item.SpellId} · {item.MapName} / {item.BossName}"
+                        : $"{item.Name} · spellID {item.SpellId}",
+                    LeadingText: item.Key.ToString(CultureInfo.InvariantCulture))));
+            }
+            else if (cell is ExTrashEventValueCell)
+            {
+                options.AddRange(ExBossEventCatalog.TrashEvents.Select(item => new UiDropDownOption(
+                    item.Key.ToString(CultureInfo.InvariantCulture),
+                    $"{item.Name} · {item.MechanicType} · {string.Join("；", item.Locations.Select(location => $"{location.MapName} / {location.MobName}").Distinct(StringComparer.Ordinal))}",
+                    LeadingText: item.Key.ToString(CultureInfo.InvariantCulture))));
+            }
+            else
+            {
+                options.AddRange(ExBossEventCatalog.Events.Select(item => new UiDropDownOption(
+                    item.Key.ToString(CultureInfo.InvariantCulture),
+                    $"{item.Name} · {item.MechanicType} · {item.MapName} / {item.BossName}",
+                    LeadingText: item.Key.ToString(CultureInfo.InvariantCulture))));
+            }
         }
 
         var currentValue = cell.Value?.ToString()?.Trim() ?? string.Empty;
@@ -1114,7 +1185,10 @@ public sealed class ConditionEditorForm : Form
 
 
         var cell = _conditionsGrid.Rows[e.RowIndex].Cells[e.ColumnIndex];
-        if (cell is BossValueCell or ReferenceValueCell or ExBossTypeValueCell or ExBossEventValueCell)
+        if (cell is BossValueCell or ReferenceValueCell
+            or ExBossTypeValueCell or ExBossEventValueCell
+            or ExTrashTypeValueCell or ExTrashEventValueCell
+            or BigWigsTypeValueCell or BigWigsEventValueCell)
         {
             UiTheme.PaintDataGridViewComboBoxCell(_conditionsGrid, e, showButton: true);
             return;
@@ -1615,7 +1689,8 @@ public sealed class ConditionEditorForm : Form
             return;
         }
 
-        if (field?.Name is ExBossTypeField or ExBossEventField)
+        if (field?.Name is ExBossTypeField or ExBossEventField or ExTrashTypeField or ExTrashEventField
+            or BigWigsTypeField or BigWigsEventField)
         {
             var value = rawValue?.Trim() ?? string.Empty;
             if (value.Length == 0)
@@ -1623,9 +1698,15 @@ public sealed class ConditionEditorForm : Form
                 value = "0";
             }
 
-            row.Cells[ValueColumn] = field.Name == ExBossTypeField
-                ? new ExBossTypeValueCell { Value = value }
-                : new ExBossEventValueCell { Value = value };
+            row.Cells[ValueColumn] = field.Name switch
+            {
+                ExBossTypeField => new ExBossTypeValueCell { Value = value },
+                ExBossEventField => new ExBossEventValueCell { Value = value },
+                ExTrashTypeField => new ExTrashTypeValueCell { Value = value },
+                ExTrashEventField => new ExTrashEventValueCell { Value = value },
+                BigWigsTypeField => new BigWigsTypeValueCell { Value = value },
+                _ => new BigWigsEventValueCell { Value = value }
+            };
             return;
         }
 
@@ -2217,6 +2298,10 @@ public sealed class ConditionEditorForm : Form
     // EX 事件值保留文本框编辑能力，右侧按钮同时提供已知类型/事件目录。
     private sealed class ExBossTypeValueCell : DataGridViewTextBoxCell;
     private sealed class ExBossEventValueCell : DataGridViewTextBoxCell;
+    private sealed class ExTrashTypeValueCell : DataGridViewTextBoxCell;
+    private sealed class ExTrashEventValueCell : DataGridViewTextBoxCell;
+    private sealed class BigWigsTypeValueCell : DataGridViewTextBoxCell;
+    private sealed class BigWigsEventValueCell : DataGridViewTextBoxCell;
 
     // 值列: 可手填数字, 也可从动态数值字段中选一个作为引用。
     private sealed class ReferenceValueCell : DataGridViewTextBoxCell;

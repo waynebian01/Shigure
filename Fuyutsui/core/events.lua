@@ -561,6 +561,9 @@ function Fuyutsui:ENCOUNTER_END(_, encounterID, encounterName, difficultyID, gro
     if self.ResetExBossTimelinePixels then
         self:ResetExBossTimelinePixels()
     end
+    if self.ResetBigWigsTimelinePixels then
+        self:ResetBigWigsTimelinePixels()
+    end
     self:SetEncounterState(0, 0)
 end
 
@@ -627,6 +630,8 @@ function Fuyutsui:OnUpdate(elapsed)
         RunUpdateSafely(self, "RefreshNameplatePixels")
         RunUpdateSafely(self, "UpdateItemCooldown")
         RunUpdateSafely(self, "RefreshExBossTimelinePixels")
+        RunUpdateSafely(self, "RefreshExTrashTimelinePixels")
+        RunUpdateSafely(self, "RefreshBigWigsTimelinePixels")
         self.timeElapsed = 0
     end
 

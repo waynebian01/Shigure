@@ -18,6 +18,7 @@ internal enum SettingsPage
     Logs,
     BossNumbers,
     Event,
+    BigWigsEvent,
     CommonFields,
     About
 }
@@ -40,6 +41,10 @@ internal enum SettingsNavIcon
 }
 
 internal sealed record BossNumberOption(int Number, string Dungeon, string Name);
+internal sealed record ExBossEventFilterOption(string Display, string? Value)
+{
+    public override string ToString() => Display;
+}
 
 internal sealed record StateFieldDisplay(string Name, string SpellId, string Type, long IconId = 0, bool IsItem = false);
 internal sealed record StatusListIcon(long Id, bool IsItem);
@@ -535,6 +540,7 @@ public sealed class StatusForm : Form
         AddNavGroup(nav, "说明");
         AddNavItem(nav, SettingsPage.BossNumbers, SettingsNavIcon.BossNumbers, "首领", CreatePageShell("首领编号", "副本首领的序号、名称与扫描编号", BuildBossNumbersPage()));
         AddNavItem(nav, SettingsPage.Event, SettingsNavIcon.Event, "事件", CreatePageShell("EX 事件", "247 个首领技能事件及其像素编码", BuildExBossEventsPage()));
+        AddNavItem(nav, SettingsPage.BigWigsEvent, SettingsNavIcon.Event, "BW事件", CreatePageShell("BigWigs 团本事件", $"{BigWigsEventCatalog.Events.Count} 个团队首领技能事件及其像素编码", BuildBigWigsEventsPage()));
         AddNavItem(nav, SettingsPage.CommonFields, SettingsNavIcon.CommonFields, "字段", CreatePageShell("常用字段", "模块条件可用的状态字段参考", BuildCommonFieldsPanel()));
         AddNavGroup(nav, "系统");
         AddNavItem(nav, SettingsPage.About, SettingsNavIcon.About, "关于", CreatePageShell("关于", "应用信息、免责声明、许可证与来源", _aboutHost));
@@ -781,7 +787,11 @@ public sealed class StatusForm : Form
         return scrollHost;
     }
 
-    private TableLayoutPanel BuildSection(string title, Control content, string subtitle)
+    private TableLayoutPanel BuildSection(
+        string title,
+        Control content,
+        string subtitle,
+        ListView? countListView = null)
     {
         var section = new UiCardPanel
         {
@@ -815,7 +825,8 @@ public sealed class StatusForm : Form
             AutoEllipsis = true,
             Margin = new Padding(0)
         }, 0, 0);
-        if (content is ListView listView)
+        countListView ??= content as ListView;
+        if (countListView is { } listView)
         {
             var countLabel = new Label
             {
@@ -847,7 +858,11 @@ public sealed class StatusForm : Form
         return section;
     }
 
-    private Control BuildFixedWidthSectionPage(string title, Control content, string subtitle)
+    private Control BuildFixedWidthSectionPage(
+        string title,
+        Control content,
+        string subtitle,
+        ListView? countListView = null)
     {
         var scrollHost = new Panel
         {
@@ -857,7 +872,7 @@ public sealed class StatusForm : Form
             Margin = new Padding(0)
         };
 
-        var section = BuildSection(title, content, subtitle);
+        var section = BuildSection(title, content, subtitle, countListView);
         section.Dock = DockStyle.None;
         section.Location = Point.Empty;
         section.Width = SectionCardWidth;
@@ -1249,6 +1264,7 @@ public sealed class StatusForm : Form
 
     private Control BuildExBossEventsPage()
     {
+        var allEvents = ExBossEventCatalog.Events;
         var eventList = UiTheme.CreateListView(Font, "ex-boss-events",
             new UiTheme.ListColumn("键", 56, 72, FixedWidth: true),
             new UiTheme.ListColumn("像素编码", 88, 110, FixedWidth: true),
@@ -1259,11 +1275,146 @@ public sealed class StatusForm : Form
             new UiTheme.ListColumn("副本", 190, 320),
             new UiTheme.ListColumn("首领", 190, 520, FillRemaining: true));
 
+        var dungeonFilter = CreateExBossEventFilter(250);
+        var bossFilter = CreateExBossEventFilter(250);
+        var typeFilter = CreateExBossEventFilter(190);
+        dungeonFilter.Items.Add(new ExBossEventFilterOption("副本：全部", null));
+        foreach (var dungeon in allEvents
+                     .Select(item => item.MapName)
+                     .Where(name => name.Length > 0)
+                     .Distinct(StringComparer.Ordinal)
+                     .OrderBy(name => name, StringComparer.Ordinal))
+        {
+            dungeonFilter.Items.Add(new ExBossEventFilterOption($"副本：{dungeon}", dungeon));
+        }
+
+        typeFilter.Items.Add(new ExBossEventFilterOption("类型：全部", null));
+        foreach (var type in ExBossEventCatalog.MechanicTypes.Where(item => item.Value > 0))
+        {
+            typeFilter.Items.Add(new ExBossEventFilterOption($"类型：{type.Name}", type.Name));
+        }
+
+        var filterRow = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            FlowDirection = FlowDirection.LeftToRight,
+            WrapContents = false,
+            BackColor = Color.Transparent,
+            Margin = new Padding(0)
+        };
+        filterRow.Controls.Add(new Label
+        {
+            Text = "筛选",
+            AutoSize = false,
+            Size = new Size(52, 36),
+            ForeColor = UiTheme.Muted,
+            BackColor = Color.Transparent,
+            TextAlign = ContentAlignment.MiddleLeft,
+            Margin = new Padding(0, 4, 8, 4)
+        });
+        filterRow.Controls.Add(dungeonFilter);
+        filterRow.Controls.Add(bossFilter);
+        filterRow.Controls.Add(typeFilter);
+
+        var eventContent = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            BackColor = Color.Transparent,
+            ColumnCount = 1,
+            RowCount = 2,
+            Margin = new Padding(0)
+        };
+        eventContent.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        eventContent.RowStyles.Add(new RowStyle(SizeType.Absolute, 44));
+        eventContent.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        eventContent.Controls.Add(filterRow, 0, 0);
+        eventList.Dock = DockStyle.Fill;
+        eventList.Margin = new Padding(0);
+        eventContent.Controls.Add(eventList, 0, 1);
+
         var page = BuildFixedWidthSectionPage(
             "EX 首领技能事件",
-            eventList,
-            "事件键按 eventID 升序生成；像素写入键 / 255，模块条件使用整数键 1–247");
-        var items = ExBossEventCatalog.Events
+            eventContent,
+            "事件键按 eventID 升序生成；像素写入键 / 255，模块条件使用整数键 1–247",
+            eventList);
+
+        var updatingFilters = false;
+
+        void ResetBossFilter()
+        {
+            updatingFilters = true;
+            try
+            {
+                var selectedDungeon = (dungeonFilter.SelectedItem as ExBossEventFilterOption)?.Value;
+                bossFilter.BeginUpdate();
+                bossFilter.Items.Clear();
+                bossFilter.Items.Add(new ExBossEventFilterOption("首领：全部", null));
+                foreach (var boss in allEvents
+                             .Where(item => selectedDungeon is null
+                                 || string.Equals(item.MapName, selectedDungeon, StringComparison.Ordinal))
+                             .Select(item => item.BossName)
+                             .Where(name => name.Length > 0)
+                             .Distinct(StringComparer.Ordinal)
+                             .OrderBy(name => name, StringComparer.Ordinal))
+                {
+                    bossFilter.Items.Add(new ExBossEventFilterOption($"首领：{boss}", boss));
+                }
+
+                bossFilter.SelectedIndex = 0;
+                bossFilter.EndUpdate();
+            }
+            finally
+            {
+                updatingFilters = false;
+            }
+        }
+
+        void ApplyFilters()
+        {
+            if (updatingFilters)
+            {
+                return;
+            }
+
+            var selectedDungeon = (dungeonFilter.SelectedItem as ExBossEventFilterOption)?.Value;
+            var selectedBoss = (bossFilter.SelectedItem as ExBossEventFilterOption)?.Value;
+            var selectedType = (typeFilter.SelectedItem as ExBossEventFilterOption)?.Value;
+            var filteredEvents = allEvents.Where(item =>
+                (selectedDungeon is null || string.Equals(item.MapName, selectedDungeon, StringComparison.Ordinal))
+                && (selectedBoss is null || string.Equals(item.BossName, selectedBoss, StringComparison.Ordinal))
+                && (selectedType is null || string.Equals(item.MechanicType, selectedType, StringComparison.Ordinal)));
+            ReplaceItems(eventList, CreateExBossEventItems(filteredEvents));
+        }
+
+        dungeonFilter.SelectedIndexChanged += (_, _) =>
+        {
+            ResetBossFilter();
+            ApplyFilters();
+        };
+        bossFilter.SelectedIndexChanged += (_, _) => ApplyFilters();
+        typeFilter.SelectedIndexChanged += (_, _) => ApplyFilters();
+        dungeonFilter.SelectedIndex = 0;
+        typeFilter.SelectedIndex = 0;
+        ResetBossFilter();
+        ApplyFilters();
+        return page;
+    }
+
+    private static UiDropDown CreateExBossEventFilter(int width)
+    {
+        var filter = new UiDropDown
+        {
+            AutoSize = false,
+            Size = new Size(width, 36),
+            DropDownWidth = Math.Max(width, 280),
+            Margin = new Padding(0, 4, 10, 4)
+        };
+        UiTheme.StyleComboBox(filter);
+        return filter;
+    }
+
+    private static IReadOnlyList<ListViewItem> CreateExBossEventItems(IEnumerable<ExBossEventInfo> events)
+        => events
             .Select(item => new ListViewItem(
             [
                 item.Key.ToString(),
@@ -1280,12 +1431,40 @@ public sealed class StatusForm : Form
                 ToolTipText = $"键 {item.Key} · eventID {item.EventId} · spellID {item.SpellId} · {item.MapName} / {item.BossName} / {item.Name}"
             })
             .ToArray();
-        ReplaceItems(
+
+    private Control BuildBigWigsEventsPage()
+    {
+        var eventList = UiTheme.CreateListView(Font, "bigwigs-boss-events",
+            new UiTheme.ListColumn("键", 56, 72, FixedWidth: true),
+            new UiTheme.ListColumn("像素编码", 88, 110, FixedWidth: true),
+            new UiTheme.ListColumn("技能 ID", 100, 120, FixedWidth: true),
+            new UiTheme.ListColumn("事件", 190, 360),
+            new UiTheme.ListColumn("已知位置", 300, 900, FillRemaining: true));
+
+        ReplaceItems(eventList, BigWigsEventCatalog.Events.Select(item =>
+        {
+            var location = item.MapName.Length > 0
+                ? $"{item.MapName} / {item.BossName}"
+                : "以 BigWigs 实时模块为准";
+            return new ListViewItem(
+            [
+                item.Key.ToString(),
+                $"{item.Key} / 255",
+                item.SpellId.ToString(),
+                item.Name,
+                location
+            ])
+            {
+                Tag = item,
+                ToolTipText = $"键 {item.Key} · spellID {item.SpellId} · {location}"
+            };
+        }).ToArray());
+
+        return BuildFixedWidthSectionPage(
+            "BigWigs 团队首领技能事件",
             eventList,
-            items.Length > 0
-                ? items
-                : [new ListViewItem(["-", "-", "-", "-", "-", "事件目录不可用", "-", "-"])]);
-        return page;
+            $"按 spellID 升序生成 {BigWigsEventCatalog.Events.Count} 个键；像素写入键 / 255，模块条件使用整数键",
+            eventList);
     }
 
     private Control CreateBossNumberCard(BossDungeon dungeon)
@@ -1615,7 +1794,9 @@ public sealed class StatusForm : Form
                 "酒池", "符文", "姿态", "神圣军备", "自律", "天启骑士数量",
                 "英勇打击", "吸血鬼打击", "收割者战刃", "沸点",
                 "风暴涌流图腾", "风暴涌流图腾数量", "治疗之泉图腾", "治疗之泉图腾数量",
-                "EX首领技能类型", "EX首领技能事件", "EX首领技能倒计时"
+                "EX首领技能类型", "EX首领技能事件", "EX首领技能倒计时",
+                "EX小怪技能类型", "EX小怪技能事件", "EX小怪技能倒计时",
+                "BigWigs首领技能类型", "BigWigs首领技能事件", "BigWigs首领技能倒计时"
             ],
             150), 1, 0);
         fields.Controls.Add(CreateCommonFieldCard(

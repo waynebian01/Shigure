@@ -146,30 +146,6 @@ function Fuyutsui:UpdateInsertItemBySuccess(spellID)
     self:ClearInsertItem()
 end
 
-local dispelAbilities = {
-    [1] = { 527, 360823, 4987, 115450, 88423, 77130 },
-    [2] = { 383016, 51886, 392378, 2782, 475, 374251 },
-    [3] = { 390632, 213634, 393024, 213644, 388874, 218164, 374251 },
-    [4] = { 392378, 2782, 393024, 213644, 388874, 218164, 365585, 374251 },
-    [11] = { 374251 },
-}
-
-local offensiveDispelAbilities = {
-    [1] = { 528, 370, 378773 },
-    [9] = { 2908, 450432 },
-}
-
-local function HasLearnedAnySpell(spellIDs)
-    for _, spellID in ipairs(spellIDs) do
-        if IsSpellKnown(spellID) then
-            return true
-        end
-    end
-    return false
-end
-
-
-
 local function UpdateCooldownSpellKnown()
     spells = {}
     if not Fuyutsui.blocks or not Fuyutsui.blocks.spells then return end
@@ -212,24 +188,16 @@ function Fuyutsui:UpdateSpellKnown()
     UpdateCooldownSpellKnown()
 
     local dispelCapabilities = {
-        [1] = false,
-        [2] = false,
-        [3] = false,
-        [4] = false,
-        [11] = false,
+        [1] = true,
+        [2] = true,
+        [3] = true,
+        [4] = true,
+        [11] = true,
     }
     local offensiveDispelCapabilities = {
-        [1] = false,
-        [9] = false,
+        [1] = true,
+        [9] = true,
     }
-
-    for debuffType, spellIDs in pairs(dispelAbilities) do
-        dispelCapabilities[debuffType] = HasLearnedAnySpell(spellIDs)
-    end
-
-    for debuffType, spellIDs in pairs(offensiveDispelAbilities) do
-        offensiveDispelCapabilities[debuffType] = HasLearnedAnySpell(spellIDs)
-    end
 
     self.dispelCapabilities = dispelCapabilities
     self.offensiveDispelCapabilities = offensiveDispelCapabilities

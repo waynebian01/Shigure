@@ -1325,7 +1325,7 @@ local function CreateGroupMemberAuraContainer(memberIndex, groups, auraDefs, inc
         end
     end
 
-    -- 可驱散减益：仅包含玩家当前会的驱散类型；像素显示类型固定色，非剩余时间
+    -- 驱散减益：包含全部驱散类型；像素显示类型固定色，非剩余时间
     if groups.dispel and includeDispelTypes then
         local pixelIndex = GroupAuraPixelIndex(groups, memberIndex, groups.dispel)
         if pixelIndex > 0 and pixelIndex <= BLOCK_FIX_CONFIG.capacity then

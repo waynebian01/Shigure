@@ -1,0 +1,1937 @@
+{
+  "source": "BigWigs",
+  "description": "BigWigs 团队首领模块事件；按 spellId 升序分配像素键。",
+  "count": 193,
+  "eventKeyTable": [
+    {
+      "key": 1,
+      "spellId": 1221622,
+      "name": "Awaken Fungi",
+      "mapId": 1592,
+      "mapName": "孢陨幽境",
+      "encounterId": 3159,
+      "bossName": "Rotmire",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 2,
+      "spellId": 1221637,
+      "name": "Fungal Bloom",
+      "mapId": 1592,
+      "mapName": "孢陨幽境",
+      "encounterId": 3159,
+      "bossName": "Rotmire",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 3,
+      "spellId": 1221781,
+      "name": "Putrid Fist",
+      "mapId": 1592,
+      "mapName": "孢陨幽境",
+      "encounterId": 3159,
+      "bossName": "Rotmire",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 4,
+      "spellId": 1221787,
+      "name": "Bursting Pustules",
+      "mapId": 1592,
+      "mapName": "孢陨幽境",
+      "encounterId": 3159,
+      "bossName": "Rotmire",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 5,
+      "spellId": 1222088,
+      "name": "Festering Vines",
+      "mapId": 1592,
+      "mapName": "孢陨幽境",
+      "encounterId": 3159,
+      "bossName": "Rotmire",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 6,
+      "spellId": 1232467,
+      "name": "Grasp of Emptiness",
+      "mapId": 2912,
+      "mapName": "虚影尖塔",
+      "encounterId": 3181,
+      "bossName": "Crown of the Cosmos",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 7,
+      "spellId": 1233602,
+      "name": "Silverstrike Arrow (Targetted)",
+      "mapId": 2912,
+      "mapName": "虚影尖塔",
+      "encounterId": 3181,
+      "bossName": "Crown of the Cosmos",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 8,
+      "spellId": 1233787,
+      "name": "Dark Hand [Morium]",
+      "mapId": 2912,
+      "mapName": "虚影尖塔",
+      "encounterId": 3181,
+      "bossName": "Crown of the Cosmos",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 9,
+      "spellId": 1233865,
+      "name": "Null Corona",
+      "mapId": 2912,
+      "mapName": "虚影尖塔",
+      "encounterId": 3181,
+      "bossName": "Crown of the Cosmos",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 10,
+      "spellId": 1237038,
+      "name": "Voidstalker's Sting",
+      "mapId": 2912,
+      "mapName": "虚影尖塔",
+      "encounterId": 3181,
+      "bossName": "Crown of the Cosmos",
+      "methods": "配置"
+    },
+    {
+      "key": 11,
+      "spellId": 1237614,
+      "name": "Ranger Captain's Mark",
+      "mapId": 2912,
+      "mapName": "虚影尖塔",
+      "encounterId": 3181,
+      "bossName": "Crown of the Cosmos",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 12,
+      "spellId": 1237837,
+      "name": "Call of the Void",
+      "mapId": 2912,
+      "mapName": "虚影尖塔",
+      "encounterId": 3181,
+      "bossName": "Crown of the Cosmos",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 13,
+      "spellId": 1238843,
+      "name": "Devouring Cosmos",
+      "mapId": 2912,
+      "mapName": "虚影尖塔",
+      "encounterId": 3181,
+      "bossName": "Crown of the Cosmos",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 14,
+      "spellId": 1239080,
+      "name": "Aspect of the End",
+      "mapId": 2912,
+      "mapName": "虚影尖塔",
+      "encounterId": 3181,
+      "bossName": "Crown of the Cosmos",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 15,
+      "spellId": 1241282,
+      "name": "Embers of Belo'ren",
+      "mapId": 2913,
+      "mapName": "进军奎尔丹纳斯",
+      "encounterId": 3182,
+      "bossName": "Belo'ren, Child of Al'ar",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 16,
+      "spellId": 1241292,
+      "name": "Light Dive",
+      "mapId": 2913,
+      "mapName": "进军奎尔丹纳斯",
+      "encounterId": 3182,
+      "bossName": "Belo'ren, Child of Al'ar",
+      "methods": "即时警告 / 配置 / 施法计时"
+    },
+    {
+      "key": 17,
+      "spellId": 1241313,
+      "name": "Rebirth",
+      "mapId": 2913,
+      "mapName": "进军奎尔丹纳斯",
+      "encounterId": 3182,
+      "bossName": "Belo'ren, Child of Al'ar",
+      "methods": "即时警告 / 精确计时 / 配置"
+    },
+    {
+      "key": 18,
+      "spellId": 1241692,
+      "name": "Shadowclaw Slam",
+      "mapId": 2912,
+      "mapName": "虚影尖塔",
+      "encounterId": 3177,
+      "bossName": "Vorasius",
+      "methods": "即时警告 / 精确计时 / 配置"
+    },
+    {
+      "key": 19,
+      "spellId": 1242260,
+      "name": "Infused Quills",
+      "mapId": 2913,
+      "mapName": "进军奎尔丹纳斯",
+      "encounterId": 3182,
+      "bossName": "Belo'ren, Child of Al'ar",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 20,
+      "spellId": 1242515,
+      "name": "Voidlight Convergence",
+      "mapId": 2913,
+      "mapName": "进军奎尔丹纳斯",
+      "encounterId": 3182,
+      "bossName": "Belo'ren, Child of Al'ar",
+      "methods": "即时警告 / 精确计时 / 配置"
+    },
+    {
+      "key": 21,
+      "spellId": 1242981,
+      "name": "Radiant Echoes",
+      "mapId": 2913,
+      "mapName": "进军奎尔丹纳斯",
+      "encounterId": 3182,
+      "bossName": "Belo'ren, Child of Al'ar",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 22,
+      "spellId": 1243743,
+      "name": "Interrupting Tremor [Demiar]",
+      "mapId": 2912,
+      "mapName": "虚影尖塔",
+      "encounterId": 3181,
+      "bossName": "Crown of the Cosmos",
+      "methods": "即时警告 / 配置 / 施法计时"
+    },
+    {
+      "key": 23,
+      "spellId": 1243753,
+      "name": "Ravenous Abyss",
+      "mapId": 2912,
+      "mapName": "虚影尖塔",
+      "encounterId": 3181,
+      "bossName": "Crown of the Cosmos",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 24,
+      "spellId": 1243982,
+      "name": "Silverstrike Barrage",
+      "mapId": 2912,
+      "mapName": "虚影尖塔",
+      "encounterId": 3181,
+      "bossName": "Crown of the Cosmos",
+      "methods": "配置"
+    },
+    {
+      "key": 25,
+      "spellId": 1244221,
+      "name": "Dread Breath",
+      "mapId": 2912,
+      "mapName": "虚影尖塔",
+      "encounterId": 3178,
+      "bossName": "Vaelgor & Ezzorak",
+      "methods": "即时警告 / 近似CD / 配置"
+    },
+    {
+      "key": 26,
+      "spellId": 1244344,
+      "name": "Eternal Burns",
+      "mapId": 2913,
+      "mapName": "进军奎尔丹纳斯",
+      "encounterId": 3182,
+      "bossName": "Belo'ren, Child of Al'ar",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 27,
+      "spellId": 1244672,
+      "name": "Nullzone",
+      "mapId": 2912,
+      "mapName": "虚影尖塔",
+      "encounterId": 3178,
+      "bossName": "Vaelgor & Ezzorak",
+      "methods": "精确计时 / 配置"
+    },
+    {
+      "key": 28,
+      "spellId": 1244917,
+      "name": "Void Howl",
+      "mapId": 2912,
+      "mapName": "虚影尖塔",
+      "encounterId": 3178,
+      "bossName": "Vaelgor & Ezzorak",
+      "methods": "即时警告 / 近似CD / 配置"
+    },
+    {
+      "key": 29,
+      "spellId": 1245391,
+      "name": "Gloom",
+      "mapId": 2912,
+      "mapName": "虚影尖塔",
+      "encounterId": 3178,
+      "bossName": "Vaelgor & Ezzorak",
+      "methods": "即时警告 / 近似CD / 配置"
+    },
+    {
+      "key": 30,
+      "spellId": 1245396,
+      "name": "Consume",
+      "mapId": 2939,
+      "mapName": "梦境裂隙",
+      "encounterId": 3306,
+      "bossName": "Chimaerus the Undreamt God",
+      "methods": "即时警告 / 精确计时 / 配置"
+    },
+    {
+      "key": 31,
+      "spellId": 1245406,
+      "name": "Ravenous Dive",
+      "mapId": 2939,
+      "mapName": "梦境裂隙",
+      "encounterId": 3306,
+      "bossName": "Chimaerus the Undreamt God",
+      "methods": "即时警告 / 精确计时 / 配置 / 施法计时"
+    },
+    {
+      "key": 32,
+      "spellId": 1245486,
+      "name": "Corrupted Devastation",
+      "mapId": 2939,
+      "mapName": "梦境裂隙",
+      "encounterId": 3306,
+      "bossName": "Chimaerus the Undreamt God",
+      "methods": "即时警告 / 近似CD / 配置"
+    },
+    {
+      "key": 33,
+      "spellId": 1245645,
+      "name": "Rakfang",
+      "mapId": 2912,
+      "mapName": "虚影尖塔",
+      "encounterId": 3178,
+      "bossName": "Vaelgor & Ezzorak",
+      "methods": "即时警告 / 近似CD / 配置"
+    },
+    {
+      "key": 34,
+      "spellId": 1246162,
+      "name": "Aura of Devotion",
+      "mapId": 2912,
+      "mapName": "虚影尖塔",
+      "encounterId": 3180,
+      "bossName": "Lightblinded Vanguard",
+      "methods": "即时警告 / 近似CD / 配置"
+    },
+    {
+      "key": 35,
+      "spellId": 1246175,
+      "name": "Entropic Unraveling",
+      "mapId": 2912,
+      "mapName": "虚影尖塔",
+      "encounterId": 3179,
+      "bossName": "Fallen-King Salhadaar",
+      "methods": "即时警告 / 精确计时 / 配置"
+    },
+    {
+      "key": 36,
+      "spellId": 1246461,
+      "name": "Rift Slash",
+      "mapId": 2912,
+      "mapName": "虚影尖塔",
+      "encounterId": 3181,
+      "bossName": "Crown of the Cosmos",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 37,
+      "spellId": 1246485,
+      "name": "Avenger's Shield",
+      "mapId": 2912,
+      "mapName": "虚影尖塔",
+      "encounterId": 3180,
+      "bossName": "Lightblinded Vanguard",
+      "methods": "即时警告 / 近似CD / 配置"
+    },
+    {
+      "key": 38,
+      "spellId": 1246621,
+      "name": "Caustic Phlegm",
+      "mapId": 2939,
+      "mapName": "梦境裂隙",
+      "encounterId": 3306,
+      "bossName": "Chimaerus the Undreamt God",
+      "methods": "即时警告 / 精确计时 / 配置"
+    },
+    {
+      "key": 39,
+      "spellId": 1246653,
+      "name": "Caustic Phelgm",
+      "mapId": 2939,
+      "mapName": "梦境裂隙",
+      "encounterId": 3306,
+      "bossName": "Chimaerus the Undreamt God",
+      "methods": "即时警告 / 精确计时 / 配置"
+    },
+    {
+      "key": 40,
+      "spellId": 1246709,
+      "name": "Death Drop",
+      "mapId": 2913,
+      "mapName": "进军奎尔丹纳斯",
+      "encounterId": 3182,
+      "bossName": "Belo'ren, Child of Al'ar",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 41,
+      "spellId": 1246736,
+      "name": "Judgement (Final Verdict)",
+      "mapId": 2912,
+      "mapName": "虚影尖塔",
+      "encounterId": 3180,
+      "bossName": "Lightblinded Vanguard",
+      "methods": "即时警告 / 近似CD / 配置"
+    },
+    {
+      "key": 42,
+      "spellId": 1246749,
+      "name": "Sacred Toll",
+      "mapId": 2912,
+      "mapName": "虚影尖塔",
+      "encounterId": 3180,
+      "bossName": "Lightblinded Vanguard",
+      "methods": "即时警告 / 近似CD / 配置"
+    },
+    {
+      "key": 43,
+      "spellId": 1246765,
+      "name": "Divine Storm",
+      "mapId": 2912,
+      "mapName": "虚影尖塔",
+      "encounterId": 3180,
+      "bossName": "Lightblinded Vanguard",
+      "methods": "近似CD / 配置"
+    },
+    {
+      "key": 44,
+      "spellId": 1246918,
+      "name": "Cosmic Barrier",
+      "mapId": 2912,
+      "mapName": "虚影尖塔",
+      "encounterId": 3181,
+      "bossName": "Crown of the Cosmos",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 45,
+      "spellId": 1247738,
+      "name": "Void Convergence",
+      "mapId": 2912,
+      "mapName": "虚影尖塔",
+      "encounterId": 3179,
+      "bossName": "Fallen-King Salhadaar",
+      "methods": "即时警告 / 精确计时 / 配置"
+    },
+    {
+      "key": 46,
+      "spellId": 1248449,
+      "name": "Aura of Wrath",
+      "mapId": 2912,
+      "mapName": "虚影尖塔",
+      "encounterId": 3180,
+      "bossName": "Lightblinded Vanguard",
+      "methods": "即时警告 / 近似CD / 配置"
+    },
+    {
+      "key": 47,
+      "spellId": 1248451,
+      "name": "Aura of Peace",
+      "mapId": 2912,
+      "mapName": "虚影尖塔",
+      "encounterId": 3180,
+      "bossName": "Lightblinded Vanguard",
+      "methods": "即时警告 / 近似CD / 配置"
+    },
+    {
+      "key": 48,
+      "spellId": 1248644,
+      "name": "Divine Toll",
+      "mapId": 2912,
+      "mapName": "虚影尖塔",
+      "encounterId": 3180,
+      "bossName": "Lightblinded Vanguard",
+      "methods": "即时警告 / 近似CD / 配置"
+    },
+    {
+      "key": 49,
+      "spellId": 1248674,
+      "name": "Sacred Shield",
+      "mapId": 2912,
+      "mapName": "虚影尖塔",
+      "encounterId": 3180,
+      "bossName": "Lightblinded Vanguard",
+      "methods": "即时警告 / 近似CD / 配置"
+    },
+    {
+      "key": 50,
+      "spellId": 1248697,
+      "name": "Despotic Command",
+      "mapId": 2912,
+      "mapName": "虚影尖塔",
+      "encounterId": 3179,
+      "bossName": "Fallen-King Salhadaar",
+      "methods": "即时警告 / 精确计时 / 配置"
+    },
+    {
+      "key": 51,
+      "spellId": 1248710,
+      "name": "Tyr's Wrath",
+      "mapId": 2912,
+      "mapName": "虚影尖塔",
+      "encounterId": 3180,
+      "bossName": "Lightblinded Vanguard",
+      "methods": "即时警告 / 近似CD / 配置"
+    },
+    {
+      "key": 52,
+      "spellId": 1248983,
+      "name": "Execution Sentence",
+      "mapId": 2912,
+      "mapName": "虚影尖塔",
+      "encounterId": 3180,
+      "bossName": "Lightblinded Vanguard",
+      "methods": "即时警告 / 近似CD / 配置"
+    },
+    {
+      "key": 53,
+      "spellId": 1249251,
+      "name": "Dark Upheaval",
+      "mapId": 2912,
+      "mapName": "虚影尖塔",
+      "encounterId": 3176,
+      "bossName": "Imperator Averzian",
+      "methods": "即时警告 / 精确计时 / 配置"
+    },
+    {
+      "key": 54,
+      "spellId": 1249262,
+      "name": "Umbral Collapse",
+      "mapId": 2912,
+      "mapName": "虚影尖塔",
+      "encounterId": 3176,
+      "bossName": "Imperator Averzian",
+      "methods": "即时警告 / 精确计时 / 配置"
+    },
+    {
+      "key": 55,
+      "spellId": 1249609,
+      "name": "Dark Rune",
+      "mapId": 2913,
+      "mapName": "进军奎尔丹纳斯",
+      "encounterId": 3183,
+      "bossName": "Midnight Falls",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 56,
+      "spellId": 1249620,
+      "name": "Death's Dirge",
+      "mapId": 2913,
+      "mapName": "进军奎尔丹纳斯",
+      "encounterId": 3183,
+      "bossName": "Midnight Falls",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 57,
+      "spellId": 1249748,
+      "name": "Midnight Flames",
+      "mapId": 2912,
+      "mapName": "虚影尖塔",
+      "encounterId": 3178,
+      "bossName": "Vaelgor & Ezzorak",
+      "methods": "即时警告 / 近似CD / 配置"
+    },
+    {
+      "key": 58,
+      "spellId": 1250686,
+      "name": "Twisting Obscurity (Raid damage/dot)",
+      "mapId": 2912,
+      "mapName": "虚影尖塔",
+      "encounterId": 3179,
+      "bossName": "Fallen-King Salhadaar",
+      "methods": "即时警告 / 精确计时 / 配置"
+    },
+    {
+      "key": 59,
+      "spellId": 1250803,
+      "name": "Shattering Twilight",
+      "mapId": 2912,
+      "mapName": "虚影尖塔",
+      "encounterId": 3179,
+      "bossName": "Fallen-King Salhadaar",
+      "methods": "即时警告 / 精确计时 / 配置"
+    },
+    {
+      "key": 60,
+      "spellId": 1250898,
+      "name": "The Dark Archangel",
+      "mapId": 2913,
+      "mapName": "进军奎尔丹纳斯",
+      "encounterId": 3183,
+      "bossName": "Midnight Falls",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 61,
+      "spellId": 1251361,
+      "name": "Shadow's Advance",
+      "mapId": 2912,
+      "mapName": "虚影尖塔",
+      "encounterId": 3176,
+      "bossName": "Imperator Averzian",
+      "methods": "即时警告 / 精确计时 / 配置"
+    },
+    {
+      "key": 62,
+      "spellId": 1251386,
+      "name": "Safeguard Prism",
+      "mapId": 2913,
+      "mapName": "进军奎尔丹纳斯",
+      "encounterId": 3183,
+      "bossName": "Midnight Falls",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 63,
+      "spellId": 1251857,
+      "name": "Judgement (Shield of the Righteous)",
+      "mapId": 2912,
+      "mapName": "虚影尖塔",
+      "encounterId": 3180,
+      "bossName": "Lightblinded Vanguard",
+      "methods": "即时警告 / 近似CD / 配置"
+    },
+    {
+      "key": 64,
+      "spellId": 1253915,
+      "name": "Heaven's Glaives",
+      "mapId": 2913,
+      "mapName": "进军奎尔丹纳斯",
+      "encounterId": 3183,
+      "bossName": "Midnight Falls",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 65,
+      "spellId": 1254081,
+      "name": "Fractured Projection",
+      "mapId": 2912,
+      "mapName": "虚影尖塔",
+      "encounterId": 3179,
+      "bossName": "Fallen-King Salhadaar",
+      "methods": "即时警告 / 精确计时 / 配置"
+    },
+    {
+      "key": 66,
+      "spellId": 1254199,
+      "name": "Parasite Expulsion",
+      "mapId": 2912,
+      "mapName": "虚影尖塔",
+      "encounterId": 3177,
+      "bossName": "Vorasius",
+      "methods": "即时警告 / 精确计时 / 配置"
+    },
+    {
+      "key": 67,
+      "spellId": 1255368,
+      "name": "Void Expulsion",
+      "mapId": 2912,
+      "mapName": "虚影尖塔",
+      "encounterId": 3181,
+      "bossName": "Crown of the Cosmos",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 68,
+      "spellId": 1255738,
+      "name": "Searing Radiance",
+      "mapId": 2912,
+      "mapName": "虚影尖塔",
+      "encounterId": 3180,
+      "bossName": "Lightblinded Vanguard",
+      "methods": "即时警告 / 近似CD / 配置"
+    },
+    {
+      "key": 69,
+      "spellId": 1256855,
+      "name": "Void Breath",
+      "mapId": 2912,
+      "mapName": "虚影尖塔",
+      "encounterId": 3177,
+      "bossName": "Vorasius",
+      "methods": "即时警告 / 近似CD / 精确计时 / 配置"
+    },
+    {
+      "key": 70,
+      "spellId": 1257085,
+      "name": "Consuming Miasma",
+      "mapId": 2939,
+      "mapName": "梦境裂隙",
+      "encounterId": 3306,
+      "bossName": "Chimaerus the Undreamt God",
+      "methods": "即时警告 / 精确计时 / 配置"
+    },
+    {
+      "key": 71,
+      "spellId": 1257087,
+      "name": "Consuming Miasma",
+      "mapId": 2939,
+      "mapName": "梦境裂隙",
+      "encounterId": 3306,
+      "bossName": "Chimaerus the Undreamt God",
+      "methods": "即时警告 / 精确计时 / 配置"
+    },
+    {
+      "key": 72,
+      "spellId": 1257717,
+      "name": "Alluring Bubble",
+      "mapId": 2987,
+      "mapName": "潮缚石窟",
+      "encounterId": 3379,
+      "bossName": "Nymrissa Wavecaller",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 73,
+      "spellId": 1258610,
+      "name": "Rift Emergence",
+      "mapId": 2939,
+      "mapName": "梦境裂隙",
+      "encounterId": 3306,
+      "bossName": "Chimaerus the Undreamt God",
+      "methods": "即时警告 / 精确计时 / 配置"
+    },
+    {
+      "key": 74,
+      "spellId": 1258668,
+      "name": "Swirling Whirlpools",
+      "mapId": 2987,
+      "mapName": "潮缚石窟",
+      "encounterId": 3379,
+      "bossName": "Nymrissa Wavecaller",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 75,
+      "spellId": 1258883,
+      "name": "Void Fall",
+      "mapId": 2912,
+      "mapName": "虚影尖塔",
+      "encounterId": 3176,
+      "bossName": "Imperator Averzian",
+      "methods": "即时警告 / 精确计时 / 配置"
+    },
+    {
+      "key": 76,
+      "spellId": 1260052,
+      "name": "Primordial Roar",
+      "mapId": 2912,
+      "mapName": "虚影尖塔",
+      "encounterId": 3177,
+      "bossName": "Vorasius",
+      "methods": "即时警告 / 精确计时 / 配置"
+    },
+    {
+      "key": 77,
+      "spellId": 1260712,
+      "name": "Oblivion's Wrath",
+      "mapId": 2912,
+      "mapName": "虚影尖塔",
+      "encounterId": 3176,
+      "bossName": "Imperator Averzian",
+      "methods": "即时警告 / 精确计时 / 配置"
+    },
+    {
+      "key": 78,
+      "spellId": 1260763,
+      "name": "Guardian's Edict",
+      "mapId": 2913,
+      "mapName": "进军奎尔丹纳斯",
+      "encounterId": 3182,
+      "bossName": "Belo'ren, Child of Al'ar",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 79,
+      "spellId": 1260837,
+      "name": "Abyssal Rain",
+      "mapId": 2987,
+      "mapName": "潮缚石窟",
+      "encounterId": 3379,
+      "bossName": "Nymrissa Wavecaller",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 80,
+      "spellId": 1261016,
+      "name": "Rift Simulacrum",
+      "mapId": 2912,
+      "mapName": "虚影尖塔",
+      "encounterId": 3181,
+      "bossName": "Crown of the Cosmos",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 81,
+      "spellId": 1261339,
+      "name": "Cosmic Portal",
+      "mapId": 2912,
+      "mapName": "虚影尖塔",
+      "encounterId": 3181,
+      "bossName": "Crown of the Cosmos",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 82,
+      "spellId": 1262036,
+      "name": "Void Rupture",
+      "mapId": 2912,
+      "mapName": "虚影尖塔",
+      "encounterId": 3176,
+      "bossName": "Imperator Averzian",
+      "methods": "精确计时 / 配置"
+    },
+    {
+      "key": 83,
+      "spellId": 1262289,
+      "name": "Alndust Upheaval",
+      "mapId": 2939,
+      "mapName": "梦境裂隙",
+      "encounterId": 3306,
+      "bossName": "Chimaerus the Undreamt God",
+      "methods": "精确计时 / 配置"
+    },
+    {
+      "key": 84,
+      "spellId": 1262623,
+      "name": "Nullbeam",
+      "mapId": 2912,
+      "mapName": "虚影尖塔",
+      "encounterId": 3178,
+      "bossName": "Vaelgor & Ezzorak",
+      "methods": "即时警告 / 近似CD / 配置"
+    },
+    {
+      "key": 85,
+      "spellId": 1264756,
+      "name": "Rift Madness",
+      "mapId": 2939,
+      "mapName": "梦境裂隙",
+      "encounterId": 3306,
+      "bossName": "Chimaerus the Undreamt God",
+      "methods": "即时警告 / 精确计时 / 配置"
+    },
+    {
+      "key": 86,
+      "spellId": 1265131,
+      "name": "Vaelwing",
+      "mapId": 2912,
+      "mapName": "虚影尖塔",
+      "encounterId": 3178,
+      "bossName": "Vaelgor & Ezzorak",
+      "methods": "即时警告 / 近似CD / 配置"
+    },
+    {
+      "key": 87,
+      "spellId": 1266388,
+      "name": "Dark Constellation",
+      "mapId": 2913,
+      "mapName": "进军奎尔丹纳斯",
+      "encounterId": 3183,
+      "bossName": "Midnight Falls",
+      "methods": "即时警告 / 精确计时 / 配置"
+    },
+    {
+      "key": 88,
+      "spellId": 1266897,
+      "name": "Light Siphon",
+      "mapId": 2913,
+      "mapName": "进军奎尔丹纳斯",
+      "encounterId": 3183,
+      "bossName": "Midnight Falls",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 89,
+      "spellId": 1267049,
+      "name": "Heaven's Lance",
+      "mapId": 2913,
+      "mapName": "进军奎尔丹纳斯",
+      "encounterId": 3183,
+      "bossName": "Midnight Falls",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 90,
+      "spellId": 1268562,
+      "name": "Water Jet",
+      "mapId": 2987,
+      "mapName": "潮缚石窟",
+      "encounterId": 3379,
+      "bossName": "Nymrissa Wavecaller",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 91,
+      "spellId": 1272726,
+      "name": "Rending Tear",
+      "mapId": 2939,
+      "mapName": "梦境裂隙",
+      "encounterId": 3306,
+      "bossName": "Chimaerus the Undreamt God",
+      "methods": "即时警告 / 精确计时 / 配置"
+    },
+    {
+      "key": 92,
+      "spellId": 1273158,
+      "name": "Death's Requiem",
+      "mapId": 2913,
+      "mapName": "进军奎尔丹纳斯",
+      "encounterId": 3183,
+      "bossName": "Midnight Falls",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 93,
+      "spellId": 1276243,
+      "name": "Zealous Spirit",
+      "mapId": 2912,
+      "mapName": "虚影尖塔",
+      "encounterId": 3180,
+      "bossName": "Lightblinded Vanguard",
+      "methods": "即时警告 / 近似CD / 配置"
+    },
+    {
+      "key": 94,
+      "spellId": 1276525,
+      "name": "Heaven & Hell",
+      "mapId": 2913,
+      "mapName": "进军奎尔丹纳斯",
+      "encounterId": 3183,
+      "bossName": "Midnight Falls",
+      "methods": "即时警告 / 精确计时 / 配置"
+    },
+    {
+      "key": 95,
+      "spellId": 1276710,
+      "name": "Alluring Bubble",
+      "mapId": 2987,
+      "mapName": "潮缚石窟",
+      "encounterId": 3379,
+      "bossName": "Nymrissa Wavecaller",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 96,
+      "spellId": 1277025,
+      "name": "Apex Predator",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3420,
+      "bossName": "Sszorak",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 97,
+      "spellId": 1279420,
+      "name": "Dark Quasar [Stage 1 Only]",
+      "mapId": 2913,
+      "mapName": "进军奎尔丹纳斯",
+      "encounterId": 3183,
+      "bossName": "Midnight Falls",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 98,
+      "spellId": 1280015,
+      "name": "Void Marked",
+      "mapId": 2912,
+      "mapName": "虚影尖塔",
+      "encounterId": 3176,
+      "bossName": "Imperator Averzian",
+      "methods": "即时警告 / 精确计时 / 配置"
+    },
+    {
+      "key": 99,
+      "spellId": 1280458,
+      "name": "Grappling Maw",
+      "mapId": 2912,
+      "mapName": "虚影尖塔",
+      "encounterId": 3178,
+      "bossName": "Vaelgor & Ezzorak",
+      "methods": "即时警告 / 近似CD / 配置"
+    },
+    {
+      "key": 100,
+      "spellId": 1280935,
+      "name": "Dripping Fangs",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3455,
+      "bossName": "Vashnik the Malignant",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 101,
+      "spellId": 1281194,
+      "name": "Dark Meltdown",
+      "mapId": 2913,
+      "mapName": "进军奎尔丹纳斯",
+      "encounterId": 3183,
+      "bossName": "Midnight Falls",
+      "methods": "精确计时 / 配置"
+    },
+    {
+      "key": 102,
+      "spellId": 1281907,
+      "name": "Plague Froth",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3455,
+      "bossName": "Vashnik the Malignant",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 103,
+      "spellId": 1282117,
+      "name": "Adaptive Infection",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3455,
+      "bossName": "Vashnik the Malignant",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 104,
+      "spellId": 1282281,
+      "name": "Venomfang",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3429,
+      "bossName": "The Coiled Altar",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 105,
+      "spellId": 1282412,
+      "name": "Core Harvest",
+      "mapId": 2913,
+      "mapName": "进军奎尔丹纳斯",
+      "encounterId": 3183,
+      "bossName": "Midnight Falls",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 106,
+      "spellId": 1282441,
+      "name": "Starsplinter",
+      "mapId": 2913,
+      "mapName": "进军奎尔丹纳斯",
+      "encounterId": 3183,
+      "bossName": "Midnight Falls",
+      "methods": "即时警告 / 精确计时 / 配置"
+    },
+    {
+      "key": 107,
+      "spellId": 1282469,
+      "name": "Dark Quasar [Intermission Only]",
+      "mapId": 2913,
+      "mapName": "进军奎尔丹纳斯",
+      "encounterId": 3183,
+      "bossName": "Midnight Falls",
+      "methods": "即时警告 / 精确计时 / 配置"
+    },
+    {
+      "key": 108,
+      "spellId": 1282487,
+      "name": "Fangs of the Coiled Altar",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3429,
+      "bossName": "The Coiled Altar",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 109,
+      "spellId": 1282525,
+      "name": "Malignant Catalyst",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3455,
+      "bossName": "Vashnik the Malignant",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 110,
+      "spellId": 1282937,
+      "name": "Iceblade Flurry",
+      "mapId": 2987,
+      "mapName": "潮缚石窟",
+      "encounterId": 3379,
+      "bossName": "Nymrissa Wavecaller",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 111,
+      "spellId": 1283164,
+      "name": "Imbibe ,\"CASTBAR\", \"CASTBAR_COUNTDOWN\"}",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3455,
+      "bossName": "Vashnik the Malignant",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 112,
+      "spellId": 1283489,
+      "name": "Guillotine",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3429,
+      "bossName": "The Coiled Altar",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 113,
+      "spellId": 1283832,
+      "name": "Axegrinder",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3429,
+      "bossName": "The Coiled Altar",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 114,
+      "spellId": 1284251,
+      "name": "Venom Coagulation",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3445,
+      "bossName": "Entombed Sentinels",
+      "methods": "即时警告 / 近似CD / 配置"
+    },
+    {
+      "key": 115,
+      "spellId": 1284434,
+      "name": "Toxic Droplets",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3445,
+      "bossName": "Entombed Sentinels",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 116,
+      "spellId": 1284458,
+      "name": "Empowering Slam",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3445,
+      "bossName": "Entombed Sentinels",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 117,
+      "spellId": 1284483,
+      "name": "Blighted Blood",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3445,
+      "bossName": "Entombed Sentinels",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 118,
+      "spellId": 1284487,
+      "name": "Bloodvenom Injection",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3445,
+      "bossName": "Entombed Sentinels",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 119,
+      "spellId": 1284525,
+      "name": "Galvanize",
+      "mapId": 2913,
+      "mapName": "进军奎尔丹纳斯",
+      "encounterId": 3183,
+      "bossName": "Midnight Falls",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 120,
+      "spellId": 1284588,
+      "name": "Vitriolic Stasis",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3445,
+      "bossName": "Entombed Sentinels",
+      "methods": "即时警告 / 精确计时 / 配置"
+    },
+    {
+      "key": 121,
+      "spellId": 1284931,
+      "name": "Termination Prism",
+      "mapId": 2913,
+      "mapName": "进军奎尔丹纳斯",
+      "encounterId": 3183,
+      "bossName": "Midnight Falls",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 122,
+      "spellId": 1284980,
+      "name": "Grim Symphony",
+      "mapId": 2913,
+      "mapName": "进军奎尔丹纳斯",
+      "encounterId": 3183,
+      "bossName": "Midnight Falls",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 123,
+      "spellId": 1285425,
+      "name": "Raging Crosswinds",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3420,
+      "bossName": "Sszorak",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 124,
+      "spellId": 1285681,
+      "name": "Soulcoil Ignition",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3470,
+      "bossName": "Nek'zali the Soulcoiler",
+      "methods": "精确计时 / 配置"
+    },
+    {
+      "key": 125,
+      "spellId": 1285732,
+      "name": "Howling Maelstrom",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3420,
+      "bossName": "Sszorak",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 126,
+      "spellId": 1285911,
+      "name": "Unnerving Fixation",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3429,
+      "bossName": "The Coiled Altar",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 127,
+      "spellId": 1286441,
+      "name": "Spiritcackle",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3429,
+      "bossName": "The Coiled Altar",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 128,
+      "spellId": 1286573,
+      "name": "Soul Sever",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3429,
+      "bossName": "The Coiled Altar",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 129,
+      "spellId": 1286860,
+      "name": "Rage of the Shackled,",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3492,
+      "bossName": "Ula'tek",
+      "methods": "即时警告 / 配置 / 施法计时"
+    },
+    {
+      "key": 130,
+      "spellId": 1286895,
+      "name": "Gloombomb",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3429,
+      "bossName": "The Coiled Altar",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 131,
+      "spellId": 1286905,
+      "name": "Fury Unleashed",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3492,
+      "bossName": "Ula'tek",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 132,
+      "spellId": 1286918,
+      "name": "Eternal Nightfall",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3429,
+      "bossName": "The Coiled Altar",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 133,
+      "spellId": 1286921,
+      "name": "Icebound Flames",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3497,
+      "bossName": "The Lost Explorers",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 134,
+      "spellId": 1287426,
+      "name": "Essence Rend",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3470,
+      "bossName": "Nek'zali the Soulcoiler",
+      "methods": "即时警告 / 精确计时 / 配置"
+    },
+    {
+      "key": 135,
+      "spellId": 1287533,
+      "name": "Gravebound Advance",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3470,
+      "bossName": "Nek'zali the Soulcoiler",
+      "methods": "精确计时 / 配置"
+    },
+    {
+      "key": 136,
+      "spellId": 1288232,
+      "name": "Unstable Miasma",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3445,
+      "bossName": "Entombed Sentinels",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 137,
+      "spellId": 1288538,
+      "name": "Stone Breaker",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3421,
+      "bossName": "The Twin Fangs",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 138,
+      "spellId": 1289192,
+      "name": "Caustic Deluge",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3421,
+      "bossName": "The Twin Fangs",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 139,
+      "spellId": 1289900,
+      "name": "Dreadmarch",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3429,
+      "bossName": "The Coiled Altar",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 140,
+      "spellId": 1290516,
+      "name": "Ravenous Feast",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3421,
+      "bossName": "The Twin Fangs",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 141,
+      "spellId": 1290711,
+      "name": "Blink Nova",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3497,
+      "bossName": "The Lost Explorers",
+      "methods": "配置"
+    },
+    {
+      "key": 142,
+      "spellId": 1290779,
+      "name": "Malice",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3492,
+      "bossName": "Ula'tek",
+      "methods": "精确计时 / 配置"
+    },
+    {
+      "key": 143,
+      "spellId": 1290809,
+      "name": "Coiling Ichor",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3421,
+      "bossName": "The Twin Fangs",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 144,
+      "spellId": 1290956,
+      "name": "Stir the Depths",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3421,
+      "bossName": "The Twin Fangs",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 145,
+      "spellId": 1291390,
+      "name": "Cataclysmic Invocation",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3497,
+      "bossName": "The Lost Explorers",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 146,
+      "spellId": 1291404,
+      "name": "Venomous Emergence",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3421,
+      "bossName": "The Twin Fangs",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 147,
+      "spellId": 1291478,
+      "name": "Corrosive Spit",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3421,
+      "bossName": "The Twin Fangs",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 148,
+      "spellId": 1291759,
+      "name": "Shell Spin",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3497,
+      "bossName": "The Lost Explorers",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 149,
+      "spellId": 1291933,
+      "name": "Throw Junk",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3497,
+      "bossName": "The Lost Explorers",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 150,
+      "spellId": 1292036,
+      "name": "Possession Barrage",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3470,
+      "bossName": "Nek'zali the Soulcoiler",
+      "methods": "即时警告 / 精确计时 / 配置"
+    },
+    {
+      "key": 151,
+      "spellId": 1292104,
+      "name": "Mushroom Toss",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3497,
+      "bossName": "The Lost Explorers",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 152,
+      "spellId": 1292188,
+      "name": "Caustic Waves",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3492,
+      "bossName": "Ula'tek",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 153,
+      "spellId": 1292779,
+      "name": "Final Ascension",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3497,
+      "bossName": "The Lost Explorers",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 154,
+      "spellId": 1292999,
+      "name": "Submerge (P1)",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3492,
+      "bossName": "Ula'tek",
+      "methods": "配置"
+    },
+    {
+      "key": 155,
+      "spellId": 1293212,
+      "name": "Grasping Depths",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3470,
+      "bossName": "Nek'zali the Soulcoiler",
+      "methods": "即时警告 / 精确计时 / 配置"
+    },
+    {
+      "key": 156,
+      "spellId": 1294293,
+      "name": "Vile Flood",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3421,
+      "bossName": "The Twin Fangs",
+      "methods": "即时警告 / 配置 / 施法计时"
+    },
+    {
+      "key": 157,
+      "spellId": 1295397,
+      "name": "Restless Amani",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3470,
+      "bossName": "Nek'zali the Soulcoiler",
+      "methods": "即时警告 / 精确计时 / 配置"
+    },
+    {
+      "key": 158,
+      "spellId": 1295817,
+      "name": "Fling Fish",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3497,
+      "bossName": "The Lost Explorers",
+      "methods": "即时警告 / 精确计时 / 配置"
+    },
+    {
+      "key": 159,
+      "spellId": 1295854,
+      "name": "Shredding Shards",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3497,
+      "bossName": "The Lost Explorers",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 160,
+      "spellId": 1295886,
+      "name": "Frostfire Volley (Fire - Targetted)",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3497,
+      "bossName": "The Lost Explorers",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 161,
+      "spellId": 1295905,
+      "name": "Serpent's Bite",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3492,
+      "bossName": "Ula'tek",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 162,
+      "spellId": 1296092,
+      "name": "Mighty Thud (Targeted) XXX not applied to players?",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3497,
+      "bossName": "The Lost Explorers",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 163,
+      "spellId": 1296249,
+      "name": "Explosive Surprise",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3497,
+      "bossName": "The Lost Explorers",
+      "methods": "配置"
+    },
+    {
+      "key": 164,
+      "spellId": 1296301,
+      "name": "Mephitic Thrash",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3492,
+      "bossName": "Ula'tek",
+      "methods": "即时警告 / 配置 / 施法计时"
+    },
+    {
+      "key": 165,
+      "spellId": 1296535,
+      "name": "Disgusting Fish",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3497,
+      "bossName": "The Lost Explorers",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 166,
+      "spellId": 1296878,
+      "name": "Shifting Protovenom",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3445,
+      "bossName": "Entombed Sentinels",
+      "methods": "即时警告 / 精确计时 / 配置"
+    },
+    {
+      "key": 167,
+      "spellId": 1296898,
+      "name": "Unbound Ferocity",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3420,
+      "bossName": "Sszorak",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 168,
+      "spellId": 1297022,
+      "name": "Mor'zahi's Command",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3497,
+      "bossName": "The Lost Explorers",
+      "methods": "即时警告 / 近似CD / 精确计时 / 配置"
+    },
+    {
+      "key": 169,
+      "spellId": 1298367,
+      "name": "Mother's Wrath",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3492,
+      "bossName": "Ula'tek",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 170,
+      "spellId": 1298381,
+      "name": "Defilement of the Coiled Altar",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3429,
+      "bossName": "The Coiled Altar",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 171,
+      "spellId": 1298559,
+      "name": "Gore Rattle",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3492,
+      "bossName": "Ula'tek",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 172,
+      "spellId": 1299266,
+      "name": "Grim Guillotine",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3429,
+      "bossName": "The Coiled Altar",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 173,
+      "spellId": 1299673,
+      "name": "Invoke",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3470,
+      "bossName": "Nek'zali the Soulcoiler",
+      "methods": "即时警告 / 精确计时 / 配置 / 施法计时"
+    },
+    {
+      "key": 174,
+      "spellId": 1299680,
+      "name": "Sever",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3429,
+      "bossName": "The Coiled Altar",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 175,
+      "spellId": 1299757,
+      "name": "Toxic Incubation",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3492,
+      "bossName": "Ula'tek",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 176,
+      "spellId": 1299960,
+      "name": "Toxic Deluge",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3429,
+      "bossName": "The Coiled Altar",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 177,
+      "spellId": 1300530,
+      "name": "Spectral Coils (1287265)",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3492,
+      "bossName": "Ula'tek",
+      "methods": "即时警告 / 精确计时 / 配置"
+    },
+    {
+      "key": 178,
+      "spellId": 1300635,
+      "name": "Submerge (P3)",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3492,
+      "bossName": "Ula'tek",
+      "methods": "配置"
+    },
+    {
+      "key": 179,
+      "spellId": 1300751,
+      "name": "Call of the Serpent",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3492,
+      "bossName": "Ula'tek",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 180,
+      "spellId": 1301117,
+      "name": "Grasping Fangs",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3492,
+      "bossName": "Ula'tek",
+      "methods": "精确计时 / 配置"
+    },
+    {
+      "key": 181,
+      "spellId": 1301213,
+      "name": "Shadow Molt",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3492,
+      "bossName": "Ula'tek",
+      "methods": "精确计时 / 配置"
+    },
+    {
+      "key": 182,
+      "spellId": 1301510,
+      "name": "Circling Prey",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3492,
+      "bossName": "Ula'tek",
+      "methods": "即时警告 / 配置 / 施法计时"
+    },
+    {
+      "key": 183,
+      "spellId": 1302982,
+      "name": "Virulent Spit",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3492,
+      "bossName": "Ula'tek",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 184,
+      "spellId": 1303230,
+      "name": "Blood Torrent",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3421,
+      "bossName": "The Twin Fangs",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 185,
+      "spellId": 1305421,
+      "name": "Hungering Pyre",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3470,
+      "bossName": "Nek'zali the Soulcoiler",
+      "methods": "即时警告 / 精确计时 / 配置"
+    },
+    {
+      "key": 186,
+      "spellId": 1305959,
+      "name": "Venomous Surge",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3420,
+      "bossName": "Sszorak",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 187,
+      "spellId": 1306872,
+      "name": "Sanguine Storm",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3421,
+      "bossName": "The Twin Fangs",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 188,
+      "spellId": 1307279,
+      "name": "Blighted Sever",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3429,
+      "bossName": "The Coiled Altar",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 189,
+      "spellId": 1308356,
+      "name": "Rouse the Brood",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3421,
+      "bossName": "The Twin Fangs",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 190,
+      "spellId": 1308556,
+      "name": "Submerge",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3421,
+      "bossName": "The Twin Fangs",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 191,
+      "spellId": 1310738,
+      "name": "Toxic Womb",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3492,
+      "bossName": "Ula'tek",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 192,
+      "spellId": 1310763,
+      "name": "Fester Burst",
+      "mapId": 3004,
+      "mapName": "烈毒之渊",
+      "encounterId": 3492,
+      "bossName": "Ula'tek",
+      "methods": "即时警告 / 配置"
+    },
+    {
+      "key": 193,
+      "spellId": 1313393,
+      "name": "Chilling Frost",
+      "mapId": 2987,
+      "mapName": "潮缚石窟",
+      "encounterId": 3379,
+      "bossName": "Nymrissa Wavecaller",
+      "methods": "即时警告 / 配置"
+    }
+  ]
+}

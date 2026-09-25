@@ -1,0 +1,1937 @@
+{
+  "schema": "ex_trash_skill_catalog_v1",
+  "source": {
+    "file": "EXBossData/TrashCDData.lua"
+  },
+  "summary": {
+    "mapCount": 8,
+    "mobCount": 69,
+    "sourceRowCount": 139,
+    "eventCount": 136
+  },
+  "eventKeyTable": [
+    {
+      "key": 1,
+      "spellId": 265966,
+      "name": "震地",
+      "mechanicType": "治疗",
+      "locations": [
+        {
+          "mapId": 250,
+          "mapName": "塞塔里斯神庙",
+          "npcId": 134991,
+          "mobName": "沙怒石拳战士"
+        }
+      ]
+    },
+    {
+      "key": 2,
+      "spellId": 268013,
+      "name": "烈焰震击",
+      "mechanicType": "其他",
+      "locations": [
+        {
+          "mapId": 250,
+          "mapName": "塞塔里斯神庙",
+          "npcId": 136250,
+          "mobName": "扭曲的妖术师"
+        }
+      ]
+    },
+    {
+      "key": 3,
+      "spellId": 269928,
+      "name": "警戒防卫",
+      "mechanicType": "特殊",
+      "locations": [
+        {
+          "mapId": 249,
+          "mapName": "诸王之眠",
+          "npcId": 134158,
+          "mobName": "影裔勇士"
+        }
+      ]
+    },
+    {
+      "key": 4,
+      "spellId": 269972,
+      "name": "妖术齐射",
+      "mechanicType": "其他",
+      "locations": [
+        {
+          "mapId": 249,
+          "mapName": "诸王之眠",
+          "npcId": 134174,
+          "mobName": "复活的妖术师"
+        }
+      ]
+    },
+    {
+      "key": 5,
+      "spellId": 269976,
+      "name": "先祖狂怒",
+      "mechanicType": "特殊",
+      "locations": [
+        {
+          "mapId": 249,
+          "mapName": "诸王之眠",
+          "npcId": 134158,
+          "mobName": "影裔勇士"
+        }
+      ]
+    },
+    {
+      "key": 6,
+      "spellId": 270003,
+      "name": "压制猛击",
+      "mechanicType": "其他",
+      "locations": [
+        {
+          "mapId": 249,
+          "mapName": "诸王之眠",
+          "npcId": 133935,
+          "mobName": "活化守卫"
+        }
+      ]
+    },
+    {
+      "key": 7,
+      "spellId": 270293,
+      "name": "净化打击",
+      "mechanicType": "治疗",
+      "locations": [
+        {
+          "mapId": 249,
+          "mapName": "诸王之眠",
+          "npcId": 134739,
+          "mobName": "净化构造体"
+        }
+      ]
+    },
+    {
+      "key": 8,
+      "spellId": 270482,
+      "name": "暴怒猛击",
+      "mechanicType": "其他",
+      "locations": [
+        {
+          "mapId": 249,
+          "mapName": "诸王之眠",
+          "npcId": 135167,
+          "mobName": "皇家狂战士"
+        }
+      ]
+    },
+    {
+      "key": 9,
+      "spellId": 270502,
+      "name": "狩猎跃击",
+      "mechanicType": "其他",
+      "locations": [
+        {
+          "mapId": 249,
+          "mapName": "诸王之眠",
+          "npcId": 135192,
+          "mobName": "荣耀迅猛龙"
+        },
+        {
+          "mapId": 249,
+          "mapName": "诸王之眠",
+          "npcId": 137487,
+          "mobName": "骸骨狩猎迅猛龙"
+        }
+      ]
+    },
+    {
+      "key": 10,
+      "spellId": 270514,
+      "name": "地震岩层",
+      "mechanicType": "其他",
+      "locations": [
+        {
+          "mapId": 249,
+          "mapName": "诸王之眠",
+          "npcId": 135231,
+          "mobName": "鬼魂蛮兵"
+        }
+      ]
+    },
+    {
+      "key": 11,
+      "spellId": 270889,
+      "name": "过载",
+      "mechanicType": "其他",
+      "locations": [
+        {
+          "mapId": 249,
+          "mapName": "诸王之眠",
+          "npcId": 134331,
+          "mobName": "拉胡艾大王"
+        }
+      ]
+    },
+    {
+      "key": 12,
+      "spellId": 270901,
+      "name": "邪恶愈合",
+      "mechanicType": "其他",
+      "locations": [
+        {
+          "mapId": 249,
+          "mapName": "诸王之眠",
+          "npcId": 134251,
+          "mobName": "总管姆巴拉"
+        }
+      ]
+    },
+    {
+      "key": 13,
+      "spellId": 270920,
+      "name": "束缚灵魂",
+      "mechanicType": "其他",
+      "locations": [
+        {
+          "mapId": 249,
+          "mapName": "诸王之眠",
+          "npcId": 137478,
+          "mobName": "沃希女王"
+        }
+      ]
+    },
+    {
+      "key": 14,
+      "spellId": 270927,
+      "name": "剑刃风暴",
+      "mechanicType": "其他",
+      "locations": [
+        {
+          "mapId": 249,
+          "mapName": "诸王之眠",
+          "npcId": 137474,
+          "mobName": "提玛吉大王"
+        }
+      ]
+    },
+    {
+      "key": 15,
+      "spellId": 271555,
+      "name": "埋葬",
+      "mechanicType": "特殊",
+      "locations": [
+        {
+          "mapId": 249,
+          "mapName": "诸王之眠",
+          "npcId": 137969,
+          "mobName": "葬礼构造体"
+        }
+      ]
+    },
+    {
+      "key": 16,
+      "spellId": 272388,
+      "name": "暗影弹幕",
+      "mechanicType": "其他",
+      "locations": [
+        {
+          "mapId": 249,
+          "mapName": "诸王之眠",
+          "npcId": 138489,
+          "mobName": "祖尔之影"
+        }
+      ]
+    },
+    {
+      "key": 17,
+      "spellId": 272654,
+      "name": "撞头",
+      "mechanicType": "坦克",
+      "locations": [
+        {
+          "mapId": 250,
+          "mapName": "塞塔里斯神庙",
+          "npcId": 134686,
+          "mobName": "三叶虫主母"
+        }
+      ]
+    },
+    {
+      "key": 18,
+      "spellId": 272655,
+      "name": "黄沙冲刷",
+      "mechanicType": "其他",
+      "locations": [
+        {
+          "mapId": 250,
+          "mapName": "塞塔里斯神庙",
+          "npcId": 134629,
+          "mobName": "砂誓骑兵"
+        },
+        {
+          "mapId": 250,
+          "mapName": "塞塔里斯神庙",
+          "npcId": 134686,
+          "mobName": "三叶虫主母"
+        }
+      ]
+    },
+    {
+      "key": 19,
+      "spellId": 372047,
+      "name": "钢铁弹幕",
+      "mechanicType": "坦克",
+      "locations": [
+        {
+          "mapId": 399,
+          "mapName": "红玉新生法池",
+          "npcId": 187897,
+          "mobName": "亵渎者德拉加尔"
+        }
+      ]
+    },
+    {
+      "key": 20,
+      "spellId": 372087,
+      "name": "炽焰冲刺",
+      "mechanicType": "其他",
+      "locations": [
+        {
+          "mapId": 399,
+          "mapName": "红玉新生法池",
+          "npcId": 187897,
+          "mobName": "亵渎者德拉加尔"
+        }
+      ]
+    },
+    {
+      "key": 21,
+      "spellId": 372730,
+      "name": "毁灭猛击",
+      "mechanicType": "坦克",
+      "locations": [
+        {
+          "mapId": 399,
+          "mapName": "红玉新生法池",
+          "npcId": 188244,
+          "mobName": "原始主宰"
+        }
+      ]
+    },
+    {
+      "key": 22,
+      "spellId": 372743,
+      "name": "寒冰壁垒",
+      "mechanicType": "其他",
+      "locations": [
+        {
+          "mapId": 399,
+          "mapName": "红玉新生法池",
+          "npcId": 188067,
+          "mobName": "闪霜织寒者"
+        }
+      ]
+    },
+    {
+      "key": 23,
+      "spellId": 373017,
+      "name": "烈焰狂轰",
+      "mechanicType": "其他",
+      "locations": [
+        {
+          "mapId": 399,
+          "mapName": "红玉新生法池",
+          "npcId": 189886,
+          "mobName": "炎缚火焰风暴"
+        }
+      ]
+    },
+    {
+      "key": 24,
+      "spellId": 373087,
+      "name": "燃尽",
+      "mechanicType": "其他",
+      "locations": [
+        {
+          "mapId": 399,
+          "mapName": "红玉新生法池",
+          "npcId": 189886,
+          "mobName": "炎缚火焰风暴"
+        }
+      ]
+    },
+    {
+      "key": 25,
+      "spellId": 373614,
+      "name": "燃尽",
+      "mechanicType": "其他",
+      "locations": [
+        {
+          "mapId": 399,
+          "mapName": "红玉新生法池",
+          "npcId": 190034,
+          "mobName": "炎缚毁灭者"
+        }
+      ]
+    },
+    {
+      "key": 26,
+      "spellId": 373692,
+      "name": "地狱烈火",
+      "mechanicType": "治疗",
+      "locations": [
+        {
+          "mapId": 399,
+          "mapName": "红玉新生法池",
+          "npcId": 190034,
+          "mobName": "炎缚毁灭者"
+        }
+      ]
+    },
+    {
+      "key": 27,
+      "spellId": 384139,
+      "name": "召唤灼烧元素",
+      "mechanicType": "特殊",
+      "locations": [
+        {
+          "mapId": 399,
+          "mapName": "红玉新生法池",
+          "npcId": 190034,
+          "mobName": "炎缚毁灭者"
+        }
+      ]
+    },
+    {
+      "key": 28,
+      "spellId": 384823,
+      "name": "地狱烈火",
+      "mechanicType": "治疗",
+      "locations": [
+        {
+          "mapId": 399,
+          "mapName": "红玉新生法池",
+          "npcId": 189886,
+          "mobName": "炎缚火焰风暴"
+        }
+      ]
+    },
+    {
+      "key": 29,
+      "spellId": 385310,
+      "name": "暴风箭",
+      "mechanicType": "其他",
+      "locations": [
+        {
+          "mapId": 399,
+          "mapName": "红玉新生法池",
+          "npcId": 195119,
+          "mobName": "毁灭唤风者"
+        }
+      ]
+    },
+    {
+      "key": 30,
+      "spellId": 385313,
+      "name": "引雷针",
+      "mechanicType": "其他",
+      "locations": [
+        {
+          "mapId": 399,
+          "mapName": "红玉新生法池",
+          "npcId": 195119,
+          "mobName": "毁灭唤风者"
+        }
+      ]
+    },
+    {
+      "key": 31,
+      "spellId": 385536,
+      "name": "燃焰弹幕",
+      "mechanicType": "特殊",
+      "locations": [
+        {
+          "mapId": 399,
+          "mapName": "红玉新生法池",
+          "npcId": 190206,
+          "mobName": "灰烬先知烈焰鞭笞者"
+        }
+      ]
+    },
+    {
+      "key": 32,
+      "spellId": 391723,
+      "name": "烈焰吐息",
+      "mechanicType": "其他",
+      "locations": [
+        {
+          "mapId": 399,
+          "mapName": "红玉新生法池",
+          "npcId": 197697,
+          "mobName": "烈焰之咽"
+        }
+      ]
+    },
+    {
+      "key": 33,
+      "spellId": 391726,
+      "name": "风暴吐息",
+      "mechanicType": "其他",
+      "locations": [
+        {
+          "mapId": 399,
+          "mapName": "红玉新生法池",
+          "npcId": 197698,
+          "mobName": "雷霆之颅"
+        }
+      ]
+    },
+    {
+      "key": 34,
+      "spellId": 392394,
+      "name": "火焰之喉",
+      "mechanicType": "坦克",
+      "locations": [
+        {
+          "mapId": 399,
+          "mapName": "红玉新生法池",
+          "npcId": 197697,
+          "mobName": "烈焰之咽"
+        }
+      ]
+    },
+    {
+      "key": 35,
+      "spellId": 392395,
+      "name": "雷霆颚咬",
+      "mechanicType": "坦克",
+      "locations": [
+        {
+          "mapId": 399,
+          "mapName": "红玉新生法池",
+          "npcId": 197698,
+          "mobName": "雷霆之颅"
+        }
+      ]
+    },
+    {
+      "key": 36,
+      "spellId": 392576,
+      "name": "雷霆冲击",
+      "mechanicType": "其他",
+      "locations": [
+        {
+          "mapId": 399,
+          "mapName": "红玉新生法池",
+          "npcId": 198047,
+          "mobName": "暴风引导者"
+        }
+      ]
+    },
+    {
+      "key": 37,
+      "spellId": 392640,
+      "name": "滚雷",
+      "mechanicType": "点名",
+      "locations": [
+        {
+          "mapId": 399,
+          "mapName": "红玉新生法池",
+          "npcId": 197698,
+          "mobName": "雷霆之颅"
+        }
+      ]
+    },
+    {
+      "key": 38,
+      "spellId": 1215961,
+      "name": "邪能光束",
+      "mechanicType": "其他",
+      "locations": [
+        {
+          "mapId": 587,
+          "mapName": "密谋小径",
+          "npcId": 235322,
+          "mobName": "亵渎傀儡"
+        }
+      ]
+    },
+    {
+      "key": 39,
+      "spellId": 1216529,
+      "name": "盾击",
+      "mechanicType": "坦克",
+      "locations": [
+        {
+          "mapId": 587,
+          "mapName": "密谋小径",
+          "npcId": 236071,
+          "mobName": "被买通的守卫"
+        }
+      ]
+    },
+    {
+      "key": 40,
+      "spellId": 1216954,
+      "name": "眼棱",
+      "mechanicType": "其他",
+      "locations": [
+        {
+          "mapId": 587,
+          "mapName": "密谋小径",
+          "npcId": 236905,
+          "mobName": "邪能主宰鲁科西"
+        }
+      ]
+    },
+    {
+      "key": 41,
+      "spellId": 1217633,
+      "name": "腐蚀唾液",
+      "mechanicType": "治疗",
+      "locations": [
+        {
+          "mapId": 587,
+          "mapName": "密谋小径",
+          "npcId": 236902,
+          "mobName": "巨大的邪能浮龙"
+        }
+      ]
+    },
+    {
+      "key": 42,
+      "spellId": 1217973,
+      "name": "厄运诅咒",
+      "mechanicType": "治疗",
+      "locations": [
+        {
+          "mapId": 587,
+          "mapName": "密谋小径",
+          "npcId": 235265,
+          "mobName": "腐化的术士"
+        }
+      ]
+    },
+    {
+      "key": 43,
+      "spellId": 1233472,
+      "name": "撕碎切割",
+      "mechanicType": "其他",
+      "locations": [
+        {
+          "mapId": 585,
+          "mapName": "虚空之痕竞技场",
+          "npcId": 263228,
+          "mobName": "焦躁的虚镰"
+        }
+      ]
+    },
+    {
+      "key": 44,
+      "spellId": 1234855,
+      "name": "险恶光环",
+      "mechanicType": "治疗",
+      "locations": [
+        {
+          "mapId": 585,
+          "mapName": "虚空之痕竞技场",
+          "npcId": 244260,
+          "mobName": "几丁高斯"
+        }
+      ]
+    },
+    {
+      "key": 45,
+      "spellId": 1234890,
+      "name": "粉碎冲锋",
+      "mechanicType": "坦克",
+      "locations": [
+        {
+          "mapId": 585,
+          "mapName": "虚空之痕竞技场",
+          "npcId": 244309,
+          "mobName": "布鲁托克"
+        }
+      ]
+    },
+    {
+      "key": 46,
+      "spellId": 1237855,
+      "name": "地裂打击",
+      "mechanicType": "坦克",
+      "locations": [
+        {
+          "mapId": 584,
+          "mapName": "夺目谷",
+          "npcId": 245346,
+          "mobName": "Virid Grovekeeper"
+        }
+      ]
+    },
+    {
+      "key": 47,
+      "spellId": 1238368,
+      "name": "光颚射线",
+      "mechanicType": "点名",
+      "locations": [
+        {
+          "mapId": 584,
+          "mapName": "夺目谷",
+          "npcId": 245513,
+          "mobName": "Overgrown Hydra"
+        }
+      ]
+    },
+    {
+      "key": 48,
+      "spellId": 1238642,
+      "name": "子弹种子",
+      "mechanicType": "其他",
+      "locations": [
+        {
+          "mapId": 584,
+          "mapName": "夺目谷",
+          "npcId": 245513,
+          "mobName": "Overgrown Hydra"
+        }
+      ]
+    },
+    {
+      "key": 49,
+      "spellId": 1238687,
+      "name": "苦难盛宴",
+      "mechanicType": "治疗",
+      "locations": [
+        {
+          "mapId": 586,
+          "mapName": "纳洛拉克的洞穴",
+          "npcId": 245855,
+          "mobName": "饥渴之灵"
+        }
+      ]
+    },
+    {
+      "key": 50,
+      "spellId": 1238760,
+      "name": "饥荒雕像",
+      "mechanicType": "特殊",
+      "locations": [
+        {
+          "mapId": 586,
+          "mapName": "纳洛拉克的洞穴",
+          "npcId": 245855,
+          "mobName": "饥渴之灵"
+        }
+      ]
+    },
+    {
+      "key": 51,
+      "spellId": 1239856,
+      "name": "天空打击",
+      "mechanicType": "治疗",
+      "locations": [
+        {
+          "mapId": 585,
+          "mapName": "虚空之痕竞技场",
+          "npcId": 245950,
+          "mobName": "警惕的掠心者"
+        }
+      ]
+    },
+    {
+      "key": 52,
+      "spellId": 1240280,
+      "name": "粉碎",
+      "mechanicType": "其他",
+      "locations": [
+        {
+          "mapId": 586,
+          "mapName": "纳洛拉克的洞穴",
+          "npcId": 241869,
+          "mobName": "决意化身"
+        }
+      ]
+    },
+    {
+      "key": 53,
+      "spellId": 1241463,
+      "name": "冰川之墓",
+      "mechanicType": "特殊",
+      "locations": [
+        {
+          "mapId": 586,
+          "mapName": "纳洛拉克的洞穴",
+          "npcId": 241869,
+          "mobName": "决意化身"
+        }
+      ]
+    },
+    {
+      "key": 54,
+      "spellId": 1242135,
+      "name": "凶残创裂",
+      "mechanicType": "坦克",
+      "locations": [
+        {
+          "mapId": 584,
+          "mapName": "夺目谷",
+          "npcId": 246871,
+          "mobName": "Luminous Thornmaw"
+        }
+      ]
+    },
+    {
+      "key": 55,
+      "spellId": 1242138,
+      "name": "炽阳吐息",
+      "mechanicType": "其他",
+      "locations": [
+        {
+          "mapId": 584,
+          "mapName": "夺目谷",
+          "npcId": 246871,
+          "mobName": "Luminous Thornmaw"
+        }
+      ]
+    },
+    {
+      "key": 56,
+      "spellId": 1245186,
+      "name": "头槌重击",
+      "mechanicType": "坦克",
+      "locations": [
+        {
+          "mapId": 585,
+          "mapName": "虚空之痕竞技场",
+          "npcId": 244309,
+          "mobName": "布鲁托克"
+        }
+      ]
+    },
+    {
+      "key": 57,
+      "spellId": 1246957,
+      "name": "原始回响",
+      "mechanicType": "治疗",
+      "locations": [
+        {
+          "mapId": 586,
+          "mapName": "纳洛拉克的洞穴",
+          "npcId": 245146,
+          "mobName": "老练的战争使者"
+        }
+      ]
+    },
+    {
+      "key": 58,
+      "spellId": 1246986,
+      "name": "毒矛乱射",
+      "mechanicType": "其他",
+      "locations": [
+        {
+          "mapId": 586,
+          "mapName": "纳洛拉克的洞穴",
+          "npcId": 245146,
+          "mobName": "老练的战争使者"
+        }
+      ]
+    },
+    {
+      "key": 59,
+      "spellId": 1250100,
+      "name": "吐舌攻击",
+      "mechanicType": "坦克",
+      "locations": [
+        {
+          "mapId": 584,
+          "mapName": "夺目谷",
+          "npcId": 249756,
+          "mobName": "Potatoad Matriarch"
+        }
+      ]
+    },
+    {
+      "key": 60,
+      "spellId": 1250199,
+      "name": "蛤蟆卵",
+      "mechanicType": "特殊",
+      "locations": [
+        {
+          "mapId": 584,
+          "mapName": "夺目谷",
+          "npcId": 249756,
+          "mobName": "Potatoad Matriarch"
+        }
+      ]
+    },
+    {
+      "key": 61,
+      "spellId": 1250937,
+      "name": "喷毒",
+      "mechanicType": "治疗",
+      "locations": [
+        {
+          "mapId": 584,
+          "mapName": "夺目谷",
+          "npcId": 249756,
+          "mobName": "Potatoad Matriarch"
+        }
+      ]
+    },
+    {
+      "key": 62,
+      "spellId": 1252406,
+      "name": "恐惧咆哮",
+      "mechanicType": "治疗",
+      "locations": [
+        {
+          "mapId": 585,
+          "mapName": "虚空之痕竞技场",
+          "npcId": 268184,
+          "mobName": "贪噬残虐者"
+        }
+      ]
+    },
+    {
+      "key": 63,
+      "spellId": 1255205,
+      "name": "拔根而起",
+      "mechanicType": "治疗",
+      "locations": [
+        {
+          "mapId": 584,
+          "mapName": "夺目谷",
+          "npcId": 245346,
+          "mobName": "Virid Grovekeeper"
+        }
+      ]
+    },
+    {
+      "key": 64,
+      "spellId": 1258537,
+      "name": "召唤浮龙",
+      "mechanicType": "特殊",
+      "locations": [
+        {
+          "mapId": 587,
+          "mapName": "密谋小径",
+          "npcId": 236902,
+          "mobName": "巨大的邪能浮龙"
+        }
+      ]
+    },
+    {
+      "key": 65,
+      "spellId": 1263636,
+      "name": "喷射孢子",
+      "mechanicType": "其他",
+      "locations": [
+        {
+          "mapId": 584,
+          "mapName": "夺目谷",
+          "npcId": 254850,
+          "mobName": "Sporeblight Belcher"
+        }
+      ]
+    },
+    {
+      "key": 66,
+      "spellId": 1271385,
+      "name": "喷涌之花",
+      "mechanicType": "治疗",
+      "locations": [
+        {
+          "mapId": 584,
+          "mapName": "夺目谷",
+          "npcId": 254850,
+          "mobName": "Sporeblight Belcher"
+        }
+      ]
+    },
+    {
+      "key": 67,
+      "spellId": 1289265,
+      "name": "腐蚀精华",
+      "mechanicType": "治疗",
+      "locations": [
+        {
+          "mapId": 585,
+          "mapName": "虚空之痕竞技场",
+          "npcId": 263228,
+          "mobName": "焦躁的虚镰"
+        }
+      ]
+    },
+    {
+      "key": 68,
+      "spellId": 1290205,
+      "name": "闪电箭",
+      "mechanicType": "其他",
+      "locations": [
+        {
+          "mapId": 586,
+          "mapName": "纳洛拉克的洞穴",
+          "npcId": 244889,
+          "mobName": "神灵代言人纳尼亚"
+        }
+      ]
+    },
+    {
+      "key": 69,
+      "spellId": 1291468,
+      "name": "破甲猛击",
+      "mechanicType": "坦克",
+      "locations": [
+        {
+          "mapId": 250,
+          "mapName": "塞塔里斯神庙",
+          "npcId": 134991,
+          "mobName": "沙怒石拳战士"
+        }
+      ]
+    },
+    {
+      "key": 70,
+      "spellId": 1291622,
+      "name": "风暴触媒",
+      "mechanicType": "其他",
+      "locations": [
+        {
+          "mapId": 250,
+          "mapName": "塞塔里斯神庙",
+          "npcId": 134390,
+          "mobName": "风暴飞蛇"
+        }
+      ]
+    },
+    {
+      "key": 71,
+      "spellId": 1292990,
+      "name": "三叶虫群",
+      "mechanicType": "特殊",
+      "locations": [
+        {
+          "mapId": 250,
+          "mapName": "塞塔里斯神庙",
+          "npcId": 134629,
+          "mobName": "砂誓骑兵"
+        }
+      ]
+    },
+    {
+      "key": 72,
+      "spellId": 1293464,
+      "name": "积攒电荷",
+      "mechanicType": "治疗",
+      "locations": [
+        {
+          "mapId": 250,
+          "mapName": "塞塔里斯神庙",
+          "npcId": 136076,
+          "mobName": "暴怒云气"
+        }
+      ]
+    },
+    {
+      "key": 73,
+      "spellId": 1293475,
+      "name": "释放电荷",
+      "mechanicType": "治疗",
+      "locations": [
+        {
+          "mapId": 250,
+          "mapName": "塞塔里斯神庙",
+          "npcId": 136076,
+          "mobName": "暴怒云气"
+        }
+      ]
+    },
+    {
+      "key": 74,
+      "spellId": 1293650,
+      "name": "召唤闪电",
+      "mechanicType": "其他",
+      "locations": [
+        {
+          "mapId": 250,
+          "mapName": "塞塔里斯神庙",
+          "npcId": 136076,
+          "mobName": "暴怒云气"
+        }
+      ]
+    },
+    {
+      "key": 75,
+      "spellId": 1294567,
+      "name": "麻痹射击",
+      "mechanicType": "点名",
+      "locations": [
+        {
+          "mapId": 588,
+          "mapName": "毒牙祭坛",
+          "npcId": 261554,
+          "mobName": "双牙蹂躏者"
+        }
+      ]
+    },
+    {
+      "key": 76,
+      "spellId": 1294770,
+      "name": "魔化狂乱",
+      "mechanicType": "其他",
+      "locations": [
+        {
+          "mapId": 587,
+          "mapName": "密谋小径",
+          "npcId": 235465,
+          "mobName": "破坏魔惩罚者"
+        }
+      ]
+    },
+    {
+      "key": 77,
+      "spellId": 1294815,
+      "name": "暗影冰霜箭",
+      "mechanicType": "其他",
+      "locations": [
+        {
+          "mapId": 249,
+          "mapName": "诸王之眠",
+          "npcId": 134174,
+          "mobName": "复活的妖术师"
+        }
+      ]
+    },
+    {
+      "key": 78,
+      "spellId": 1294824,
+      "name": "亵渎猛击",
+      "mechanicType": "治疗",
+      "locations": [
+        {
+          "mapId": 587,
+          "mapName": "密谋小径",
+          "npcId": 235322,
+          "mobName": "亵渎傀儡"
+        }
+      ]
+    },
+    {
+      "key": 79,
+      "spellId": 1294845,
+      "name": "腐蚀之牙",
+      "mechanicType": "坦克",
+      "locations": [
+        {
+          "mapId": 588,
+          "mapName": "毒牙祭坛",
+          "npcId": 262011,
+          "mobName": "振响的扭缠蛇"
+        }
+      ]
+    },
+    {
+      "key": 80,
+      "spellId": 1294849,
+      "name": "振响",
+      "mechanicType": "治疗",
+      "locations": [
+        {
+          "mapId": 588,
+          "mapName": "毒牙祭坛",
+          "npcId": 262011,
+          "mobName": "振响的扭缠蛇"
+        }
+      ]
+    },
+    {
+      "key": 81,
+      "spellId": 1294934,
+      "name": "剧毒喷雾",
+      "mechanicType": "坦克",
+      "locations": [
+        {
+          "mapId": 588,
+          "mapName": "毒牙祭坛",
+          "npcId": 261573,
+          "mobName": "晋升之蛇"
+        }
+      ]
+    },
+    {
+      "key": 82,
+      "spellId": 1294972,
+      "name": "灵魂之箭",
+      "mechanicType": "其他",
+      "locations": [
+        {
+          "mapId": 249,
+          "mapName": "诸王之眠",
+          "npcId": 137478,
+          "mobName": "沃希女王"
+        }
+      ]
+    },
+    {
+      "key": 83,
+      "spellId": 1295035,
+      "name": "飞刃",
+      "mechanicType": "点名",
+      "locations": [
+        {
+          "mapId": 587,
+          "mapName": "密谋小径",
+          "npcId": 236071,
+          "mobName": "被买通的守卫"
+        }
+      ]
+    },
+    {
+      "key": 84,
+      "spellId": 1295055,
+      "name": "剧毒旋风",
+      "mechanicType": "其他",
+      "locations": [
+        {
+          "mapId": 588,
+          "mapName": "毒牙祭坛",
+          "npcId": 261573,
+          "mobName": "晋升之蛇"
+        }
+      ]
+    },
+    {
+      "key": 85,
+      "spellId": 1296671,
+      "name": "队长壁垒",
+      "mechanicType": "特殊",
+      "locations": [
+        {
+          "mapId": 249,
+          "mapName": "诸王之眠",
+          "npcId": 137473,
+          "mobName": "守卫队长阿图"
+        }
+      ]
+    },
+    {
+      "key": 86,
+      "spellId": 1296719,
+      "name": "叉状闪电",
+      "mechanicType": "其他",
+      "locations": [
+        {
+          "mapId": 249,
+          "mapName": "诸王之眠",
+          "npcId": 134331,
+          "mobName": "拉胡艾大王"
+        }
+      ]
+    },
+    {
+      "key": 87,
+      "spellId": 1296722,
+      "name": "地震术",
+      "mechanicType": "特殊",
+      "locations": [
+        {
+          "mapId": 586,
+          "mapName": "纳洛拉克的洞穴",
+          "npcId": 244889,
+          "mobName": "神灵代言人纳尼亚"
+        }
+      ]
+    },
+    {
+      "key": 88,
+      "spellId": 1297682,
+      "name": "吸取生命",
+      "mechanicType": "点名",
+      "locations": [
+        {
+          "mapId": 587,
+          "mapName": "密谋小径",
+          "npcId": 235265,
+          "mobName": "腐化的术士"
+        }
+      ]
+    },
+    {
+      "key": 89,
+      "spellId": 1297684,
+      "name": "黑暗契约",
+      "mechanicType": "特殊",
+      "locations": [
+        {
+          "mapId": 587,
+          "mapName": "密谋小径",
+          "npcId": 235265,
+          "mobName": "腐化的术士"
+        }
+      ]
+    },
+    {
+      "key": 90,
+      "spellId": 1297691,
+      "name": "旋风斩",
+      "mechanicType": "其他",
+      "locations": [
+        {
+          "mapId": 587,
+          "mapName": "密谋小径",
+          "npcId": 235465,
+          "mobName": "破坏魔惩罚者"
+        }
+      ]
+    },
+    {
+      "key": 91,
+      "spellId": 1297918,
+      "name": "致死流血",
+      "mechanicType": "坦克",
+      "locations": [
+        {
+          "mapId": 249,
+          "mapName": "诸王之眠",
+          "npcId": 137484,
+          "mobName": "阿库尔大王"
+        }
+      ]
+    },
+    {
+      "key": 92,
+      "spellId": 1297970,
+      "name": "鲜血吸取",
+      "mechanicType": "治疗",
+      "locations": [
+        {
+          "mapId": 249,
+          "mapName": "诸王之眠",
+          "npcId": 137484,
+          "mobName": "阿库尔大王"
+        }
+      ]
+    },
+    {
+      "key": 93,
+      "spellId": 1298304,
+      "name": "黑暗启示",
+      "mechanicType": "点名",
+      "locations": [
+        {
+          "mapId": 249,
+          "mapName": "诸王之眠",
+          "npcId": 138489,
+          "mobName": "祖尔之影"
+        }
+      ]
+    },
+    {
+      "key": 94,
+      "spellId": 1298900,
+      "name": "残暴猛击",
+      "mechanicType": "治疗",
+      "locations": [
+        {
+          "mapId": 585,
+          "mapName": "虚空之痕竞技场",
+          "npcId": 252053,
+          "mobName": "鲁莽监督者"
+        }
+      ]
+    },
+    {
+      "key": 95,
+      "spellId": 1298908,
+      "name": "勇士之矛",
+      "mechanicType": "特殊",
+      "locations": [
+        {
+          "mapId": 585,
+          "mapName": "虚空之痕竞技场",
+          "npcId": 267545,
+          "mobName": "不屈的埃吉拉"
+        }
+      ]
+    },
+    {
+      "key": 96,
+      "spellId": 1298924,
+      "name": "野蛮猛击",
+      "mechanicType": "其他",
+      "locations": [
+        {
+          "mapId": 585,
+          "mapName": "虚空之痕竞技场",
+          "npcId": 267545,
+          "mobName": "不屈的埃吉拉"
+        }
+      ]
+    },
+    {
+      "key": 97,
+      "spellId": 1299125,
+      "name": "凶猛飞跃",
+      "mechanicType": "点名",
+      "locations": [
+        {
+          "mapId": 585,
+          "mapName": "虚空之痕竞技场",
+          "npcId": 267545,
+          "mobName": "不屈的埃吉拉"
+        }
+      ]
+    },
+    {
+      "key": 98,
+      "spellId": 1299145,
+      "name": "劈地者",
+      "mechanicType": "特殊",
+      "locations": [
+        {
+          "mapId": 585,
+          "mapName": "虚空之痕竞技场",
+          "npcId": 267545,
+          "mobName": "不屈的埃吉拉"
+        }
+      ]
+    },
+    {
+      "key": 99,
+      "spellId": 1299270,
+      "name": "雷鸣风暴",
+      "mechanicType": "治疗",
+      "locations": [
+        {
+          "mapId": 585,
+          "mapName": "虚空之痕竞技场",
+          "npcId": 267546,
+          "mobName": "法术风暴拉杰克斯"
+        }
+      ]
+    },
+    {
+      "key": 100,
+      "spellId": 1299913,
+      "name": "虚无喷发",
+      "mechanicType": "点名",
+      "locations": [
+        {
+          "mapId": 585,
+          "mapName": "虚空之痕竞技场",
+          "npcId": 252072,
+          "mobName": "虚触法师"
+        }
+      ]
+    },
+    {
+      "key": 101,
+      "spellId": 1299938,
+      "name": "暗影箭雨",
+      "mechanicType": "其他",
+      "locations": [
+        {
+          "mapId": 585,
+          "mapName": "虚空之痕竞技场",
+          "npcId": 252072,
+          "mobName": "虚触法师"
+        }
+      ]
+    },
+    {
+      "key": 102,
+      "spellId": 1300138,
+      "name": "虚空光束",
+      "mechanicType": "点名",
+      "locations": [
+        {
+          "mapId": 585,
+          "mapName": "虚空之痕竞技场",
+          "npcId": 245950,
+          "mobName": "警惕的掠心者"
+        }
+      ]
+    },
+    {
+      "key": 103,
+      "spellId": 1300243,
+      "name": "残杀",
+      "mechanicType": "坦克",
+      "locations": [
+        {
+          "mapId": 585,
+          "mapName": "虚空之痕竞技场",
+          "npcId": 268184,
+          "mobName": "贪噬残虐者"
+        }
+      ]
+    },
+    {
+      "key": 104,
+      "spellId": 1300249,
+      "name": "吞噬",
+      "mechanicType": "特殊",
+      "locations": [
+        {
+          "mapId": 585,
+          "mapName": "虚空之痕竞技场",
+          "npcId": 268184,
+          "mobName": "贪噬残虐者"
+        }
+      ]
+    },
+    {
+      "key": 105,
+      "spellId": 1300803,
+      "name": "污秽打击",
+      "mechanicType": "坦克",
+      "locations": [
+        {
+          "mapId": 250,
+          "mapName": "塞塔里斯神庙",
+          "npcId": 268344,
+          "mobName": "堕落的守护者"
+        }
+      ]
+    },
+    {
+      "key": 106,
+      "spellId": 1301851,
+      "name": "嗜血飞斧",
+      "mechanicType": "点名",
+      "locations": [
+        {
+          "mapId": 249,
+          "mapName": "诸王之眠",
+          "npcId": 135167,
+          "mobName": "皇家狂战士"
+        }
+      ]
+    },
+    {
+      "key": 107,
+      "spellId": 1302007,
+      "name": "刃舞",
+      "mechanicType": "治疗",
+      "locations": [
+        {
+          "mapId": 587,
+          "mapName": "密谋小径",
+          "npcId": 236905,
+          "mobName": "邪能主宰鲁科西"
+        }
+      ]
+    },
+    {
+      "key": 108,
+      "spellId": 1302028,
+      "name": "灵魂碾压",
+      "mechanicType": "坦克",
+      "locations": [
+        {
+          "mapId": 249,
+          "mapName": "诸王之眠",
+          "npcId": 135231,
+          "mobName": "鬼魂蛮兵"
+        }
+      ]
+    },
+    {
+      "key": 109,
+      "spellId": 1302153,
+      "name": "潜藏妖术",
+      "mechanicType": "其他",
+      "locations": [
+        {
+          "mapId": 250,
+          "mapName": "塞塔里斯神庙",
+          "npcId": 268491,
+          "mobName": "扭曲的妖术师"
+        }
+      ]
+    },
+    {
+      "key": 110,
+      "spellId": 1302158,
+      "name": "烈焰震击",
+      "mechanicType": "其他",
+      "locations": [
+        {
+          "mapId": 250,
+          "mapName": "塞塔里斯神庙",
+          "npcId": 268491,
+          "mobName": "扭曲的妖术师"
+        }
+      ]
+    },
+    {
+      "key": 111,
+      "spellId": 1303443,
+      "name": "毒刃斩击",
+      "mechanicType": "坦克",
+      "locations": [
+        {
+          "mapId": 250,
+          "mapName": "塞塔里斯神庙",
+          "npcId": 135007,
+          "mobName": "宝珠守望者"
+        }
+      ]
+    },
+    {
+      "key": 112,
+      "spellId": 1303486,
+      "name": "蚀骨践踏",
+      "mechanicType": "治疗",
+      "locations": [
+        {
+          "mapId": 250,
+          "mapName": "塞塔里斯神庙",
+          "npcId": 135007,
+          "mobName": "宝珠守望者"
+        }
+      ]
+    },
+    {
+      "key": 113,
+      "spellId": 1305201,
+      "name": "采掘冲击",
+      "mechanicType": "治疗",
+      "locations": [
+        {
+          "mapId": 399,
+          "mapName": "红玉新生法池",
+          "npcId": 188244,
+          "mobName": "原始主宰"
+        }
+      ]
+    },
+    {
+      "key": 114,
+      "spellId": 1305945,
+      "name": "暗影旋风斩",
+      "mechanicType": "治疗",
+      "locations": [
+        {
+          "mapId": 249,
+          "mapName": "诸王之眠",
+          "npcId": 134158,
+          "mobName": "影裔勇士"
+        }
+      ]
+    },
+    {
+      "key": 115,
+      "spellId": 1305955,
+      "name": "火热冲击",
+      "mechanicType": "其他",
+      "locations": [
+        {
+          "mapId": 399,
+          "mapName": "红玉新生法池",
+          "npcId": 190034,
+          "mobName": "炎缚毁灭者"
+        }
+      ]
+    },
+    {
+      "key": 116,
+      "spellId": 1305982,
+      "name": "暗影箭雨",
+      "mechanicType": "其他",
+      "locations": [
+        {
+          "mapId": 249,
+          "mapName": "诸王之眠",
+          "npcId": 137486,
+          "mobName": "帕特拉女王"
+        }
+      ]
+    },
+    {
+      "key": 117,
+      "spellId": 1306049,
+      "name": "爆破重击",
+      "mechanicType": "点名",
+      "locations": [
+        {
+          "mapId": 249,
+          "mapName": "诸王之眠",
+          "npcId": 137474,
+          "mobName": "提玛吉大王"
+        }
+      ]
+    },
+    {
+      "key": 118,
+      "spellId": 1306366,
+      "name": "闪电涌流",
+      "mechanicType": "点名",
+      "locations": [
+        {
+          "mapId": 399,
+          "mapName": "红玉新生法池",
+          "npcId": 197535,
+          "mobName": "大引导者莱瓦迪"
+        },
+        {
+          "mapId": 399,
+          "mapName": "红玉新生法池",
+          "npcId": 198047,
+          "mobName": "暴风引导者"
+        }
+      ]
+    },
+    {
+      "key": 119,
+      "spellId": 1306385,
+      "name": "进化",
+      "mechanicType": "其他",
+      "locations": [
+        {
+          "mapId": 588,
+          "mapName": "毒牙祭坛",
+          "npcId": 261557,
+          "mobName": "高阶进化者"
+        }
+      ]
+    },
+    {
+      "key": 120,
+      "spellId": 1306517,
+      "name": "鲜血献祭",
+      "mechanicType": "治疗",
+      "locations": [
+        {
+          "mapId": 588,
+          "mapName": "毒牙祭坛",
+          "npcId": 270306,
+          "mobName": "仪式首领"
+        }
+      ]
+    },
+    {
+      "key": 121,
+      "spellId": 1306668,
+      "name": "毒素吐息",
+      "mechanicType": "其他",
+      "locations": [
+        {
+          "mapId": 588,
+          "mapName": "毒牙祭坛",
+          "npcId": 261554,
+          "mobName": "双牙蹂躏者"
+        }
+      ]
+    },
+    {
+      "key": 122,
+      "spellId": 1306852,
+      "name": "剧毒涌动",
+      "mechanicType": "治疗",
+      "locations": [
+        {
+          "mapId": 588,
+          "mapName": "毒牙祭坛",
+          "npcId": 263109,
+          "mobName": "乌拉特克神选者"
+        }
+      ]
+    },
+    {
+      "key": 123,
+      "spellId": 1306911,
+      "name": "肢解",
+      "mechanicType": "坦克",
+      "locations": [
+        {
+          "mapId": 588,
+          "mapName": "毒牙祭坛",
+          "npcId": 270306,
+          "mobName": "仪式首领"
+        }
+      ]
+    },
+    {
+      "key": 124,
+      "spellId": 1307502,
+      "name": "召唤原始雷云",
+      "mechanicType": "特殊",
+      "locations": [
+        {
+          "mapId": 399,
+          "mapName": "红玉新生法池",
+          "npcId": 198047,
+          "mobName": "暴风引导者"
+        }
+      ]
+    },
+    {
+      "key": 125,
+      "spellId": 1307511,
+      "name": "召唤原始雷云",
+      "mechanicType": "特殊",
+      "locations": [
+        {
+          "mapId": 399,
+          "mapName": "红玉新生法池",
+          "npcId": 197535,
+          "mobName": "大引导者莱瓦迪"
+        }
+      ]
+    },
+    {
+      "key": 126,
+      "spellId": 1308113,
+      "name": "箭雨",
+      "mechanicType": "特殊",
+      "locations": [
+        {
+          "mapId": 250,
+          "mapName": "塞塔里斯神庙",
+          "npcId": 134600,
+          "mobName": "流沙猎手"
+        }
+      ]
+    },
+    {
+      "key": 127,
+      "spellId": 1308864,
+      "name": "感染",
+      "mechanicType": "治疗",
+      "locations": [
+        {
+          "mapId": 588,
+          "mapName": "毒牙祭坛",
+          "npcId": 261573,
+          "mobName": "晋升之蛇"
+        }
+      ]
+    },
+    {
+      "key": 128,
+      "spellId": 1309385,
+      "name": "黑暗之池",
+      "mechanicType": "特殊",
+      "locations": [
+        {
+          "mapId": 249,
+          "mapName": "诸王之眠",
+          "npcId": 138489,
+          "mobName": "祖尔之影"
+        }
+      ]
+    },
+    {
+      "key": 129,
+      "spellId": 1309925,
+      "name": "动荡图腾",
+      "mechanicType": "特殊",
+      "locations": [
+        {
+          "mapId": 586,
+          "mapName": "纳洛拉克的洞穴",
+          "npcId": 244889,
+          "mobName": "神灵代言人纳尼亚"
+        }
+      ]
+    },
+    {
+      "key": 130,
+      "spellId": 1309947,
+      "name": "凛冽严冬",
+      "mechanicType": "其他",
+      "locations": [
+        {
+          "mapId": 586,
+          "mapName": "纳洛拉克的洞穴",
+          "npcId": 250478,
+          "mobName": "寒冬暴风雪"
+        }
+      ]
+    },
+    {
+      "key": 131,
+      "spellId": 1310309,
+      "name": "钉锤风暴",
+      "mechanicType": "点名",
+      "locations": [
+        {
+          "mapId": 585,
+          "mapName": "虚空之痕竞技场",
+          "npcId": 252053,
+          "mobName": "鲁莽监督者"
+        }
+      ]
+    },
+    {
+      "key": 132,
+      "spellId": 1310355,
+      "name": "暴风骤雨之盾",
+      "mechanicType": "特殊",
+      "locations": [
+        {
+          "mapId": 399,
+          "mapName": "红玉新生法池",
+          "npcId": 197535,
+          "mobName": "大引导者莱瓦迪"
+        }
+      ]
+    },
+    {
+      "key": 133,
+      "spellId": 1310361,
+      "name": "暴风骤雨之盾",
+      "mechanicType": "其他",
+      "locations": [
+        {
+          "mapId": 399,
+          "mapName": "红玉新生法池",
+          "npcId": 197535,
+          "mobName": "大引导者莱瓦迪"
+        }
+      ]
+    },
+    {
+      "key": 134,
+      "spellId": 1310363,
+      "name": "暴风骤雨之盾",
+      "mechanicType": "其他",
+      "locations": [
+        {
+          "mapId": 399,
+          "mapName": "红玉新生法池",
+          "npcId": 197535,
+          "mobName": "大引导者莱瓦迪"
+        }
+      ]
+    },
+    {
+      "key": 135,
+      "spellId": 1311747,
+      "name": "瓦解宝珠",
+      "mechanicType": "特殊",
+      "locations": [
+        {
+          "mapId": 585,
+          "mapName": "虚空之痕竞技场",
+          "npcId": 267546,
+          "mobName": "法术风暴拉杰克斯"
+        }
+      ]
+    },
+    {
+      "key": 136,
+      "spellId": 1311778,
+      "name": "撕碎切割",
+      "mechanicType": "其他",
+      "locations": [
+        {
+          "mapId": 585,
+          "mapName": "虚空之痕竞技场",
+          "npcId": 263228,
+          "mobName": "焦躁的虚镰"
+        }
+      ]
+    }
+  ]
+}
+

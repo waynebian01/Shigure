@@ -144,15 +144,15 @@ Fuyutsui.ClassBlocks = {
         },
         items = {
             [5512] = { name = "治疗石", isEquipped = false },
-            [241288] = { name = "鲁莽药水（大）", isEquipped = false },
-            [241289] = { name = "鲁莽药水（小）", isEquipped = false },
+            [241288] = { name = "鲁莽药水", isEquipped = false },
+            [241289] = { name = "鲁莽药水", isEquipped = false },
             [241304] = { name = "治疗药水", isEquipped = false },
-            [241305] = { name = "银月城治疗药水（小）", isEquipped = false },
-            [241308] = { name = "圣光潜力（大）", isEquipped = false },
-            [241309] = { name = "圣光潜力（小）", isEquipped = false },
-            [271883] = { name = "浓缩银月城治疗药水（大）", isEquipped = false },
-            [271884] = { name = "浓缩银月城治疗药水（小）", isEquipped = false },
-            [273796] = { name = "一瓶肮脏的烈性毒液（神话）", isEquipped = true },
+            [241305] = { name = "银月城治疗药水", isEquipped = false },
+            [241308] = { name = "圣光潜力", isEquipped = false },
+            [241309] = { name = "圣光潜力", isEquipped = false },
+            [271883] = { name = "浓缩银月城治疗药水", isEquipped = false },
+            [271884] = { name = "浓缩银月城治疗药水", isEquipped = false },
+            [273796] = { name = "一瓶肮脏的烈性毒液", isEquipped = true },
         },
         nameplates = {
             auras = {

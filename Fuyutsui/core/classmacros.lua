@@ -12,7 +12,7 @@ Fuyutsui.MacroBodies = {
 -- 全职业宏表：按 UnitClassBase 键索引
 -- 由 LoadPlayerMacros 按当前职业选取
 -- dynamicSpells、staticSpells、specialSpells 均为职业级列表
--- 创建顺序：dynamicSpells（每组 30 键）→ staticSpells → specialSpells
+-- 创建顺序：dynamicSpells（每组 40 键）→ staticSpells → specialSpells
 Fuyutsui.ClassMacros = {
     WARRIOR = {
         dynamicSpells = {},
@@ -78,7 +78,6 @@ Fuyutsui.ClassMacros = {
             "复仇之怒",
             "灰烬觉醒",
             "祝福之锤",
-
             "远古列王守卫",
             "十字军打击",
             "炽热防御者",
@@ -91,7 +90,6 @@ Fuyutsui.ClassMacros = {
             "清毒术",
             "复仇者之盾",
             "责难",
-
             "[@player]荣耀圣令",
             "[@player]清毒术",
             "[@player]神圣震击",
@@ -99,7 +97,6 @@ Fuyutsui.ClassMacros = {
             "[@player]神圣壁垒",
             "[@player]美德道标",
             "[@player]自由祝福",
-
             "[@target]荣耀圣令",
             "[@target]神圣震击",
             "[@target]圣光术",
@@ -108,10 +105,8 @@ Fuyutsui.ClassMacros = {
             "[@target]代祷",
             "[@target]责难",
             "[@target]复仇者之盾",
-
             "[@focus]责难",
             "[@focus]复仇者之盾",
-
             "[@mouseover]清洁术",
             "[@mouseover]牺牲祝福",
             "[@mouseover]保护祝福",
@@ -120,10 +115,13 @@ Fuyutsui.ClassMacros = {
             "[@mouseover]代祷",
             "[@mouseover]圣疗术",
             "[@mouseover]圣洁鸣钟",
-
+            "奥术洪流",
         },
         specialSpells = {
             "/stopcasting", -- 停止施法
+            "/use 13", -- 饰品1
+            "/use 货运者水壶", -- 货运者水壶
+            "/use 治疗石", -- 治疗石
         },
     },
 
@@ -169,14 +167,65 @@ Fuyutsui.ClassMacros = {
             "猛禽一击",
             "野火炸弹",
             "牺牲咆哮",
+            "复活宠物",
         },
-        specialSpells = {},
+        specialSpells = {
+            "/cast 召唤宠物 1\n/cast 复活宠物", -- 召唤宠物
+        },
     },
 
     ROGUE = {
         dynamicSpells = {},
-        staticSpells = {},
-        specialSpells = {},
+        staticSpells = {
+            "毁伤",
+            "佯攻",
+            "肾击",
+            "偷袭",
+            "暗影斗篷",
+            "脚踢",
+            "切割",
+            "消失",
+            "致盲",
+            "刺骨",
+            "潜伏帷幕",
+            "嫁祸诀窍",
+            "闪避",
+            "猩红之瓶",
+            "疾跑",
+            "影分身",
+            "暗影步",
+            "赤喉之咬",
+            "暗影之刃",
+            "死亡印记",
+            "暗影之舞",
+            "背刺",
+            "黑火药",
+            "暗影打击",
+            "袖剑风暴",
+            "飞镖投掷",
+            "潜行",
+            "刀扇",
+            "猩红风暴",
+            "剧毒之刃",
+            "锁喉",
+            "割裂",
+            "君王之灾",
+            "毒伤",
+            "蓟叶茶",
+            "毒刃",
+            "伏击",
+            "夺命药膏",
+            "增效药膏",
+            "减速药膏",
+            "速效药膏",
+            "致伤药膏",
+            "萎缩药膏",
+        },
+        specialSpells = {
+            "/castsequence reset=1 潜行,x", -- 潜行
+            "/use 13", -- 饰品1
+            "/cast 死亡印记\n/use 13", -- 死亡饰品
+        },
     },
 
     PRIEST = {
@@ -226,10 +275,20 @@ Fuyutsui.ClassMacros = {
             "惩击",
             "神圣之火",
             "[@target]驱散魔法",
+            "[@mouseover]纯净术",
+            "[@mouseover]能量灌注",
+            "[@focus]能量灌注",
+            "飞翼打击",
         },
         specialSpells = {
             "/castsequence reset=0.4 真言术：耀,x", -- 真言术：耀
             "/stopcasting", -- 停止施法
+            "/use 14", -- 饰品2
+            "/use 盘魂者仪式容器", -- 盘魂者仪式容器
+            "/use 治疗石", -- 治疗石
+            "/use 13", -- 饰品1
+            "/use 浓缩银月城生命药水", -- 浓缩银月城生命药水
+            "/cast 飞翼打击", -- 飞翼
         },
     },
 
@@ -283,6 +342,10 @@ Fuyutsui.ClassMacros = {
             "[channeling]吞噬",
             "[nochanneling]吞噬",
             "[@cursor]枯萎凋零",
+            "脓疮毒镰",
+            "瘟疫降临",
+            "灾殃坟茔",
+            "死灵缠绕",
         },
         specialSpells = {
             "/castsequence reset=1 死亡之握,x", -- 死亡之握

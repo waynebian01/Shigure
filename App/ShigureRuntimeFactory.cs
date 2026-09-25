@@ -36,7 +36,9 @@ internal sealed class ShigureRuntimeFactory : IShigureRuntimeFactory
 
         return new ShigureRuntime(
             options,
-            new PixelScanner(_processLocator),
+            options.CaptureMethod == CaptureMethod.ScreenCopy
+                ? new PixelScanner(_processLocator)
+                : new WindowsGraphicsCaptureScanner(_processLocator, options.ScanInterval),
             new StateBuilder(config),
             new KeySender(_processLocator),
             _triggerKeyState,

@@ -2,6 +2,12 @@
 <assembly manifestVersion="1.0" xmlns="urn:schemas-microsoft-com:asm.v1">
   <assemblyIdentity version="1.0.0.0" name="Shigure.app"/>
 
+  <!-- 与 Packaging/AppxManifest.xml 保持一致，为外部位置（稀疏）MSIX 提供运行时包身份。 -->
+  <msix xmlns="urn:schemas-microsoft-com:msix.v1"
+        publisher="CN=Arasaka Corporation"
+        packageName="ArasakaCorporation.Shigure"
+        applicationId="Shigure" />
+
   <!-- 提权说明：主窗口需压过管理员权限运行的 WoW 进程，因此要求以管理员身份启动（UAC 确认）。
        指定 requestedExecutionLevel 节点将禁用文件和注册表虚拟化。 -->
   <trustInfo xmlns="urn:schemas-microsoft-com:asm.v2">

@@ -38,7 +38,7 @@ local AURA_BAR_STRATA = "TOOLTIP"
 local AURA_BAR_LEVEL = 9004
 
 -- 队伍治疗吸收条（FuyutsuiHealAbsorbBars）
-local HEAL_ABSORB_MAX_SLOTS = 30  -- 最大槽位数
+local HEAL_ABSORB_MAX_SLOTS = 40  -- 最大槽位数
 local HEAL_ABSORB_COLS = 5        -- 每行列数
 local HEAL_ABSORB_BAR_UNITS = 100 -- 单条条身单元数
 local HEAL_ABSORB_WIDTH_SCALE = 0.7 -- 单元宽度相对横向条的缩放比例
@@ -367,10 +367,10 @@ end
 
 --[[============================================================================
     队伍治疗吸收条（FuyutsuiHealAbsorbBars）
-    布局：主色块 + 计数条下方；每行 5 条、最多 30 条
+    布局：主色块 + 计数条下方；每行 5 条、最多 40 条
     单槽：前锚点 1 + 条身 100 + 终点色块 1（列宽 102）
     编码：
-      行 r：第 1 行=0 … 第 6 行=5（同行条身背景 r 统一）
+      行 r：第 1 行=0 … 第 8 行=7（同行条身背景 r 统一）
       前锚点：(r=行号/255, g=单位编号/255, b=0)
         player=1, party1..4=2..5, raidN=N
       条身背景：(r=行号/255, g=相对索引1..100/255, b=单位编号/255)
@@ -757,8 +757,9 @@ local function AddDurationAuraSlotPair(container, slotKeyPrefix, filter, include
     })
 end
 
-function Fuyutsui:AddNameplateAuraPixelSlots(container, slotKeyPrefix, includeSpellIDs, index)
-    AddDurationAuraSlotPair(container, slotKeyPrefix, "HARMFUL|PLAYER", includeSpellIDs, index)
+function Fuyutsui:AddNameplateAuraPixelSlots(container, slotKeyPrefix, includeSpellIDs, index, isPlayer)
+    local filter = isPlayer == true and "HARMFUL|PLAYER" or "HARMFUL"
+    AddDurationAuraSlotPair(container, slotKeyPrefix, filter, includeSpellIDs, index)
 end
 
 local function ApplyUnitAuraReactionFilters(container, unit)
@@ -909,7 +910,8 @@ local function MakeDispelSlotInitializer(index, showWhenHarmful, showWhenHelpful
     end
 end
 
---- 层数条：与计数条同一套坐标/背景编码，StatusBar 由 AuraContainer 驱动
+--- 层数条：与计数条同一套坐标/背景编码，StatusBar 由 AuraContainer 驱动。
+--- AuraButton 登录后是受限对象；此布局函数只能由 initializeFrame 调用，运行期重绑不得再调用。
 local function AnchorApplicationBarButton(button, maxApps, startIndex)
     button:SetSize(maxApps * BAR_CONFIG.width, BAR_CONFIG.height)
     ConfigureAuraButtonMouse(button)
@@ -934,7 +936,6 @@ end
 local function MakeBarSlotInitializer(slotInfo)
     return function(button)
         SetupApplicationBarOnly(button, slotInfo.maxApps, slotInfo.startIndex)
-        slotInfo.button = button
     end
 end
 
@@ -1418,15 +1419,15 @@ function Fuyutsui:RefreshGroupAuraContainers()
     end
 end
 
---- 过场后重绑全部光环槽的 spellId / 驱散过滤，避免槽位落到“第一个光环”
---- 同时按配置重排/刷新全部横向条（计数条 + 层数条），保证条序不漂
+--- 过场后重绑全部光环槽的 spellId / 驱散过滤，避免槽位落到“第一个光环”。
+--- 层数条的尺寸与锚点在 initializeFrame 中已固定；登录后只重绑过滤，不修改受限 AuraButton 布局。
 function Fuyutsui:RebindAuraSpellFilters()
     for _, unit in ipairs(UNIT_AURA_REBIND_ORDER) do
         local key = UNIT_AURA_CONTAINER_KEYS[unit]
         RebindContainerSpellFilters(Fuyutsui[key], unit)
     end
 
-    -- 层数条：按 auras 索引同步槽位；集合变化时整表重建，并重锚保证条序
+    -- 层数条：按 auras 索引同步槽位；集合变化时整表重建。
     self:LayoutAuraApplicationBars()
     for _, unit in ipairs(AURA_BAR_UNIT_ORDER) do
         local key = UNIT_AURA_BAR_CONTAINER_KEYS[unit]
@@ -1441,14 +1442,6 @@ function Fuyutsui:RebindAuraSpellFilters()
                 end
             end
             RebindContainerSpellFilters(barContainer, unit)
-            table.sort(barContainer.fuyutsuiBarSlots, function(a, b)
-                return (a.index or 0) < (b.index or 0)
-            end)
-            for _, slot in ipairs(barContainer.fuyutsuiBarSlots) do
-                if slot.button and slot.startIndex and slot.maxApps then
-                    AnchorApplicationBarButton(slot.button, slot.maxApps, slot.startIndex)
-                end
-            end
         end
     end
 

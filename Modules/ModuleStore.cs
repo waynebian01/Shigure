@@ -8,7 +8,7 @@ namespace Shigure;
 
 public sealed class ModuleDefinition
 {
-    internal const int CurrentUnitMappingVersion = 3;
+    internal const int CurrentUnitMappingVersion = ReservedUnit.CurrentMappingVersion;
 
     public string Id { get; set; } = string.Empty;
     public string Name { get; set; } = "新模块";
@@ -16,7 +16,8 @@ public sealed class ModuleDefinition
     public string RecommendedTalent { get; set; } = string.Empty;
     // 保存时写入当时的 Shigure 版本(AppInfo.Version)。
     public string Version { get; set; } = string.Empty;
-    // v2: 31=玩家、32=目标、33=焦点、34=地面、35=鼠标；v3: 36/37 从目标迁移为引导/非引导宏条件。
+    // v2: 31=玩家、32=目标、33=焦点、34=地面、35=鼠标；v3: 36/37 从目标迁移为引导/非引导宏条件；
+    // v4: 1-40=团队，41-45=玩家/目标/焦点/地面/鼠标，46-50=首领，51-55=竞技场。
     public int? UnitMappingVersion { get; set; }
     public bool Enabled { get; set; } = true;
     public ModuleMatch Match { get; set; } = new();
@@ -752,6 +753,22 @@ public sealed class ModuleStore
                     rule.Unit = normalizedMacro.Unit;
                     rule.MacroCondition = normalizedMacro.Condition;
                 }
+            }
+        }
+
+        if (unitMappingVersion < 4)
+        {
+            foreach (var rule in module.Rules)
+            {
+                rule.Unit = rule.Unit switch
+                {
+                    31 => ReservedUnit.Player,
+                    32 => ReservedUnit.Target,
+                    33 => ReservedUnit.Focus,
+                    34 => ReservedUnit.Cursor,
+                    35 => ReservedUnit.Mouseover,
+                    _ => rule.Unit
+                };
             }
         }
 

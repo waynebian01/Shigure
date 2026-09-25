@@ -25,7 +25,6 @@ Fuyutsui.ClassBlocks = {
                 "首领战",
                 "难度",
                 "敌人数量",
-
             },
             ["能量"] = {
                 "集中值",
@@ -42,7 +41,7 @@ Fuyutsui.ClassBlocks = {
                 "施法可打断",
                 "引导",
                 "引导可打断",
-
+                "驱散类型",
             },
             ["焦点"] = {
                 "施法(倒计时)",
@@ -50,7 +49,6 @@ Fuyutsui.ClassBlocks = {
                 "施法可打断",
                 "引导",
                 "引导可打断",
-
             },
             ["鼠标"] = {
                 "类型",
@@ -63,20 +61,24 @@ Fuyutsui.ClassBlocks = {
                 "引导",
                 "引导可打断",
             },
+            ["宠物"] = {
+                "存在",
+                "生命值",
+            },
         },
         auras = {
             player = {
-                { name = "猎群领袖之嚎", spellId = 471877, },
-                { name = "眼镜蛇利牙", spellId = 1299389, maxApps = 4, },
-                { name = "自然之友", spellId = 1276720, },
-                { name = "野兽顺劈", spellId = 268877, },
-                { name = "龙", spellId = 471878, },
-                { name = "猪", spellId = 472324, },
-                { name = "熊", spellId = 472325, },
+                { name = "猎群领袖之嚎", spellId = 471877, isPlayer = true,},
+                { name = "眼镜蛇利牙", spellId = 1299389, maxApps = 4, isPlayer = true,},
+                { name = "自然之友", spellId = 1276720, isPlayer = true,},
+                { name = "野兽顺劈", spellId = 268877, isPlayer = true,},
+                { name = "龙", spellId = 471878, isPlayer = true,},
+                { name = "猪", spellId = 472324, isPlayer = true,},
+                { name = "熊", spellId = 472325, isPlayer = true,},
             },
             target = {
                 harmful = {
-                    { name = "猎人印记", spellId = 259556, },
+                    { name = "猎人印记", spellId = 259556, isPlayer = true,},
                 },
             },
         },
@@ -333,7 +335,7 @@ Fuyutsui.spellsList = {
     [287712]  = { index = 251, name = "重拳出击" },
     [312924]  = { index = 252, name = "超有机光发起源" },
     [368970]  = { index = 253, name = "扫尾" },
-    [357214]  = { index = 254, name = "翼击" },
+    [357214]  = { index = 254, name = "飞翼打击" },
     [436344]  = { index = 255, name = "艾泽里特涌动" },
 }
 

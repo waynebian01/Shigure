@@ -40,7 +40,6 @@ Fuyutsui.ClassBlocks = {
                 "施法可打断",
                 "引导",
                 "引导可打断",
-
             },
             ["焦点"] = {
                 "施法(倒计时)",
@@ -48,7 +47,6 @@ Fuyutsui.ClassBlocks = {
                 "施法可打断",
                 "引导",
                 "引导可打断",
-
             },
             ["鼠标"] = {
                 "类型",
@@ -64,7 +62,7 @@ Fuyutsui.ClassBlocks = {
         },
         auras = {
             player = {
-                { name = "清空酒窖", spellId = 1262768, },
+                { name = "清空酒窖", spellId = 1262768, isPlayer = true,},
             },
         },
         spells = {
@@ -161,7 +159,7 @@ Fuyutsui.ClassBlocks = {
             { spellId = 399491, name = "神龙之赐", castCount = 10 },
         },
         group = {
-            state = { "healthPercent", "role" },
+            state = { "healthPercent", "role", },
         },
     },
     [3] = {
@@ -205,7 +203,7 @@ Fuyutsui.ClassBlocks = {
                 "施法可打断",
                 "引导",
                 "引导可打断",
-
+                "能量值",
             },
             ["焦点"] = {
                 "施法(倒计时)",
@@ -213,7 +211,7 @@ Fuyutsui.ClassBlocks = {
                 "施法可打断",
                 "引导",
                 "引导可打断",
-
+                "能量值",
             },
             ["鼠标"] = {
                 "类型",
@@ -229,30 +227,30 @@ Fuyutsui.ClassBlocks = {
         },
         auras = {
             player = {
-                { name = "乾元镇踏", spellId = 1291484, maxApps = 2, },
-                { name = "乾元之巅", spellId = 1249625, maxApps = 2, },
-                { name = "虎眼酒", spellId = 1261724, maxApps = 10, },
-                { name = "风之舞蹈", spellId = 432180, maxApps = 10, },
-                { name = "连击", spellId = 196741, maxApps = 5, },
-                { name = "幻灭踢强化", spellId = 116768, maxApps = 2, },
-                { name = "赤精之舞", spellId = 325202, maxApps = 2, },
-                { name = "疾风呼啸踢可用", spellId = 1250554, },
-                { name = "青龙之心", spellIds = { 443421, 443616, 1238904 }, maxApps = 3, },
-                { name = "天神御身", spellId = 443028, },
-                { name = "组合拳-旭日东升踢", spellId = 1249753, },
-                { name = "组合拳-神鹤引项踢", spellId = 1249754, },
-                { name = "组合拳-猛虎掌", spellId = 1249756, },
-                { name = "组合拳-幻灭踢", spellId = 1249757, },
-                { name = "组合拳-怒雷破", spellId = 1249758, },
-                { name = "组合拳-切空踢", spellId = 1249759, },
-                { name = "组合拳-风火雷电", spellId = 1249762, },
-                { name = "组合拳-乾元镇踏", spellId = 1249763, },
-                { name = "组合拳-碎玉闪电", spellId = 1249764, },
-                { name = "组合拳-升龙霸", spellId = 1249765, },
-                { name = "组合拳-风领主之击", spellId = 1249766, },
-                { name = "121套装BUFF", spellId = 1297033, },
-                { name = "可以释放天神御身", spellId = 1248992, },
-                { name = "组合拳天神御身", spellId = 1249790, },
+                { name = "乾元镇踏", spellId = 1291484, maxApps = 2, isPlayer = true,},
+                { name = "乾元之巅", spellId = 1249625, maxApps = 2, isPlayer = true,},
+                { name = "虎眼酒", spellId = 1261724, maxApps = 10, isPlayer = true,},
+                { name = "风之舞蹈", spellId = 432180, maxApps = 10, isPlayer = true,},
+                { name = "连击", spellId = 196741, maxApps = 5, isPlayer = true,},
+                { name = "幻灭踢强化", spellId = 116768, maxApps = 2, isPlayer = true,},
+                { name = "赤精之舞", spellId = 325202, maxApps = 2, isPlayer = true,},
+                { name = "疾风呼啸踢可用", spellId = 1250554, isPlayer = true,},
+                { name = "青龙之心", spellIds = { 443421, 443616, 1238904 }, maxApps = 3, isPlayer = true,},
+                { name = "天神御身", spellId = 443028, isPlayer = true,},
+                { name = "组合拳-旭日东升踢", spellId = 1249753, isPlayer = true,},
+                { name = "组合拳-神鹤引项踢", spellId = 1249754, isPlayer = true,},
+                { name = "组合拳-猛虎掌", spellId = 1249756, isPlayer = true,},
+                { name = "组合拳-幻灭踢", spellId = 1249757, isPlayer = true,},
+                { name = "组合拳-怒雷破", spellId = 1249758, isPlayer = true,},
+                { name = "组合拳-切空踢", spellId = 1249759, isPlayer = true,},
+                { name = "组合拳-风火雷电", spellId = 1249762, isPlayer = true,},
+                { name = "组合拳-乾元镇踏", spellId = 1249763, isPlayer = true,},
+                { name = "组合拳-碎玉闪电", spellId = 1249764, isPlayer = true,},
+                { name = "组合拳-升龙霸", spellId = 1249765, isPlayer = true,},
+                { name = "组合拳-风领主之击", spellId = 1249766, isPlayer = true,},
+                { name = "121套装BUFF", spellId = 1297033, isPlayer = true,},
+                { name = "可以释放天神御身", spellId = 1248992, isPlayer = true,},
+                { name = "组合拳天神御身", spellId = 1249790, isPlayer = true,},
             },
         },
         spells = {
@@ -360,7 +358,7 @@ Fuyutsui.spellsList = {
     [287712]  = { index = 251, name = "重拳出击" },
     [312924]  = { index = 252, name = "超有机光发起源" },
     [368970]  = { index = 253, name = "扫尾" },
-    [357214]  = { index = 254, name = "翼击" },
+    [357214]  = { index = 254, name = "飞翼打击" },
     [436344]  = { index = 255, name = "艾泽里特涌动" },
 }
 

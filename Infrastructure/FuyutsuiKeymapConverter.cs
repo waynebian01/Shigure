@@ -149,8 +149,10 @@ internal static partial class FuyutsuiKeymapConverter
         string warningContext,
         List<string> warnings)
     {
-        var dynamicSlots = dynamicSpells.Count * 30;
-        var requiredSlots = (long)dynamicSpells.Count * 30 + staticSpells.Count + specialSpells.Count;
+        var dynamicSlots = dynamicSpells.Count * GroupStateLayout.SlotCount;
+        var requiredSlots = (long)dynamicSpells.Count * GroupStateLayout.SlotCount
+            + staticSpells.Count
+            + specialSpells.Count;
         if (requiredSlots > MacroKind.Length)
         {
             warnings.Add(
@@ -158,7 +160,10 @@ internal static partial class FuyutsuiKeymapConverter
                 $"末尾 {requiredSlots - MacroKind.Length} 个槽位不会写入 keymap");
         }
 
-        var root = new JsonObject();
+        var root = new JsonObject
+        {
+            [ReservedUnit.MappingVersionPropertyName] = ReservedUnit.CurrentMappingVersion
+        };
         for (var i = 1; i <= MacroKind.Length; i++)
         {
             var hotkey = MacroKind[i - 1];
@@ -168,8 +173,8 @@ internal static partial class FuyutsuiKeymapConverter
 
             if (i <= dynamicSlots)
             {
-                var groupIndex = (i - 1) / 30;
-                var raidIdx = ((i - 1) % 30) + 1;
+                var groupIndex = (i - 1) / GroupStateLayout.SlotCount;
+                var raidIdx = ((i - 1) % GroupStateLayout.SlotCount) + 1;
                 if (groupIndex < dynamicSpells.Count
                     && !string.IsNullOrWhiteSpace(dynamicSpells[groupIndex]))
                 {
@@ -331,20 +336,28 @@ internal static partial class FuyutsuiKeymapConverter
 
         if (normalized.StartsWith("raid", StringComparison.Ordinal)
             && int.TryParse(normalized[4..], out var raidIndex)
-            && raidIndex is >= 1 and <= 30)
+            && raidIndex is >= 1 and <= GroupStateLayout.SlotCount)
         {
             return raidIndex;
         }
 
         return normalized switch
         {
-            // "player" => 1,
-            // "玩家" or "31" => ReservedUnit.Player,
-            "player" or "玩家" or "31" => ReservedUnit.Player,
-            "target" or "目标" or "32" => ReservedUnit.Target,
-            "focus" or "焦点" or "33" => ReservedUnit.Focus,
-            "cursor" or "地面" or "34" => ReservedUnit.Cursor,
-            "mouseover" or "鼠标" or "35" => ReservedUnit.Mouseover,
+            "player" or "玩家" or "41" => ReservedUnit.Player,
+            "target" or "目标" or "42" => ReservedUnit.Target,
+            "focus" or "焦点" or "43" => ReservedUnit.Focus,
+            "cursor" or "地面" or "44" => ReservedUnit.Cursor,
+            "mouseover" or "鼠标" or "45" => ReservedUnit.Mouseover,
+            "boss1" or "首领1" or "46" => ReservedUnit.Boss1,
+            "boss2" or "首领2" or "47" => ReservedUnit.Boss2,
+            "boss3" or "首领3" or "48" => ReservedUnit.Boss3,
+            "boss4" or "首领4" or "49" => ReservedUnit.Boss4,
+            "boss5" or "首领5" or "50" => ReservedUnit.Boss5,
+            "arena1" or "竞技场1" or "51" => ReservedUnit.Arena1,
+            "arena2" or "竞技场2" or "52" => ReservedUnit.Arena2,
+            "arena3" or "竞技场3" or "53" => ReservedUnit.Arena3,
+            "arena4" or "竞技场4" or "54" => ReservedUnit.Arena4,
+            "arena5" or "竞技场5" or "55" => ReservedUnit.Arena5,
             _ => ReservedUnit.None
         };
     }
@@ -534,7 +547,9 @@ internal static partial class FuyutsuiKeymapConverter
 
         try
         {
-            if (JsonNode.Parse(File.ReadAllText(jsonPath)) is not JsonObject root)
+            if (JsonNode.Parse(File.ReadAllText(jsonPath)) is not JsonObject root
+                || (JsonHelpers.GetInt(JsonHelpers.Get(root, ReservedUnit.MappingVersionPropertyName)) ?? 3)
+                    < ReservedUnit.CurrentMappingVersion)
             {
                 return ExistingSpellNames.Empty;
             }
@@ -603,7 +618,7 @@ internal static partial class FuyutsuiKeymapConverter
     [GeneratedRegex(@"\[[^\]]*\]", RegexOptions.CultureInvariant)]
     private static partial Regex ConditionRegex();
 
-    [GeneratedRegex(@"\[[^\]]*@(?<unit>cursor|target|focus|player|mouseover|party[1-4]|raid(?:[1-9]|[12][0-9]|30))\b[^\]]*\]", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    [GeneratedRegex(@"\[[^\]]*@(?<unit>cursor|target|focus|player|mouseover|party[1-4]|raid(?:[1-9]|[1-3][0-9]|40)|boss[1-5]|arena[1-5])\b[^\]]*\]", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex StaticTargetRegex();
 
 }

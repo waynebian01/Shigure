@@ -84,7 +84,7 @@ ModuleRule(Unit / Spell / MacroCondition)
 - 非空条件先规范化再精确匹配。
 - 一键辅助强制 unit 0，并可回退到 `nochanneling`。
 
-单位映射当前是 v3：0 无固定单位，1..30 组员，31 player，32 target，33 focus，34 cursor/ground，35 mouseover。旧 36/37 已迁移为 unit 0 加 `channeling`/`nochanneling`，见 [[30-Shigure/05-Shigure-模块存储匹配与版本迁移]]。
+单位映射当前是 v4：0 无固定单位，1..40 组员，41 player，42 target，43 focus，44 cursor/ground，45 mouseover，46..50 为 boss1..5，51..55 为 arena1..5。旧 31..35 会迁移到 41..45；旧 36/37 会迁移为 unit 0 加 `channeling`/`nochanneling`，见 [[30-Shigure/05-Shigure-模块存储匹配与版本迁移]]。
 
 ## 虚拟键解析
 

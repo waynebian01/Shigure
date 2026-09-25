@@ -61,6 +61,9 @@ public sealed class KeymapService : IKeymapResolver
             return;
         }
 
+        var unitMappingVersion = JsonHelpers.GetInt(
+            JsonHelpers.Get(root, ReservedUnit.MappingVersionPropertyName)) ?? 3;
+
         foreach (var (_, node) in root)
         {
             if (node is not JsonObject entry)
@@ -73,9 +76,10 @@ public sealed class KeymapService : IKeymapResolver
                 ?? JsonHelpers.GetString(JsonHelpers.Get(entry, "技能"));
             var hotkey = JsonHelpers.GetString(JsonHelpers.Get(entry, "hotkey"))
                 ?? JsonHelpers.GetString(JsonHelpers.Get(entry, "热键"));
-            var normalizedMacro = MacroConditionText.NormalizeLegacyUnit(
+            var normalizedMacro = MacroConditionText.NormalizeKeymapUnit(
                 rawUnit,
-                JsonHelpers.GetString(JsonHelpers.Get(entry, "宏条件")));
+                JsonHelpers.GetString(JsonHelpers.Get(entry, "宏条件")),
+                unitMappingVersion);
             var unit = normalizedMacro.Unit;
             var macroCondition = normalizedMacro.Condition;
 

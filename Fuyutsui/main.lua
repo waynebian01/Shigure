@@ -105,13 +105,17 @@ function Fuyutsui:LoadPlayerBlocks(specIndex)
             if type(list) ~= "table" then return end
             for _, aura in ipairs(list) do
                 if type(aura) == "table" and (aura.spellId or aura.spellIds) then
+                    local auraFilter = filter
+                    if aura.isPlayer == true then
+                        auraFilter = auraFilter .. "|PLAYER"
+                    end
                     blocks.auras[index] = {
                         name = aura.name,
                         spellId = aura.spellId,
                         spellIds = aura.spellIds,
                         maxApps = aura.maxApps,
                         unit = unit,
-                        filter = filter,
+                        filter = auraFilter,
                     }
                     index = index + 1
                 else
@@ -122,17 +126,17 @@ function Fuyutsui:LoadPlayerBlocks(specIndex)
 
         local nested = t.auras.player or t.auras.target or t.auras.focus
         if nested then
-            AppendAuraList(t.auras.player, "player", "HELPFUL|PLAYER")
+            AppendAuraList(t.auras.player, "player", "HELPFUL")
             if type(t.auras.target) == "table" then
-                AppendAuraList(t.auras.target.harmful, "target", "HARMFUL|PLAYER")
-                AppendAuraList(t.auras.target.helpful, "target", "HELPFUL|PLAYER")
+                AppendAuraList(t.auras.target.harmful, "target", "HARMFUL")
+                AppendAuraList(t.auras.target.helpful, "target", "HELPFUL")
             end
             if type(t.auras.focus) == "table" then
-                AppendAuraList(t.auras.focus.harmful, "focus", "HARMFUL|PLAYER")
-                AppendAuraList(t.auras.focus.helpful, "focus", "HELPFUL|PLAYER")
+                AppendAuraList(t.auras.focus.harmful, "focus", "HARMFUL")
+                AppendAuraList(t.auras.focus.helpful, "focus", "HELPFUL")
             end
         else
-            AppendAuraList(t.auras, "player", "HELPFUL|PLAYER")
+            AppendAuraList(t.auras, "player", "HELPFUL")
         end
     end
 
@@ -253,9 +257,9 @@ function Fuyutsui:LoadPlayerBlocks(specIndex)
                 groups.aura[groups.num] = aura
             end
         end
-        -- 队伍偏移从 1 开始；预留插件实际处理的 30 人后再追加姓名板。
+        -- 队伍偏移从 1 开始；预留插件实际处理的 40 人后再追加姓名板。
         if groups.num > 0 then
-            index = index + 30 * groups.num + 1
+            index = index + 40 * groups.num + 1
         else
             blocks.groups = nil
         end
@@ -278,6 +282,7 @@ function Fuyutsui:LoadPlayerBlocks(specIndex)
                         name = aura.name,
                         spellId = aura.spellId,
                         spellIds = aura.spellIds,
+                        isPlayer = aura.isPlayer == true,
                     })
                 end
             end

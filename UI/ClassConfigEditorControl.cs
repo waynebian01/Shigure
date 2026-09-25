@@ -842,6 +842,12 @@ public sealed class ClassConfigEditorControl : UserControl
             HeaderText = "spellIds（逗号分隔）",
             AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill
         });
+        _aurasGrid.Columns.Add(new DataGridViewCheckBoxColumn
+        {
+            Name = "IsPlayer",
+            HeaderText = "玩家施放",
+            Width = 90
+        });
         _aurasGrid.Columns.Add(new DataGridViewTextBoxColumn { Name = "MaxApps", HeaderText = "maxApps", Width = 135 });
         _aurasGrid.Columns.Add(CreateDeleteColumn());
         _aurasGrid.CellContentClick += HandleDeleteClick;
@@ -1568,6 +1574,12 @@ public sealed class ClassConfigEditorControl : UserControl
             HeaderText = "spellIds（逗号分隔）",
             AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill
         });
+        _nameplateAurasGrid.Columns.Add(new DataGridViewCheckBoxColumn
+        {
+            Name = "IsPlayer",
+            HeaderText = "玩家施放",
+            Width = 90
+        });
         _nameplateAurasGrid.Columns.Add(CreateDeleteColumn());
         _nameplateAurasGrid.CellContentClick += HandleDeleteClick;
         _nameplateAurasGrid.CellValueChanged += (_, e) =>
@@ -1602,6 +1614,7 @@ public sealed class ClassConfigEditorControl : UserControl
                     aura.Name,
                     aura.SpellId?.ToString(CultureInfo.InvariantCulture) ?? "",
                     string.Join(", ", aura.SpellIds),
+                    aura.IsPlayer,
                     "×");
             }
         }
@@ -2857,6 +2870,7 @@ public sealed class ClassConfigEditorControl : UserControl
                 aura.Name,
                 aura.SpellId?.ToString(CultureInfo.InvariantCulture) ?? "",
                 string.Join(", ", aura.SpellIds),
+                aura.IsPlayer,
                 aura.MaxApps?.ToString(CultureInfo.InvariantCulture) ?? "",
                 "×");
         }
@@ -3410,7 +3424,9 @@ public sealed class ClassConfigEditorControl : UserControl
                 fields++;
             }
         }
-        _groupPixelSummary.Text = _groupEnabledBox.Checked ? $"每人 {fields} 格，30 人共 {30 * fields} 格" : "未启用";
+        _groupPixelSummary.Text = _groupEnabledBox.Checked
+            ? $"每人 {fields} 格，{GroupStateLayout.SlotCount} 人共 {GroupStateLayout.SlotCount * fields} 格"
+            : "未启用";
     }
 
     private List<ClassBlocksStore.AuraEntry> GetCurrentAuraList()
@@ -3935,7 +3951,11 @@ public sealed class ClassConfigEditorControl : UserControl
                 continue;
             }
 
-            var entry = new ClassBlocksStore.AuraEntry { Name = name };
+            var entry = new ClassBlocksStore.AuraEntry
+            {
+                Name = name,
+                IsPlayer = row.Cells["IsPlayer"].Value is true
+            };
             foreach (var id in ParseIdList(spellIdsText))
             {
                 entry.SpellIds.Add(id);
@@ -4111,7 +4131,11 @@ public sealed class ClassConfigEditorControl : UserControl
 
             var name = row.Cells["Name"].Value?.ToString()?.Trim() ?? string.Empty;
             var spellIdsText = row.Cells["SpellIds"].Value?.ToString()?.Trim() ?? string.Empty;
-            var entry = new ClassBlocksStore.AuraEntry { Name = name };
+            var entry = new ClassBlocksStore.AuraEntry
+            {
+                Name = name,
+                IsPlayer = row.Cells["IsPlayer"].Value is true
+            };
             foreach (var id in ParseIdList(spellIdsText))
             {
                 entry.SpellIds.Add(id);

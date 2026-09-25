@@ -60,7 +60,7 @@ verified_at: "2026-08-09"
 | `Fuyutsui.blocks` | `LoadPlayerBlocks` 根据当前专精生成的运行时索引映射 | 不是所有职业的静态配置 |
 | 主色块行 | 屏幕顶部最多 510 个 RGB 编码格 | 业务字段的绝对索引并非跨专精固定 |
 | CountBars | 与主色块索引独立的横向计数条，用于充能、施法次数和光环层数 | 不是主色块的第二段索引 |
-| 治疗吸收网格 | CountBars 下方、最多 30 个单位的独立采样区域 | 不能按 CountBars 的段编号解码 |
+| 治疗吸收网格 | CountBars 下方、最多 40 个单位的独立采样区域 | 不能按 CountBars 的段编号解码 |
 | `step` | Shigure `config` 指向主色块列的编号；值为 `"bar"` 时改读条段 | `group` 内数字 `step` 是相对成员起点的偏移 |
 | `config/*.json` | 从 `ClassBlocks` 生成的 Shigure 解码映射 | 不应成为绕过 Lua 源配置的第二真相源 |
 | `GameState` | `StateBuilder` 把原始字节按 config 变成的业务状态 | 不包含像素位置知识，也不负责发送按键 |
@@ -77,14 +77,14 @@ verified_at: "2026-08-09"
 | 编号 | 语义 |
 |---:|---|
 | `0` | 无目标 |
-| `1..30` | 队伍或团队槽位 |
+| `1..40` | 队伍或团队槽位 |
 | `31` | 玩家 |
 | `32` | 当前目标 |
 | `33` | 焦点 |
 | `34` | 地面/光标位置 |
 | `35` | 鼠标指向 |
 
-`36/37` 不是当前保留单位。加载旧模块或 keymap 时，`MacroConditionText.NormalizeLegacyUnit` 会把它们迁移为无目标单位加 `channeling` 或 `nochanneling` 条件。当前 `ModuleDefinition.CurrentUnitMappingVersion = 3`。
+在 v3 及更早数据中，`36/37` 表示历史宏条件；迁移时会变为无目标单位加 `channeling` 或 `nochanneling`。v4 中 `36/37` 是团队槽位，keymap 通过版本字段区分。当前 `ModuleDefinition.CurrentUnitMappingVersion = 4`。
 
 ## 输入、输出与阅读路由
 

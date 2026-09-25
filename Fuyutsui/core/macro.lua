@@ -104,9 +104,9 @@ function Fuyutsui:CreateMacro(dynamicData, staticData, specialData)
         i = i + 1
     end
 
-    -- 1. dynamicSpells：每组占 30 个键（raid/party 展开）
+    -- 1. dynamicSpells：每组占 40 个键（raid/party 展开）
     for _, spell in ipairs(dynamicData) do
-        for raidIdx = 1, 30 do
+        for raidIdx = 1, 40 do
             local macroBody
             if spell and spell ~= "" then
                 if raidIdx == 1 then

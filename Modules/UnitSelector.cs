@@ -6,13 +6,13 @@ namespace Shigure;
 /// - 只考虑职责 != 0 的单位;
 /// - 最低生命值选择器保留并比较 0 和负生命值;
 /// - 生命值数量字段仍只统计 0 &lt; 生命值 &lt; 阈值;
-/// - 按 "1".."30" 升序遍历, 保证首/末语义稳定。
+/// - 按 "1".."40" 升序遍历, 保证首/末语义稳定。
 /// </summary>
 public static class UnitSelector
 {
     private const int DefaultThreshold = 100;
 
-    /// <summary>解析动态单位为 group 槽位("1".."30"), 无匹配返回 null。</summary>
+    /// <summary>解析动态单位为 group 槽位("1".."40"), 无匹配返回 null。</summary>
     public static string? Resolve(ModuleUnit unit, GameState state)
     {
         if (unit.FilterVersion == ModuleUnit.CurrentFilterVersion)
@@ -202,7 +202,7 @@ public static class UnitSelector
             state,
             0);
         var candidates = new List<(string Key, IReadOnlyDictionary<string, object?> Data)>();
-        for (var i = 1; i <= 30; i++)
+        for (var i = 1; i <= GroupStateLayout.SlotCount; i++)
         {
             var key = i.ToString();
             if (!state.Group.TryGetValue(key, out var data)
@@ -453,7 +453,7 @@ public static class UnitSelector
 
         long total = 0;
         var count = 0;
-        for (var i = 1; i <= 30; i++)
+        for (var i = 1; i <= GroupStateLayout.SlotCount; i++)
         {
             if (!state.Group.TryGetValue(i.ToString(), out var data)
                 || !RoleNotZero(data)
@@ -624,7 +624,7 @@ public static class UnitSelector
     {
         string? lowestUnit = null;
         var lowestPct = threshold;
-        for (var i = 1; i <= 30; i++)
+        for (var i = 1; i <= GroupStateLayout.SlotCount; i++)
         {
             var key = i.ToString();
             if (!group.TryGetValue(key, out var data) || !RoleNotZero(data) || !predicate(data))
@@ -656,7 +656,7 @@ public static class UnitSelector
     {
         string? first = null;
         string? last = null;
-        for (var i = 1; i <= 30; i++)
+        for (var i = 1; i <= GroupStateLayout.SlotCount; i++)
         {
             var key = i.ToString();
             if (!group.TryGetValue(key, out var data))
@@ -684,7 +684,7 @@ public static class UnitSelector
     {
         string? bestUnit = null;
         var bestDuration = shortest ? int.MaxValue : 0;
-        for (var i = 1; i <= 30; i++)
+        for (var i = 1; i <= GroupStateLayout.SlotCount; i++)
         {
             var key = i.ToString();
             if (!group.TryGetValue(key, out var data) || !RoleNotZero(data))
@@ -713,7 +713,7 @@ public static class UnitSelector
         IReadOnlyDictionary<string, IReadOnlyDictionary<string, object?>> group,
         int dispelType)
     {
-        for (var i = 1; i <= 30; i++)
+        for (var i = 1; i <= GroupStateLayout.SlotCount; i++)
         {
             var key = i.ToString();
             if (!group.TryGetValue(key, out var data) || !RoleNotZero(data))
@@ -741,7 +741,7 @@ public static class UnitSelector
     {
         string? bestUnit = null;
         var highestAbsorb = 0;
-        for (var i = 1; i <= 30; i++)
+        for (var i = 1; i <= GroupStateLayout.SlotCount; i++)
         {
             var key = i.ToString();
             if (!group.TryGetValue(key, out var data)
@@ -770,7 +770,7 @@ public static class UnitSelector
         Func<IReadOnlyDictionary<string, object?>, bool> predicate)
     {
         var count = 0;
-        for (var i = 1; i <= 30; i++)
+        for (var i = 1; i <= GroupStateLayout.SlotCount; i++)
         {
             if (group.TryGetValue(i.ToString(), out var data) && RoleNotZero(data) && predicate(data))
             {

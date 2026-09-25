@@ -57,14 +57,14 @@ Fuyutsui.ClassBlocks = {
         },
         auras = {
             player = {
-                { name = "奥数齐射", spellId = 1242974, maxApps = 20, },
-                { name = "溢流能量", spellId = 394195, maxApps = 5, },
-                { name = "节能施法", spellId = 263725, maxApps = 3, },
-                { name = "过载飞弹", spellId = 1277009, },
-                { name = "敏锐直觉", spellId = 1223797, },
-                { name = "奥术之魂", spellId = 451038, },
-                { name = "奥术涌动", spellId = 365362, },
-                { name = "棱光护体", spellId = 235450, },
+                { name = "奥数齐射", spellId = 1242974, maxApps = 20, isPlayer = true,},
+                { name = "溢流能量", spellId = 394195, maxApps = 5, isPlayer = true,},
+                { name = "节能施法", spellId = 263725, maxApps = 3, isPlayer = true,},
+                { name = "过载飞弹", spellId = 1277009, isPlayer = true,},
+                { name = "敏锐直觉", spellId = 1223797, isPlayer = true,},
+                { name = "奥术之魂", spellId = 451038, isPlayer = true,},
+                { name = "奥术涌动", spellId = 365362, isPlayer = true,},
+                { name = "棱光护体", spellId = 235450, isPlayer = true,},
             },
         },
     },
@@ -284,7 +284,7 @@ Fuyutsui.spellsList = {
     [287712]  = { index = 251, name = "重拳出击" },
     [312924]  = { index = 252, name = "超有机光发起源" },
     [368970]  = { index = 253, name = "扫尾" },
-    [357214]  = { index = 254, name = "翼击" },
+    [357214]  = { index = 254, name = "飞翼打击" },
     [436344]  = { index = 255, name = "艾泽里特涌动" },
 }
 

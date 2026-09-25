@@ -124,7 +124,7 @@ verified_at: "2026-08-10"
 ### 已确认的失败模式
 
 - 旧外部资料曾提到 `auracontainer.lua`；当前内置插件不存在该文件，`Fuyutsui.toc` 也不加载它，光环像素实现以 `Fuyutsui/core/block.lua` 为准。
-- Shigure README 曾写 `UnitMappingVersion = 2`；该历史偏差已于 2026-08-10 修正，当前源码与 README 均以 `ModuleDefinition.CurrentUnitMappingVersion = 3` 为准。
+- 当前源码与 README 均以 `ModuleDefinition.CurrentUnitMappingVersion = 4` 为准；旧模块按版本逐级迁移。
 - [[50-参考资料/OPTIMIZATION_zh-CN|旧优化审计]] 引用了拆分前千行 `main.lua` 的位置；按行号实施会定位到错误文件。
 - 只写普通文本文件名而不创建 Obsidian 内部笔记链接，不会形成可靠的关系边，容易产生孤立节点。
 

@@ -189,7 +189,7 @@ public sealed class StateBuilder : IRuntimeStateBuilder
             .Count();
         var group = new Dictionary<string, IReadOnlyDictionary<string, object?>>();
 
-        for (var i = 1; i <= 30; i++)
+        for (var i = 1; i <= GroupStateLayout.SlotCount; i++)
         {
             var baseStep = start + (i - 1) * numParams;
             var sub = new Dictionary<string, object?>();

@@ -112,7 +112,7 @@ NAME_PLATE_UNIT_REMOVED
 
 ### 类型编码
 
-`UpdateUnitType()` 先通过 `UnitIsUnit(unit1, unit2)` 判断 `target` 或 `focus` 实际对应的单位 token，再编码为 `index/255`。匹配按 raid、player、party、boss 的顺序执行；全部不匹配时使用“其他”编号。不存在或死亡的单位输出 0。
+`UpdateUnitType()` 先通过 `UnitIsUnit(unit1, unit2)` 判断 `target` 或 `focus` 实际对应的单位 token，再编码为 `index/255`。匹配按 raid、player、party、boss、arena 的顺序执行；全部不匹配时使用“其他”编号。不存在或死亡的单位输出 0。
 
 | 实际单位 | 基础 index | 非友方/敌方输出 | 友方 index（基础值 + 100） | 友方输出 |
 |---|---:|---:|---:|---:|
@@ -120,7 +120,8 @@ NAME_PLATE_UNIT_REMOVED
 | `player` | 41 | `41` | 141 | `141` |
 | `party1..party4` | 42..45 | `42..45` | 142..145 | `142..145` |
 | `boss1..boss5` | 46..50 | `46..50` | 146..150 | `146..150` |
-| 其他 | 51 | `51` | 151 | `151` |
+| `arena1..arena5` | 51..55 | `51..55` | 151..155 | `151..155` |
+| 其他 | 56 | `56` | 156 | `156` |
 
 友方判定直接使用 `UnitCanAssist("player", unit)`；类型值不再包含距离、驱散能力或法术已知状态。由于 raid 优先匹配，玩家或队友处于团队中时输出对应的 raid 编号，而不是 player/party 编号。
 

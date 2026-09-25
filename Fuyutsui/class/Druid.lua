@@ -201,15 +201,15 @@ Fuyutsui.ClassBlocks = {
         },
         auras = {
             player = {
-                { name = "铁鬓", spellId = 192081, maxApps = 5, },
-                { name = "化身：乌索克的守护者", spellId = 102558, },
-                { name = "星河守护者", spellId = 213708, },
+                { name = "铁鬓", spellId = 192081, maxApps = 5, isPlayer = true,},
+                { name = "化身：乌索克的守护者", spellId = 102558, isPlayer = true,},
+                { name = "星河守护者", spellId = 213708, isPlayer = true,},
             },
             target = {
                 harmful = {
-                    { name = "月火术", spellId = 164812, },
-                    { name = "痛击", spellId = 192090, maxApps = 5, },
-                    { name = "月光普照", spellId = 1270292, },
+                    { name = "月火术", spellId = 164812, isPlayer = true,},
+                    { name = "痛击", spellId = 192090, maxApps = 5, isPlayer = true,},
+                    { name = "月光普照", spellId = 1270292, isPlayer = true,},
                 },
             },
         },
@@ -416,7 +416,7 @@ Fuyutsui.spellsList = {
     [287712]  = { index = 251, name = "重拳出击" },
     [312924]  = { index = 252, name = "超有机光发起源" },
     [368970]  = { index = 253, name = "扫尾" },
-    [357214]  = { index = 254, name = "翼击" },
+    [357214]  = { index = 254, name = "飞翼打击" },
     [436344]  = { index = 255, name = "艾泽里特涌动" },
 }
 

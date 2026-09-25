@@ -25,7 +25,13 @@ Fuyutsui.ClassBlocks = {
                 "首领战",
                 "难度",
                 "敌人数量",
-
+                "公共冷却",
+                "施法技能",
+            },
+            ["特殊"] = {
+                "倒数",
+                "战斗计时(分)",
+                "战斗计时(秒)",
             },
             ["能量"] = {
                 "漩涡值",
@@ -33,6 +39,9 @@ Fuyutsui.ClassBlocks = {
             ["配置开关"] = {
                 "爆发开关",
                 "延迟",
+                "AOE开关",
+                "输出模式",
+                "爆发药水开关",
             },
             ["目标"] = {
                 "类型",
@@ -42,7 +51,8 @@ Fuyutsui.ClassBlocks = {
                 "施法可打断",
                 "引导",
                 "引导可打断",
-
+                "距离",
+                "驱散类型",
             },
             ["焦点"] = {
                 "施法(倒计时)",
@@ -50,7 +60,6 @@ Fuyutsui.ClassBlocks = {
                 "施法可打断",
                 "引导",
                 "引导可打断",
-
             },
             ["鼠标"] = {
                 "类型",
@@ -63,33 +72,42 @@ Fuyutsui.ClassBlocks = {
                 "引导",
                 "引导可打断",
             },
+            ["首领1"] = {
+                "施法(倒计时)",
+                "施法(正计时)",
+            },
+            ["首领2"] = {
+                "施法(倒计时)",
+                "施法(正计时)",
+            },
         },
         auras = {
             player = {
-                { name = "天怒", spellId = 462854, },
-                { name = "熔岩奔腾", spellId = 77762, },
-                { name = "风暴守护者", spellId = 191634, maxApps = 2, },
-                { name = "暴风", spellId = 454015, maxApps = 2, },
-                { name = "元素宗师", spellId = 267344, },
-                { name = "净化烈焰", spellId = 1259491, },
-                { name = "风之爆发", spellId = 263806, maxApps = 2, },
-                { name = "先祖召唤", spellId = 447244, },
-                { name = "升腾", spellId = 1219480, },
-                { name = "火元素", spellId = 188592, },
-                { name = "风暴元素", spellId = 157299, },
-                { name = "漩涡之力", spellId = 191877, maxApps = 2, },
-                { name = "元素冲击暴击", spellId = 118522, },
-                { name = "元素冲击急速", spellId = 173183, },
-                { name = "元素冲击精通", spellId = 173184, },
-                { name = "闪电之盾", spellId = 192106, },
-                { name = "先祖迅捷", spellId = 443454, },
-                { name = "元素奔涌", spellId = 1300219, },
-                { name = "过载！", spellId = 1300222, },
+                { name = "天怒", spellId = 462854, isPlayer = true, },
+                { name = "熔岩奔腾", spellId = 77762, isPlayer = true, },
+                { name = "风暴守护者", spellId = 191634, maxApps = 2, isPlayer = true, },
+                { name = "暴风", spellId = 454015, maxApps = 2, isPlayer = true, },
+                { name = "元素宗师", spellId = 267344, isPlayer = true, },
+                { name = "净化烈焰", spellId = 1259491, isPlayer = true, },
+                { name = "风之爆发", spellId = 263806, maxApps = 2, isPlayer = true, },
+                { name = "先祖召唤", spellId = 447244, isPlayer = true, },
+                { name = "升腾", spellId = 1219480, isPlayer = true, },
+                { name = "火元素", spellId = 188592, isPlayer = true, },
+                { name = "风暴元素", spellId = 157299, isPlayer = true, },
+                { name = "漩涡之力", spellId = 191877, maxApps = 2, isPlayer = true, },
+                { name = "元素冲击暴击", spellId = 118522, isPlayer = true, },
+                { name = "元素冲击急速", spellId = 173183, isPlayer = true, },
+                { name = "元素冲击精通", spellId = 173184, isPlayer = true, },
+                { name = "闪电之盾", spellId = 192106, isPlayer = true, },
+                { name = "先祖迅捷", spellId = 443454, isPlayer = true, },
+                { name = "元素奔涌", spellId = 1300219, isPlayer = true, },
+                { name = "过载！", spellId = 1300222, isPlayer = true, },
+                { name = "元素宗师", spellId = 260734, isPlayer = true, },
             },
             target = {
                 harmful = {
-                    { name = "烈焰震击", spellId = 188389, },
-                    { name = "引雷针", spellId = 197209, },
+                    { name = "烈焰震击", spellId = 188389, isPlayer = true, },
+                    { name = "引雷针", spellId = 197209, isPlayer = true, },
                 },
             },
         },
@@ -114,9 +132,32 @@ Fuyutsui.ClassBlocks = {
             { spellId = 470057, name = "流电炽焰" },
             { spellId = 191634, name = "风暴守护者" },
             { spellId = 443454, name = "先祖迅捷" },
+            { spellId = 117014, name = "元素冲击" },
+            { spellId = 61882, name = "地震术" },
+            { spellId = 8042, name = "大地震击" },
+            { spellId = 188443, name = "闪电链" },
+            { spellId = 188196, name = "闪电箭" },
+            { spellId = 470411, name = "烈焰震击" },
+            { spellId = 1259471, name = "净化烈焰" },
+            { spellId = 16166, name = "元素宗师" },
+            { spellId = 370, name = "净化术" },
         },
         items = {
+            [5512] = { name = "治疗石", isEquipped = false },
+            [241288] = { name = "鲁莽药水（大）", isEquipped = false },
+            [241289] = { name = "鲁莽药水（小）", isEquipped = false },
             [241304] = { name = "治疗药水", isEquipped = false },
+            [241305] = { name = "银月城治疗药水（小）", isEquipped = false },
+            [241308] = { name = "圣光潜力（大）", isEquipped = false },
+            [241309] = { name = "圣光潜力（小）", isEquipped = false },
+            [271883] = { name = "浓缩银月城治疗药水（大）", isEquipped = false },
+            [271884] = { name = "浓缩银月城治疗药水（小）", isEquipped = false },
+            [273796] = { name = "一瓶肮脏的烈性毒液（神话）", isEquipped = true },
+        },
+        nameplates = {
+            auras = {
+                { name = "烈焰震击", spellId = 188389, isPlayer = false, },
+            },
         },
     },
     [2] = {
@@ -232,12 +273,14 @@ Fuyutsui.ClassBlocks = {
                 "敌人数量",
                 "敌人数-无仇恨",
                 "敌人数-有仇恨",
+                "公共冷却",
             },
             ["特殊"] = {
                 "风暴涌流图腾",
                 "风暴涌流图腾数量",
                 "治疗之泉图腾",
                 "治疗之泉图腾数量",
+                "倒数",
             },
             ["能量"] = {
                 "法力值",
@@ -254,7 +297,6 @@ Fuyutsui.ClassBlocks = {
                 "引导可打断",
                 "驱散类型",
                 "距离",
-
             },
             ["焦点"] = {
                 "施法(倒计时)",
@@ -262,7 +304,6 @@ Fuyutsui.ClassBlocks = {
                 "施法可打断",
                 "引导",
                 "引导可打断",
-
             },
             ["鼠标"] = {
                 "类型",
@@ -284,24 +325,24 @@ Fuyutsui.ClassBlocks = {
         },
         auras = {
             player = {
-                { name = "大地之盾", spellId = 383648, },
-                { name = "水之护盾", spellId = 52127, },
-                { name = "治疗之雨", spellId = 1307888, },
-                { name = "飞旋之土", spellId = 453406, },
-                { name = "飞旋之水", spellId = 453407, },
-                { name = "飞旋之风", spellId = 453409, },
-                { name = "潮汐奔涌", spellId = 53390, maxApps = 2, },
-                { name = "激流", spellId = 61295, },
-                { name = "聚合水流", spellId = 470077, },
-                { name = "升腾", spellId = 114052, },
-                { name = "生命释放", spellId = 73685, },
-                { name = "风暴涌流图腾", spellId = 1267089, maxApps = 2, },
-                { name = "倾盆大雨", spellId = 462603, },
-                { name = "自然迅捷", spellId = 378081, },
+                { name = "大地之盾", spellId = 383648, isPlayer = true, },
+                { name = "水之护盾", spellId = 52127, isPlayer = true, },
+                { name = "治疗之雨", spellId = 1307888, isPlayer = true, },
+                { name = "飞旋之土", spellId = 453406, isPlayer = true, },
+                { name = "飞旋之水", spellId = 453407, isPlayer = true, },
+                { name = "飞旋之风", spellId = 453409, isPlayer = true, },
+                { name = "潮汐奔涌", spellId = 53390, maxApps = 2, isPlayer = true, },
+                { name = "激流", spellId = 61295, isPlayer = true, },
+                { name = "聚合水流", spellId = 470077, isPlayer = true, },
+                { name = "升腾", spellId = 114052, isPlayer = true, },
+                { name = "生命释放", spellId = 73685, isPlayer = true, },
+                { name = "风暴涌流图腾", spellId = 1267089, maxApps = 2, isPlayer = true, },
+                { name = "倾盆大雨", spellId = 462603, isPlayer = true, },
+                { name = "自然迅捷", spellId = 378081, isPlayer = true, },
             },
             target = {
                 helpful = {
-                    { name = "激流", spellId = 61295, },
+                    { name = "激流", spellId = 61295, isPlayer = true, },
                 },
             },
         },
@@ -332,8 +373,11 @@ Fuyutsui.ClassBlocks = {
             { spellId = 370, name = "净化术" },
             { spellId = 192077, name = "狂风图腾" },
         },
+        items = {
+            [270162] = { name = "盘魂者仪式容器", isEquipped = true },
+        },
         group = {
-            state = { "healthPercent", "role", "dispel" },
+            state = { "healthPercent", "role", "dispel", },
             aura = {
                 { name = "激流", spellId = 61295, },
                 { name = "大地之盾", spellIds = { 974, 383648 }, },
@@ -443,8 +487,10 @@ Fuyutsui.spellsList = {
     [287712]  = { index = 251, name = "重拳出击" },
     [312924]  = { index = 252, name = "超有机光发起源" },
     [368970]  = { index = 253, name = "扫尾" },
-    [357214]  = { index = 254, name = "翼击" },
+    [357214]  = { index = 254, name = "飞翼打击" },
     [436344]  = { index = 255, name = "艾泽里特涌动" },
+    [8004] = { index = 56, name = "治疗之涌" },
+    [114051] = { index = 57, name = "空气升腾" },
 }
 
 Fuyutsui.itemsList = {
@@ -466,4 +512,7 @@ Fuyutsui.itemsList = {
     [245919] = { index = 16, name = "飞逝银月城生命药水" },
     [271883] = { index = 17, name = "浓缩银月城生命药水" },
     [271884] = { index = 18, name = "浓缩银月城生命药水" },
+    [5512] = { index = 19, name = "治疗石" },
+    [273796] = { index = 20, name = "一瓶肮脏的烈性毒液" },
+    [270162] = { index = 21, name = "盘魂者仪式容器" },
 }

@@ -48,7 +48,6 @@ Fuyutsui.ClassBlocks = {
                 "施法可打断",
                 "驱散类型",
                 "生命值",
-
             },
             ["鼠标"] = {
                 "类型",
@@ -70,28 +69,28 @@ Fuyutsui.ClassBlocks = {
         },
         auras = {
             player = {
-                { name = "神圣壁垒", spellId = 432502, },
-                { name = "圣洁武器", spellId = 432496, },
-                { name = "神圣意志", spellId = 223819, },
-                { name = "苍穹之遗", spellId = 387178, },
-                { name = "圣光灌注", spellId = 54149, maxApps = 2, },
-                { name = "晨光", spellId = 431522, maxApps = 3, },
-                { name = "晨光-恢复", spellId = 431831, maxApps = 3, },
-                { name = "神性之手", spellId = 414273, maxApps = 2, },
-                { name = "复仇之怒", spellId = 31884, maxApps = 2, },
-                { name = "觉醒", spellId = 414193, },
-                { name = "美德道标", spellId = 200025, },
+                { name = "神圣壁垒", spellId = 432502, isPlayer = true, },
+                { name = "圣洁武器", spellId = 432496, isPlayer = true, },
+                { name = "神圣意志", spellId = 223819, isPlayer = true, },
+                { name = "苍穹之遗", spellId = 387178, isPlayer = true, },
+                { name = "圣光灌注", spellId = 54149, maxApps = 2, isPlayer = true, },
+                { name = "晨光", spellId = 431522, maxApps = 3, isPlayer = true, },
+                { name = "晨光-恢复", spellId = 431831, maxApps = 3, isPlayer = true, },
+                { name = "神性之手", spellId = 414273, maxApps = 2, isPlayer = true, },
+                { name = "复仇之怒", spellId = 31884, maxApps = 2, isPlayer = true, },
+                { name = "觉醒", spellId = 414193, isPlayer = true, },
+                { name = "美德道标", spellId = 200025, isPlayer = true, },
             },
             target = {
                 harmful = {
-                    { name = "失格者", spellId = 414022, },
-                    { name = "奉献", spellId = 204242, },
+                    { name = "失格者", spellId = 414022, isPlayer = true, },
+                    { name = "奉献", spellId = 204242, isPlayer = true, },
                 },
             },
             focus = {
                 harmful = {
-                    { name = "失格者", spellId = 414022, },
-                    { name = "奉献", spellId = 204242, },
+                    { name = "失格者", spellId = 414022, isPlayer = true, },
+                    { name = "奉献", spellId = 204242, isPlayer = true, },
                 },
             },
         },
@@ -112,12 +111,16 @@ Fuyutsui.ClassBlocks = {
             { spellId = 200025, name = "美德道标" },
             { spellId = 432459, name = "神圣壁垒", charge = true, maxCharge = 2 },
             { spellId = 391054, name = "代祷" },
+            { spellId = 155145, name = "奥术洪流" },
         },
         items = {
+            [5512] = { name = "治疗石", isEquipped = false },
             [241304] = { name = "治疗药水", isEquipped = false },
+            [250215] = { name = "货运者水壶", isEquipped = false },
+            [271884] = { name = "浓缩银月城生命药水", isEquipped = false },
         },
         group = {
-            state = { "healthPercent", "role", "dispel" },
+            state = { "healthPercent", "role", "dispel", },
             aura = {
                 { name = "圣光道标", spellIds = { 53563, 156910, 1244893 }, },
                 { name = "永恒之火", spellId = 156322, },
@@ -150,6 +153,7 @@ Fuyutsui.ClassBlocks = {
             },
             ["特殊"] = {
                 "自律",
+                "神圣军备",
             },
             ["能量"] = {
                 "法力值",
@@ -170,7 +174,6 @@ Fuyutsui.ClassBlocks = {
                 "施法可打断",
                 "引导",
                 "引导可打断",
-
             },
             ["焦点"] = {
                 "施法(倒计时)",
@@ -179,7 +182,6 @@ Fuyutsui.ClassBlocks = {
                 "引导",
                 "引导可打断",
                 "距离",
-
             },
             ["鼠标"] = {
                 "类型",
@@ -195,12 +197,12 @@ Fuyutsui.ClassBlocks = {
         },
         auras = {
             player = {
-                { name = "闪耀之光", spellId = 327510, maxApps = 2, },
-                { name = "小闪耀之光", spellId = 182104, maxApps = 3, },
-                { name = "正义盾击", spellId = 132403, },
-                { name = "奉献", spellId = 188370, },
-                { name = "圣言祭礼", spellId = 433550, },
-                { name = "虔诚光环", spellId = 135893, },
+                { name = "闪耀之光", spellId = 327510, maxApps = 2, isPlayer = true, },
+                { name = "小闪耀之光", spellId = 182104, maxApps = 3, isPlayer = true, },
+                { name = "正义盾击", spellId = 132403, isPlayer = true, },
+                { name = "奉献", spellId = 188370, isPlayer = true, },
+                { name = "圣言祭礼", spellId = 433550, isPlayer = true, },
+                { name = "虔诚光环", spellId = 135893, isPlayer = true, },
             },
         },
         spells = {
@@ -232,7 +234,7 @@ Fuyutsui.ClassBlocks = {
             [241308] = { name = "圣光潜力", isEquipped = false },
         },
         group = {
-            state = { "healthPercent", "role" },
+            state = { "healthPercent", "role", },
         },
     },
     [3] = {
@@ -262,6 +264,8 @@ Fuyutsui.ClassBlocks = {
             },
             ["特殊"] = {
                 "自律",
+                "战斗计时(秒)",
+                "战斗计时(分)",
             },
             ["能量"] = {
                 "法力值",
@@ -316,12 +320,16 @@ Fuyutsui.ClassBlocks = {
             { spellId = 343527, name = "处决宣判" },
             { spellId = 255937, name = "灰烬觉醒" },
             { spellId = 31884, name = "复仇之怒" },
+            { spellId = 96231, name = "责难" },
         },
         items = {
             [241304] = { name = "治疗药水", isEquipped = false },
+            [270175] = { name = "乌拉特克贪婪之心", isEquipped = true },
         },
         group = {
-            state = { "healthPercent", "role" },
+            state = { "healthPercent", "role", },
+        },
+        nameplates = {
         },
     },
 } -- 创建圣骑士宏{
@@ -408,8 +416,9 @@ Fuyutsui.spellsList = {
     [287712]  = { index = 251, name = "重拳出击" },
     [312924]  = { index = 252, name = "超有机光发起源" },
     [368970]  = { index = 253, name = "扫尾" },
-    [357214]  = { index = 254, name = "翼击" },
+    [357214]  = { index = 254, name = "飞翼打击" },
     [436344]  = { index = 255, name = "艾泽里特涌动" },
+    [53563] = { index = 36, name = "圣光道标" },
 }
 
 Fuyutsui.itemsList = {
@@ -431,4 +440,6 @@ Fuyutsui.itemsList = {
     [245919] = { index = 16, name = "飞逝银月城生命药水" },
     [271883] = { index = 17, name = "浓缩银月城生命药水" },
     [271884] = { index = 18, name = "浓缩银月城生命药水" },
+    [250215] = { index = 19, name = "货运者水壶" },
+    [5512] = { index = 20, name = "治疗石" },
 }

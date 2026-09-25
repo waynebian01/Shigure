@@ -179,7 +179,7 @@ public sealed class ClassMacrosEditorControl : UserControl
         _offsetLabel.Padding = new Padding(14, 0, 14, 0);
         _offsetLabel.Margin = new Padding(0);
         _offsetLabel.AutoEllipsis = true;
-        _offsetLabel.Text = "创建顺序：动态宏（每项 30 槽）→ 静态宏 → 特殊宏；空字符串保留槽位";
+        _offsetLabel.Text = "创建顺序：动态宏（每项 40 槽）→ 静态宏 → 特殊宏；空字符串保留槽位";
         root.Controls.Add(_offsetLabel, 0, 0);
 
         root.Controls.Add(BuildSectionTabs(), 0, 1);
@@ -384,7 +384,7 @@ public sealed class ClassMacrosEditorControl : UserControl
         _dynamicGrid.Columns.Add(new DataGridViewTextBoxColumn
         {
             Name = "Name",
-            HeaderText = "法术名（每项占 30 个团队点名槽）",
+            HeaderText = "法术名（每项占 40 个团队点名槽）",
             AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill
         });
         _dynamicGrid.Columns.Add(CreateDeleteColumn());
@@ -843,10 +843,10 @@ public sealed class ClassMacrosEditorControl : UserControl
             dynamicCount = visibleDynamicCount;
         }
 
-        var dynamicSlots = dynamicCount * 30;
+        var dynamicSlots = dynamicCount * GroupStateLayout.SlotCount;
         var totalSlots = dynamicSlots + staticCount + specialCount;
         _offsetLabel.Text =
-            $"职业动态宏 {dynamicSlots} 个（{dynamicCount} 项 × 30）；静态宏 {staticCount} 个；特殊宏 {specialCount} 个；" +
+            $"职业动态宏 {dynamicSlots} 个（{dynamicCount} 项 × {GroupStateLayout.SlotCount}）；静态宏 {staticCount} 个；特殊宏 {specialCount} 个；" +
             $"共 {totalSlots} 个；最多 {FuyutsuiKeymapConverter.MacroSlotCapacity} 个";
     }
 

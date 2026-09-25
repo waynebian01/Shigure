@@ -52,7 +52,7 @@ verified_at: 2026-08-28
 
 | 输入 | 算法 | 输出命名空间 |
 |---|---|---|
-| `GameState.Group[1..30]` + `ModuleUnit` | 生命/角色/光环/驱散/吸收选择器 | `$units.<name>`、`$unithealth.<name>` |
+| `GameState.Group[1..40]` + `ModuleUnit` | 生命/角色/光环/驱散/吸收选择器 | `$units.<name>`、`$unithealth.<name>` |
 | 组员状态 + `ModuleCountField` | 对满足条件的单位计数 | `$counts.<name>` |
 | `ValueAdjustment` | 条件 + Delta 或 Formula | 原状态、spells/auras、阈值或 `$dynamicvalues.<name>` |
 

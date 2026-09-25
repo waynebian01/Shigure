@@ -3,7 +3,7 @@ namespace Shigure;
 /// <summary>随模块分发的职业配置与宏快照。</summary>
 public sealed class ModuleDependencySnapshot
 {
-    public const int CurrentSchemaVersion = 3;
+    public const int CurrentSchemaVersion = 4;
 
     public int SchemaVersion { get; set; } = CurrentSchemaVersion;
     public int ClassId { get; set; }
@@ -48,6 +48,7 @@ public sealed class ModuleSpecSnapshot
     public List<ModuleAuraSnapshot> FocusHelpfulAuras { get; set; } = new();
     public List<ModuleSpellSnapshot> Spells { get; set; } = new();
     public ModuleGroupSnapshot? Group { get; set; }
+    public ModuleNameplateSnapshot? Nameplates { get; set; }
 
     public ModuleSpecSnapshot Clone() => new()
     {
@@ -64,11 +65,22 @@ public sealed class ModuleSpecSnapshot
         FocusHarmfulAuras = CloneEntries(FocusHarmfulAuras),
         FocusHelpfulAuras = CloneEntries(FocusHelpfulAuras),
         Spells = (Spells ?? []).Where(entry => entry is not null).Select(entry => entry.Clone()).ToList(),
-        Group = Group?.Clone()
+        Group = Group?.Clone(),
+        Nameplates = Nameplates?.Clone()
     };
 
     private static List<ModuleAuraSnapshot> CloneEntries(IEnumerable<ModuleAuraSnapshot>? entries)
         => (entries ?? []).Where(entry => entry is not null).Select(entry => entry.Clone()).ToList();
+}
+
+public sealed class ModuleNameplateSnapshot
+{
+    public List<ModuleAuraSnapshot> Auras { get; set; } = new();
+
+    public ModuleNameplateSnapshot Clone() => new()
+    {
+        Auras = (Auras ?? []).Where(entry => entry is not null).Select(entry => entry.Clone()).ToList()
+    };
 }
 
 public sealed class ModuleItemSnapshot
@@ -86,13 +98,16 @@ public sealed class ModuleAuraSnapshot
     public long? SpellId { get; set; }
     public List<long> SpellIds { get; set; } = new();
     public int? MaxApps { get; set; }
+    // null 表示旧模块未保存该字段；旧版固定使用 PLAYER，导入时按 true 兼容。
+    public bool? IsPlayer { get; set; }
 
     public ModuleAuraSnapshot Clone() => new()
     {
         Name = Name,
         SpellId = SpellId,
         SpellIds = new List<long>(SpellIds ?? []),
-        MaxApps = MaxApps
+        MaxApps = MaxApps,
+        IsPlayer = IsPlayer
     };
 }
 

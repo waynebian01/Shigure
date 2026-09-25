@@ -4,6 +4,8 @@ namespace Shigure;
 
 internal static class GroupStateLayout
 {
+    public const int SlotCount = 40;
+
     public static readonly string[] SupportedFields = ["healthPercent", "role", "dispel"];
 
     // 显式 state（包括空列表）优先；旧配置只在缺少 state 时迁移。

@@ -106,7 +106,7 @@ OnEnable / UPDATE_BINDINGS / SPELLS_CHANGED / ACTIONBAR_*GRID
 
 `LoadPlayerMacros()` 读取当前职业的 dynamic 数组后，`CreateMacro()` 按实际源码顺序消费最多 1170 个槽：
 
-1. `dynamicSpells`：每个定义固定占 30 槽，展开 raid1..raid30，并兼容 party/player 条件。
+1. `dynamicSpells`：每个定义固定占 40 槽，展开 raid1..raid40，并兼容 party/player 条件。
 2. `staticSpells`：每项占 1 槽；空字符串只保留占位，不创建按钮。
 3. `specialSpells`：每项占 1 槽，接在 static 之后。
 
@@ -116,7 +116,7 @@ OnEnable / UPDATE_BINDINGS / SPELLS_CHANGED / ACTIONBAR_*GRID
 
 - 安全宏和 override binding 不能在战斗锁定中创建、清理或改属性；代码遇到 `InCombatLockdown()` 会直接返回。
 - Lua `macroKind[i]` 与 C# 生成 keymap 的第 `i` 项必须逐项相同，包括修饰键文本顺序。
-- 每个 dynamic 条目始终占 30 槽，即使某些宏体为空。
+- 每个 dynamic 条目始终占 40 槽，即使某些宏体为空。
 - static/special 空项同样占位；删除占位会让后续所有键左移。
 - 总展开数不得超过 1170；超出部分 `nextSlot()` 静默不创建。
 - 游戏内动作条 `Fuyutsui.keybindings` 不是跨进程契约源，不能拿它替换生成 keymap。

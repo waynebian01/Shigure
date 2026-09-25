@@ -6,6 +6,16 @@ local state = Fuyutsui.state
 local nameplate = Fuyutsui.nameplate
 local playerCountdownTicker = nil
 local playerCountdownRemaining = 0
+local COMBAT_UNIT_REFRESH_ORDER = {
+    "target",
+    "focus",
+    "mouseover",
+    "boss1",
+    "boss2",
+    "boss3",
+    "boss4",
+    "boss5",
+}
 
 local function SyncPlayerCountdownPixel()
     state.playerCountdown = math.min(255, playerCountdownRemaining) / 255
@@ -121,11 +131,31 @@ function Fuyutsui:UNIT_PET(_, unit)
     end
 end
 
+--- 进入战斗时立即重写所有可作为目标的单位像素，避免等待后续事件或 0.2 秒轮询。
+--- 这里不调用 RefreshUnitState，防止仅因进入战斗而清空正在进行的施法缓存。
+function Fuyutsui:RefreshCombatUnitPixels()
+    for _, unit in ipairs(COMBAT_UNIT_REFRESH_ORDER) do
+        self:RefreshUnitReactionState(unit)
+        self:RefreshUnitDeathState(unit)
+        self:RefreshUnitHealthState(unit)
+        self:RefreshUnitPowerState(unit)
+        self:RefreshUnitRangeState(unit)
+    end
+
+    self:UpdateUnitAuraContainer("target")
+    self:UpdateUnitAuraContainer("focus")
+
+    if self.RefreshNameplatePixels then
+        self:RefreshNameplatePixels()
+    end
+    self:RefreshEnemyCounts()
+end
+
 function Fuyutsui:PLAYER_REGEN_DISABLED()
-    self:RefreshTargetReactionState()
     state.combat = true
     state.combatStartTime = GetTime()
     self:RefreshPlayerCombatDuration()
+    self:RefreshCombatUnitPixels()
 end
 
 function Fuyutsui:PLAYER_REGEN_ENABLED()

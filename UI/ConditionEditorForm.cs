@@ -145,6 +145,8 @@ public sealed class ConditionEditorForm : Form
     private const string OperatorColumn = "Operator";
     private const string ValueColumn = "Value";
     private const string DeleteColumn = "Delete";
+    private const string ExBossTypeField = "EX首领技能类型";
+    private const string ExBossEventField = "EX首领技能事件";
     private const string Unclassified = "未分类";
     private const int ConditionRowHeight = 46;
 
@@ -720,6 +722,22 @@ public sealed class ConditionEditorForm : Form
         }
 
         if (e.ColumnIndex == _conditionsGrid.Columns[ValueColumn]!.Index
+            && cell is ExBossTypeValueCell
+            && ExBossEventCatalog.FindMechanicType(e.Value?.ToString()) is { } mechanicType)
+        {
+            cell.ToolTipText = $"类型 {mechanicType.Value}: {mechanicType.Name}";
+            return;
+        }
+
+        if (e.ColumnIndex == _conditionsGrid.Columns[ValueColumn]!.Index
+            && cell is ExBossEventValueCell
+            && ExBossEventCatalog.FindEvent(e.Value?.ToString()) is { } eventInfo)
+        {
+            cell.ToolTipText = $"eventID {eventInfo.EventId} · spellID {eventInfo.SpellId} · {eventInfo.MechanicType} · {eventInfo.MapName} / {eventInfo.BossName}";
+            return;
+        }
+
+        if (e.ColumnIndex == _conditionsGrid.Columns[ValueColumn]!.Index
             && cell is ReferenceValueCell
             && _valueReferenceFields.FirstOrDefault(field => string.Equals(
                 field.Name,
@@ -775,7 +793,7 @@ public sealed class ConditionEditorForm : Form
         }
 
         var cell = _conditionsGrid.Rows[e.RowIndex].Cells[e.ColumnIndex];
-        if (cell is BossValueCell or ReferenceValueCell)
+        if (cell is BossValueCell or ReferenceValueCell or ExBossTypeValueCell or ExBossEventValueCell)
         {
             var buttonBounds = UiTheme.GetDropDownButtonBounds(
                 _conditionsGrid,
@@ -785,6 +803,10 @@ public sealed class ConditionEditorForm : Form
                 if (cell is BossValueCell)
                 {
                     ShowBossNumberDropDown(e.RowIndex, e.ColumnIndex);
+                }
+                else if (cell is ExBossTypeValueCell or ExBossEventValueCell)
+                {
+                    ShowExBossValueDropDown(e.RowIndex, e.ColumnIndex);
                 }
                 else
                 {
@@ -818,6 +840,17 @@ public sealed class ConditionEditorForm : Form
 
     private void OnConditionsGridKeyDown(object? sender, KeyEventArgs e)
     {
+        if (_conditionsGrid.CurrentCell is ExBossTypeValueCell or ExBossEventValueCell
+            && (e.KeyCode == Keys.F4 || e.KeyCode == Keys.Down && e.Alt))
+        {
+            e.Handled = true;
+            e.SuppressKeyPress = true;
+            ShowExBossValueDropDown(
+                _conditionsGrid.CurrentCell.RowIndex,
+                _conditionsGrid.CurrentCell.ColumnIndex);
+            return;
+        }
+
         if (_conditionsGrid.CurrentCell is BossValueCell bossCell
             && (e.KeyCode == Keys.F4 || e.KeyCode == Keys.Down && e.Alt))
         {
@@ -978,6 +1011,71 @@ public sealed class ConditionEditorForm : Form
         _conditionComboDropDown = dropDown;
     }
 
+    private void ShowExBossValueDropDown(int rowIndex, int columnIndex)
+    {
+        CloseConditionComboDropDown();
+        _conditionsGrid.EndEdit();
+        if (rowIndex < 0 || rowIndex >= _conditionsGrid.Rows.Count)
+        {
+            return;
+        }
+
+        var cell = _conditionsGrid.Rows[rowIndex].Cells[columnIndex];
+        if (cell is not (ExBossTypeValueCell or ExBossEventValueCell))
+        {
+            return;
+        }
+
+        _conditionsGrid.CurrentCell = cell;
+        List<UiDropDownOption> options;
+        var preferredWidth = 320;
+        if (cell is ExBossTypeValueCell)
+        {
+            options = ExBossEventCatalog.MechanicTypes
+                .Select(item => new UiDropDownOption(
+                    item.Value.ToString(CultureInfo.InvariantCulture),
+                    item.Name,
+                    LeadingText: item.Value.ToString(CultureInfo.InvariantCulture)))
+                .ToList();
+        }
+        else
+        {
+            preferredWidth = 680;
+            options =
+            [
+                new UiDropDownOption("0", "无事件 / 未安装 EXBoss", LeadingText: "0")
+            ];
+            options.AddRange(ExBossEventCatalog.Events.Select(item => new UiDropDownOption(
+                item.Key.ToString(CultureInfo.InvariantCulture),
+                $"{item.Name} · {item.MechanicType} · {item.MapName} / {item.BossName}",
+                LeadingText: item.Key.ToString(CultureInfo.InvariantCulture))));
+        }
+
+        var currentValue = cell.Value?.ToString()?.Trim() ?? string.Empty;
+        var cellBounds = _conditionsGrid.GetCellDisplayRectangle(columnIndex, rowIndex, cutOverflow: true);
+        ToolStripDropDown? dropDown = null;
+        dropDown = UiDropDownPopup.Show(
+            _conditionsGrid,
+            cellBounds,
+            options,
+            currentValue,
+            selected =>
+            {
+                cell.Value = selected.Value?.ToString() ?? string.Empty;
+                _conditionsGrid.InvalidateCell(cell);
+                UpdatePreview();
+            },
+            preferredWidth,
+            closed: () =>
+            {
+                if (ReferenceEquals(_conditionComboDropDown, dropDown))
+                {
+                    _conditionComboDropDown = null;
+                }
+            });
+        _conditionComboDropDown = dropDown;
+    }
+
     private static Image? ResolveFieldIcon(FieldItem field)
     {
         if (field.ItemId is > 0)
@@ -1016,7 +1114,7 @@ public sealed class ConditionEditorForm : Form
 
 
         var cell = _conditionsGrid.Rows[e.RowIndex].Cells[e.ColumnIndex];
-        if (cell is BossValueCell or ReferenceValueCell)
+        if (cell is BossValueCell or ReferenceValueCell or ExBossTypeValueCell or ExBossEventValueCell)
         {
             UiTheme.PaintDataGridViewComboBoxCell(_conditionsGrid, e, showButton: true);
             return;
@@ -1514,6 +1612,20 @@ public sealed class ConditionEditorForm : Form
         if (ItemIdConditionFields.Contains(field?.Name))
         {
             ConfigureItemValueCell(row, rawValue, preserveRaw);
+            return;
+        }
+
+        if (field?.Name is ExBossTypeField or ExBossEventField)
+        {
+            var value = rawValue?.Trim() ?? string.Empty;
+            if (value.Length == 0)
+            {
+                value = "0";
+            }
+
+            row.Cells[ValueColumn] = field.Name == ExBossTypeField
+                ? new ExBossTypeValueCell { Value = value }
+                : new ExBossEventValueCell { Value = value };
             return;
         }
 
@@ -2101,6 +2213,10 @@ public sealed class ConditionEditorForm : Form
     }
 
     private sealed class BossValueCell : DataGridViewTextBoxCell;
+
+    // EX 事件值保留文本框编辑能力，右侧按钮同时提供已知类型/事件目录。
+    private sealed class ExBossTypeValueCell : DataGridViewTextBoxCell;
+    private sealed class ExBossEventValueCell : DataGridViewTextBoxCell;
 
     // 值列: 可手填数字, 也可从动态数值字段中选一个作为引用。
     private sealed class ReferenceValueCell : DataGridViewTextBoxCell;

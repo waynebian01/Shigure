@@ -17,6 +17,7 @@ internal enum SettingsPage
     Logic,
     Logs,
     BossNumbers,
+    Event,
     CommonFields,
     About
 }
@@ -33,6 +34,7 @@ internal enum SettingsNavIcon
     Logic,
     Logs,
     BossNumbers,
+    Event,
     CommonFields,
     About
 }
@@ -532,6 +534,7 @@ public sealed class StatusForm : Form
         AddNavItem(nav, SettingsPage.Logs, SettingsNavIcon.Logs, "日志", CreatePageShell("日志", "运行、模块匹配与施放记录", BuildLogPage()));
         AddNavGroup(nav, "说明");
         AddNavItem(nav, SettingsPage.BossNumbers, SettingsNavIcon.BossNumbers, "首领", CreatePageShell("首领编号", "副本首领的序号、名称与扫描编号", BuildBossNumbersPage()));
+        AddNavItem(nav, SettingsPage.Event, SettingsNavIcon.Event, "事件", CreatePageShell("EX 事件", "247 个首领技能事件及其像素编码", BuildExBossEventsPage()));
         AddNavItem(nav, SettingsPage.CommonFields, SettingsNavIcon.CommonFields, "字段", CreatePageShell("常用字段", "模块条件可用的状态字段参考", BuildCommonFieldsPanel()));
         AddNavGroup(nav, "系统");
         AddNavItem(nav, SettingsPage.About, SettingsNavIcon.About, "关于", CreatePageShell("关于", "应用信息、免责声明、许可证与来源", _aboutHost));
@@ -1244,6 +1247,47 @@ public sealed class StatusForm : Form
         return scrollHost;
     }
 
+    private Control BuildExBossEventsPage()
+    {
+        var eventList = UiTheme.CreateListView(Font, "ex-boss-events",
+            new UiTheme.ListColumn("键", 56, 72, FixedWidth: true),
+            new UiTheme.ListColumn("像素编码", 88, 110, FixedWidth: true),
+            new UiTheme.ListColumn("事件 ID", 82, 100, FixedWidth: true),
+            new UiTheme.ListColumn("技能 ID", 92, 112, FixedWidth: true),
+            new UiTheme.ListColumn("类型", 72, 92, FixedWidth: true),
+            new UiTheme.ListColumn("事件", 150, 260),
+            new UiTheme.ListColumn("副本", 190, 320),
+            new UiTheme.ListColumn("首领", 190, 520, FillRemaining: true));
+
+        var page = BuildFixedWidthSectionPage(
+            "EX 首领技能事件",
+            eventList,
+            "事件键按 eventID 升序生成；像素写入键 / 255，模块条件使用整数键 1–247");
+        var items = ExBossEventCatalog.Events
+            .Select(item => new ListViewItem(
+            [
+                item.Key.ToString(),
+                $"{item.Key} / 255",
+                item.EventId.ToString(),
+                item.SpellId.ToString(),
+                item.MechanicType,
+                item.Name,
+                item.MapName,
+                item.BossName
+            ])
+            {
+                Tag = item,
+                ToolTipText = $"键 {item.Key} · eventID {item.EventId} · spellID {item.SpellId} · {item.MapName} / {item.BossName} / {item.Name}"
+            })
+            .ToArray();
+        ReplaceItems(
+            eventList,
+            items.Length > 0
+                ? items
+                : [new ListViewItem(["-", "-", "-", "-", "-", "事件目录不可用", "-", "-"])]);
+        return page;
+    }
+
     private Control CreateBossNumberCard(BossDungeon dungeon)
     {
         var card = new UiCardPanel
@@ -1570,7 +1614,8 @@ public sealed class StatusForm : Form
                 "计时器", "循环计时器", "战斗计时(秒)", "战斗计时(分)",
                 "酒池", "符文", "姿态", "神圣军备", "自律", "天启骑士数量",
                 "英勇打击", "吸血鬼打击", "收割者战刃", "沸点",
-                "风暴涌流图腾", "风暴涌流图腾数量", "治疗之泉图腾", "治疗之泉图腾数量"
+                "风暴涌流图腾", "风暴涌流图腾数量", "治疗之泉图腾", "治疗之泉图腾数量",
+                "EX首领技能类型", "EX首领技能事件", "EX首领技能倒计时"
             ],
             150), 1, 0);
         fields.Controls.Add(CreateCommonFieldCard(

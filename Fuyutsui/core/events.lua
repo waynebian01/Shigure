@@ -551,10 +551,16 @@ function Fuyutsui:UPDATE_SHAPESHIFT_FORMS()
 end
 
 function Fuyutsui:ENCOUNTER_START(_, encounterID, encounterName, difficultyID, groupSize)
+    if self.ResetExBossTimelinePixels then
+        self:ResetExBossTimelinePixels()
+    end
     self:SetEncounterState(encounterID, difficultyID)
 end
 
 function Fuyutsui:ENCOUNTER_END(_, encounterID, encounterName, difficultyID, groupSize, success)
+    if self.ResetExBossTimelinePixels then
+        self:ResetExBossTimelinePixels()
+    end
     self:SetEncounterState(0, 0)
 end
 
@@ -620,6 +626,7 @@ function Fuyutsui:OnUpdate(elapsed)
         RunUpdateSafely(self, "RefreshEnemyCounts")
         RunUpdateSafely(self, "RefreshNameplatePixels")
         RunUpdateSafely(self, "UpdateItemCooldown")
+        RunUpdateSafely(self, "RefreshExBossTimelinePixels")
         self.timeElapsed = 0
     end
 

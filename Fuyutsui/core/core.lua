@@ -85,6 +85,9 @@ end
 
 function Fuyutsui:OnEnable()
     self:InitializeSpecializationState()
+    if self.InitializeExBossTimelineBridge then
+        self:InitializeExBossTimelineBridge()
+    end
     self:UpdateSpellKnown()
     self:RefreshPlayerState()
     self:ReadKeybindings()

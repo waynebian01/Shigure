@@ -110,8 +110,6 @@ verified_at: "2026-08-10"
 | [[50-参考资料/OPTIMIZATION_zh-CN|Fuyutsui 优化建议]] | 2026-07 静态审计快照 | 旧 `main.lua` 行号已失效，不是当前事实源 |
 | `CLAUDE.md`（当前开发约定） | 根级架构与开发规则 | 同时说明 Shigure、内置 Fuyutsui 与部署链路 |
 
-项目自身说明位于 Senkoh 库外、同一仓库根目录，以普通路径引用而不创建未解析的 Obsidian 节点：`README.md`、`CLAUDE.md`。
-
 ## 关键不变量与失败模式
 
 ### 不变量

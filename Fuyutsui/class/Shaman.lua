@@ -103,6 +103,7 @@ Fuyutsui.ClassBlocks = {
                 { name = "元素奔涌", spellId = 1300219, isPlayer = true, },
                 { name = "过载！", spellId = 1300222, isPlayer = true, },
                 { name = "元素宗师", spellId = 260734, isPlayer = true, },
+                { name = "妖术领主的厄运", spellId = 1307470, maxApps = 30, isPlayer = true, },
             },
             target = {
                 harmful = {
@@ -145,13 +146,10 @@ Fuyutsui.ClassBlocks = {
         items = {
             [5512] = { name = "治疗石", isEquipped = false },
             [241288] = { name = "鲁莽药水", isEquipped = false },
-            [241289] = { name = "鲁莽药水", isEquipped = false },
             [241304] = { name = "治疗药水", isEquipped = false },
-            [241305] = { name = "银月城治疗药水", isEquipped = false },
             [241308] = { name = "圣光潜力", isEquipped = false },
-            [241309] = { name = "圣光潜力", isEquipped = false },
+            [270169] = { name = "妖术领主的厄运神像", isEquipped = true },
             [271883] = { name = "浓缩银月城治疗药水", isEquipped = false },
-            [271884] = { name = "浓缩银月城治疗药水", isEquipped = false },
             [273796] = { name = "一瓶肮脏的烈性毒液", isEquipped = true },
         },
         nameplates = {
@@ -339,6 +337,7 @@ Fuyutsui.ClassBlocks = {
                 { name = "风暴涌流图腾", spellId = 1267089, maxApps = 2, isPlayer = true, },
                 { name = "倾盆大雨", spellId = 462603, isPlayer = true, },
                 { name = "自然迅捷", spellId = 378081, isPlayer = true, },
+                { name = "妖术领主的厄运", spellId = 1307470, maxApps = 30, isPlayer = true, },
             },
             target = {
                 helpful = {
@@ -374,7 +373,10 @@ Fuyutsui.ClassBlocks = {
             { spellId = 192077, name = "狂风图腾" },
         },
         items = {
+            [5512] = { name = "治疗石", isEquipped = false },
+            [241304] = { name = "银月城生命药水", isEquipped = false },
             [270162] = { name = "盘魂者仪式容器", isEquipped = true },
+            [270169] = { name = "妖术领主的厄运神像", isEquipped = true },
         },
         group = {
             state = { "healthPercent", "role", "dispel", },
@@ -515,4 +517,5 @@ Fuyutsui.itemsList = {
     [5512] = { index = 19, name = "治疗石" },
     [273796] = { index = 20, name = "一瓶肮脏的烈性毒液" },
     [270162] = { index = 21, name = "盘魂者仪式容器" },
+    [270169] = { index = 22, name = "妖术领主的厄运神像" },
 }

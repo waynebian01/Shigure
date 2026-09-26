@@ -263,10 +263,14 @@ Fuyutsui.ClassBlocks = {
                 "首领战",
                 "难度",
                 "敌人数量",
+                "施法技能",
+                "公共冷却",
             },
             ["特殊"] = {
                 "天启骑士数量",
                 "吸血鬼打击",
+                "战斗计时(分)",
+                "战斗计时(秒)",
             },
             ["能量"] = {
                 "符文",
@@ -313,22 +317,30 @@ Fuyutsui.ClassBlocks = {
             ["宠物"] = {
                 "存在",
             },
+            ["首领1"] = {
+                "类型",
+                "能量值",
+                "引导",
+                "施法(正计时)",
+            },
         },
         auras = {
             player = {
                 { name = "次级食尸鬼", spellId = 1254252, maxApps = 8, isPlayer = true, },
-                { name = "脓疮毒镰", spellIds = { 458128, 455397, 459238, 1235165, 1241077 }, isPlayer = true, },
-                { name = "脓疮毒镰可用", spellId = 458123, isPlayer = true, },
-                { name = "末日突降", spellIds = { 81340, 49530, 461135 }, isPlayer = true, },
-                { name = "瘟疫降临", spellIds = { 1271975, 1242616, 1271967, 1271974 }, isPlayer = true, },
-                { name = "割魂索命", spellIds = { 377514, 1242654, 1235261, 1244519 }, isPlayer = true, },
-                { name = "食尸鬼狂热", spellIds = { 377588, 377587, 377589 }, isPlayer = true, },
+                { name = "脓疮毒镰", spellId = 1241077, isPlayer = true, },
+                { name = "免费毒镰", spellId = 458123, isPlayer = true, },
+                { name = "末日突降", spellId = 81340, maxApps = 2, isPlayer = true, },
+                { name = "瘟疫降临", spellId = 1271975, isPlayer = true, },
+                { name = "割魂索命", spellId = 1242654, isPlayer = true, },
+                { name = "食尸鬼狂热", spellId = 377588, isPlayer = true, },
                 { name = "萨莱因之赐", spellIds = { 434153, 434152 }, isPlayer = true, },
-                { name = "暗影之爪", spellIds = { 1241569, 207311, 1241567 }, isPlayer = true, },
-                { name = "禁断知识", spellIds = { 1242223, 1242158 }, isPlayer = true, },
+                { name = "暗影之爪", spellIds = { 1241569, 207311, 1241567 }, maxApps = 6, isPlayer = true, },
+                { name = "禁断知识", spellId = 1242223, isPlayer = true, },
                 { name = "脏腑之力", spellIds = { 434157, 434159, 461130, 1234532, 1237848 }, isPlayer = true, },
                 { name = "鲜血女王的精华", spellId = 433925, maxApps = 7, isPlayer = true, },
                 { name = "亡者指挥官", spellIds = { 390259, 390260, 390264 }, isPlayer = true, },
+                { name = "黑暗援助", spellId = 101568, isPlayer = true, },
+                { name = "枯萎凋零", spellId = 188290, isPlayer = false, },
             },
             target = {
                 harmful = {
@@ -350,10 +362,15 @@ Fuyutsui.ClassBlocks = {
             { spellId = 43265, name = "枯萎凋零", charge = true, maxCharge = 2 },
             { spellId = 55090, name = "天灾打击", castCount = 20 },
             { spellId = 47528, name = "心灵冰冻" },
+            { spellId = 48792, name = "冰封之韧" },
         },
         items = {
+            [5512] = { name = "治疗石", isEquipped = false },
             [241288] = { name = "鲁莽药水", isEquipped = false },
             [241304] = { name = "治疗药水", isEquipped = false },
+            [241308] = { name = "圣光潜力", isEquipped = false },
+            [270168] = { name = "剧毒狂怒之泉", isEquipped = false },
+            [271884] = { name = "浓缩银月城生命药水", isEquipped = false },
         },
         nameplates = {
             auras = {

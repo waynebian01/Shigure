@@ -52,7 +52,7 @@ internal static partial class FuyutsuiKeymapConverter
 
     private static readonly string[] MacroKind = BuildMacroKind();
 
-    internal static int MacroSlotCapacity => Modifiers.Length * Keys.Length;
+    internal static int MacroSlotCapacity => Modifiers.Length * Keys.Length - BlockedHotkeys.Count;
 
     private static readonly Dictionary<string, int> ClassFileToId = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -171,9 +171,7 @@ internal static partial class FuyutsuiKeymapConverter
         };
         for (var i = 1; i <= MacroKind.Length; i++)
         {
-            var generatedHotkey = MacroKind[i - 1];
-            // 保留槽位编号，避免屏蔽单个不可用组合后导致后续宏整体错位。
-            var hotkey = BlockedHotkeys.Contains(generatedHotkey) ? string.Empty : generatedHotkey;
+            var hotkey = MacroKind[i - 1];
             var unit = 0;
             var spell = string.Empty;
             var macroCondition = string.Empty;
@@ -606,7 +604,11 @@ internal static partial class FuyutsuiKeymapConverter
         {
             foreach (var key in Keys)
             {
-                list[i++] = $"{modifier}-{key}";
+                var hotkey = $"{modifier}-{key}";
+                if (!BlockedHotkeys.Contains(hotkey))
+                {
+                    list[i++] = hotkey;
+                }
             }
         }
 

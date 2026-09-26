@@ -35,8 +35,11 @@ do
     local i = 1
     for _, m in ipairs(modifiers) do
         for _, k in ipairs(keys) do
-            macroKind[i] = m .. "-" .. k
-            i = i + 1
+            local hotkey = m .. "-" .. k
+            if not blockedHotkeys[hotkey] then
+                macroKind[i] = hotkey
+                i = i + 1
+            end
         end
     end
 end
@@ -101,7 +104,7 @@ function Fuyutsui:CreateMacro(dynamicData, staticData, specialData)
         if not keyBinding then
             return
         end
-        if macroBody and not blockedHotkeys[keyBinding] then
+        if macroBody then
             createMacro("s" .. i, keyBinding, macroBody)
         end
         i = i + 1

@@ -10,7 +10,8 @@ internal sealed record BigWigsEventInfo(
     int MapId,
     string MapName,
     int EncounterId,
-    string BossName);
+    string BossName,
+    string Methods);
 
 internal sealed record BigWigsEventType(int Value, string Name);
 
@@ -77,7 +78,8 @@ internal static class BigWigsEventCatalog
                     ReadInt(item, "mapId"),
                     ReadString(item, "mapName"),
                     ReadInt(item, "encounterId"),
-                    ReadString(item, "bossName")))
+                    ReadString(item, "bossName"),
+                    ReadString(item, "methods")))
                 .Where(item => item.Key > 0 && item.SpellId > 0)
                 .OrderBy(item => item.Key)
                 .ToArray();

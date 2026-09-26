@@ -613,7 +613,7 @@ public sealed class ClassConfigEditorControl : UserControl
 
         ConfigureGrid(_itemsListGrid, "class-config-items-list");
         _itemsListGrid.AllowUserToAddRows = false;
-        _itemsListGrid.CellContentClick += HandleItemsListDeleteClick;
+        _itemsListGrid.CellContentClick += HandleItemsListCellContentClick;
         _itemsListGrid.CellValueChanged += (_, e) =>
         {
             MarkDirty();
@@ -645,6 +645,7 @@ public sealed class ClassConfigEditorControl : UserControl
             AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill,
             SortMode = DataGridViewColumnSortMode.NotSortable
         });
+        _itemsListGrid.Columns.Add(CreateAddToCooldownColumn());
         _itemsListGrid.Columns.Add(CreateDeleteColumn());
         currentListCard.Controls.Add(_itemsListGrid, 0, 1);
         leftColumn.Controls.Add(currentListCard, 0, 1);
@@ -742,10 +743,10 @@ public sealed class ClassConfigEditorControl : UserControl
         _itemDatabaseGrid.Columns.Add(new DataGridViewButtonColumn
         {
             Name = "Add",
-            HeaderText = "添加",
-            Text = "添加",
+            HeaderText = "添加至列表",
+            Text = "添加至列表",
             UseColumnTextForButtonValue = true,
-            Width = 72,
+            Width = 134,
             SortMode = DataGridViewColumnSortMode.NotSortable
         });
         _itemDatabaseGrid.HandleCreated += (_, _) => RefreshItemDatabase();
@@ -1256,7 +1257,7 @@ public sealed class ClassConfigEditorControl : UserControl
 
         ConfigureGrid(_spellsListGrid, "class-config-spells-list");
         _spellsListGrid.AllowUserToAddRows = false;
-        _spellsListGrid.CellContentClick += HandleSpellsListDeleteClick;
+        _spellsListGrid.CellContentClick += HandleSpellsListCellContentClick;
         _spellsListGrid.CellValueChanged += (_, e) =>
         {
             MarkDirty();
@@ -1287,6 +1288,7 @@ public sealed class ClassConfigEditorControl : UserControl
             AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill,
             SortMode = DataGridViewColumnSortMode.NotSortable
         });
+        _spellsListGrid.Columns.Add(CreateAddToCooldownColumn());
         _spellsListGrid.Columns.Add(CreateDeleteColumn());
         currentListCard.Controls.Add(_spellsListGrid, 0, 1);
         leftColumn.Controls.Add(currentListCard, 0, 1);
@@ -1384,10 +1386,10 @@ public sealed class ClassConfigEditorControl : UserControl
         _spellDatabaseGrid.Columns.Add(new DataGridViewButtonColumn
         {
             Name = "Add",
-            HeaderText = "添加",
-            Text = "添加",
+            HeaderText = "添加至列表",
+            Text = "添加至列表",
             UseColumnTextForButtonValue = true,
-            Width = 72,
+            Width = 134,
             SortMode = DataGridViewColumnSortMode.NotSortable
         });
         _spellDatabaseGrid.HandleCreated += (_, _) => RefreshSpellDatabase();
@@ -1744,6 +1746,17 @@ public sealed class ClassConfigEditorControl : UserControl
             Text = "×",
             UseColumnTextForButtonValue = true,
             Width = 44
+        };
+
+    private static DataGridViewButtonColumn CreateAddToCooldownColumn()
+        => new()
+        {
+            Name = "AddToCooldown",
+            HeaderText = "",
+            Text = "添加至冷却",
+            UseColumnTextForButtonValue = true,
+            Width = 134,
+            SortMode = DataGridViewColumnSortMode.NotSortable
         };
 
     private static DataGridViewTextBoxColumn CreateSpellTextColumn(
@@ -2564,7 +2577,7 @@ public sealed class ClassConfigEditorControl : UserControl
             "Icon" => SpellIconCatalog.GetItem(suggestion.ItemId),
             "ItemId" => suggestion.ItemId.ToString(CultureInfo.InvariantCulture),
             "Name" => displayName,
-            "Add" => "添加",
+            "Add" => "添加至列表",
             _ => null
         };
     }
@@ -3339,7 +3352,7 @@ public sealed class ClassConfigEditorControl : UserControl
             "Icon" => SpellIconCatalog.Get(suggestion.SpellId),
             "SpellId" => suggestion.SpellId.ToString(CultureInfo.InvariantCulture),
             "Name" => displayName,
-            "Add" => "添加",
+            "Add" => "添加至列表",
             _ => null
         };
     }
@@ -4339,18 +4352,28 @@ public sealed class ClassConfigEditorControl : UserControl
         MarkDirty();
     }
 
-    private void HandleSpellsListDeleteClick(object? sender, DataGridViewCellEventArgs e)
+    private void HandleSpellsListCellContentClick(object? sender, DataGridViewCellEventArgs e)
     {
         if (sender is not DataGridView grid
             || e.RowIndex < 0
-            || e.ColumnIndex < 0
-            || grid.Columns[e.ColumnIndex].Name != "Delete")
+            || e.ColumnIndex < 0)
         {
             return;
         }
 
         var row = grid.Rows[e.RowIndex];
         if (row.IsNewRow || row.Tag is not ClassBlocksStore.SpellsListEntry entry)
+        {
+            return;
+        }
+
+        if (grid.Columns[e.ColumnIndex].Name == "AddToCooldown")
+        {
+            AddSpellListEntryToCooldown(row, entry);
+            return;
+        }
+
+        if (grid.Columns[e.ColumnIndex].Name != "Delete")
         {
             return;
         }
@@ -4369,18 +4392,28 @@ public sealed class ClassConfigEditorControl : UserControl
         MarkDirty();
     }
 
-    private void HandleItemsListDeleteClick(object? sender, DataGridViewCellEventArgs e)
+    private void HandleItemsListCellContentClick(object? sender, DataGridViewCellEventArgs e)
     {
         if (sender is not DataGridView grid
             || e.RowIndex < 0
-            || e.ColumnIndex < 0
-            || grid.Columns[e.ColumnIndex].Name != "Delete")
+            || e.ColumnIndex < 0)
         {
             return;
         }
 
         var row = grid.Rows[e.RowIndex];
         if (row.IsNewRow || row.Tag is not ClassBlocksStore.ItemsListEntry entry)
+        {
+            return;
+        }
+
+        if (grid.Columns[e.ColumnIndex].Name == "AddToCooldown")
+        {
+            AddItemsListEntryToCooldown(row, entry);
+            return;
+        }
+
+        if (grid.Columns[e.ColumnIndex].Name != "Delete")
         {
             return;
         }
@@ -4397,6 +4430,158 @@ public sealed class ClassConfigEditorControl : UserControl
 
         grid.Rows.RemoveAt(e.RowIndex);
         MarkDirty();
+    }
+
+    private void AddSpellListEntryToCooldown(
+        DataGridViewRow sourceRow,
+        ClassBlocksStore.SpellsListEntry sourceEntry)
+    {
+        if (_currentSpec is null)
+        {
+            MessageBox.Show("请先选择一个专精。", "技能冷却", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return;
+        }
+
+        _spellsListGrid.EndEdit();
+        if (!TryValidateSpellsList(out var validationError))
+        {
+            MessageBox.Show(validationError, "技能列表", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return;
+        }
+
+        WriteBackSpellsList();
+        if (GridContainsId(_spellsGrid, "SpellId", sourceEntry.SpellId))
+        {
+            MessageBox.Show(
+                $"该技能已存在于冷却列表：{sourceEntry.Name}（{sourceEntry.SpellId}）",
+                "技能冷却",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning);
+            return;
+        }
+
+        var entry = new ClassBlocksStore.SpellEntry
+        {
+            SpellId = sourceEntry.SpellId,
+            Name = sourceEntry.Name
+        };
+        _currentSpec.Spells.Add(entry);
+
+        _suppressUi = true;
+        try
+        {
+            _spellsGrid.Rows.Add(
+                (SpellIconCatalog.Get(entry.SpellId) ?? SpellIconCatalog.Get(entry.Name))!,
+                entry.Name,
+                entry.SpellId.ToString(CultureInfo.InvariantCulture),
+                false,
+                "",
+                "",
+                false,
+                false,
+                "×");
+        }
+        finally
+        {
+            _suppressUi = false;
+        }
+
+        sourceRow.Selected = true;
+        MarkDirty();
+    }
+
+    private void AddItemsListEntryToCooldown(
+        DataGridViewRow sourceRow,
+        ClassBlocksStore.ItemsListEntry sourceEntry)
+    {
+        if (_currentSpec is null)
+        {
+            MessageBox.Show("请先选择一个专精。", "物品冷却", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return;
+        }
+
+        _itemsListGrid.EndEdit();
+        if (!TryValidateItemsList(out var validationError))
+        {
+            MessageBox.Show(validationError, "物品列表", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return;
+        }
+
+        WriteBackItemsList();
+        if (GridContainsId(_itemsGrid, "ItemId", sourceEntry.ItemId))
+        {
+            MessageBox.Show(
+                $"该物品已存在于冷却列表：{sourceEntry.Name}（{sourceEntry.ItemId}）",
+                "物品冷却",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning);
+            return;
+        }
+
+        _itemsGrid.EndEdit();
+        WriteBackItems();
+        var entry = new ClassBlocksStore.ItemEntry
+        {
+            ItemId = sourceEntry.ItemId,
+            Name = sourceEntry.Name,
+            IsEquipped = false
+        };
+        _currentSpec.Items.Add(entry);
+
+        int rowIndex;
+        _suppressUi = true;
+        try
+        {
+            rowIndex = _itemsGrid.Rows.Add(
+                SpellIconCatalog.GetItem(sourceEntry.ItemId)!,
+                sourceEntry.ItemId.ToString(CultureInfo.InvariantCulture),
+                sourceEntry.Name,
+                false,
+                "×");
+        }
+        finally
+        {
+            _suppressUi = false;
+        }
+
+        if (!TryValidateItems(out validationError))
+        {
+            _currentSpec.Items.Remove(entry);
+            _suppressUi = true;
+            try
+            {
+                _itemsGrid.Rows.RemoveAt(rowIndex);
+            }
+            finally
+            {
+                _suppressUi = false;
+            }
+
+            MessageBox.Show(validationError, "物品冷却", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return;
+        }
+
+        sourceRow.Selected = true;
+        MarkDirty();
+    }
+
+    private static bool GridContainsId(DataGridView grid, string columnName, long id)
+    {
+        foreach (DataGridViewRow row in grid.Rows)
+        {
+            if (!row.IsNewRow
+                && long.TryParse(
+                    row.Cells[columnName].Value?.ToString()?.Trim(),
+                    NumberStyles.None,
+                    CultureInfo.InvariantCulture,
+                    out var candidate)
+                && candidate == id)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private void MoveSelectedRow(DataGridView grid, int delta)

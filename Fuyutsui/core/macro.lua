@@ -3,6 +3,9 @@ local format = string.format
 local macroList = {}
 local macroKind = {}
 local bindingOwner = CreateFrame("Frame")
+local blockedHotkeys = {
+    ["RALT-RCTRL-RSHIFT-NUMPADMULTIPLY"] = true
+}
 
 local modifiers = {
     "RCTRL", "RALT", "RSHIFT",
@@ -98,7 +101,7 @@ function Fuyutsui:CreateMacro(dynamicData, staticData, specialData)
         if not keyBinding then
             return
         end
-        if macroBody then
+        if macroBody and not blockedHotkeys[keyBinding] then
             createMacro("s" .. i, keyBinding, macroBody)
         end
         i = i + 1

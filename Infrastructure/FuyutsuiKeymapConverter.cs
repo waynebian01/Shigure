@@ -12,6 +12,11 @@ namespace Shigure;
 /// </summary>
 internal static partial class FuyutsuiKeymapConverter
 {
+    private static readonly HashSet<string> BlockedHotkeys = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "RALT-RCTRL-RSHIFT-NUMPADMULTIPLY"
+    };
+
     private static readonly JsonSerializerOptions WriteOptions = new()
     {
         WriteIndented = true,
@@ -166,7 +171,9 @@ internal static partial class FuyutsuiKeymapConverter
         };
         for (var i = 1; i <= MacroKind.Length; i++)
         {
-            var hotkey = MacroKind[i - 1];
+            var generatedHotkey = MacroKind[i - 1];
+            // 保留槽位编号，避免屏蔽单个不可用组合后导致后续宏整体错位。
+            var hotkey = BlockedHotkeys.Contains(generatedHotkey) ? string.Empty : generatedHotkey;
             var unit = 0;
             var spell = string.Empty;
             var macroCondition = string.Empty;

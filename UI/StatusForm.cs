@@ -610,7 +610,7 @@ public sealed class StatusForm : Form
         AddNavItem(nav, SettingsPage.BossNumbers, "首领", CreatePageShell("首领编号", "副本首领的序号、名称与扫描编号", CreateLazyBossNumbersPage()));
         AddNavItem(nav, SettingsPage.Event, "EX事件", CreatePageShell("EX 事件", "247 个首领技能事件及其像素编码", BuildExBossEventsPage()));
         AddNavItem(nav, SettingsPage.BigWigsEvent, "BW事件", CreatePageShell("BigWigs 团本事件", $"{BigWigsEventCatalog.Events.Count} 个团队首领技能事件及其像素编码", BuildBigWigsEventsPage()));
-        AddNavItem(nav, SettingsPage.CommonFields, "字段", CreatePageShell("常用字段", "模块条件可用的状态字段参考", BuildCommonFieldsPanel()));
+        AddNavItem(nav, SettingsPage.CommonFields, "字段", CreatePageShell("常用字段", "模块条件可用的状态字段参考", CreateLazyCommonFieldsPage()));
         AddNavItem(nav, SettingsPage.About, "关于", CreatePageShell("关于", "应用信息、免责声明、许可证与来源", _aboutHost));
         _aboutHost.Controls.Add(BuildAboutPanel());
 
@@ -1985,122 +1985,155 @@ public sealed class StatusForm : Form
         return card;
     }
 
-    private static readonly int CommonFieldCardWidth = (SettingsContentWidth - UiTheme.PageGap) / 2;
+    /// <summary>
+    /// 字段页分组：与 ClassStateCatalog.TopCategories 对齐，拆成两张全宽卡（对齐首领页两赛季）。
+    /// </summary>
+    private static readonly string[] PlayerCommonFieldCategories =
+    [
+        ClassStateCatalog.CategoryState,
+        ClassStateCatalog.CategorySpecial,
+        ClassStateCatalog.CategoryResource,
+        ClassStateCatalog.CategoryConfig
+    ];
 
-    private Control BuildCommonFieldsPanel()
+    private static readonly string[] UnitCommonFieldCategories =
+    [
+        ClassStateCatalog.CategoryTarget,
+        ClassStateCatalog.CategoryFocus,
+        ClassStateCatalog.CategoryMouseover,
+        ClassStateCatalog.CategoryPet,
+        ClassStateCatalog.CategoryBoss1,
+        ClassStateCatalog.CategoryBoss2,
+        ClassStateCatalog.CategoryBoss3,
+        ClassStateCatalog.CategoryBoss4,
+        ClassStateCatalog.CategoryBoss5
+    ];
+
+    /// <summary>
+    /// 字段页首次点开时再构建（与首领页一致，避免启动即创建大量 ListView 行）。
+    /// </summary>
+    private Control CreateLazyCommonFieldsPage()
     {
-        var contentWidth = SettingsContentWidth;
-        var scrollHost = new Panel
+        var host = new Panel
         {
             Dock = DockStyle.Fill,
             BackColor = UiTheme.Surface,
-            AutoScroll = true,
-            Margin = new Padding(0),
-            AutoScrollMinSize = new Size(contentWidth, 0)
+            Margin = new Padding(0)
         };
-
-        var fields = new TableLayoutPanel
+        var built = false;
+        host.VisibleChanged += (_, _) =>
         {
-            AutoSize = true,
-            AutoSizeMode = AutoSizeMode.GrowAndShrink,
-            Dock = DockStyle.None,
-            Location = Point.Empty,
+            if (!host.Visible || built || host.IsDisposed)
+            {
+                return;
+            }
+
+            built = true;
+            host.SuspendLayout();
+            try
+            {
+                var page = BuildCommonFieldsPanel();
+                page.Dock = DockStyle.Fill;
+                host.Controls.Add(page);
+            }
+            finally
+            {
+                host.ResumeLayout(true);
+            }
+        };
+        return host;
+    }
+
+    private Control BuildCommonFieldsPanel()
+    {
+        // 两张全宽大卡各挂一个 ListView（分组=分类），视觉对齐首领页两赛季卡片。
+        var root = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
             BackColor = UiTheme.Surface,
-            ColumnCount = 2,
-            RowCount = 5,
-            Width = contentWidth,
+            ColumnCount = 1,
+            RowCount = 2,
             Margin = new Padding(0),
             Padding = new Padding(0)
         };
-        fields.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, CommonFieldCardWidth + UiTheme.PageGap));
-        fields.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, CommonFieldCardWidth));
-        for (var i = 0; i < 5; i++)
+        root.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        root.RowStyles.Add(new RowStyle(SizeType.Percent, 50));
+        root.RowStyles.Add(new RowStyle(SizeType.Percent, 50));
+
+        root.SuspendLayout();
+        try
         {
-            fields.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            var playerCard = CreateCommonFieldCard(
+                "玩家与资源",
+                "common-fields-player-v1",
+                EnumerateCatalogFieldRows(PlayerCommonFieldCategories));
+            playerCard.Margin = new Padding(0, 0, 0, UiTheme.PageGap);
+            root.Controls.Add(playerCard, 0, 0);
+
+            var unitRows = EnumerateCatalogFieldRows(UnitCommonFieldCategories)
+                .Concat(EnumerateNameplateFieldRows())
+                .ToArray();
+            var unitCard = CreateCommonFieldCard("单位字段", "common-fields-unit-v1", unitRows);
+            unitCard.Margin = new Padding(0);
+            root.Controls.Add(unitCard, 0, 1);
+        }
+        finally
+        {
+            root.ResumeLayout(true);
         }
 
-        fields.Controls.Add(CreateCommonFieldCard(
-            "状态",
-            [
-                "有效性", "战斗时间", "移动", "生命值", "一键辅助", "插入法术", "插入物品",
-                "队伍类型", "队伍人数", "首领战", "难度", "英雄天赋", "施法目标",
-                "施法技能", "敌人数量", "敌人数-无仇恨", "敌人数-有仇恨",
-                "施法(正计时)", "施法(倒计时)", "引导", "蓄力", "蓄力层数",
-                "上个技能", "公共冷却"
-            ],
-            150), 0, 0);
-        fields.Controls.Add(CreateCommonFieldCard(
-            "特殊",
-            [
-                "计时器", "循环计时器", "战斗计时(秒)", "战斗计时(分)",
-                "酒池", "符文", "姿态", "神圣军备", "自律", "天启骑士数量",
-                "英勇打击", "吸血鬼打击", "收割者战刃", "沸点",
-                "风暴涌流图腾", "风暴涌流图腾数量", "治疗之泉图腾", "治疗之泉图腾数量",
-                "EX首领技能类型", "EX首领技能事件", "EX首领技能倒计时",
-                "EX小怪技能类型", "EX小怪技能事件", "EX小怪技能倒计时",
-                "BigWigs首领技能类型", "BigWigs首领技能事件", "BigWigs首领技能倒计时"
-            ],
-            150), 1, 0);
-        fields.Controls.Add(CreateCommonFieldCard(
-            "能量",
-            [
-                "法力值", "怒气值", "集中值", "能量值", "符文", "符文能量",
-                "星界能量", "漩涡值", "狂乱值", "恶魔之怒", "痛苦值",
-                "连击点", "神圣能量", "精华能量", "灵魂碎片", "真气", "增压层数"
-            ],
-            150), 0, 1);
-        fields.Controls.Add(CreateCommonFieldCard(
-            "配置开关",
-            ["爆发开关", "AOE开关", "输出模式", "爆发药水开关", "延迟"],
-            92), 1, 1);
-        fields.Controls.Add(CreateCommonFieldCard(
-            "物品",
-            ["治疗药水", "魔法药水", "治疗石", "鲁莽药水", "圣光潜力"],
-            92), 0, 2);
-        fields.Controls.Add(CreateCommonFieldCard(
-            "目标",
-            ["类型", "生命值", "能量值", "距离", "施法(倒计时)", "施法(正计时)", "施法可打断", "引导", "引导可打断"],
-            104), 1, 2);
-        fields.Controls.Add(CreateCommonFieldCard(
-            "焦点",
-            ["类型", "生命值", "能量值", "距离", "施法(倒计时)", "施法(正计时)", "施法可打断", "引导", "引导可打断"],
-            104), 0, 3);
-        fields.Controls.Add(CreateCommonFieldCard(
-            "鼠标",
-            ["类型", "生命值", "能量值", "距离", "施法(倒计时)", "施法(正计时)", "施法可打断", "引导", "引导可打断"],
-            104), 1, 3);
-        fields.Controls.Add(CreateCommonFieldCard(
-            "宠物",
-            ["存在", "生命值", "能量值"],
-            104), 0, 4);
-        fields.Controls.Add(CreateCommonFieldCard(
-            "姓名板",
-            [
-                "姓名板目标/焦点/首领1–5",
-                "nameplates.N.存在",
-                "nameplates.N.生命值",
-                "nameplates.N.距离",
-                "nameplates.N.TTD",
-                "目标/焦点/首领TTD",
-                "nameplates.N.光环N"
-            ],
-            104), 1, 4);
-
-        void SyncScrollLayout()
-            => SyncCenteredContentLayout(scrollHost, fields, contentWidth);
-
-        scrollHost.Controls.Add(fields);
-        scrollHost.Resize += (_, _) => SyncScrollLayout();
-        scrollHost.HandleCreated += (_, _) => BeginInvoke(SyncScrollLayout);
-        fields.SizeChanged += (_, _) => SyncScrollLayout();
-        SyncScrollLayout();
-        return scrollHost;
+        return root;
     }
 
-    private static string GetEmbeddedResourceName(string resourcePath)
-        => $"{typeof(StatusForm).Namespace}.{resourcePath}";
+    /// <summary>
+    /// 从 ClassStateCatalog 按分类顺序枚举字段行；分类显示名走 GetCategoryDisplayName（状态→玩家）。
+    /// </summary>
+    private static IReadOnlyList<(string Category, string Field)> EnumerateCatalogFieldRows(
+        IReadOnlyList<string> categories)
+    {
+        var rows = new List<(string Category, string Field)>();
+        foreach (var category in categories)
+        {
+            var displayCategory = ClassStateCatalog.GetCategoryDisplayName(category);
+            foreach (var option in ClassStateCatalog.GetOptions(category))
+            {
+                rows.Add((displayCategory, option.Name));
+            }
+        }
 
-    private Control CreateCommonFieldCard(string title, IReadOnlyList<string> items, int minimumHeight)
+        return rows;
+    }
+
+    /// <summary>
+    /// 姓名板条件字段来自 NameplateStateLayout（映射格、TTD 别名与槽位模式），不在 ClassStateCatalog 内。
+    /// </summary>
+    private static IReadOnlyList<(string Category, string Field)> EnumerateNameplateFieldRows()
+    {
+        const string category = NameplateStateLayout.MappingClassification;
+        var rows = new List<(string Category, string Field)>();
+        foreach (var name in NameplateStateLayout.MappingFieldNames)
+        {
+            rows.Add((category, name));
+        }
+
+        foreach (var alias in NameplateStateLayout.UnitTtdAliases)
+        {
+            rows.Add((category, alias.TtdField));
+        }
+
+        rows.Add((category, "nameplates.N.存在"));
+        rows.Add((category, "nameplates.N.生命值"));
+        rows.Add((category, "nameplates.N.距离"));
+        rows.Add((category, "nameplates.N.战斗"));
+        rows.Add((category, "nameplates.N.TTD"));
+        rows.Add((category, "nameplates.N.光环N"));
+        return rows;
+    }
+
+    private Control CreateCommonFieldCard(
+        string title,
+        string cacheKey,
+        IReadOnlyList<(string Category, string Field)> rows)
     {
         var card = new UiCardPanel
         {
@@ -2108,36 +2141,61 @@ public sealed class StatusForm : Form
             ColumnCount = 1,
             RowCount = 2,
             Padding = new Padding(UiTheme.CardPadding),
-            Margin = new Padding(0, 0, 0, UiTheme.PageGap),
-            MinimumSize = new Size(CommonFieldCardWidth, minimumHeight),
-            MaximumSize = new Size(CommonFieldCardWidth, 0)
+            Margin = new Padding(0)
         };
-        card.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
+        card.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        card.RowStyles.Add(new RowStyle(SizeType.Absolute, 36));
         card.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
 
         card.Controls.Add(new Label
         {
             Text = title,
             Dock = DockStyle.Fill,
-            ForeColor = UiTheme.Accent,
+            ForeColor = UiTheme.Text,
             BackColor = Color.Transparent,
-            Font = new Font(Font.FontFamily, 10F, FontStyle.Bold),
+            Font = new Font(Font.FontFamily, 12F, FontStyle.Bold),
             TextAlign = ContentAlignment.MiddleLeft,
             Margin = new Padding(0)
         }, 0, 0);
-        card.Controls.Add(new Label
+
+        // 名称列 FillRemaining 上限须够大，否则宽窗口右侧会留出空白深灰条。
+        // 不用 ShowGroups：.NET ListView 组头无法 OwnerDraw，系统默认呈链接色。
+        var list = UiTheme.CreateListView(
+            Font,
+            cacheKey,
+            new UiTheme.ListColumn("分类", 96, 220),
+            new UiTheme.ListColumn("字段", 160, 2000, FillRemaining: true));
+        list.BackColor = UiTheme.SurfaceRaised;
+        list.ShowGroups = false;
+        UiTheme.EmphasizeListViewPrimaryColumn(list, Font);
+
+        list.BeginUpdate();
+        try
         {
-            Text = string.Join("  ·  ", items),
-            Dock = DockStyle.Fill,
-            AutoSize = false,
-            ForeColor = UiTheme.Text,
-            BackColor = Color.Transparent,
-            Font = new Font(Font.FontFamily, 9F, FontStyle.Regular),
-            TextAlign = ContentAlignment.TopLeft,
-            Margin = new Padding(0, 6, 0, 0)
-        }, 0, 1);
+            string? lastCategory = null;
+            foreach (var (category, field) in rows)
+            {
+                // 同分类仅首行显示分类名，避免整列重复；字重/颜色由 Emphasize 统一。
+                var showCategory = !string.Equals(category, lastCategory, StringComparison.Ordinal);
+                list.Items.Add(new ListViewItem(
+                [
+                    showCategory ? category : string.Empty,
+                    field
+                ]));
+                lastCategory = category;
+            }
+        }
+        finally
+        {
+            list.EndUpdate();
+        }
+
+        card.Controls.Add(list, 0, 1);
         return card;
     }
+
+    private static string GetEmbeddedResourceName(string resourcePath)
+        => $"{typeof(StatusForm).Namespace}.{resourcePath}";
 
     private static string FormatAboutPath(string path)
     {

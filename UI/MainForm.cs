@@ -830,9 +830,13 @@ public sealed class MainForm : Form, IMessageFilter
         return box;
     }
 
-    private void UpdateHeaderIconColor(int? classId)
+    /// <summary>
+    /// 着色圆形程序图标：逻辑开启用 Success 绿；关闭时用职业色（ClassIconColors），未知职业回退白。
+    /// </summary>
+    private void UpdateHeaderIconColor(int? classId, bool enabled = false)
     {
-        var color = ResolveClassIconColor(classId);
+        // 与托盘开启色一致，复用现有职业色表，不另造映射。
+        var color = enabled ? UiTheme.Success : ResolveClassIconColor(classId);
         if (_currentHeaderIconColor == color)
         {
             return;
@@ -2282,7 +2286,7 @@ public sealed class MainForm : Form, IMessageFilter
     {
         _lastSnapshot = snapshot;
 
-        UpdateHeaderIconColor(snapshot.ClassId);
+        UpdateHeaderIconColor(snapshot.ClassId, snapshot.Enabled);
         UpdateLogicStatusLabel(snapshot.Enabled);
         foreach (var enableButton in _enableButtons)
         {
@@ -2723,7 +2727,8 @@ public sealed class MainForm : Form, IMessageFilter
     {
         if (!running)
         {
-            UpdateHeaderIconColor(null);
+            // 运行时停掉后不再扫描：保留最后职业色，开启态强制关闭。
+            UpdateHeaderIconColor(_lastSnapshot?.ClassId, enabled: false);
             UpdateLogicStatusLabel(enabled: false);
         }
 

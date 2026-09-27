@@ -27,8 +27,8 @@ public sealed class MainForm : Form, IMessageFilter
     private const int TopBarButtonGap = 12;
     /// <summary>图标按下后移动超过该像素才视为拖拽窗口，否则视为点击折叠/展开。</summary>
     private const int HeaderIconDragThresholdPx = 4;
-    /// <summary>折叠为正方形后图标在圆角方块内略偏左，向右微调以利水平居中。</summary>
-    private const int CollapsedHeaderIconNudgeX = 2;
+    /// <summary>圆形程序图标相对容器略偏左，向右微调以利水平居中（展开/折叠共用）。</summary>
+    private const int HeaderIconNudgeX = 2;
     private const string HeaderIconResourcePath = "Assets.arasaka-icon-transparent.png";
     private const string ModuleWebsiteUrl = "https://www.shigure.club";
     private static readonly Color DefaultHeaderIconColor = Color.White;
@@ -822,7 +822,7 @@ public sealed class MainForm : Form, IMessageFilter
             MaximumSize = new Size(32, 32),
             SizeMode = PictureBoxSizeMode.Zoom,
             BackColor = Color.Transparent,
-            Margin = new Padding(0),
+            Margin = new Padding(HeaderIconNudgeX, 0, 0, 0),
             Anchor = AnchorStyles.Left,
             Cursor = Cursors.Hand
         };
@@ -3452,7 +3452,6 @@ public sealed class MainForm : Form, IMessageFilter
             // 以左上角为锚点，避免折叠/展开时窗口乱跳；拖拽后的当前位置优先。
             Location = location;
             _mainBarCollapsed = collapsed;
-            ApplyCollapsedHeaderIconOffset(collapsed);
             UpdateHeaderIconCollapseToolTips();
         }
         finally
@@ -3500,17 +3499,6 @@ public sealed class MainForm : Form, IMessageFilter
         foreach (var icon in _headerIcons)
         {
             _settingsToolTip.SetToolTip(icon, tip);
-        }
-    }
-
-    private void ApplyCollapsedHeaderIconOffset(bool collapsed)
-    {
-        var margin = collapsed
-            ? new Padding(CollapsedHeaderIconNudgeX, 0, 0, 0)
-            : new Padding(0);
-        foreach (var icon in _headerIcons)
-        {
-            icon.Margin = margin;
         }
     }
 

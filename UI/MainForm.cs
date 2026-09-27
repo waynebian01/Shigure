@@ -25,6 +25,8 @@ public sealed class MainForm : Form, IMessageFilter
     private const int MinimumMainBarShortEdge = 56;
     private const int MainBarSizeVersion = 1;
     private const int TopBarButtonGap = 12;
+    /// <summary>图标按下后移动超过该像素才视为拖拽窗口，否则视为点击折叠/展开。</summary>
+    private const int HeaderIconDragThresholdPx = 4;
     private const string HeaderIconResourcePath = "Assets.arasaka-icon-transparent.png";
     private const string ModuleWebsiteUrl = "https://www.shigure.club";
     private static readonly Color DefaultHeaderIconColor = Color.White;
@@ -88,10 +90,16 @@ public sealed class MainForm : Form, IMessageFilter
     private readonly List<Label> _runtimeStatusLabels = [];
     private Control _horizontalTopBar = null!;
     private Control _verticalTopBar = null!;
+    private FlowLayoutPanel _horizontalButtons = null!;
+    private FlowLayoutPanel _verticalButtons = null!;
     private MainWindowLayout _mainWindowLayout = MainWindowLayout.Horizontal;
     private CloseButtonBehavior _closeButtonBehavior = CloseButtonBehavior.MinimizeToTray;
     private Bitmap? _headerIconMask;
     private Color? _currentHeaderIconColor;
+    private bool _mainBarCollapsed;
+    private WindowBounds? _expandedMainWindowBounds;
+    private Point? _headerIconPointerScreen;
+    private bool _headerIconDragging;
 
     private readonly StatusForm _statusForm;
     private readonly string _baseDirectory;
@@ -683,18 +691,18 @@ public sealed class MainForm : Form, IMessageFilter
 
         brand.Controls.Add(headerIcon);
         brand.Controls.Add(titleLabel);
-        var buttons = BuildTopBarButtons(vertical: false);
+        _horizontalButtons = BuildTopBarButtons(vertical: false);
 
         RegisterTopBarPresentation(headerIcon, titleLabel, runtimeStatusLabel);
         EnableDrag(bar);
         EnableDrag(brand);
-        EnableDrag(headerIcon);
+        EnableHeaderIconCollapseToggle(headerIcon);
         EnableDrag(titleLabel);
         EnableDrag(runtimeStatusLabel);
 
         bar.Controls.Add(brand, 0, 0);
         bar.Controls.Add(runtimeStatusLabel, 1, 0);
-        bar.Controls.Add(buttons, 2, 0);
+        bar.Controls.Add(_horizontalButtons, 2, 0);
         return bar;
     }
 
@@ -752,18 +760,18 @@ public sealed class MainForm : Form, IMessageFilter
 
         brand.Controls.Add(headerIcon);
         brand.Controls.Add(titleLabel);
-        var buttons = BuildTopBarButtons(vertical: true);
+        _verticalButtons = BuildTopBarButtons(vertical: true);
 
         RegisterTopBarPresentation(headerIcon, titleLabel, runtimeStatusLabel);
         EnableDrag(bar);
         EnableDrag(brand);
-        EnableDrag(headerIcon);
+        EnableHeaderIconCollapseToggle(headerIcon);
         EnableDrag(titleLabel);
         EnableDrag(runtimeStatusLabel);
 
         bar.Controls.Add(brand, 0, 0);
         bar.Controls.Add(runtimeStatusLabel, 0, 1);
-        bar.Controls.Add(buttons, 0, 2);
+        bar.Controls.Add(_verticalButtons, 0, 2);
         return bar;
     }
 
@@ -813,7 +821,8 @@ public sealed class MainForm : Form, IMessageFilter
             SizeMode = PictureBoxSizeMode.Zoom,
             BackColor = Color.Transparent,
             Margin = new Padding(0),
-            Anchor = AnchorStyles.Left
+            Anchor = AnchorStyles.Left,
+            Cursor = Cursors.Hand
         };
 
         return box;
@@ -2975,7 +2984,7 @@ public sealed class MainForm : Form, IMessageFilter
         _uiCache.FormulaEditorWindowLocation = latestCache.FormulaEditorWindowLocation;
         _uiCache.RuleTextEditorWindowLocation = latestCache.RuleTextEditorWindowLocation;
 
-        var currentBounds = CaptureMainWindowBounds();
+        var currentBounds = CapturePersistableMainWindowBounds();
         _uiCache.MainWindowBounds = currentBounds;
         SetCachedMainWindowBounds(_mainWindowLayout, currentBounds);
         _uiCache.MainWindowLocation = new WindowLocation
@@ -3335,6 +3344,181 @@ public sealed class MainForm : Form, IMessageFilter
         };
     }
 
+    /// <summary>
+    /// 程序图标同时承担折叠 toggle 与拖拽移动：按下后位移超过阈值才开始拖窗口，否则在松开时切换折叠。
+    /// </summary>
+    private void EnableHeaderIconCollapseToggle(PictureBox icon)
+    {
+        _settingsToolTip.SetToolTip(icon, "折叠主界面");
+        icon.MouseDown += (_, e) =>
+        {
+            if (e.Button != MouseButtons.Left)
+            {
+                return;
+            }
+
+            _headerIconPointerScreen = icon.PointToScreen(e.Location);
+            _headerIconDragging = false;
+        };
+        icon.MouseMove += (_, e) =>
+        {
+            if (_headerIconPointerScreen is null
+                || e.Button != MouseButtons.Left
+                || _headerIconDragging)
+            {
+                return;
+            }
+
+            var current = icon.PointToScreen(e.Location);
+            if (Math.Abs(current.X - _headerIconPointerScreen.Value.X) <= HeaderIconDragThresholdPx
+                && Math.Abs(current.Y - _headerIconPointerScreen.Value.Y) <= HeaderIconDragThresholdPx)
+            {
+                return;
+            }
+
+            _headerIconDragging = true;
+            NativeMethods.ReleaseCapture();
+            NativeMethods.SendMessageW(Handle, NativeMethods.WmNcLButtonDown, NativeMethods.HtCaption, 0);
+        };
+        icon.MouseUp += (_, e) =>
+        {
+            if (e.Button != MouseButtons.Left)
+            {
+                return;
+            }
+
+            var shouldToggle = _headerIconPointerScreen is not null && !_headerIconDragging;
+            _headerIconPointerScreen = null;
+            _headerIconDragging = false;
+            if (shouldToggle)
+            {
+                ToggleMainBarCollapsed();
+            }
+        };
+        icon.MouseCaptureChanged += (_, _) =>
+        {
+            // 拖拽改走系统标题栏消息后会丢失捕获，清空按下状态以免误触发折叠。
+            if (_headerIconDragging)
+            {
+                _headerIconPointerScreen = null;
+            }
+        };
+    }
+
+    private void ToggleMainBarCollapsed()
+        => SetMainBarCollapsed(!_mainBarCollapsed);
+
+    private void SetMainBarCollapsed(bool collapsed, bool persist = true)
+    {
+        if (_mainBarCollapsed == collapsed)
+        {
+            return;
+        }
+
+        var location = Location;
+        SuspendLayout();
+        try
+        {
+            if (collapsed)
+            {
+                _expandedMainWindowBounds = CaptureMainWindowBounds();
+                SetCollapsedChromeVisible(false);
+                // 折叠成短边正方形：横条用高度，纵条用宽度。
+                var side = _mainWindowLayout == MainWindowLayout.Vertical ? Width : Height;
+                side = Math.Max(side, MinimumMainBarShortEdge);
+                MinimumSize = Size.Empty;
+                Size = new Size(side, side);
+            }
+            else
+            {
+                SetCollapsedChromeVisible(true);
+                var vertical = _mainWindowLayout == MainWindowLayout.Vertical;
+                MinimumSize = vertical
+                    ? new Size(MinimumMainBarShortEdge, MinimumMainBarLongEdge)
+                    : new Size(MinimumMainBarLongEdge, MinimumMainBarShortEdge);
+
+                if (_expandedMainWindowBounds is { } expanded)
+                {
+                    Size = new Size(
+                        Math.Max(MinimumSize.Width, expanded.Width),
+                        Math.Max(MinimumSize.Height, expanded.Height));
+                }
+
+                _expandedMainWindowBounds = null;
+            }
+
+            // 以左上角为锚点，避免折叠/展开时窗口乱跳；拖拽后的当前位置优先。
+            Location = location;
+            _mainBarCollapsed = collapsed;
+            UpdateHeaderIconCollapseToolTips();
+        }
+        finally
+        {
+            ResumeLayout(true);
+        }
+
+        if (!_usesDwmRoundedCorners && IsHandleCreated)
+        {
+            UiTheme.ApplyFallbackRoundedCorners(this);
+        }
+
+        if (persist)
+        {
+            SaveUiCache();
+        }
+    }
+
+    private void SetCollapsedChromeVisible(bool visible)
+    {
+        foreach (var title in _titleLabels)
+        {
+            title.Visible = visible;
+        }
+
+        foreach (var status in _runtimeStatusLabels)
+        {
+            status.Visible = visible;
+        }
+
+        if (_horizontalButtons is not null)
+        {
+            _horizontalButtons.Visible = visible;
+        }
+
+        if (_verticalButtons is not null)
+        {
+            _verticalButtons.Visible = visible;
+        }
+    }
+
+    private void UpdateHeaderIconCollapseToolTips()
+    {
+        var tip = _mainBarCollapsed ? "展开主界面" : "折叠主界面";
+        foreach (var icon in _headerIcons)
+        {
+            _settingsToolTip.SetToolTip(icon, tip);
+        }
+    }
+
+    /// <summary>写入缓存时始终记录展开尺寸；折叠态只同步当前位置。</summary>
+    private WindowBounds CapturePersistableMainWindowBounds()
+    {
+        if (_mainBarCollapsed && _expandedMainWindowBounds is { } expanded)
+        {
+            var bounds = new WindowBounds
+            {
+                X = Left,
+                Y = Top,
+                Width = expanded.Width,
+                Height = expanded.Height
+            };
+            _expandedMainWindowBounds = bounds;
+            return bounds;
+        }
+
+        return CaptureMainWindowBounds();
+    }
+
     private static void ConfigureTopBarButton(Button button)
     {
         button.AutoSize = false;
@@ -3385,6 +3569,12 @@ public sealed class MainForm : Form, IMessageFilter
         {
             UpdateLayoutButtons();
             return;
+        }
+
+        // 布局切换前先展开，避免折叠正方形与纵横尺寸互换互相干扰。
+        if (_mainBarCollapsed)
+        {
+            SetMainBarCollapsed(false, persist: false);
         }
 
         if (persist)

@@ -728,7 +728,7 @@ internal static class UiTheme
         return Math.Max(0, visibleBounds.Width);
     }
 
-    private static Image? GetClassIcon(int classId)
+    internal static Image? GetClassIcon(int classId)
     {
         if (ClassIcons.TryGetValue(classId, out var cached))
         {

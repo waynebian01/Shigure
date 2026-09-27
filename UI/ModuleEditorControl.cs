@@ -53,7 +53,10 @@ public sealed class ModuleEditorControl : UserControl
         AutoPopDelay = 4000,
         ShowAlways = true
     };
+    private readonly ClassIconStrip _classFilterStrip = new();
+    private List<ModuleDefinition> _allModules = new();
     private List<ModuleDefinition> _modules = new();
+    private int? _filterClassId;
     private ModuleDefinition? _selectedModule;
     // 当前编辑中模块的动态单位/数量字段(含未保存的新增), 供目标下拉与条件字段使用。
     private readonly List<ModuleUnit> _units = new();
@@ -160,19 +163,33 @@ public sealed class ModuleEditorControl : UserControl
             Dock = DockStyle.Fill,
             BackColor = UiTheme.Surface,
             ColumnCount = 2,
-            RowCount = 2,
+            RowCount = 3,
             Margin = new Padding(0)
         };
         root.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 280));
         root.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        root.RowStyles.Add(new RowStyle(SizeType.Absolute, ClassIconStrip.StripHeight + UiTheme.PageGap));
         root.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
         root.RowStyles.Add(new RowStyle(SizeType.Absolute, ModuleFooterBarHeight));
         Controls.Add(root);
 
-        root.Controls.Add(BuildSidebar(), 0, 0);
-        root.Controls.Add(BuildEditor(), 1, 0);
-        root.Controls.Add(BuildSidebarFooter(), 0, 1);
-        root.Controls.Add(BuildActionRow(), 1, 1);
+        var filterItems = new List<(int? ClassId, string Tooltip)> { (null, "全部") };
+        filterItems.AddRange(ClassNames.GetClasses().Select(item => ((int?)item.Id, item.Name)));
+        _classFilterStrip.Dock = DockStyle.Fill;
+        _classFilterStrip.SetItems(filterItems);
+        _classFilterStrip.SelectClassId(null);
+        _classFilterStrip.SelectionChanged += (_, _) =>
+        {
+            _filterClassId = _classFilterStrip.SelectedClassId;
+            ApplyModuleClassFilter(preserveSelection: true);
+        };
+        root.Controls.Add(_classFilterStrip, 0, 0);
+        root.SetColumnSpan(_classFilterStrip, 2);
+
+        root.Controls.Add(BuildSidebar(), 0, 1);
+        root.Controls.Add(BuildEditor(), 1, 1);
+        root.Controls.Add(BuildSidebarFooter(), 0, 2);
+        root.Controls.Add(BuildActionRow(), 1, 2);
     }
 
     protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
@@ -4003,20 +4020,55 @@ public sealed class ModuleEditorControl : UserControl
         {
             _moduleStore.Reload();
         }
-        _modules = _moduleStore.GetModulesForDisplay().ToList();
-        _moduleList.Items.Clear();
-        foreach (var module in _modules)
+
+        _allModules = _moduleStore.GetModulesForDisplay().ToList();
+        ApplyModuleClassFilter(preserveSelection: false);
+    }
+
+    private void ApplyModuleClassFilter(bool preserveSelection)
+    {
+        var selectedId = preserveSelection ? _selectedModule?.Id : null;
+        _modules = _filterClassId is { } classId
+            ? _allModules.Where(module => module.Match.ClassId == classId).ToList()
+            : _allModules.ToList();
+
+        _moduleList.BeginUpdate();
+        try
         {
-            _moduleList.Items.Add(ModuleDisplay.FormatListItem(module));
+            _moduleList.Items.Clear();
+            foreach (var module in _modules)
+            {
+                _moduleList.Items.Add(ModuleDisplay.FormatListItem(module));
+            }
+        }
+        finally
+        {
+            _moduleList.EndUpdate();
         }
 
-        if (_modules.Count > 0)
+        if (_modules.Count == 0)
         {
-            _moduleList.SelectedIndex = 0;
+            ClearEditor();
+            return;
+        }
+
+        var index = 0;
+        if (selectedId is not null)
+        {
+            var matched = _modules.FindIndex(module => module.Id == selectedId);
+            if (matched >= 0)
+            {
+                index = matched;
+            }
+        }
+
+        if (_moduleList.SelectedIndex == index)
+        {
+            SelectModule(index);
         }
         else
         {
-            ClearEditor();
+            _moduleList.SelectedIndex = index;
         }
     }
 

@@ -17,7 +17,8 @@ public sealed class ClassConfigEditorControl : UserControl
     private readonly Func<string?> _resolveClassDirectory;
     private readonly Func<string, int, Task<ClassConfigPostSaveResult>> _updateConfigAsync;
 
-    private readonly ListBox _classList = new();
+    private readonly ClassIconStrip _classStrip = new();
+    private readonly List<ClassListItem> _classItems = new();
     private readonly ListBox _specList = new();
     private readonly Label _pathLabel = new();
     private readonly Label _statusLabel = new();
@@ -136,18 +137,30 @@ public sealed class ClassConfigEditorControl : UserControl
         {
             Dock = DockStyle.Fill,
             BackColor = UiTheme.Surface,
-            ColumnCount = 3,
-            RowCount = 1,
+            ColumnCount = 2,
+            RowCount = 2,
             Margin = new Padding(0)
         };
-        root.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 146));
         root.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 184));
         root.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        root.RowStyles.Add(new RowStyle(SizeType.Absolute, ClassIconStrip.StripHeight + UiTheme.PageGap));
+        root.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
         Controls.Add(root);
 
-        root.Controls.Add(BuildSidebar(), 0, 0);
-        root.Controls.Add(BuildSpecSidebar(), 1, 0);
-        root.Controls.Add(BuildEditor(), 2, 0);
+        _classStrip.Dock = DockStyle.Fill;
+        _classStrip.SelectionChanged += (_, _) =>
+        {
+            if (_suppressUi)
+            {
+                return;
+            }
+
+            SelectClassFromStrip();
+        };
+        root.Controls.Add(_classStrip, 0, 0);
+        root.SetColumnSpan(_classStrip, 2);
+        root.Controls.Add(BuildSpecSidebar(), 0, 1);
+        root.Controls.Add(BuildEditor(), 1, 1);
     }
 
     protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
@@ -173,49 +186,6 @@ public sealed class ClassConfigEditorControl : UserControl
         }
 
         return base.ProcessCmdKey(ref msg, keyData);
-    }
-
-    private Control BuildSidebar()
-    {
-        var panel = new UiCardPanel
-        {
-            Dock = DockStyle.Fill,
-            ColumnCount = 1,
-            RowCount = 2,
-            Padding = new Padding(UiTheme.CardPadding),
-            Margin = new Padding(0, 0, UiTheme.PageGap, 0)
-        };
-        panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 28));
-        panel.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-
-        panel.Controls.Add(new Label
-        {
-            Text = "职业",
-            Dock = DockStyle.Fill,
-            ForeColor = UiTheme.Text,
-            Font = new Font(Font.FontFamily, 10F, FontStyle.Bold),
-            TextAlign = ContentAlignment.MiddleLeft,
-            BackColor = Color.Transparent,
-            Margin = new Padding(0)
-        }, 0, 0);
-
-        _classList.Dock = DockStyle.Fill;
-        UiTheme.StyleClassIconListBox(
-            _classList,
-            item => (item as ClassListItem)?.ClassId,
-            iconSize: 40);
-        _classList.BackColor = UiTheme.SurfaceRaised;
-        _classList.SelectedIndexChanged += (_, _) =>
-        {
-            if (_suppressUi)
-            {
-                return;
-            }
-
-            SelectClassFromList();
-        };
-        panel.Controls.Add(_classList, 0, 1);
-        return panel;
     }
 
     private Control BuildSpecSidebar()
@@ -1855,12 +1825,13 @@ public sealed class ClassConfigEditorControl : UserControl
         _suppressUi = true;
         try
         {
-            _classList.Items.Clear();
+            _classItems.Clear();
             ClearSpecList();
             ClearGrids();
 
             if (string.IsNullOrWhiteSpace(_classDirectory) || !Directory.Exists(_classDirectory))
             {
+                _classStrip.SetItems([]);
                 _pathLabel.Text = "未找到 Fuyutsui\\class";
                 _statusLabel.Text = "请确认程序目录中包含 Fuyutsui\\class 后点击刷新。";
                 return;
@@ -1881,18 +1852,21 @@ public sealed class ClassConfigEditorControl : UserControl
                     var doc = ClassBlocksStore.Load(path);
                     _documents[classId] = doc;
                     RegisterDocumentSpellNames(doc);
-                    _classList.Items.Add(new ClassListItem(classId, className, fileName, doc.IsModernFormat));
+                    _classItems.Add(new ClassListItem(classId, className, fileName, doc.IsModernFormat));
                 }
                 catch (Exception ex)
                 {
-                    _classList.Items.Add(new ClassListItem(classId, className, fileName, false, ex.Message));
+                    _classItems.Add(new ClassListItem(classId, className, fileName, false, ex.Message));
                 }
             }
 
+            _classStrip.SetItems(_classItems
+                .Select(item => ((int?)item.ClassId, item.ToString()))
+                .ToList());
             _statusLabel.Text = $"已加载 {_documents.Count} 个职业文件";
-            if (_classList.Items.Count > 0)
+            if (_classItems.Count > 0)
             {
-                _classList.SelectedIndex = 0;
+                _classStrip.SelectClassId(_classItems[0].ClassId);
             }
         }
         finally
@@ -1900,7 +1874,7 @@ public sealed class ClassConfigEditorControl : UserControl
             _suppressUi = false;
         }
 
-        SelectClassFromList();
+        SelectClassFromStrip();
     }
 
     private static void RegisterDocumentSpellNames(ClassBlocksStore.ClassFileDocument document)
@@ -1975,9 +1949,10 @@ public sealed class ClassConfigEditorControl : UserControl
         }
     }
 
-    private void SelectClassFromList()
+    private void SelectClassFromStrip()
     {
-        if (_classList.SelectedItem is not ClassListItem item)
+        var item = _classItems.FirstOrDefault(x => x.ClassId == _classStrip.SelectedClassId);
+        if (item is null)
         {
             return;
         }
@@ -4292,14 +4267,12 @@ public sealed class ClassConfigEditorControl : UserControl
 
     private void SelectClassInList(int? classId)
     {
-        for (var i = 0; i < _classList.Items.Count; i++)
+        if (classId is null || _classItems.All(item => item.ClassId != classId))
         {
-            if (_classList.Items[i] is ClassListItem item && item.ClassId == classId)
-            {
-                _classList.SelectedIndex = i;
-                return;
-            }
+            return;
         }
+
+        _classStrip.SelectClassId(classId);
     }
 
     private void ClearGrids()

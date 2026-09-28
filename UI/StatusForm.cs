@@ -39,20 +39,18 @@ public sealed class StatusForm : Form
     private const int AboutLogoSize = 220;
     private const float AboutLogoOpacity = 0.55F;
     private const int AboutScaleIconSize = 18;
-    /// <summary>单行顶栏高度（图标 + 导航 + 窗口按钮）。</summary>
+    /// <summary>单行顶栏高度（图标 + 窗口按钮）。</summary>
     private const int TopBarHeight = 44;
-    /// <summary>导航行左侧独立品牌图标边长（与导航文字垂直对齐）。</summary>
+    /// <summary>标题栏左侧独立品牌图标边长。</summary>
     private const int NavBrandIconSize = 32;
     /// <summary>Windows 风格标题栏按钮宽。</summary>
     private const int ChromeButtonWidth = 46;
-    /// <summary>顶栏导航项左右内边距（逻辑像素；绘制时对称，避免文字左偏裁切）。</summary>
-    private const int NavItemPadX = 8;
-    /// <summary>顶栏导航项右侧为未保存黄点预留的宽度（逻辑像素，始终预留）。</summary>
-    private const int NavItemDirtyReserve = 18;
-    /// <summary>顶栏导航项最小宽（逻辑像素）。</summary>
-    private const int NavItemMinWidth = 48;
-    /// <summary>相对实测基础宽再加宽的比例（修左裁切、脏点并存）。</summary>
-    private const double NavItemWidthScale = 1.3;
+    /// <summary>设置左栏宽度。</summary>
+    private const int SettingsSidebarWidth = 260;
+    /// <summary>左栏可点页项高度。</summary>
+    private const int SettingsNavItemHeight = 30;
+    /// <summary>左栏不可点分组标题高度。</summary>
+    private const int SettingsNavGroupHeight = 34;
 
     private const string AboutDisclaimerText =
         """
@@ -301,6 +299,10 @@ public sealed class StatusForm : Form
     ];
 
     private readonly List<(SettingsNavButton Button, Control View, SettingsPage Page)> _navItems = new();
+    private readonly List<SettingsNavGroup> _navGroups = [];
+    private FlowLayoutPanel _navList = null!;
+    private TextBox _navSearchBox = null!;
+    private Label _navEmptyLabel = null!;
     private readonly Dictionary<ListView, Label> _listCounts = new();
     private readonly HashSet<SettingsPage> _dirtyPages = new();
     private readonly ToolTip _toolTip = new();
@@ -438,8 +440,8 @@ public sealed class StatusForm : Form
         }
 
         var workingArea = Screen.FromControl(this).WorkingArea;
-        var targetWidth = Math.Min(1280, Math.Max(MinimumSize.Width, workingArea.Width - 80));
-        var targetHeight = Math.Min(800, Math.Max(MinimumSize.Height, workingArea.Height - 80));
+        var targetWidth = Math.Min(1520, Math.Max(MinimumSize.Width, workingArea.Width - 80));
+        var targetHeight = Math.Min(860, Math.Max(MinimumSize.Height, workingArea.Height - 80));
         Size = new Size(targetWidth, targetHeight);
         Location = new Point(
             workingArea.Left + Math.Max(0, (workingArea.Width - Width) / 2),
@@ -515,8 +517,8 @@ public sealed class StatusForm : Form
         Text = "设置";
         StartPosition = FormStartPosition.CenterScreen;
         FormBorderStyle = FormBorderStyle.None;
-        MinimumSize = new Size(1040, 640);
-        Size = new Size(1280, 800);
+        MinimumSize = new Size(1180, 680);
+        Size = new Size(1520, 860);
         BackColor = UiTheme.Background;
         ForeColor = UiTheme.Text;
         ShowInTaskbar = true;
@@ -534,7 +536,7 @@ public sealed class StatusForm : Form
             Margin = new Padding(0)
         };
         root.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-        root.RowStyles.Add(new RowStyle(SizeType.Absolute, TopBarHeight + 8));
+        root.RowStyles.Add(new RowStyle(SizeType.Absolute, TopBarHeight));
         root.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
         Controls.Add(root);
 
@@ -588,38 +590,60 @@ public sealed class StatusForm : Form
             Font = new Font("Cascadia Mono", 9.5F, FontStyle.Regular, GraphicsUnit.Point)
         };
 
-        var navShell = BuildNavigationShell(out var nav);
+        var titleBar = BuildTitleBar();
+        var body = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            BackColor = UiTheme.SettingsEditor,
+            ColumnCount = 2,
+            RowCount = 1,
+            Margin = new Padding(0),
+            Padding = new Padding(0)
+        };
+        body.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, SettingsSidebarWidth));
+        body.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        body.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
 
+        var sidebar = BuildSettingsSidebar();
         _contentHost = new Panel
         {
             Dock = DockStyle.Fill,
-            BackColor = UiTheme.Surface,
-            Padding = new Padding(16),
+            BackColor = UiTheme.SettingsEditor,
+            Padding = new Padding(28, 12, 24, 16),
             Margin = new Padding(0)
         };
 
-        AddNavItem(nav, SettingsPage.General, "通用", CreatePageShell("通用", "运行控制、配置同步、数据包与模块选择", _settingsHost));
-        AddNavItem(nav, SettingsPage.Config, "配置", CreatePageShell("配置", "编辑职业、专精和扫描字段", _configHost));
-        AddNavItem(nav, SettingsPage.Macros, "宏", CreatePageShell("宏", "维护职业动态宏、静态宏与特殊宏", _macrosHost));
-        AddNavItem(nav, SettingsPage.Modules, "模块", CreatePageShell("模块", "创建、匹配并维护运行模块", _moduleHost));
-        AddNavItem(nav, SettingsPage.Status, "状态", CreatePageShell("状态", string.Empty, BuildStatusPage()));
-        AddNavItem(nav, SettingsPage.Party, "队伍", CreatePageShell("队伍", "当前队伍单位与扫描字段摘要", BuildFixedWidthSectionPage("队伍成员", _partyList, "实时队伍数据")));
-        AddNavItem(nav, SettingsPage.Nameplates, "姓名板", CreatePageShell("姓名板", $"{NameplateStateLayout.SlotCount} 个敌对姓名板与配置字段", BuildFixedWidthSectionPage("姓名板", _nameplateList, "实时姓名板数据")));
-        AddNavItem(nav, SettingsPage.Logic, "逻辑", CreatePageShell("逻辑", "运行时推荐目标与调试值", BuildFixedWidthSectionPage("逻辑信息", _unitInfoList, "当前模块的决策输出")));
-        AddNavItem(nav, SettingsPage.Logs, "日志", CreatePageShell("日志", "运行、模块匹配与施放记录", BuildLogPage()));
-        AddNavItem(nav, SettingsPage.BossNumbers, "首领", CreatePageShell("首领编号", "副本首领的序号、名称与扫描编号", CreateLazyBossNumbersPage()));
-        AddNavItem(nav, SettingsPage.Event, "EX事件", CreatePageShell("EX 事件", "247 个首领技能事件及其像素编码", BuildExBossEventsPage()));
-        AddNavItem(nav, SettingsPage.BigWigsEvent, "BW事件", CreatePageShell("BigWigs 团本事件", $"{BigWigsEventCatalog.Events.Count} 个团队首领技能事件及其像素编码", BuildBigWigsEventsPage()));
-        AddNavItem(nav, SettingsPage.CommonFields, "字段", CreatePageShell("常用字段", "模块条件可用的状态字段参考", CreateLazyCommonFieldsPage()));
-        AddNavItem(nav, SettingsPage.About, "关于", CreatePageShell("关于", "应用信息、免责声明、许可证与来源", _aboutHost));
+        _navList.Controls.Add(_navEmptyLabel);
+        AddNavGroup("常用");
+        AddNavItem(SettingsPage.General, "通用", CreatePageShell("通用", "运行控制、配置同步、数据包与模块选择", _settingsHost));
+        AddNavGroup("编辑");
+        AddNavItem(SettingsPage.Config, "配置", CreatePageShell("配置", "编辑职业、专精和扫描字段", _configHost));
+        AddNavItem(SettingsPage.Macros, "宏", CreatePageShell("宏", "维护职业动态宏、静态宏与特殊宏", _macrosHost));
+        AddNavItem(SettingsPage.Modules, "模块", CreatePageShell("模块", "创建、匹配并维护运行模块", _moduleHost));
+        AddNavGroup("监控");
+        AddNavItem(SettingsPage.Status, "状态", CreatePageShell("状态", string.Empty, BuildStatusPage()));
+        AddNavItem(SettingsPage.Party, "队伍", CreatePageShell("队伍", "当前队伍单位与扫描字段摘要", BuildFixedWidthSectionPage("队伍成员", _partyList, "实时队伍数据")));
+        AddNavItem(SettingsPage.Nameplates, "姓名板", CreatePageShell("姓名板", $"{NameplateStateLayout.SlotCount} 个敌对姓名板与配置字段", BuildFixedWidthSectionPage("姓名板", _nameplateList, "实时姓名板数据")));
+        AddNavItem(SettingsPage.Logic, "逻辑", CreatePageShell("逻辑", "运行时推荐目标与调试值", BuildFixedWidthSectionPage("逻辑信息", _unitInfoList, "当前模块的决策输出")));
+        AddNavItem(SettingsPage.Logs, "日志", CreatePageShell("日志", "运行、模块匹配与施放记录", BuildLogPage()));
+        AddNavGroup("说明");
+        AddNavItem(SettingsPage.BossNumbers, "首领", CreatePageShell("首领编号", "副本首领的序号、名称与扫描编号", CreateLazyBossNumbersPage()));
+        AddNavItem(SettingsPage.Event, "EX事件", CreatePageShell("EX 事件", "247 个首领技能事件及其像素编码", BuildExBossEventsPage()));
+        AddNavItem(SettingsPage.BigWigsEvent, "BW事件", CreatePageShell("BigWigs 团本事件", $"{BigWigsEventCatalog.Events.Count} 个团队首领技能事件及其像素编码", BuildBigWigsEventsPage()));
+        AddNavItem(SettingsPage.CommonFields, "字段", CreatePageShell("常用字段", "模块条件可用的状态字段参考", CreateLazyCommonFieldsPage()));
+        AddNavGroup("系统");
+        AddNavItem(SettingsPage.About, "关于", CreatePageShell("关于", "应用信息、免责声明、许可证与来源", _aboutHost));
         _aboutHost.Controls.Add(BuildAboutPanel());
 
-        root.Controls.Add(navShell, 0, 0);
-        root.Controls.Add(_contentHost, 0, 1);
+        body.Controls.Add(sidebar, 0, 0);
+        body.Controls.Add(_contentHost, 1, 0);
+        root.Controls.Add(titleBar, 0, 0);
+        root.Controls.Add(body, 0, 1);
 
         InitializeEmptyLists();
         ResumeLayout(false);
         SelectView(SettingsPage.General);
+        SyncNavItemWidths();
     }
 
     private void InitializeEmptyLists()
@@ -633,9 +657,9 @@ public sealed class StatusForm : Form
         ReplaceItems(_unitInfoList, [new ListViewItem(["逻辑信息", "无推荐目标"])]);
     }
 
-    private Control BuildNavigationShell(out FlowLayoutPanel nav)
+    private Control BuildTitleBar()
     {
-        // 单行顶栏：品牌图标 | 文字导航 | 最小化/最大化/关闭（无版本号）。
+        // 无边框标题栏：品牌图标 | 拖拽区 | 最小化/最大化/关闭。页导航在左栏。
         var shell = new TableLayoutPanel
         {
             Dock = DockStyle.Fill,
@@ -672,19 +696,13 @@ public sealed class StatusForm : Form
         brandIcon.Image = LoadNavBrandIcon();
         EnableDrag(brandIcon);
 
-        nav = new FlowLayoutPanel
+        var dragArea = new Panel
         {
             Dock = DockStyle.Fill,
-            FlowDirection = FlowDirection.LeftToRight,
-            WrapContents = false,
-            // 过窄时裁切导航文字，不显示横向滚动条；右侧窗控在独立列保持可见。
-            AutoScroll = false,
             BackColor = UiTheme.Background,
-            Margin = new Padding(0),
-            // 导航按钮高 32，顶栏 44，上下各 6 使文字与图标垂直居中。
-            Padding = new Padding(0, 6, 0, 6)
+            Margin = new Padding(0)
         };
-        EnableDrag(nav);
+        EnableDrag(dragArea);
 
         var chromeActions = new FlowLayoutPanel
         {
@@ -707,11 +725,78 @@ public sealed class StatusForm : Form
         chromeActions.Controls.Add(closeButton);
 
         shell.Controls.Add(brandIcon, 0, 0);
-        shell.Controls.Add(nav, 1, 0);
+        shell.Controls.Add(dragArea, 1, 0);
         shell.Controls.Add(chromeActions, 2, 0);
         EnableDrag(shell);
         UpdateMaximizeButton();
         return shell;
+    }
+
+    private Control BuildSettingsSidebar()
+    {
+        var sidebar = new Panel
+        {
+            Dock = DockStyle.Fill,
+            BackColor = UiTheme.SettingsSidebar,
+            Margin = new Padding(0),
+            Padding = new Padding(0)
+        };
+        sidebar.Paint += (_, e) =>
+        {
+            using var pen = new Pen(UiTheme.Border);
+            var x = Math.Max(0, sidebar.ClientSize.Width - 1);
+            e.Graphics.DrawLine(pen, x, 0, x, sidebar.ClientSize.Height);
+        };
+
+        var searchHost = new Panel
+        {
+            Dock = DockStyle.Top,
+            Height = 48,
+            BackColor = UiTheme.SettingsSidebar,
+            Padding = new Padding(12, 12, 12, 8),
+            Margin = new Padding(0)
+        };
+        _navSearchBox = new TextBox
+        {
+            Dock = DockStyle.Fill,
+            PlaceholderText = "搜索设置",
+            AccessibleName = "搜索设置",
+            Font = Font
+        };
+        UiTheme.StyleTextBox(_navSearchBox);
+        _navSearchBox.BackColor = UiTheme.SettingsInput;
+        _navSearchBox.TextChanged += (_, _) => ApplyNavFilter();
+        searchHost.Controls.Add(_navSearchBox);
+
+        _navList = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            FlowDirection = FlowDirection.TopDown,
+            WrapContents = false,
+            AutoScroll = true,
+            BackColor = UiTheme.SettingsSidebar,
+            Margin = new Padding(0),
+            Padding = new Padding(0, 4, 0, 8)
+        };
+        _navList.Resize += (_, _) => SyncNavItemWidths();
+
+        _navEmptyLabel = new Label
+        {
+            Text = "没有匹配的设置",
+            AutoSize = false,
+            Height = SettingsNavGroupHeight,
+            ForeColor = UiTheme.Muted,
+            BackColor = UiTheme.SettingsSidebar,
+            TextAlign = ContentAlignment.MiddleLeft,
+            Padding = new Padding(16, 4, 8, 0),
+            Margin = new Padding(0),
+            Visible = false
+        };
+
+        // 先加入 Fill，再加入 Top，使搜索框停在左栏顶部。
+        sidebar.Controls.Add(_navList);
+        sidebar.Controls.Add(searchHost);
+        return sidebar;
     }
 
     private void SyncMaximizedBounds()
@@ -825,12 +910,57 @@ public sealed class StatusForm : Form
 
     private Control CreatePageShell(string title, string subtitle, Control content)
     {
-        // 顶栏导航已表达当前页；去掉重复的大标题+说明行，内容直接铺满。
-        _ = title;
-        _ = subtitle;
+        // 页标题是普通文字，不再套卡片。编辑器和列表仍放在标题下方。
+        var hasSubtitle = !string.IsNullOrWhiteSpace(subtitle);
+        var shell = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            BackColor = UiTheme.SettingsEditor,
+            ColumnCount = 1,
+            RowCount = hasSubtitle ? 3 : 2,
+            Margin = new Padding(0),
+            Padding = new Padding(0)
+        };
+        shell.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        shell.RowStyles.Add(new RowStyle(SizeType.Absolute, 40));
+        if (hasSubtitle)
+        {
+            shell.RowStyles.Add(new RowStyle(SizeType.Absolute, 26));
+        }
+
+        shell.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        shell.Controls.Add(new Label
+        {
+            Text = title,
+            Dock = DockStyle.Fill,
+            ForeColor = UiTheme.Text,
+            BackColor = Color.Transparent,
+            Font = new Font(Font.FontFamily, 18F, FontStyle.Regular),
+            TextAlign = ContentAlignment.MiddleLeft,
+            AutoEllipsis = true,
+            Margin = new Padding(0)
+        }, 0, 0);
+
+        var contentRow = 1;
+        if (hasSubtitle)
+        {
+            shell.Controls.Add(new Label
+            {
+                Text = subtitle,
+                Dock = DockStyle.Fill,
+                ForeColor = UiTheme.Muted,
+                BackColor = Color.Transparent,
+                TextAlign = ContentAlignment.MiddleLeft,
+                AutoEllipsis = true,
+                Margin = new Padding(0)
+            }, 0, 1);
+            contentRow = 2;
+        }
+
         content.Dock = DockStyle.Fill;
-        content.Margin = new Padding(0);
-        return content;
+        content.Margin = new Padding(0, 8, 0, 0);
+        shell.Controls.Add(content, 0, contentRow);
+        return shell;
     }
 
     private const int StatusCardWidth = 600;
@@ -1234,20 +1364,37 @@ public sealed class StatusForm : Form
         }
     }
 
-    private void AddNavItem(FlowLayoutPanel nav, SettingsPage page, string text, Control view)
+    private void AddNavGroup(string title)
+    {
+        var header = new Label
+        {
+            Text = title,
+            AutoSize = false,
+            Size = new Size(SettingsSidebarWidth, SettingsNavGroupHeight),
+            ForeColor = UiTheme.Muted,
+            BackColor = UiTheme.SettingsSidebar,
+            Font = new Font(Font.FontFamily, 9F, FontStyle.Regular),
+            TextAlign = ContentAlignment.BottomLeft,
+            Padding = new Padding(16, 10, 8, 4),
+            Margin = new Padding(0)
+        };
+        _navGroups.Add(new SettingsNavGroup { Header = header });
+        _navList.Controls.Add(header);
+    }
+
+    private void AddNavItem(SettingsPage page, string text, Control view)
     {
         view.Dock = DockStyle.Fill;
         view.Visible = false;
         _contentHost.Controls.Add(view);
 
-        var buttonFont = new Font(Font.FontFamily, 9.5F, FontStyle.Regular);
         var button = new SettingsNavButton
         {
             Text = text,
             AutoSize = false,
-            Size = new Size(MeasureNavItemWidth(text, buttonFont), 32),
-            Font = buttonFont,
-            Margin = new Padding(0, 2, 12, 2),
+            Size = new Size(SettingsSidebarWidth, SettingsNavItemHeight),
+            Font = Font,
+            Margin = new Padding(0),
             Cursor = Cursors.Hand,
             TabStop = true,
             AccessibleName = text
@@ -1255,23 +1402,55 @@ public sealed class StatusForm : Form
 
         button.Click += (_, _) => SelectView(page);
         _navItems.Add((button, view, page));
-        nav.Controls.Add(button);
+        _navGroups[^1].Items.Add(button);
+        _navList.Controls.Add(button);
     }
 
     /// <summary>
-    /// 顶栏导航项宽度：
-    /// base = textWidth + PadX + DirtyReserve + PadX，再 × <see cref="NavItemWidthScale"/>。
-    /// 脏点预留始终计入；对称内边距配合绘制居中，避免左缘裁切。
+    /// 按页名过滤左栏。有关键字时只保留命中的页，分组标题一并隐藏；无命中显示空状态。
     /// </summary>
-    private static int MeasureNavItemWidth(string text, Font font)
+    private void ApplyNavFilter()
     {
-        var textWidth = TextRenderer.MeasureText(
-            text,
-            font,
-            new Size(int.MaxValue, int.MaxValue),
-            TextFormatFlags.SingleLine | TextFormatFlags.NoPrefix).Width;
-        var baseWidth = Math.Max(NavItemMinWidth, textWidth + NavItemPadX + NavItemDirtyReserve + NavItemPadX);
-        return (int)Math.Ceiling(baseWidth * NavItemWidthScale);
+        var query = _navSearchBox.Text.Trim();
+        var any = false;
+        foreach (var group in _navGroups)
+        {
+            var groupHit = false;
+            foreach (var item in group.Items)
+            {
+                var hit = query.Length == 0
+                    || item.Text.Contains(query, StringComparison.OrdinalIgnoreCase);
+                item.Visible = hit;
+                if (hit)
+                {
+                    groupHit = true;
+                    any = true;
+                }
+            }
+
+            group.Header.Visible = query.Length == 0 && groupHit;
+        }
+
+        _navEmptyLabel.Visible = !any;
+        _navList.PerformLayout();
+        SyncNavItemWidths();
+    }
+
+    private void SyncNavItemWidths()
+    {
+        if (_navList is null || _navList.IsDisposed)
+        {
+            return;
+        }
+
+        var width = Math.Max(1, _navList.ClientSize.Width - _navList.Padding.Horizontal);
+        foreach (Control child in _navList.Controls)
+        {
+            if (child.Width != width)
+            {
+                child.Width = width;
+            }
+        }
     }
 
     private void SelectView(SettingsPage page)
@@ -2897,8 +3076,8 @@ public sealed class StatusForm : Form
             FlatStyle = FlatStyle.Flat;
             FlatAppearance.BorderSize = 0;
             UseVisualStyleBackColor = false;
-            BackColor = UiTheme.Background;
-            ForeColor = UiTheme.Muted;
+            BackColor = UiTheme.SettingsSidebar;
+            ForeColor = UiTheme.SettingsNavText;
             SetStyle(
                 ControlStyles.AllPaintingInWmPaint
                 | ControlStyles.OptimizedDoubleBuffer
@@ -2988,73 +3167,70 @@ public sealed class StatusForm : Form
         protected override void OnPaint(PaintEventArgs pevent)
         {
             var graphics = pevent.Graphics;
-            graphics.Clear(UiTheme.Background);
+            graphics.Clear(UiTheme.SettingsSidebar);
             var scale = Math.Max(1f, DeviceDpi / 96f);
-            var bounds = new Rectangle(0, 0, Math.Max(1, Width - 1), Math.Max(1, Height - 1));
-            var oldSmoothingMode = graphics.SmoothingMode;
-            graphics.SmoothingMode = SmoothingMode.AntiAlias;
-
             var backgroundColor = _isSelected
-                ? UiTheme.AccentSoft
+                ? UiTheme.SettingsNavSelected
                 : _pressed
-                    ? UiTheme.Pressed
+                    ? UiTheme.SettingsNavPressed
                     : _hovered
-                        ? UiTheme.Hover
-                        : UiTheme.Background;
-            using (var path = UiTheme.CreateRoundedRectanglePath(bounds, Math.Max(6, (int)Math.Round(8 * scale))))
+                        ? UiTheme.SettingsNavHover
+                        : UiTheme.SettingsSidebar;
             using (var background = new SolidBrush(backgroundColor))
             {
-                graphics.FillPath(background, path);
-                if (_isSelected)
-                {
-                    using var border = new Pen(Color.FromArgb(90, UiTheme.Accent));
-                    graphics.DrawPath(border, path);
-                }
+                graphics.FillRectangle(background, ClientRectangle);
             }
 
-            graphics.SmoothingMode = oldSmoothingMode;
+            if (_isSelected)
+            {
+                var barWidth = Math.Max(2, (int)Math.Round(2 * scale));
+                using var bar = new SolidBrush(UiTheme.SettingsModified);
+                graphics.FillRectangle(bar, 0, 0, barWidth, Height);
+            }
 
-            // 对称左右内边距 + 水平居中：勿只从右侧扣脏点预留，否则文字整体左偏、左缘被 pill 裁切。
-            var hPad = (int)Math.Round(NavItemPadX * scale);
-            var dirtyReserve = (int)Math.Round(NavItemDirtyReserve * scale);
-            var textBounds = new Rectangle(
-                hPad,
-                0,
-                Math.Max(0, Width - hPad * 2),
-                Height);
+            var left = (int)Math.Round(20 * scale);
+            var rightReserve = (int)Math.Round(22 * scale);
+            var textBounds = new Rectangle(left, 0, Math.Max(0, Width - left - rightReserve), Height);
             TextRenderer.DrawText(
                 graphics,
                 Text,
                 Font,
                 textBounds,
-                _isSelected || _hovered ? UiTheme.Text : UiTheme.Muted,
-                TextFormatFlags.HorizontalCenter
+                _isSelected || _hovered ? UiTheme.Text : UiTheme.SettingsNavText,
+                TextFormatFlags.Left
                 | TextFormatFlags.VerticalCenter
                 | TextFormatFlags.SingleLine
-                | TextFormatFlags.NoPrefix
-                | TextFormatFlags.NoClipping);
+                | TextFormatFlags.EndEllipsis
+                | TextFormatFlags.NoPrefix);
 
             if (_isDirty)
             {
                 var dotSize = Math.Max(5, (int)Math.Round(6 * scale));
-                // 黄点落在右侧预留带中心，不挤占居中文字的布局框。
-                var reserveLeft = Width - dirtyReserve;
-                var dotLeft = reserveLeft + (dirtyReserve - dotSize) / 2;
+                var oldSmoothingMode = graphics.SmoothingMode;
+                graphics.SmoothingMode = SmoothingMode.AntiAlias;
                 using var warning = new SolidBrush(UiTheme.Warning);
                 graphics.FillEllipse(
                     warning,
-                    Math.Max(0, Math.Min(dotLeft, Width - dotSize)),
+                    Math.Max(0, Width - rightReserve + (rightReserve - dotSize) / 2),
                     (Height - dotSize) / 2,
                     dotSize,
                     dotSize);
+                graphics.SmoothingMode = oldSmoothingMode;
             }
 
             if (Focused && ShowFocusCues)
             {
-                var focusBounds = Rectangle.Inflate(bounds, -(int)Math.Round(3 * scale), -(int)Math.Round(3 * scale));
+                var focusBounds = Rectangle.Inflate(ClientRectangle, -2, -2);
                 ControlPaint.DrawFocusRectangle(graphics, focusBounds, UiTheme.Text, backgroundColor);
             }
         }
+    }
+
+    private sealed class SettingsNavGroup
+    {
+        public required Label Header { get; init; }
+
+        public List<SettingsNavButton> Items { get; } = [];
     }
 
     private sealed record BossNumberGroup(string Title, IReadOnlyList<BossDungeon> Dungeons);

@@ -72,6 +72,7 @@ public sealed class MainForm : Form, IMessageFilter
     private Button _verticalLayoutButton = null!;
     private Button _minimizeToTrayButton = null!;
     private Button _exitOnCloseButton = null!;
+    private readonly List<(SettingsValueRow Row, Func<bool> IsModified)> _modifiedSettingRows = [];
     private NotifyIcon _trayIcon = null!;
     private ContextMenuStrip _trayMenu = null!;
     private ToolStripMenuItem _trayToggleMenuItem = null!;
@@ -901,14 +902,14 @@ public sealed class MainForm : Form, IMessageFilter
 
     private Control BuildSettingsPanel()
     {
-        const int settingsContentWidth = 1200;
+        const int settingsContentWidth = 760;
         const int settingsActionButtonHeight = UiTheme.ActionButtonHeight;
         const int primaryControlWidth = 200;
 
         var scrollHost = new Panel
         {
             Dock = DockStyle.Fill,
-            BackColor = UiTheme.Surface,
+            BackColor = UiTheme.SettingsEditor,
             AutoScroll = true,
             Margin = new Padding(0)
         };
@@ -918,7 +919,7 @@ public sealed class MainForm : Form, IMessageFilter
             AutoSizeMode = AutoSizeMode.GrowAndShrink,
             FlowDirection = FlowDirection.TopDown,
             WrapContents = false,
-            BackColor = UiTheme.Surface,
+            BackColor = UiTheme.SettingsEditor,
             Margin = new Padding(0),
             Padding = new Padding(0),
             Width = settingsContentWidth
@@ -944,7 +945,7 @@ public sealed class MainForm : Form, IMessageFilter
             Margin = new Padding(0)
         };
 
-        // Cursor 风格：分类用较小字重的 Muted 标题，不再加粗。
+        // 分组只保留小节标题，不再包进分类大卡。
         Label CreateSectionHeader(string text, bool first = false) => new()
         {
             Text = text,
@@ -952,16 +953,7 @@ public sealed class MainForm : Form, IMessageFilter
             Font = new Font(Font.FontFamily, 11F, FontStyle.Regular),
             ForeColor = UiTheme.Muted,
             BackColor = Color.Transparent,
-            Margin = new Padding(2, first ? 0 : 20, 0, 8)
-        };
-
-        Panel CreateRowDivider() => new()
-        {
-            Height = 1,
-            Dock = DockStyle.Fill,
-            BackColor = UiTheme.Border,
-            Margin = new Padding(UiTheme.CardPadding, 0, UiTheme.CardPadding, 0),
-            Padding = new Padding(0)
+            Margin = new Padding(16, first ? 4 : 22, 0, 6)
         };
 
         FlowLayoutPanel CreateActionsHost() => new()
@@ -1013,86 +1005,79 @@ public sealed class MainForm : Form, IMessageFilter
             return actions;
         }
 
-        // 行内「左文右控」布局；不再单独套卡片，由 CreateSettingsGroup 统一包一张大卡。
-        TableLayoutPanel CreateSettingRow(string title, Control description, Control actions)
+        // 左文右控。与默认值不同时，行左侧画设置窗专用蓝条。
+        SettingsValueRow CreateSettingRow(
+            string title,
+            Control description,
+            Control actions,
+            Func<bool>? isModified = null)
         {
-            var row = new TableLayoutPanel
+            var row = new SettingsValueRow
             {
                 AutoSize = true,
                 AutoSizeMode = AutoSizeMode.GrowAndShrink,
                 ColumnCount = 2,
                 RowCount = 1,
-                Dock = DockStyle.Fill,
                 BackColor = Color.Transparent,
-                Padding = new Padding(UiTheme.CardPadding, 14, UiTheme.CardPadding, 14),
-                Margin = new Padding(0)
+                Padding = new Padding(16, 10, 8, 10),
+                Margin = new Padding(0, 0, 0, 2)
             };
             row.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
             row.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
             row.RowStyles.Add(new RowStyle(SizeType.AutoSize));
 
-            var text = new FlowLayoutPanel
+            var text = new TableLayoutPanel
             {
                 AutoSize = true,
+                AutoSizeMode = AutoSizeMode.GrowAndShrink,
                 Dock = DockStyle.Fill,
-                FlowDirection = FlowDirection.TopDown,
-                WrapContents = false,
+                ColumnCount = 1,
+                RowCount = 2,
                 BackColor = Color.Transparent,
                 Margin = new Padding(0),
                 Padding = new Padding(0)
             };
-            text.Controls.Add(CreateRowTitle(title));
-            text.Controls.Add(description);
+            text.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+            text.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            text.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            var titleLabel = CreateRowTitle(title);
+            titleLabel.Dock = DockStyle.Fill;
+            titleLabel.AutoEllipsis = true;
+            text.Controls.Add(titleLabel, 0, 0);
+            description.Dock = DockStyle.Fill;
+            description.Margin = new Padding(0, 2, 12, 0);
+            text.Controls.Add(description, 0, 1);
+            text.SizeChanged += (_, _) =>
+            {
+                var width = Math.Max(80, text.ClientSize.Width);
+                if (description.MaximumSize.Width != width)
+                {
+                    description.MaximumSize = new Size(width, 0);
+                }
+            };
 
-            actions.Margin = new Padding(24, 0, 0, 0);
+            actions.Margin = new Padding(16, 0, 0, 0);
             // Anchor.None：在自动增高的行里垂直居中，并落在右侧 AutoSize 列。
             actions.Anchor = AnchorStyles.None;
             row.Controls.Add(text, 0, 0);
             row.Controls.Add(actions, 1, 0);
+            if (isModified is not null)
+            {
+                _modifiedSettingRows.Add((row, isModified));
+            }
+
             return row;
         }
 
-        // 分类标题 + 一张大卡；行间 1px Border 分割线。
+        // 分组只留小节标题，设置行直接叠在编辑区里。
         void AddSettingsGroup(string title, bool first, params Control[] rows)
         {
             stack.Controls.Add(CreateSectionHeader(title, first));
-            if (rows.Length == 0)
+            foreach (var row in rows)
             {
-                return;
+                row.Margin = new Padding(0, 0, 0, 2);
+                stack.Controls.Add(row);
             }
-
-            var card = new UiCardPanel
-            {
-                AutoSize = true,
-                AutoSizeMode = AutoSizeMode.GrowAndShrink,
-                ColumnCount = 1,
-                Width = settingsContentWidth,
-                MinimumSize = new Size(settingsContentWidth, 0),
-                MaximumSize = new Size(settingsContentWidth, 0),
-                Padding = new Padding(0),
-                Margin = new Padding(0, 0, 0, UiTheme.PageGap)
-            };
-            card.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-            card.RowStyles.Clear();
-            card.RowCount = 0;
-
-            for (var i = 0; i < rows.Length; i++)
-            {
-                if (i > 0)
-                {
-                    card.RowCount++;
-                    card.RowStyles.Add(new RowStyle(SizeType.Absolute, 1));
-                    card.Controls.Add(CreateRowDivider(), 0, card.RowCount - 1);
-                }
-
-                card.RowCount++;
-                card.RowStyles.Add(new RowStyle(SizeType.AutoSize));
-                rows[i].Dock = DockStyle.Fill;
-                rows[i].Margin = new Padding(0);
-                card.Controls.Add(rows[i], 0, card.RowCount - 1);
-            }
-
-            stack.Controls.Add(card);
         }
 
         _toggleKeyButton = UiTheme.CreateButton("XBUTTON2", UiTheme.ButtonKind.Secondary);
@@ -1133,15 +1118,18 @@ public sealed class MainForm : Form, IMessageFilter
             CreateSettingRow(
                 "触发键",
                 CreateRowDescription("点击后按下新的键盘键或鼠标侧键；修改后运行循环会自动重启"),
-                toggleActions),
+                toggleActions,
+                () => !string.Equals(_toggleKeyName, "XBUTTON2", StringComparison.OrdinalIgnoreCase)),
             CreateSettingRow(
                 "发送模式",
                 CreateRowDescription("开关：按一次切换；单击：每次触发发送一次；按住：持续按下时运行"),
-                modeActions),
+                modeActions,
+                () => _modeComboBox.SelectedIndex != 0),
             CreateSettingRow(
                 "画面捕获",
                 CreateRowDescription("WGC 支持窗口被遮挡；窗口最小化或捕获停止时会暂停扫描"),
-                captureActions));
+                captureActions,
+                () => _captureMethodComboBox.SelectedIndex != 0));
 
         _scanIntervalSlider = CreateIntervalSlider("扫描间隔，范围 50–150 毫秒");
         _logicIntervalSlider = CreateIntervalSlider("计算间隔，范围 50–150 毫秒");
@@ -1151,11 +1139,13 @@ public sealed class MainForm : Form, IMessageFilter
             CreateSettingRow(
                 "扫描频率",
                 CreateRowDescription("两次读取游戏画面之间的间隔；数值越小，状态更新越及时，资源占用越高"),
-                CreateIntervalActions(_scanIntervalSlider)),
+                CreateIntervalActions(_scanIntervalSlider),
+                () => _scanIntervalSlider.Value != 100),
             CreateSettingRow(
                 "计算频率",
                 CreateRowDescription("两次模块规则计算之间的间隔；计算使用最近一次扫描到的状态"),
-                CreateIntervalActions(_logicIntervalSlider)));
+                CreateIntervalActions(_logicIntervalSlider),
+                () => _logicIntervalSlider.Value != 100));
 
         _configSourceLabel = CreateRowDescription("项目目录是唯一配置源；尚未执行手动更新");
         _settingsToolTip.SetToolTip(_configSourceLabel, _configSourceLabel.Text);
@@ -1363,7 +1353,11 @@ public sealed class MainForm : Form, IMessageFilter
         AddSettingsGroup(
             "模块",
             first: false,
-            CreateSettingRow("模块选择", moduleDescription, moduleActions),
+            CreateSettingRow(
+                "模块选择",
+                moduleDescription,
+                moduleActions,
+                () => !string.IsNullOrWhiteSpace(_selectedModuleId)),
             defaultModuleBlock,
             CreateSettingRow("获取模块", moduleWebsiteLabel, getModuleActions));
 
@@ -1393,11 +1387,13 @@ public sealed class MainForm : Form, IMessageFilter
             CreateSettingRow(
                 "界面布局",
                 CreateRowDescription("选择主界面浮动条的排列方向；切换时会交换宽高"),
-                layoutActions),
+                layoutActions,
+                () => _mainWindowLayout != MainWindowLayout.Horizontal),
             CreateSettingRow(
                 "点击 X 时",
                 CreateRowDescription("最小化后可通过系统栏图标重新打开；完全退出会停止运行"),
-                closeBehaviorActions));
+                closeBehaviorActions,
+                () => _closeButtonBehavior != CloseButtonBehavior.MinimizeToTray));
 
         _spellIconPackageStatusLabel = CreateRowDescription(
             "从 GitHub Release 下载或更新技能/物品图标数据包");
@@ -1421,18 +1417,33 @@ public sealed class MainForm : Form, IMessageFilter
 
         void SyncContentLayout()
         {
-            if (stack.Width != settingsContentWidth)
+            // 跟右侧编辑区同宽；窄于最小宽时才出现横向滚动。
+            var width = Math.Max(settingsContentWidth, scrollHost.ClientSize.Width);
+            if (stack.Width != width)
             {
-                stack.Width = settingsContentWidth;
+                stack.Width = width;
             }
 
-            var viewWidth = scrollHost.ClientSize.Width;
-            var left = viewWidth > settingsContentWidth
-                ? (viewWidth - settingsContentWidth) / 2
-                : 0;
-            if (stack.Left != left)
+            foreach (Control child in stack.Controls)
             {
-                stack.Left = left;
+                if (child is not TableLayoutPanel)
+                {
+                    continue;
+                }
+
+                if (child.Width == width && child.MaximumSize.Width == width)
+                {
+                    continue;
+                }
+
+                child.MinimumSize = new Size(width, 0);
+                child.MaximumSize = new Size(width, 0);
+                child.Width = width;
+            }
+
+            if (stack.Left != 0)
+            {
+                stack.Left = 0;
             }
 
             if (stack.Top != 0)
@@ -2036,6 +2047,7 @@ public sealed class MainForm : Form, IMessageFilter
             _initialOptions.LogicInterval,
             _logicIntervalSlider);
         RefreshModuleSelector(_lastSnapshot, forceRefresh: false);
+        RefreshModifiedSettingRows();
     }
 
     private void WireSettingEvents()
@@ -2049,6 +2061,7 @@ public sealed class MainForm : Form, IMessageFilter
 
     private async void HandleCaptureMethodChanged(object? sender, EventArgs e)
     {
+        RefreshModifiedSettingRows();
         _uiCache.CaptureMethod = ReadCaptureMethod().ToString();
         SaveUiCache();
         if (ReadCaptureMethod() == CaptureMethod.WindowsGraphicsCapture)
@@ -2073,11 +2086,13 @@ public sealed class MainForm : Form, IMessageFilter
 
     private async void HandleSettingCommitted(object? sender, EventArgs e)
     {
+        RefreshModifiedSettingRows();
         await RestartRuntimeAfterSettingChangeAsync();
     }
 
     private async void HandlePerformanceSettingChanged(object? sender, EventArgs e)
     {
+        RefreshModifiedSettingRows();
         SaveUiCache();
         await RestartRuntimeAfterSettingChangeAsync();
     }
@@ -2423,6 +2438,7 @@ public sealed class MainForm : Form, IMessageFilter
         }
 
         _selectedModuleId = moduleId;
+        RefreshModifiedSettingRows();
         SaveUiCache();
         if (refreshSelector)
         {
@@ -3280,6 +3296,18 @@ public sealed class MainForm : Form, IMessageFilter
     private void SetToggleKeyButtonText()
     {
         _toggleKeyButton.Text = _toggleKeyName;
+        RefreshModifiedSettingRows();
+    }
+
+    private void RefreshModifiedSettingRows()
+    {
+        foreach (var (row, isModified) in _modifiedSettingRows)
+        {
+            if (!row.IsDisposed)
+            {
+                row.Modified = isModified();
+            }
+        }
     }
 
     private string? TryMapKeyToHotkey(Keys key)
@@ -3698,6 +3726,7 @@ public sealed class MainForm : Form, IMessageFilter
 
         StyleLayoutButton(_minimizeToTrayButton, _closeButtonBehavior == CloseButtonBehavior.MinimizeToTray);
         StyleLayoutButton(_exitOnCloseButton, _closeButtonBehavior == CloseButtonBehavior.Exit);
+        RefreshModifiedSettingRows();
     }
 
     private void UpdateLayoutButtons()
@@ -3709,6 +3738,7 @@ public sealed class MainForm : Form, IMessageFilter
 
         StyleLayoutButton(_horizontalLayoutButton, _mainWindowLayout == MainWindowLayout.Horizontal);
         StyleLayoutButton(_verticalLayoutButton, _mainWindowLayout == MainWindowLayout.Vertical);
+        RefreshModifiedSettingRows();
     }
 
     private static void StyleLayoutButton(Button button, bool selected)
@@ -3718,6 +3748,49 @@ public sealed class MainForm : Form, IMessageFilter
         button.FlatAppearance.BorderColor = selected ? UiTheme.Accent : UiTheme.Border;
         button.FlatAppearance.MouseOverBackColor = selected ? Color.FromArgb(112, 234, 221) : UiTheme.Hover;
         button.FlatAppearance.MouseDownBackColor = selected ? Color.FromArgb(62, 194, 181) : UiTheme.Pressed;
+    }
+
+    /// <summary>通用页设置行。与内置默认值不同时，左侧显示设置窗专用蓝条。</summary>
+    private sealed class SettingsValueRow : TableLayoutPanel
+    {
+        private bool _modified;
+
+        public SettingsValueRow()
+        {
+            SetStyle(ControlStyles.ResizeRedraw, true);
+        }
+
+        [System.ComponentModel.Browsable(false)]
+        [System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
+        public bool Modified
+        {
+            get => _modified;
+            set
+            {
+                if (_modified == value)
+                {
+                    return;
+                }
+
+                _modified = value;
+                Invalidate();
+            }
+        }
+
+        protected override void OnPaintBackground(PaintEventArgs e)
+        {
+            base.OnPaintBackground(e);
+            if (!_modified || ClientSize.Width <= 1 || ClientSize.Height <= 1)
+            {
+                return;
+            }
+
+            var thickness = Math.Max(2, (int)Math.Round(2f * DeviceDpi / 96f));
+            var top = Math.Max(0, Padding.Top / 2);
+            var height = Math.Max(1, ClientSize.Height - top - Padding.Bottom / 2);
+            using var brush = new SolidBrush(UiTheme.SettingsModified);
+            e.Graphics.FillRectangle(brush, 0, top, thickness, height);
+        }
     }
 
     private sealed class TrayMenuRenderer : ToolStripProfessionalRenderer

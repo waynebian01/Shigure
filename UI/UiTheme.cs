@@ -106,6 +106,23 @@ internal static class UiTheme
     public static readonly Color CategoryBoss = Color.FromArgb(255, 158, 96);
     public static readonly Color CategoryItem = Color.FromArgb(232, 160, 90);
 
+    /// <summary>设置窗左栏背景（VS Code Dark+ #252526）。</summary>
+    public static readonly Color SettingsSidebar = Color.FromArgb(37, 37, 38);
+    /// <summary>设置窗右侧编辑区背景（#1E1E1E）。</summary>
+    public static readonly Color SettingsEditor = Color.FromArgb(30, 30, 30);
+    /// <summary>设置窗导航悬停背景（#2A2D2E）。</summary>
+    public static readonly Color SettingsNavHover = Color.FromArgb(42, 45, 46);
+    /// <summary>设置窗导航按下背景。</summary>
+    public static readonly Color SettingsNavPressed = Color.FromArgb(47, 47, 53);
+    /// <summary>设置窗导航选中背景（#37373D）。</summary>
+    public static readonly Color SettingsNavSelected = Color.FromArgb(55, 55, 61);
+    /// <summary>设置窗导航未选中文字（#CCCCCC）。</summary>
+    public static readonly Color SettingsNavText = Color.FromArgb(204, 204, 204);
+    /// <summary>设置窗搜索框背景（#3C3C3C）。</summary>
+    public static readonly Color SettingsInput = Color.FromArgb(60, 60, 60);
+    /// <summary>设置窗选中条与已改动标记（#007ACC）。不替换 <see cref="Accent"/>。</summary>
+    public static readonly Color SettingsModified = Color.FromArgb(0, 122, 204);
+
     internal enum ButtonKind
     {
         Secondary,

@@ -468,7 +468,8 @@ public sealed class MainForm : Form, IMessageFilter
             }
         }
 
-        if (showFeedback && (result.HasChanges
+        var pixelCapacityExceeded = result.Rejected.Any(item => item.PixelCapacityExceeded);
+        if ((showFeedback || pixelCapacityExceeded) && (result.HasChanges
                              || result.Rejected.Count > 0
                              || result.Conflicts.Count > 0
                              || result.RemovedStateFields.Count > 0))
@@ -480,7 +481,7 @@ public sealed class MainForm : Form, IMessageFilter
             }
             if (result.Rejected.Count > 0)
             {
-                lines.Add("未导入模块：");
+                lines.Add("合并失败的模块：");
                 lines.AddRange(result.Rejected.Select(item => $"- {item.ModuleName}: {item.Reason}"));
             }
             if (result.Conflicts.Count > 0)
@@ -502,7 +503,8 @@ public sealed class MainForm : Form, IMessageFilter
             var hasWarning = result.Rejected.Count > 0 || cleanupErrors.Count > 0 || postUpdateError is not null;
             MessageBox.Show(
                 string.Join(Environment.NewLine, lines),
-                hasWarning ? "模块导入完成（有警告）" : "模块导入完成",
+                pixelCapacityExceeded && !result.HasChanges ? "模块合并失败"
+                    : hasWarning ? "模块导入完成（有警告）" : "模块导入完成",
                 MessageBoxButtons.OK,
                 hasWarning ? MessageBoxIcon.Warning : MessageBoxIcon.Information);
         }

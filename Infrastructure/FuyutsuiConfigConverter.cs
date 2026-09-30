@@ -305,8 +305,25 @@ internal static class FuyutsuiConfigConverter
         return result;
     }
 
+    internal sealed class PixelCapacityExceededException(string label, string region, int requiredPixels)
+        : InvalidOperationException(
+            $"合并失败：{label} 合并后的{region}布局需要 {requiredPixels} 格，超过主像素行 {MainPixelLayout.MaxCapacity} 格上限；该模块的配置和宏均未写入。");
+
+    public static void EnsurePixelCapacity(
+        ClassBlocksStore.SpecBlocks spec, string label, bool supportsImprovedGarrote)
+    {
+        // 用实际保存格式走同一转换流程，避免容量检查与 config 的像素占位规则不一致。
+        var source = "ClassBlocks = " + ClassBlocksStore.SerializeClassBlocks(
+            new Dictionary<int, ClassBlocksStore.SpecBlocks> { [1] = spec });
+        var blocks = ExtractAssignedTable(source, "ClassBlocks")
+            ?? throw new InvalidDataException("无法解析合并后的职业配置。");
+        var specTable = blocks.Get(1L) as TableValue
+            ?? throw new InvalidDataException("无法解析合并后的专精配置。");
+        CompileSpec(specTable, label, supportsImprovedGarrote, rejectPixelOverflow: true);
+    }
+
     private static (JsonObject Spec, List<string> Warnings) CompileSpec(
-        TableValue spec, string label, bool supportsImprovedGarrote)
+        TableValue spec, string label, bool supportsImprovedGarrote, bool rejectPixelOverflow = false)
     {
         var warnings = new List<string>();
         var result = new JsonObject();
@@ -508,6 +525,11 @@ internal static class FuyutsuiConfigConverter
             result["spells"] = spellsObject;
         }
 
+        if (rejectPixelOverflow && index - 1 > MainPixelLayout.MaxCapacity)
+        {
+            throw new PixelCapacityExceededException(label, "状态、光环和冷却", index - 1);
+        }
+
         // group
         if (spec.GetTable("group") is { } group)
         {
@@ -580,6 +602,10 @@ internal static class FuyutsuiConfigConverter
                 var groupEnd = index + GroupStateLayout.SlotCount * groupFieldCount + 1;
                 if (groupEnd - 1 > MainPixelLayout.MaxCapacity)
                 {
+                    if (rejectPixelOverflow)
+                    {
+                        throw new PixelCapacityExceededException(label, "队伍", groupEnd - 1);
+                    }
                     warnings.Add($"{label}: 队伍像素超出主像素行 {MainPixelLayout.MaxCapacity} 格上限，已停用队伍");
                 }
                 else
@@ -656,6 +682,10 @@ internal static class FuyutsuiConfigConverter
             var totalPixels = NameplateStateLayout.TotalPixelCount(fieldCount);
             if (regionStart + totalPixels - 1 > MainPixelLayout.MaxCapacity)
             {
+                if (rejectPixelOverflow)
+                {
+                    throw new PixelCapacityExceededException(label, "姓名板", regionStart + totalPixels - 1);
+                }
                 warnings.Add(
                     $"{label}: 姓名板需要 {totalPixels} 格（映射 {NameplateStateLayout.MappingFieldCount} + {NameplateStateLayout.SlotCount}×{fieldCount}），超过主像素行 {MainPixelLayout.MaxCapacity} 格上限，已停用姓名板");
             }

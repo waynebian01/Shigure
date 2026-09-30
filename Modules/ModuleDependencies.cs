@@ -177,12 +177,14 @@ public sealed class ModuleGroupAuraSnapshot
     public string Name { get; set; } = string.Empty;
     public long? SpellId { get; set; }
     public List<long> SpellIds { get; set; } = new();
+    public int? MaxApps { get; set; }
 
     public ModuleGroupAuraSnapshot Clone() => new()
     {
         Name = Name,
         SpellId = SpellId,
-        SpellIds = new List<long>(SpellIds ?? [])
+        SpellIds = new List<long>(SpellIds ?? []),
+        MaxApps = MaxApps
     };
 }
 

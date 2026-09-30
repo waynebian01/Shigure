@@ -147,7 +147,8 @@ internal sealed class ModuleDependencyService
             }
             catch (Exception ex)
             {
-                result.Rejected.Add(new RejectedModuleDependency(module.Id, module.Name, ex.Message));
+                result.Rejected.Add(new RejectedModuleDependency(module.Id, module.Name, ex.Message,
+                    ex is FuyutsuiConfigConverter.PixelCapacityExceededException));
             }
         }
 
@@ -184,6 +185,13 @@ internal sealed class ModuleDependencyService
         MergeItemsList(configDocument.ItemsList, snapshot.Config.ItemsList, counters);
         MergeMacros(localMacros, snapshot.ClassId, snapshot.Macros, counters);
         EnsureMacroCapacity(snapshot.ClassId, localMacros);
+
+        if (counters.HasConfigChanges)
+        {
+            FuyutsuiConfigConverter.EnsurePixelCapacity(localSpec,
+                $"{Path.GetFileName(classPath)}[{snapshot.SpecId}]",
+                NameplateStateLayout.SupportsImprovedGarrote(_classDirectory, snapshot.ClassId, snapshot.SpecId));
+        }
 
         if (!counters.HasConfigChanges && counters.MacrosAdded == 0)
         {
@@ -249,6 +257,12 @@ internal sealed class ModuleDependencyService
             .Any(aura => !GetAuraSpellIds(aura.SpellId, aura.SpellIds).Any()))
         {
             throw new InvalidDataException("依赖快照包含缺少有效 spellId 的光环。");
+        }
+
+        if ((snapshot.Config.Spec.Group?.Auras ?? [])
+            .Any(aura => !GetAuraSpellIds(aura.SpellId, aura.SpellIds).Any()))
+        {
+            throw new InvalidDataException("依赖快照包含缺少有效 spellId 的队伍光环。");
         }
 
         if ((snapshot.Config.Spec.Spells ?? []).Any(spell => !IsValidSpellId(spell.SpellId)))
@@ -438,7 +452,8 @@ internal sealed class ModuleDependencyService
             {
                 Name = entry.Name,
                 SpellId = entry.SpellId,
-                SpellIds = new List<long>(entry.SpellIds)
+                SpellIds = new List<long>(entry.SpellIds),
+                MaxApps = entry.MaxApps
             }).ToList()
         },
         Nameplates = spec.Nameplates is null ? null : new ModuleNameplateSnapshot
@@ -531,7 +546,71 @@ internal sealed class ModuleDependencyService
         MergeAuras(local.Boss5HarmfulAuras, incoming.Boss5HarmfulAuras ?? [], "首领5减益", counters);
         MergeNameplates(local, incoming.Nameplates, counters);
         MergeSpells(local.Spells, incoming.Spells, counters);
-        // 队伍配置属于本地扫描布局；模块快照只为文件兼容保留，导入时不得比较或修改。
+        MergeGroup(local, incoming.Group, counters);
+    }
+
+    private static void MergeGroup(
+        ClassBlocksStore.SpecBlocks local,
+        ModuleGroupSnapshot? incoming,
+        MergeCounters counters)
+    {
+        if (incoming is null)
+        {
+            return;
+        }
+
+        if (local.Group is null)
+        {
+            local.Group = new ClassBlocksStore.GroupBlocks();
+            counters.ConfigAdded++;
+        }
+
+        // 旧快照使用偏移字段；新快照使用 State，并保留本地字段顺序。
+        var incomingStates = incoming.State ?? GroupStateLayout.SupportedFields.Where(field => field switch
+        {
+            "healthPercent" => incoming.HealthPercent is >= 0,
+            "role" => incoming.Role is >= 0,
+            "dispel" => incoming.Dispel is >= 0,
+            _ => false
+        }).ToList();
+        MergeStrings(local.Group.State, GroupStateLayout.EnsureRequired(incomingStates), counters);
+
+        foreach (var aura in incoming.Auras ?? [])
+        {
+            var existing = local.Group.Auras.FirstOrDefault(item => SpellIdentityMatches(
+                GetAuraSpellIds(item.SpellId, item.SpellIds), item.Name,
+                GetAuraSpellIds(aura.SpellId, aura.SpellIds), aura.Name));
+            if (existing is null)
+            {
+                var added = new ClassBlocksStore.GroupAuraEntry
+                {
+                    Name = aura.Name,
+                    SpellId = aura.SpellId,
+                    MaxApps = aura.MaxApps
+                };
+                added.SpellIds.AddRange(aura.SpellIds ?? []);
+                local.Group.Auras.Add(added);
+                counters.ConfigAdded++;
+                continue;
+            }
+
+            // 复用光环元数据合并规则；队伍光环不携带玩家施放筛选。
+            var merged = new ClassBlocksStore.AuraEntry
+            {
+                Name = existing.Name,
+                SpellId = existing.SpellId,
+                MaxApps = existing.MaxApps,
+                IsPlayer = true
+            };
+            merged.SpellIds.AddRange(existing.SpellIds);
+            MergeAuraMetadataCore(merged, aura.Name, aura.SpellId, aura.SpellIds, aura.MaxApps,
+                incomingIsPlayer: true, "队伍光环", counters);
+            existing.Name = merged.Name;
+            existing.SpellId = merged.SpellId;
+            existing.MaxApps = merged.MaxApps;
+            existing.SpellIds.Clear();
+            existing.SpellIds.AddRange(merged.SpellIds);
+        }
     }
 
     private static void MergeNameplates(
@@ -1440,6 +1519,7 @@ internal sealed class ModuleDependencyImportResult
     public bool HasChanges => ConfigAdded > 0 || ConfigUpdated > 0 || MacrosAdded > 0;
 }
 
-internal sealed record RejectedModuleDependency(string ModuleId, string ModuleName, string Reason);
+internal sealed record RejectedModuleDependency(
+    string ModuleId, string ModuleName, string Reason, bool PixelCapacityExceeded = false);
 internal sealed record RemovedModuleStateField(string ModuleName, string Category, string Name);
 internal sealed record RemovedStateField(string Category, string Name);

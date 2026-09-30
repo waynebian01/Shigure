@@ -21,6 +21,7 @@ internal enum SettingsPage
     Logs,
     BossNumbers,
     Event,
+    DungeonSpells,
     BigWigsEvent,
     CommonFields,
     About
@@ -35,7 +36,7 @@ internal sealed record ExBossEventFilterOption(string Display, string? Value)
 internal sealed record StateFieldDisplay(string Name, string SpellId, string Type, long IconId = 0, bool IsItem = false);
 internal sealed record StatusListIcon(long Id, bool IsItem);
 
-public sealed class StatusForm : Form
+public sealed partial class StatusForm : Form
 {
     private readonly Func<GameProfile> _resolveProfile;
     private const string AboutLogoResourcePath = "Assets.arasaka-icon-transparent.png";
@@ -525,6 +526,7 @@ public sealed class StatusForm : Form
         _stateList.Invalidate();
         _auraList.Invalidate();
         _spellList.Invalidate();
+        _dungeonSpellList?.Invalidate();
     }
 
     private void InitializeComponent()
@@ -634,6 +636,7 @@ public sealed class StatusForm : Form
         AddNavItem(nav, SettingsPage.Logs, "日志", "Logs", BuildLogPage());
         AddSidebarGroup(nav, "参考");
         AddNavItem(nav, SettingsPage.BossNumbers, "首领", "BossNumbers", CreateLazyBossNumbersPage());
+        AddNavItem(nav, SettingsPage.DungeonSpells, "副本技能", "book", CreateLazyDungeonSpellsPage());
         AddNavItem(nav, SettingsPage.Event, "EX 事件", "Event", BuildExBossEventsPage());
         AddNavItem(nav, SettingsPage.BigWigsEvent, "BW 事件", "BigWigsEvent", BuildBigWigsEventsPage());
         AddNavItem(nav, SettingsPage.CommonFields, "字段", "CommonFields", CreateLazyCommonFieldsPage());
@@ -1165,7 +1168,8 @@ public sealed class StatusForm : Form
         string title,
         Control content,
         string subtitle,
-        ListView? countListView = null)
+        ListView? countListView = null,
+        bool scaleHeader = false)
     {
         var section = new UiCardPanel
         {
@@ -1175,8 +1179,8 @@ public sealed class StatusForm : Form
             Padding = new Padding(UiTheme.CardPadding),
             Margin = new Padding(0)
         };
-        section.RowStyles.Add(new RowStyle(SizeType.Absolute, 28));
-        section.RowStyles.Add(new RowStyle(SizeType.Absolute, 22));
+        section.RowStyles.Add(new RowStyle(SizeType.Absolute, scaleHeader ? UiTheme.Scale(this, 28) : 28));
+        section.RowStyles.Add(new RowStyle(SizeType.Absolute, scaleHeader ? UiTheme.Scale(this, 22) : 22));
         section.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
 
         var heading = new TableLayoutPanel
@@ -1188,7 +1192,7 @@ public sealed class StatusForm : Form
             Margin = new Padding(0)
         };
         heading.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-        heading.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 52));
+        heading.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, scaleHeader ? UiTheme.Scale(this, 72) : 52));
         heading.Controls.Add(new Label
         {
             Text = title,
@@ -1274,7 +1278,8 @@ public sealed class StatusForm : Form
         Control content,
         string subtitle,
         ListView? countListView = null,
-        int? contentWidth = null)
+        int? contentWidth = null,
+        bool scaleHeader = false)
     {
         var pageWidth = contentWidth ?? SettingsContentWidth;
         var scrollHost = new UiThemedPanel
@@ -1285,7 +1290,7 @@ public sealed class StatusForm : Form
             Margin = new Padding(0)
         };
 
-        var section = BuildSection(title, content, subtitle, countListView);
+        var section = BuildSection(title, content, subtitle, countListView, scaleHeader);
         section.Dock = DockStyle.None;
         section.Location = Point.Empty;
         section.Width = pageWidth;

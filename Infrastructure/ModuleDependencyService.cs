@@ -589,7 +589,10 @@ internal sealed class ModuleDependencyService
                     SpellId = aura.SpellId,
                     MaxApps = aura.MaxApps
                 };
-                added.SpellIds.AddRange(aura.SpellIds ?? []);
+                if (aura.SpellIds is { Count: > 0 })
+                {
+                    added.SpellIds.AddRange(GetAuraSpellIds(aura.SpellId, aura.SpellIds));
+                }
                 local.Group.Auras.Add(added);
                 counters.ConfigAdded++;
                 continue;
@@ -599,7 +602,7 @@ internal sealed class ModuleDependencyService
             var merged = new ClassBlocksStore.AuraEntry
             {
                 Name = existing.Name,
-                SpellId = existing.SpellId,
+                SpellId = existing.SpellId ?? existing.SpellIds.Cast<long?>().FirstOrDefault(),
                 MaxApps = existing.MaxApps,
                 IsPlayer = true
             };
@@ -610,7 +613,11 @@ internal sealed class ModuleDependencyService
             existing.SpellId = merged.SpellId;
             existing.MaxApps = merged.MaxApps;
             existing.SpellIds.Clear();
-            existing.SpellIds.AddRange(merged.SpellIds);
+            // Lua 序列化在有 spellIds 时只写列表，因此列表必须包含原来的主 ID。
+            if (merged.SpellIds.Count > 0)
+            {
+                existing.SpellIds.AddRange(GetAuraSpellIds(merged.SpellId, merged.SpellIds));
+            }
         }
     }
 

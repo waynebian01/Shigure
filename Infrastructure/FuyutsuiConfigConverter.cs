@@ -652,6 +652,10 @@ internal static class FuyutsuiConfigConverter
             {
                 nameplateJson["improvedGarroteOffset"] = ++fieldCount;
             }
+            if (nameplates.GetBool("threat") == true)
+            {
+                nameplateJson["threatOffset"] = ++fieldCount;
+            }
             nameplateJson["num"] = fieldCount;
             var totalPixels = NameplateStateLayout.TotalPixelCount(fieldCount);
             if (regionStart + totalPixels - 1 > MainPixelLayout.MaxCapacity)

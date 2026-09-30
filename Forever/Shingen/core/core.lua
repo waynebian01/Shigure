@@ -192,7 +192,6 @@ Shingen.boss = {}
 for index = 1, 5 do
     Shingen.boss["boss" .. index] = CreateUnitState()
 end
-Shingen.nameplate = {}
 Shingen.group = {}
 Shingen.groupList = {}
 Shingen.defaults = {

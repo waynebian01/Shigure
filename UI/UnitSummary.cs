@@ -112,6 +112,7 @@ internal static class UnitSummary
             CountConditionFieldKind.Range => "距离",
             CountConditionFieldKind.Combat => "战斗",
             CountConditionFieldKind.ImprovedGarrote => "强化锁喉",
+            CountConditionFieldKind.Threat => "仇恨值",
             CountConditionFieldKind.Aura => $"[{FormatAura(condition.AuraSpellId.GetValueOrDefault(), resolveAuraName)}]",
             _ => "?"
         };

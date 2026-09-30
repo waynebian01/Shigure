@@ -193,7 +193,6 @@ Fuyutsui.boss = {}
 for index = 1, 5 do
     Fuyutsui.boss["boss" .. index] = CreateUnitState()
 end
-Fuyutsui.nameplate = {}
 Fuyutsui.group = {}
 Fuyutsui.groupList = {}
 Fuyutsui.defaults = {

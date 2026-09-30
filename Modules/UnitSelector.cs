@@ -357,6 +357,7 @@ public static class UnitSelector
             var allowed = enemy
                 ? condition.Field is CountConditionFieldKind.Health
                     or CountConditionFieldKind.Range
+                    or CountConditionFieldKind.Threat
                     or CountConditionFieldKind.Combat
                     or CountConditionFieldKind.ImprovedGarrote
                     or CountConditionFieldKind.Aura
@@ -383,6 +384,11 @@ public static class UnitSelector
                             or CountConditionFieldKind.ImprovedGarrote
                             or CountConditionFieldKind.Combat
                         || string.IsNullOrWhiteSpace(condition.ValueField)))
+            {
+                return false;
+            }
+            if (condition.Field == CountConditionFieldKind.Threat
+                && condition.ValueKind == CountConditionValueKind.Constant && condition.Value is < 0 or > 3)
             {
                 return false;
             }
@@ -508,6 +514,7 @@ public static class UnitSelector
             CountConditionFieldKind.Class => "职业",
             CountConditionFieldKind.Range => "距离",
             CountConditionFieldKind.ImprovedGarrote => NameplateStateLayout.ImprovedGarroteField,
+            CountConditionFieldKind.Threat => NameplateStateLayout.ThreatField,
             _ => string.Empty
         };
         if (field.Length == 0)
@@ -522,6 +529,7 @@ public static class UnitSelector
             {
                 CountConditionFieldKind.Class => value is >= 1 and <= 13,
                 CountConditionFieldKind.ImprovedGarrote => value is >= 0 and <= 2,
+                CountConditionFieldKind.Threat => value is >= 0 and <= 3,
                 _ => true
             };
         }

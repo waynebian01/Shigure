@@ -8,7 +8,6 @@ local focus = Shingen.focus
 local mouseover = Shingen.mouseover
 local pet = Shingen.pet
 local boss = Shingen.boss
-local nameplate = Shingen.nameplate
 
 function Shingen:GetUnitRangeBounds(unit)
     local minRange, maxRange = rc:GetRange(unit)
@@ -327,74 +326,4 @@ end
 
 function Shingen:RefreshMouseoverState()
     self:RefreshUnitState("mouseover")
-end
-
-function Shingen:CacheNameplateUnit(unit)
-    local minRange, maxRange = self:GetUnitRangeBounds(unit)
-    nameplate[unit] = {
-        name = GetUnitName(unit, true),
-        GUID = UnitGUID(unit),
-        canAttack = UnitCanAttack("player", unit),
-        canAssist = UnitCanAssist("player", unit),
-        minRange = minRange,
-        maxRange = maxRange,
-        affectingCombat = UnitAffectingCombat(unit),
-        threatStatus = UnitThreatSituation("player", unit),
-    }
-end
-
-function Shingen:RefreshNameplateThreat(unit)
-    local data = nameplate[unit]
-    if not data then return end
-    data.threatStatus = UnitThreatSituation("player", unit)
-end
-
-local testMap = {
-    [2393] = true,
-}
-local testEncounter = {
-    [2563] = true,
-}
-
-local function IsCountedEnemy(self, data, inTestMap, inTestEncounter)
-    return data.canAttack and data.maxRange and data.maxRange <= self.state.specRange
-        and (data.affectingCombat or inTestMap or inTestEncounter)
-end
-
-function Shingen:RefreshThreatEnemyCounts()
-    local noThreatCount = 0
-    local threatCount = 0
-    local inTestMap = state.mapID and testMap[state.mapID]
-    local inTestEncounter = state.encounterID and testEncounter[state.encounterID]
-    for _, data in pairs(nameplate) do
-        if IsCountedEnemy(self, data, inTestMap, inTestEncounter) then
-            if data.threatStatus and data.threatStatus >= 2 then
-                threatCount = threatCount + 1
-            else
-                noThreatCount = noThreatCount + 1
-            end
-        end
-    end
-    state.noThreatEnemyCount = noThreatCount / 255 or 0
-    state.threatEnemyCount = threatCount / 255 or 0
-    self:UpdateStateBlock("状态", "敌人数-无仇恨")
-    self:UpdateStateBlock("状态", "敌人数-有仇恨")
-end
-
-function Shingen:RefreshEnemyCounts()
-    local count = 0
-    local inTestMap = state.mapID and testMap[state.mapID]
-    local inTestEncounter = state.encounterID and testEncounter[state.encounterID]
-    for unit, data in pairs(nameplate) do
-        local minRange, maxRange = self:GetUnitRangeBounds(unit)
-        data.minRange = minRange
-        data.maxRange = maxRange
-        data.affectingCombat = UnitAffectingCombat(unit)
-        if IsCountedEnemy(self, data, inTestMap, inTestEncounter) then
-            count = count + 1
-        end
-    end
-    state.enemyCount = count / 255 or 0
-    self:UpdateStateBlock("状态", "敌人数量")
-    self:RefreshThreatEnemyCounts()
 end

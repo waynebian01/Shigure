@@ -1512,170 +1512,165 @@
       "type": "int",
       "category": "状态"
     },
-    "敌人数量": {
-      "step": 22,
-      "type": "int",
-      "category": "状态"
-    },
     "自律": {
-      "step": 23,
+      "step": 22,
       "type": "int",
       "category": "特殊"
     },
     "战斗计时(秒)": {
-      "step": 24,
+      "step": 23,
       "type": "int",
       "category": "特殊"
     },
     "战斗计时(分)": {
-      "step": 25,
+      "step": 24,
       "type": "int",
       "category": "特殊"
     },
     "法力值": {
-      "step": 26,
+      "step": 25,
       "type": "int",
       "category": "能量"
     },
     "神圣能量": {
-      "step": 27,
+      "step": 26,
       "type": "int",
       "category": "能量"
     },
     "爆发开关": {
-      "step": 28,
+      "step": 27,
       "type": "int",
       "category": "配置开关"
     },
     "AOE开关": {
-      "step": 29,
+      "step": 28,
       "type": "int",
       "category": "配置开关"
     },
     "输出模式": {
-      "step": 30,
+      "step": 29,
       "type": "int",
       "category": "配置开关"
     },
     "延迟": {
-      "step": 31,
+      "step": 30,
       "type": "int",
       "category": "配置开关"
     },
     "目标类型": {
-      "step": 32,
+      "step": 31,
       "type": "int",
       "category": "目标"
     },
     "目标距离": {
-      "step": 33,
+      "step": 32,
       "type": "int",
       "category": "目标"
     },
     "目标施法(倒计时)": {
-      "step": 34,
+      "step": 33,
       "type": "int",
       "category": "目标"
     },
     "目标施法(正计时)": {
-      "step": 35,
+      "step": 34,
       "type": "int",
       "category": "目标"
     },
     "目标施法可打断": {
-      "step": 36,
+      "step": 35,
       "type": "int",
       "category": "目标"
     },
     "目标引导": {
-      "step": 37,
+      "step": 36,
       "type": "int",
       "category": "目标"
     },
     "目标引导可打断": {
-      "step": 38,
+      "step": 37,
       "type": "int",
       "category": "目标"
     },
     "焦点施法(倒计时)": {
-      "step": 39,
+      "step": 38,
       "type": "int",
       "category": "焦点"
     },
     "焦点施法(正计时)": {
-      "step": 40,
+      "step": 39,
       "type": "int",
       "category": "焦点"
     },
     "焦点施法可打断": {
-      "step": 41,
+      "step": 40,
       "type": "int",
       "category": "焦点"
     },
     "焦点引导": {
-      "step": 42,
+      "step": 41,
       "type": "int",
       "category": "焦点"
     },
     "焦点引导可打断": {
-      "step": 43,
+      "step": 42,
       "type": "int",
       "category": "焦点"
     },
     "鼠标类型": {
-      "step": 44,
+      "step": 43,
       "type": "int",
       "category": "鼠标"
     },
     "鼠标驱散类型": {
-      "step": 45,
+      "step": 44,
       "type": "int",
       "category": "鼠标"
     },
     "鼠标生命值": {
-      "step": 46,
+      "step": 45,
       "type": "int",
       "category": "鼠标"
     },
     "鼠标距离": {
-      "step": 47,
+      "step": 46,
       "type": "int",
       "category": "鼠标"
     },
     "鼠标施法(倒计时)": {
-      "step": 48,
+      "step": 47,
       "type": "int",
       "category": "鼠标"
     },
     "鼠标施法(正计时)": {
-      "step": 49,
+      "step": 48,
       "type": "int",
       "category": "鼠标"
     },
     "鼠标施法可打断": {
-      "step": 50,
+      "step": 49,
       "type": "int",
       "category": "鼠标"
     },
     "鼠标引导": {
-      "step": 51,
+      "step": 50,
       "type": "int",
       "category": "鼠标"
     },
     "鼠标引导可打断": {
-      "step": 52,
+      "step": 51,
       "type": "int",
       "category": "鼠标"
     },
     "治疗药水": {
-      "step": 69,
+      "step": 68,
       "type": "int",
       "category": "物品",
       "itemId": 241304,
       "isEquipped": false
     },
     "乌拉特克贪婪之心": {
-      "step": 70,
+      "step": 69,
       "type": "int",
       "category": "物品",
       "itemId": 270175,
@@ -1683,7 +1678,7 @@
     },
     "spells": {
       "115750.cooldown": {
-        "step": 53,
+        "step": 52,
         "type": "int",
         "displayName": "盲目之光",
         "spellId": 115750,
@@ -1691,7 +1686,7 @@
         "displayType": "冷却"
       },
       "853.cooldown": {
-        "step": 54,
+        "step": 53,
         "type": "int",
         "displayName": "制裁之锤",
         "spellId": 853,
@@ -1699,7 +1694,7 @@
         "displayType": "冷却"
       },
       "642.cooldown": {
-        "step": 55,
+        "step": 54,
         "type": "int",
         "displayName": "圣盾术",
         "spellId": 642,
@@ -1707,7 +1702,7 @@
         "displayType": "冷却"
       },
       "6940.cooldown": {
-        "step": 56,
+        "step": 55,
         "type": "int",
         "displayName": "牺牲祝福",
         "spellId": 6940,
@@ -1715,7 +1710,7 @@
         "displayType": "冷却"
       },
       "1044.cooldown": {
-        "step": 57,
+        "step": 56,
         "type": "int",
         "displayName": "自由祝福",
         "spellId": 1044,
@@ -1723,7 +1718,7 @@
         "displayType": "冷却"
       },
       "1022.cooldown": {
-        "step": 58,
+        "step": 57,
         "type": "int",
         "displayName": "保护祝福",
         "spellId": 1022,
@@ -1731,7 +1726,7 @@
         "displayType": "冷却"
       },
       "633.cooldown": {
-        "step": 59,
+        "step": 58,
         "type": "int",
         "displayName": "圣疗术",
         "spellId": 633,
@@ -1739,7 +1734,7 @@
         "displayType": "冷却"
       },
       "213644.cooldown": {
-        "step": 60,
+        "step": 59,
         "type": "int",
         "displayName": "清毒术",
         "spellId": 213644,
@@ -1747,7 +1742,7 @@
         "displayType": "冷却"
       },
       "20271.cooldown": {
-        "step": 61,
+        "step": 60,
         "type": "int",
         "displayName": "审判",
         "spellId": 20271,
@@ -1755,7 +1750,7 @@
         "displayType": "冷却"
       },
       "20271.chargeCooldown": {
-        "step": 62,
+        "step": 61,
         "type": "int",
         "displayName": "审判充能",
         "spellId": 20271,
@@ -1763,7 +1758,7 @@
         "displayType": "充能"
       },
       "375576.cooldown": {
-        "step": 63,
+        "step": 62,
         "type": "int",
         "displayName": "圣洁鸣钟",
         "spellId": 375576,
@@ -1771,7 +1766,7 @@
         "displayType": "冷却"
       },
       "184575.cooldown": {
-        "step": 64,
+        "step": 63,
         "type": "int",
         "displayName": "公正之剑",
         "spellId": 184575,
@@ -1779,7 +1774,7 @@
         "displayType": "冷却"
       },
       "343527.cooldown": {
-        "step": 65,
+        "step": 64,
         "type": "int",
         "displayName": "处决宣判",
         "spellId": 343527,
@@ -1787,7 +1782,7 @@
         "displayType": "冷却"
       },
       "255937.cooldown": {
-        "step": 66,
+        "step": 65,
         "type": "int",
         "displayName": "灰烬觉醒",
         "spellId": 255937,
@@ -1795,7 +1790,7 @@
         "displayType": "冷却"
       },
       "31884.cooldown": {
-        "step": 67,
+        "step": 66,
         "type": "int",
         "displayName": "复仇之怒",
         "spellId": 31884,
@@ -1803,7 +1798,7 @@
         "displayType": "冷却"
       },
       "96231.cooldown": {
-        "step": 68,
+        "step": 67,
         "type": "int",
         "displayName": "责难",
         "spellId": 96231,
@@ -1812,7 +1807,7 @@
       }
     },
     "group": {
-      "start": 71,
+      "start": 70,
       "生命值": {
         "step": 1,
         "type": "int"
@@ -1823,42 +1818,42 @@
       }
     },
     "姓名板目标": {
-      "step": 152,
+      "step": 151,
       "type": "int",
       "category": "姓名板"
     },
     "姓名板焦点": {
-      "step": 153,
+      "step": 152,
       "type": "int",
       "category": "姓名板"
     },
     "姓名板首领1": {
-      "step": 154,
+      "step": 153,
       "type": "int",
       "category": "姓名板"
     },
     "姓名板首领2": {
-      "step": 155,
+      "step": 154,
       "type": "int",
       "category": "姓名板"
     },
     "姓名板首领3": {
-      "step": 156,
+      "step": 155,
       "type": "int",
       "category": "姓名板"
     },
     "姓名板首领4": {
-      "step": 157,
+      "step": 156,
       "type": "int",
       "category": "姓名板"
     },
     "姓名板首领5": {
-      "step": 158,
+      "step": 157,
       "type": "int",
       "category": "姓名板"
     },
     "nameplates": {
-      "start": 152,
+      "start": 151,
       "mappingCount": 7,
       "healthPercent": 1,
       "range": 2,

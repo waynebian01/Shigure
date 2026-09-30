@@ -119,6 +119,12 @@ public sealed class StateBuilder : IRuntimeStateBuilder
                 values[NameplateStateLayout.ImprovedGarroteField] = ReadField(garroteOffset);
             }
 
+            if (JsonHelpers.GetInt(JsonHelpers.Get(config, "threatOffset"))
+                is > 0 and var threatOffset && threatOffset <= fieldCount)
+            {
+                values[NameplateStateLayout.ThreatField] = ReadField(threatOffset);
+            }
+
             if (auraConfigs is not null)
             {
                 for (var auraIndex = 0; auraIndex < auraConfigs.Count; auraIndex++)

@@ -32,7 +32,6 @@ function Fuyutsui:RefreshPlayerState()
     self:RefreshTargetPowerState()
     self:RefreshFocusPowerState()
     self:RefreshBossUnitStates()
-    self:RefreshEnemyCounts()
     self:RebuildGroupRoster()
     self:RefreshAllPlayerPowers()
     C_Timer.After(1, function()
@@ -337,6 +336,10 @@ function Fuyutsui:LoadPlayerBlocks(specIndex)
         if UnitClassBase("player") == "ROGUE" and specIndex == 1 and t.nameplates.improvedGarrote ~= false then
             blocks.nameplates.num = blocks.nameplates.num + 1
             blocks.nameplates.improvedGarroteOffset = blocks.nameplates.num
+        end
+        if t.nameplates.threat == true then
+            blocks.nameplates.num = blocks.nameplates.num + 1
+            blocks.nameplates.threatOffset = blocks.nameplates.num
         end
         local maxPixels = self.MainPixelMaxCount or self.MainPixelCount
         local nameplateEnd = index + mappingCount + self.NameplateSlotCount * blocks.nameplates.num

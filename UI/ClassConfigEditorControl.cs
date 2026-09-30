@@ -69,6 +69,7 @@ public sealed class ClassConfigEditorControl : UserControl
     private readonly Label _nameplatePixelSummary = new() { AutoSize = true };
     private readonly CheckBox _nameplateEnabledBox = new();
     private readonly CheckBox _nameplateImprovedGarroteBox = new();
+    private readonly CheckBox _nameplateThreatBox = new();
     private Control _nameplateImprovedGarroteCard = null!;
     private readonly DataGridView _nameplateAurasGrid = new UiThemedDataGridView();
 
@@ -1585,6 +1586,22 @@ public sealed class ClassConfigEditorControl : UserControl
         _nameplateImprovedGarroteCard = CreateGroupCard("强化锁喉", _nameplateImprovedGarroteBox);
         _toolTip.SetToolTip(_nameplateImprovedGarroteCard, garroteHint);
         fields.Controls.Add(_nameplateImprovedGarroteCard);
+        _nameplateThreatBox.Text = "启用";
+        _nameplateThreatBox.AutoSize = true;
+        _nameplateThreatBox.ForeColor = UiTheme.Text;
+        _nameplateThreatBox.CheckedChanged += (_, _) =>
+        {
+            if (!_suppressUi)
+            {
+                MarkDirty();
+                UpdateNameplatePixelSummary();
+            }
+        };
+        const string threatHint = "UnitThreatSituation(玩家, 姓名板单位)\n0 未坦克 / 1 仇恨高但未坦克 / 2 坦克但仇恨不稳 / 3 稳定坦克\n无仇恨记录按 0 处理；启用后增加 40 格像素。";
+        _toolTip.SetToolTip(_nameplateThreatBox, threatHint);
+        var threatCard = CreateGroupCard("仇恨值", _nameplateThreatBox);
+        _toolTip.SetToolTip(threatCard, threatHint);
+        fields.Controls.Add(threatCard);
 
         // 与队伍页共用固定尺寸卡片；统计文字独立占据右侧，不随可见卡片数量拉伸。
         var nameplateHeader = new TableLayoutPanel
@@ -1643,6 +1660,7 @@ public sealed class ClassConfigEditorControl : UserControl
     private void FillNameplateEditors()
     {
         _nameplateAurasGrid.Rows.Clear();
+        _nameplateThreatBox.Checked = _currentSpec?.Nameplates?.Threat == true;
         _nameplateImprovedGarroteCard.Visible = SupportsNameplateImprovedGarrote;
         _nameplateImprovedGarroteBox.Checked = SupportsNameplateImprovedGarrote
             && _currentSpec?.Nameplates?.ImprovedGarrote != false;
@@ -1676,6 +1694,7 @@ public sealed class ClassConfigEditorControl : UserControl
         _nameplateAurasGrid.Enabled = enabled;
         _nameplateAurasGrid.ReadOnly = !enabled;
         _nameplateImprovedGarroteBox.Enabled = enabled && SupportsNameplateImprovedGarrote;
+        _nameplateThreatBox.Enabled = enabled;
         UpdateNameplatePixelSummary();
     }
 
@@ -1697,6 +1716,7 @@ public sealed class ClassConfigEditorControl : UserControl
         }
 
         if (SupportsNameplateImprovedGarrote && _nameplateImprovedGarroteBox.Checked) fields++;
+        if (_nameplateThreatBox.Checked) fields++;
         var total = NameplateStateLayout.TotalPixelCount(fields);
         _nameplatePixelSummary.Text = _nameplateEnabledBox.Checked
             ? $"主像素（队伍后）\n映射 {NameplateStateLayout.MappingFieldCount} + {NameplateStateLayout.SlotCount} × {fields} = {total} 格\n固定 {NameplateStateLayout.FixedFieldCount} 格/槽：生命值/距离/战斗"
@@ -4272,7 +4292,8 @@ public sealed class ClassConfigEditorControl : UserControl
         {
             ImprovedGarrote = SupportsNameplateImprovedGarrote
                 ? _nameplateImprovedGarroteBox.Checked
-                : _currentSpec.Nameplates?.ImprovedGarrote
+                : _currentSpec.Nameplates?.ImprovedGarrote,
+            Threat = _nameplateThreatBox.Checked
         };
         foreach (DataGridViewRow row in _nameplateAurasGrid.Rows)
         {

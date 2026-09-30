@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using static Shigure.LuaLiteParser;
@@ -133,11 +133,12 @@ internal static class ClassBlocksStore
         public int? MaxApps { get; set; }
     }
 
-    // 生命值/距离/战斗是固定像素；配置保存光环列表及可选的锁喉类型开关。
+    // 生命值/距离/战斗是固定像素；配置保存光环列表及可选的锁喉类型、仇恨值开关。
     public sealed class NameplateBlocks
     {
         // null 保留旧配置省略值；正式服奇袭的有效默认值为 true。
         public bool? ImprovedGarrote { get; set; }
+        public bool? Threat { get; set; }
         public List<AuraEntry> Auras { get; } = new();
     }
 
@@ -709,7 +710,11 @@ internal static class ClassBlocksStore
 
         if (spec.GetTable("nameplates") is { } nameplates)
         {
-            var blocks = new NameplateBlocks { ImprovedGarrote = nameplates.GetBool("improvedGarrote") };
+            var blocks = new NameplateBlocks
+            {
+                ImprovedGarrote = nameplates.GetBool("improvedGarrote"),
+                Threat = nameplates.GetBool("threat")
+            };
             AppendAuraList(nameplates.GetTable("auras"), blocks.Auras);
             result.Nameplates = blocks;
         }
@@ -973,6 +978,11 @@ internal static class ClassBlocksStore
             {
                 sb.Append(indent).Append("    improvedGarrote = ")
                     .Append(improvedGarrote ? "true" : "false").AppendLine(",");
+            }
+            if (nameplates.Threat is { } threat)
+            {
+                sb.Append(indent).Append("    threat = ")
+                    .Append(threat ? "true" : "false").AppendLine(",");
             }
             if (nameplates.Auras.Count > 0)
             {

@@ -1,6 +1,6 @@
 local addon, ns = ...
 
--- 姓名板主像素：先 7 格单位映射（目标/焦点/首领1–5），再每单位 num 格（生命值、距离、战斗、光环）。
+-- 姓名板主像素：先 7 格单位映射（目标/焦点/首领1–5），再每单位 num 格（生命值、距离、战斗、光环及可选仇恨值）。
 -- 槽位像素：index = start + mappingCount + (slot - 1) * num + offset - 1；沿用主像素 R/G 索引与 B 数值。
 -- 不存在的单位整段置黑（无索引），无需增加存在标记格。
 local NAMEPLATE_SLOT_COUNT = 40
@@ -178,6 +178,11 @@ function Shingen:RefreshNameplatePixels()
             if config.combat then
                 -- 战斗状态只有 0/1 两种取值，用 1/255 表示「战斗中」。
                 self:CreateTexture(PixelIndex(config, slot, config.combat), UnitAffectingCombat(unit) and 1 / 255 or 0)
+            end
+            if config.threatOffset then
+                local status = UnitThreatSituation("player", unit)
+                -- 无仇恨记录时 API 返回 nil，与状态 0 一并表示未坦克该单位。
+                self:CreateTexture(PixelIndex(config, slot, config.threatOffset), (status or 0) / 255)
             end
             RefreshAuraContainer(slot, unit, config)
         end

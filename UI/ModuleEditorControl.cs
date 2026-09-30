@@ -2152,6 +2152,8 @@ public sealed class ModuleEditorControl : UserControl
             null,
             null,
             hasNameplateImprovedGarrote: _fieldCatalog.HasNameplateImprovedGarrote(
+                ReadMatchCombo(_classBox), ReadMatchCombo(_specBox)),
+            hasNameplateThreat: _fieldCatalog.HasNameplateThreat(
                 ReadMatchCombo(_classBox), ReadMatchCombo(_specBox)));
         if (editor.ShowDialog(FindForm()) != DialogResult.OK)
         {
@@ -2205,7 +2207,8 @@ public sealed class ModuleEditorControl : UserControl
             existingCount,
             existingEnemyCount,
             existingAverageHealth,
-            _fieldCatalog.HasNameplateImprovedGarrote(ReadMatchCombo(_classBox), ReadMatchCombo(_specBox)));
+            _fieldCatalog.HasNameplateImprovedGarrote(ReadMatchCombo(_classBox), ReadMatchCombo(_specBox)),
+            _fieldCatalog.HasNameplateThreat(ReadMatchCombo(_classBox), ReadMatchCombo(_specBox)));
         if (editor.ShowDialog(FindForm()) != DialogResult.OK)
         {
             return;

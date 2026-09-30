@@ -65,6 +65,8 @@ internal sealed class CountFilterEditorControl : UserControl
     private bool _loading;
     private readonly bool _hasNameplateImprovedGarrote;
     private bool _retainedImprovedGarrote;
+    private readonly bool _hasNameplateThreat;
+    private bool _retainedThreat;
 
     public event EventHandler? Changed;
 
@@ -73,11 +75,13 @@ internal sealed class CountFilterEditorControl : UserControl
         IReadOnlyList<ConditionField> enemyAuras,
         IReadOnlyList<string> thresholdFields,
         IReadOnlyList<string> formulaValueNames,
-        bool hasNameplateImprovedGarrote = false)
+        bool hasNameplateImprovedGarrote = false,
+        bool hasNameplateThreat = false)
     {
         _allyAuras = allyAuras;
         _enemyAuras = enemyAuras;
         _hasNameplateImprovedGarrote = hasNameplateImprovedGarrote;
+        _hasNameplateThreat = hasNameplateThreat;
         _thresholdFields = new HashSet<string>(thresholdFields, StringComparer.Ordinal);
         _formulaValueNames = formulaValueNames
             .Where(name => !string.IsNullOrWhiteSpace(name))
@@ -203,6 +207,8 @@ internal sealed class CountFilterEditorControl : UserControl
             // 功能关闭后仍保留已保存的筛选，避免编辑时静默改成生命值条件。
             _retainedImprovedGarrote = (groups ?? []).SelectMany(group => group.Conditions ?? [])
                 .Any(condition => condition.Field == CountConditionFieldKind.ImprovedGarrote);
+            _retainedThreat = (groups ?? []).SelectMany(group => group.Conditions ?? [])
+                .Any(condition => condition.Field == CountConditionFieldKind.Threat);
             foreach (var editor in _groups)
             {
                 _groupsPanel.Controls.Remove(editor.Root);
@@ -315,6 +321,10 @@ internal sealed class CountFilterEditorControl : UserControl
         if (_enemy && (_hasNameplateImprovedGarrote || _retainedImprovedGarrote))
         {
             options.Add(new FieldOption("强化锁喉", CountConditionFieldKind.ImprovedGarrote));
+        }
+        if (_enemy && (_hasNameplateThreat || _retainedThreat))
+        {
+            options.Add(new FieldOption("仇恨值", CountConditionFieldKind.Threat));
         }
         foreach (var aura in (_enemy ? _enemyAuras : _allyAuras))
         {
@@ -906,6 +916,10 @@ internal sealed class CountFilterEditorControl : UserControl
                 }
 
                 valueCell.Value = previousValue ?? DefaultValue(option.Kind);
+                if (option.Kind == CountConditionFieldKind.Threat)
+                {
+                    valueCell.ToolTipText = "0 未坦克 / 1 仇恨高但未坦克 / 2 坦克但仇恨不稳 / 3 稳定坦克；无仇恨记录按 0 处理。";
+                }
             }
             finally
             {

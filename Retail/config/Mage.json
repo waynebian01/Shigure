@@ -747,113 +747,108 @@
       "type": "int",
       "category": "状态"
     },
-    "敌人数量": {
-      "step": 23,
-      "type": "int",
-      "category": "状态"
-    },
     "法力值": {
-      "step": 24,
+      "step": 23,
       "type": "int",
       "category": "能量"
     },
     "目标类型": {
-      "step": 25,
+      "step": 24,
       "type": "int",
       "category": "目标"
     },
     "目标施法(倒计时)": {
-      "step": 26,
+      "step": 25,
       "type": "int",
       "category": "目标"
     },
     "目标施法(正计时)": {
-      "step": 27,
+      "step": 26,
       "type": "int",
       "category": "目标"
     },
     "目标施法可打断": {
-      "step": 28,
+      "step": 27,
       "type": "int",
       "category": "目标"
     },
     "目标引导": {
-      "step": 29,
+      "step": 28,
       "type": "int",
       "category": "目标"
     },
     "目标引导可打断": {
-      "step": 30,
+      "step": 29,
       "type": "int",
       "category": "目标"
     },
     "焦点施法(倒计时)": {
-      "step": 31,
+      "step": 30,
       "type": "int",
       "category": "焦点"
     },
     "焦点施法(正计时)": {
-      "step": 32,
+      "step": 31,
       "type": "int",
       "category": "焦点"
     },
     "焦点施法可打断": {
-      "step": 33,
+      "step": 32,
       "type": "int",
       "category": "焦点"
     },
     "焦点引导": {
-      "step": 34,
+      "step": 33,
       "type": "int",
       "category": "焦点"
     },
     "焦点引导可打断": {
-      "step": 35,
+      "step": 34,
       "type": "int",
       "category": "焦点"
     },
     "鼠标类型": {
-      "step": 36,
+      "step": 35,
       "type": "int",
       "category": "鼠标"
     },
     "鼠标驱散类型": {
-      "step": 37,
+      "step": 36,
       "type": "int",
       "category": "鼠标"
     },
     "鼠标生命值": {
-      "step": 38,
+      "step": 37,
       "type": "int",
       "category": "鼠标"
     },
     "鼠标距离": {
-      "step": 39,
+      "step": 38,
       "type": "int",
       "category": "鼠标"
     },
     "鼠标施法(倒计时)": {
-      "step": 40,
+      "step": 39,
       "type": "int",
       "category": "鼠标"
     },
     "鼠标施法(正计时)": {
-      "step": 41,
+      "step": 40,
       "type": "int",
       "category": "鼠标"
     },
     "鼠标施法可打断": {
-      "step": 42,
+      "step": 41,
       "type": "int",
       "category": "鼠标"
     },
     "鼠标引导": {
-      "step": 43,
+      "step": 42,
       "type": "int",
       "category": "鼠标"
     },
     "鼠标引导可打断": {
-      "step": 44,
+      "step": 43,
       "type": "int",
       "category": "鼠标"
     }

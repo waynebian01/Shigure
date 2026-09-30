@@ -3,7 +3,6 @@ local addon, ns = ...
 local isSec = issecretvalue
 
 local state = Fuyutsui.state
-local nameplate = Fuyutsui.nameplate
 local playerCountdownTicker = nil
 local playerCountdownRemaining = 0
 local COMBAT_UNIT_REFRESH_ORDER = {
@@ -154,7 +153,6 @@ function Fuyutsui:RefreshCombatUnitPixels()
     if self.RefreshNameplatePixels then
         self:RefreshNameplatePixels()
     end
-    self:RefreshEnemyCounts()
 end
 
 function Fuyutsui:PLAYER_REGEN_DISABLED()
@@ -525,7 +523,6 @@ function Fuyutsui:STOP_MOVIE()
 end
 
 function Fuyutsui:NAME_PLATE_UNIT_ADDED(_, unit)
-    self:CacheNameplateUnit(unit)
     if self.RefreshNameplatePixels then
         self:RefreshNameplatePixels()
     end
@@ -534,7 +531,6 @@ function Fuyutsui:NAME_PLATE_UNIT_ADDED(_, unit)
 end
 
 function Fuyutsui:NAME_PLATE_UNIT_REMOVED(_, unit)
-    nameplate[unit] = nil
     if self.ClearNameplatePixelSlot then
         self:ClearNameplatePixelSlot(unit)
     end
@@ -545,16 +541,10 @@ function Fuyutsui:NAME_PLATE_UNIT_REMOVED(_, unit)
 end
 
 function Fuyutsui:UNIT_THREAT_SITUATION_UPDATE(_, unitTarget)
-    if nameplate[unitTarget] then
-        self:RefreshNameplateThreat(unitTarget)
-        self:RefreshThreatEnemyCounts()
-        return
+    -- 玩家或姓名板仇恨变化时立即更新；常规轮询继续负责刷新全部槽位。
+    if unitTarget == "player" or (type(unitTarget) == "string" and unitTarget:match("^nameplate%d+$")) then
+        self:RefreshNameplatePixels()
     end
-    if unitTarget ~= "player" then return end
-    for unit in pairs(nameplate) do
-        self:RefreshNameplateThreat(unit)
-    end
-    self:RefreshThreatEnemyCounts()
 end
 
 function Fuyutsui:RefreshShapeshiftAndMountStates()
@@ -655,7 +645,6 @@ function Fuyutsui:OnUpdate(elapsed)
         RunUpdateSafely(self, "RefreshFocusRangeState")
         RunUpdateSafely(self, "RefreshMouseoverRangeState")
 
-        RunUpdateSafely(self, "RefreshEnemyCounts")
         RunUpdateSafely(self, "RefreshNameplatePixels")
         RunUpdateSafely(self, "UpdateItemCooldown")
         RunUpdateSafely(self, "RefreshExBossTimelinePixels")

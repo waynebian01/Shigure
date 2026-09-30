@@ -459,6 +459,7 @@ internal sealed class ModuleDependencyService
         Nameplates = spec.Nameplates is null ? null : new ModuleNameplateSnapshot
         {
             ImprovedGarrote = spec.Nameplates.ImprovedGarrote,
+            Threat = spec.Nameplates.Threat,
             Auras = spec.Nameplates.Auras.Select(CaptureAura).ToList()
         }
     };
@@ -627,7 +628,8 @@ internal sealed class ModuleDependencyService
         {
             local.Nameplates = new ClassBlocksStore.NameplateBlocks
             {
-                ImprovedGarrote = incoming.ImprovedGarrote
+                ImprovedGarrote = incoming.ImprovedGarrote,
+                Threat = incoming.Threat
             };
             counters.ConfigAdded++;
         }

@@ -42,6 +42,18 @@ Shigure 是一个 Windows WinForms 桌面程序。它从目标窗口读取 Fuyut
 - 以内置 `Fuyutsui/` 为权威源编辑职业配置与宏，并按 SHA-256 将插件部署到已运行游戏的 `Interface\AddOns\Fuyutsui`。
 - 支持 `switch`、`click`、`hold` 三种触发模式，以及除 `ALT` 外的键盘按键、`XBUTTON1`、`XBUTTON2`。
 
+### 模块施法计数
+
+`ActionCounters` 用已确认的玩家施法维护模块内计数，供规则按普通动态数值读取。例如：
+
+```json
+"ActionCounters": [
+  { "Name": "爆发剩余次数", "SetAfterSpells": ["冲动"], "SetFormula": "2", "DecrementSpells": ["眉心"] }
+]
+```
+
+模块依赖的 `Config.Spec.Spells` 须包含这些技能名称与 ID；`Config.Spec.CategorizedStates.状态` 须包含 `成功施法序号`、`成功施法ID低位`、`成功施法ID中位`、`成功施法ID高位`。多项 `SetAfterSpells` 均成功施放后才设置计数；可选 `CoverageField`、`BaseCoverage`、`CoveragePerDecrement` 用于目标覆盖次数。脱战时归零，冷却重置不会误算成施法。
+
 ## 界面
 
 - 置顶浮动条：显示程序名、当前职业图标颜色和逻辑状态，提供 `开启/关闭`、`设置`、`✕` 按钮。窗口可拖动和缩放，显示后自动启动运行循环。

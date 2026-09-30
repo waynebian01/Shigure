@@ -13,6 +13,7 @@ public sealed class LogicRegistry : IRuntimeLogic
     private readonly ModuleStore _moduleStore;
     private readonly string? _selectedModuleId;
     private readonly IReadOnlyList<DefaultModuleSelection> _defaultModules;
+    private readonly ModuleActionCounterTracker _actionCounters = new();
 
     public LogicRegistry(
         IKeymapResolver keymap,
@@ -40,6 +41,7 @@ public sealed class LogicRegistry : IRuntimeLogic
         var module = FindModule(classId, specId, state);
         if (module is not null)
         {
+            _actionCounters.Apply(module, state);
             ModuleLogic.ResolveDynamicFields(
                 module,
                 state,
@@ -49,6 +51,8 @@ public sealed class LogicRegistry : IRuntimeLogic
                 module.Name,
                 runLogic ? ModuleLogic.Run(module, state, _keymap) : []);
         }
+
+        _actionCounters.Reset();
 
         if (!runLogic)
         {

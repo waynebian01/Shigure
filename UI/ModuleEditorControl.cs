@@ -4197,6 +4197,14 @@ public sealed class ModuleEditorControl : UserControl
             }
         }
 
+        foreach (var counter in _selectedModule?.ActionCounters ?? [])
+        {
+            if (!string.IsNullOrWhiteSpace(counter.Name) && seen.Add(counter.Name))
+            {
+                fields.Add(new ConditionField(counter.Name, $"计数: {counter.Name}", ConditionFieldType.Int, ConditionFieldCategory.DynamicValue));
+            }
+        }
+
         foreach (var fieldName in GetAdjustmentTargetFields())
         {
             if (seen.Add(fieldName))
@@ -4755,6 +4763,7 @@ public sealed class ModuleEditorControl : UserControl
             .Concat(module.Counts.Select(count => count.Name))
             .Concat(module.EnemyCounts.Select(count => count.Name))
             .Concat(module.AverageHealthFields.Select(field => field.Name))
+            .Concat(module.ActionCounters.Select(counter => counter.Name))
             .Where(name => !string.IsNullOrWhiteSpace(name))
             .Select(name => name!.Trim())
             .Distinct(StringComparer.Ordinal)

@@ -25,6 +25,7 @@ public sealed class ModuleDefinition
     public List<ModuleCountField> Counts { get; set; } = new();
     public List<ModuleEnemyCountField> EnemyCounts { get; set; } = new();
     public List<ModuleAverageHealthField> AverageHealthFields { get; set; } = new();
+    public List<ModuleActionCounter> ActionCounters { get; set; } = new();
     public List<ModuleValueAdjustment> ValueAdjustments { get; set; } = new();
     public List<ModuleRule> Rules { get; set; } = new();
     public ModuleDependencySnapshot? Dependencies { get; set; }
@@ -49,6 +50,7 @@ public sealed class ModuleDefinition
             Counts = Counts.Select(count => count.Clone()).ToList(),
             EnemyCounts = EnemyCounts.Select(count => count.Clone()).ToList(),
             AverageHealthFields = AverageHealthFields.Select(field => field.Clone()).ToList(),
+            ActionCounters = ActionCounters.Select(counter => counter.Clone()).ToList(),
             ValueAdjustments = ValueAdjustments.Select(adjustment => adjustment.Clone()).ToList(),
             Rules = Rules.Select(rule => rule.Clone()).ToList(),
             Dependencies = Dependencies?.Clone()
@@ -241,6 +243,28 @@ public sealed class ModuleRule
             ? $"任一({any})"
             : $"{Condition}  且任一({any})";
     }
+}
+
+public sealed class ModuleActionCounter
+{
+    public string Name { get; set; } = string.Empty;
+    public List<string> SetAfterSpells { get; set; } = new();
+    public string SetFormula { get; set; } = "0";
+    public List<string> DecrementSpells { get; set; } = new();
+    public string CoverageField { get; set; } = string.Empty;
+    public int BaseCoverage { get; set; }
+    public int CoveragePerDecrement { get; set; }
+
+    public ModuleActionCounter Clone() => new()
+    {
+        Name = Name,
+        SetAfterSpells = new List<string>(SetAfterSpells ?? []),
+        SetFormula = SetFormula,
+        DecrementSpells = new List<string>(DecrementSpells ?? []),
+        CoverageField = CoverageField,
+        BaseCoverage = BaseCoverage,
+        CoveragePerDecrement = CoveragePerDecrement
+    };
 }
 
 public sealed class ModuleValueAdjustment
@@ -676,11 +700,13 @@ public sealed class ModuleStore
         module.Counts ??= new List<ModuleCountField>();
         module.EnemyCounts ??= new List<ModuleEnemyCountField>();
         module.AverageHealthFields ??= new List<ModuleAverageHealthField>();
+        module.ActionCounters ??= new List<ModuleActionCounter>();
         module.ValueAdjustments ??= new List<ModuleValueAdjustment>();
         module.Units.RemoveAll(unit => string.IsNullOrWhiteSpace(unit.Name));
         module.Counts.RemoveAll(count => string.IsNullOrWhiteSpace(count.Name));
         module.EnemyCounts.RemoveAll(count => string.IsNullOrWhiteSpace(count.Name));
         module.AverageHealthFields.RemoveAll(field => string.IsNullOrWhiteSpace(field.Name));
+        module.ActionCounters.RemoveAll(counter => string.IsNullOrWhiteSpace(counter.Name));
         module.ValueAdjustments.RemoveAll(adjustment => string.IsNullOrWhiteSpace(adjustment.Field));
         foreach (var unit in module.Units)
         {
@@ -717,6 +743,19 @@ public sealed class ModuleStore
             field.Name = field.Name.Trim();
             field.FilterGroups ??= new List<ModuleCountConditionGroup>();
             NormalizeCountFilterGroups(field.FilterGroups);
+        }
+
+        foreach (var counter in module.ActionCounters)
+        {
+            counter.Name = counter.Name.Trim();
+            counter.SetAfterSpells = (counter.SetAfterSpells ?? [])
+                .Where(name => !string.IsNullOrWhiteSpace(name)).Select(name => name.Trim()).Distinct(StringComparer.Ordinal).ToList();
+            counter.DecrementSpells = (counter.DecrementSpells ?? [])
+                .Where(name => !string.IsNullOrWhiteSpace(name)).Select(name => name.Trim()).Distinct(StringComparer.Ordinal).ToList();
+            counter.SetFormula = string.IsNullOrWhiteSpace(counter.SetFormula) ? "0" : counter.SetFormula.Trim();
+            counter.CoverageField = counter.CoverageField?.Trim() ?? string.Empty;
+            counter.BaseCoverage = Math.Max(0, counter.BaseCoverage);
+            counter.CoveragePerDecrement = Math.Max(0, counter.CoveragePerDecrement);
         }
 
         foreach (var adjustment in module.ValueAdjustments)

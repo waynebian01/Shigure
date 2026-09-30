@@ -272,6 +272,14 @@ end
 
 function Fuyutsui:UNIT_SPELLCAST_SUCCEEDED(_, unitTarget, castGUID, spellID, castBarID)
     if unitTarget ~= "player" or isSec(spellID) then return end
+    state.successfulSpellIdLow = spellID % 256
+    state.successfulSpellIdMid = math.floor(spellID / 256) % 256
+    state.successfulSpellIdHigh = math.floor(spellID / 65536) % 256
+    self:UpdateStateBlock("状态", "成功施法ID低位")
+    self:UpdateStateBlock("状态", "成功施法ID中位")
+    self:UpdateStateBlock("状态", "成功施法ID高位")
+    state.successfulSpellSerial = (state.successfulSpellSerial or 0) % 255 + 1
+    self:UpdateStateBlock("状态", "成功施法序号")
     self:RefreshDrinkStatus(spellID)
     self:UpdateInsertSpellBySuccess(spellID)
     self:UpdateInsertItemBySuccess(spellID)

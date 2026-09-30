@@ -147,6 +147,10 @@ local stateBlockGetters = {
         ["敌人数-无仇恨"] = function() return state.noThreatEnemyCount or 0 end,
         ["敌人数-有仇恨"] = function() return state.threatEnemyCount or 0 end,
         ["上个技能"] = function() return state.PreviousSkill or 0 end,
+        ["成功施法序号"] = function() return (state.successfulSpellSerial or 0) / 255 end,
+        ["成功施法ID低位"] = function() return (state.successfulSpellIdLow or 0) / 255 end,
+        ["成功施法ID中位"] = function() return (state.successfulSpellIdMid or 0) / 255 end,
+        ["成功施法ID高位"] = function() return (state.successfulSpellIdHigh or 0) / 255 end,
         ["公共冷却"] = function(self) return GetSpellCooldownPixel(61304, self.curveMs) end,
 
         -- 配置开关

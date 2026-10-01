@@ -49,6 +49,12 @@ public sealed class ModuleEditorControl : UserControl
     private Button _deleteButton = null!;
     private Button _addButton = null!;
     private Button _reloadButton = null!;
+    private Button _ruleViewButton = null!;
+    private bool _relaxedRuleView;
+    private bool _suppressNextRulesCellClick;
+    private bool _relaxedCommentSyncing;
+    private bool _relaxedCommentSyncQueued;
+    private readonly List<TextBox> _relaxedCommentBoxes = new();
     private readonly ToolTip _rulesGridToolTip = new()
     {
         InitialDelay = 300,
@@ -1320,9 +1326,19 @@ public sealed class ModuleEditorControl : UserControl
         _rulesGrid.CellClick += OnRulesGridCellClick;
         _rulesGrid.CellFormatting += OnRulesGridCellFormatting;
         _rulesGrid.CellPainting += OnRulesGridCellPainting;
+        _rulesGrid.RowPrePaint += OnRulesGridRowPrePaint;
+        _rulesGrid.RowsAdded += OnRulesGridRowsAdded;
+        _rulesGrid.Scroll += (_, _) => QueueRelaxedCommentSync();
         _rulesGrid.CellMouseEnter += OnRulesGridCellMouseEnter;
         _rulesGrid.CellMouseLeave += OnRulesGridCellMouseLeave;
-        _rulesGrid.MouseLeave += (_, _) => _rulesGridToolTip.Hide(_rulesGrid);
+        _rulesGrid.MouseLeave += (_, _) =>
+        {
+            _rulesGridToolTip.Hide(_rulesGrid);
+            if (_relaxedRuleView)
+            {
+                _rulesGrid.Cursor = Cursors.Default;
+            }
+        };
         _rulesGrid.MouseDown += OnRulesGridMouseDown;
         _rulesGrid.MouseMove += OnRulesGridMouseMove;
         _rulesGrid.DragOver += OnRulesGridDragOver;
@@ -2738,6 +2754,12 @@ public sealed class ModuleEditorControl : UserControl
 
     private void OnRulesGridCellClick(object? sender, DataGridViewCellEventArgs e)
     {
+        if (_suppressNextRulesCellClick)
+        {
+            _suppressNextRulesCellClick = false;
+            return;
+        }
+
         if (e.RowIndex < 0 || e.ColumnIndex < 0)
         {
             return;
@@ -2810,6 +2832,11 @@ public sealed class ModuleEditorControl : UserControl
         }
 
         _rulesGrid.CurrentCell = cell;
+        if (_relaxedRuleView)
+        {
+            _rulesGrid.HorizontalScrollingOffset = 0;
+        }
+
         var values = cell.Items.Cast<object>()
             .Select(item => item?.ToString() ?? string.Empty)
             .Distinct(StringComparer.Ordinal)
@@ -2827,7 +2854,7 @@ public sealed class ModuleEditorControl : UserControl
             values.Insert(0, currentValue);
         }
 
-        var cellBounds = _rulesGrid.GetCellDisplayRectangle(columnIndex, rowIndex, cutOverflow: true);
+        var cellBounds = GetRuleDropDownAnchor(rowIndex, _rulesGrid.Columns[columnIndex].Name);
         var options = values
             .Select(value => new UiDropDownOption(value, value))
             .ToList();
@@ -3288,6 +3315,902 @@ public sealed class ModuleEditorControl : UserControl
         return value.Trim();
     }
 
+    private enum RelaxedRulePart
+    {
+        None,
+        Enabled,
+        Spell,
+        Unit,
+        Macro,
+        Condition,
+        MoveUp,
+        MoveDown,
+        Copy,
+        InsertBlank,
+        Delete
+    }
+
+    private readonly record struct RelaxedRuleRegions(
+        Rectangle Enabled,
+        Rectangle Icon,
+        Rectangle Spell,
+        Rectangle Unit,
+        Rectangle Macro,
+        Rectangle Comment,
+        Rectangle Condition,
+        Rectangle MoveUp,
+        Rectangle MoveDown,
+        Rectangle Copy,
+        Rectangle InsertBlank,
+        Rectangle Delete);
+
+    private void ToggleRuleView()
+    {
+        HideRelaxedCommentEditors();
+        CloseRulesComboDropDown();
+        _rulesGrid.EndEdit();
+        _relaxedRuleView = !_relaxedRuleView;
+        ApplyRuleViewMode();
+    }
+
+    private void ApplyRuleViewMode()
+    {
+        var relaxed = _relaxedRuleView;
+        _ruleViewButton.Text = relaxed ? "紧缩视图" : "宽松视图";
+        _pathToolTip.SetToolTip(
+            _ruleViewButton,
+            relaxed ? "当前为宽松视图，点击切换为紧缩视图" : "当前为紧缩视图，点击切换为宽松视图");
+
+        var height = relaxed ? RelaxedRuleRowHeight() : CompactRuleRowHeight();
+        _rulesGrid.SuspendLayout();
+        try
+        {
+            _rulesGrid.ColumnHeadersVisible = !relaxed;
+            if (_rulesGrid.Columns["Enabled"] is DataGridViewColumn enabledColumn)
+            {
+                enabledColumn.ReadOnly = relaxed;
+            }
+
+            _rulesGrid.HorizontalScrollingOffset = 0;
+            _rulesGrid.ScrollBars = relaxed ? ScrollBars.Vertical : ScrollBars.Both;
+            _rulesGrid.RowTemplate.Height = height;
+            foreach (DataGridViewRow row in _rulesGrid.Rows)
+            {
+                if (!row.IsNewRow)
+                {
+                    row.Height = height;
+                }
+            }
+        }
+        finally
+        {
+            _rulesGrid.ResumeLayout();
+        }
+
+        _rulesGrid.Invalidate();
+        SyncRelaxedCommentBoxes();
+    }
+
+    private int CompactRuleRowHeight()
+    {
+        var verticalPadding = UiTheme.Scale(_rulesGrid, 12);
+        return Math.Max(UiTheme.Scale(_rulesGrid, UiTheme.GridRowHeight), _rulesGrid.Font.Height + verticalPadding);
+    }
+
+    private int RelaxedRuleRowHeight()
+    {
+        var metrics = RelaxedRuleMetrics();
+        return metrics.CardGap
+            + metrics.Pad
+            + metrics.Control
+            + metrics.LineGap
+            + metrics.Control
+            + metrics.LineGap
+            + metrics.Control
+            + metrics.Pad;
+    }
+
+    private (int CardGap, int Side, int Pad, int LineGap, int Control, int DropDown) RelaxedRuleMetrics()
+    {
+        var control = Math.Max(1, (int)Math.Round(UiTheme.Scale(_rulesGrid, 36) * 0.8));
+        return (
+            UiTheme.Scale(_rulesGrid, 8),
+            UiTheme.Scale(_rulesGrid, 8),
+            UiTheme.Scale(_rulesGrid, 12),
+            UiTheme.Scale(_rulesGrid, 8),
+            control,
+            UiTheme.Scale(_rulesGrid, 168));
+    }
+
+    private void OnRulesGridRowsAdded(object? sender, DataGridViewRowsAddedEventArgs e)
+    {
+        if (!_relaxedRuleView)
+        {
+            return;
+        }
+
+        var height = RelaxedRuleRowHeight();
+        for (var i = 0; i < e.RowCount; i++)
+        {
+            var index = e.RowIndex + i;
+            if (index < _rulesGrid.Rows.Count && !_rulesGrid.Rows[index].IsNewRow)
+            {
+                _rulesGrid.Rows[index].Height = height;
+            }
+        }
+    }
+
+    private void OnRulesGridRowPrePaint(object? sender, DataGridViewRowPrePaintEventArgs e)
+    {
+        if (!_relaxedRuleView || e.RowIndex < 0 || e.Graphics is null)
+        {
+            return;
+        }
+
+        var display = _rulesGrid.DisplayRectangle;
+        var bounds = new Rectangle(display.Left, e.RowBounds.Top, display.Width, e.RowBounds.Height);
+        PaintRelaxedRuleRow(e.Graphics, e.RowIndex, e.RowBounds, bounds);
+        e.Handled = true;
+    }
+
+    private void PaintRelaxedRuleRow(Graphics graphics, int rowIndex, Rectangle fullBounds, Rectangle bounds)
+    {
+        var row = _rulesGrid.Rows[rowIndex];
+        var missing = !row.IsNewRow && RuleRowHasMissingReferences(row);
+        var selected = row.Selected;
+        using (var brush = new SolidBrush(_rulesGrid.BackgroundColor))
+        {
+            graphics.FillRectangle(brush, fullBounds);
+        }
+
+        var card = GetRelaxedCardBounds(bounds);
+        var previousMode = graphics.SmoothingMode;
+        graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+        using (var path = UiTheme.CreateRoundedRectanglePath(card, UiTheme.Scale(_rulesGrid, UiTheme.CardCornerRadius)))
+        using (var fill = new SolidBrush(missing ? UiTheme.DangerSoft : UiTheme.SurfaceRaised))
+        {
+            graphics.FillPath(fill, path);
+            if (selected)
+            {
+                using var border = new Pen(UiTheme.Accent);
+                graphics.DrawPath(border, path);
+            }
+        }
+
+        graphics.SmoothingMode = previousMode;
+
+        var regions = BuildRelaxedRuleRegions(card);
+        var enabled = !row.IsNewRow && CellBool(row, "Enabled", defaultValue: true);
+        PaintRelaxedCheckBox(graphics, regions.Enabled, enabled);
+
+        var icon = row.IsNewRow
+            ? SpellIconCatalog.GetLastRuleRowIcon()
+            : GetRuleSpellIcon(CellText(row, "Spell"));
+        if (icon is not null && regions.Icon.Width > 4 && regions.Icon.Height > 4)
+        {
+            var size = Math.Min(regions.Icon.Width, regions.Icon.Height) - UiTheme.Scale(_rulesGrid, 2);
+            var dest = new Rectangle(
+                regions.Icon.X + (regions.Icon.Width - size) / 2,
+                regions.Icon.Y + (regions.Icon.Height - size) / 2,
+                size,
+                size);
+            graphics.DrawImage(icon, dest);
+        }
+
+        var fore = missing ? UiTheme.Danger : UiTheme.Text;
+        PaintRelaxedValueField(graphics, regions.Spell, CellText(row, "Spell"), "技能", fore, withArrow: true);
+        PaintRelaxedValueField(graphics, regions.Unit, CellText(row, "Unit"), "目标", fore, withArrow: true);
+        PaintRelaxedValueField(graphics, regions.Macro, CellText(row, "MacroCondition"), "宏条件", fore, withArrow: true);
+        PaintRelaxedChrome(graphics, regions.Comment, UiTheme.Field, UiTheme.Border);
+
+        var metadata = GetRuleMetadata(row);
+        var condition = row.IsNewRow
+            ? string.Empty
+            : DecorateCondition(
+                CellText(row, "Condition"),
+                metadata.SubConditions,
+                metadata.DelayMs,
+                metadata.LogicDelayMs,
+                metadata.ContinueLogic);
+        PaintRelaxedValueField(
+            graphics,
+            regions.Condition,
+            condition,
+            "点击编辑条件",
+            missing ? fore : UiTheme.Text,
+            withArrow: false);
+
+        PaintRelaxedActionButton(graphics, regions.MoveUp, "上移一行", IsRuleIconEnabled("MoveUp", rowIndex), danger: false);
+        PaintRelaxedActionButton(graphics, regions.MoveDown, "下移一行", IsRuleIconEnabled("MoveDown", rowIndex), danger: false);
+        PaintRelaxedActionButton(graphics, regions.Copy, "复制到下一行", IsRuleIconEnabled("Copy", rowIndex), danger: false);
+        PaintRelaxedActionButton(graphics, regions.InsertBlank, "在下一行添加空白行", IsRuleIconEnabled("InsertBlank", rowIndex), danger: false);
+        PaintRelaxedActionButton(graphics, regions.Delete, "删除", IsRuleIconEnabled("Delete", rowIndex), danger: true);
+    }
+
+    private bool RuleRowHasMissingReferences(DataGridViewRow row)
+        => GetMissingConditionFields(row).Count > 0
+           || GetMissingConditionSpells(row).Count > 0
+           || GetMissingConditionItems(row).Count > 0;
+
+    private int RelaxedControlRadius()
+        => UiTheme.Scale(_rulesGrid, UiTheme.ControlCornerRadius);
+
+    private void PaintRelaxedChrome(Graphics graphics, Rectangle bounds, Color fill, Color border)
+    {
+        if (bounds.Width <= 1 || bounds.Height <= 1)
+        {
+            return;
+        }
+
+        var rect = new Rectangle(bounds.X, bounds.Y, bounds.Width - 1, bounds.Height - 1);
+        var previous = graphics.SmoothingMode;
+        graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+        using var path = UiTheme.CreateRoundedRectanglePath(rect, RelaxedControlRadius());
+        using var brush = new SolidBrush(fill);
+        using var pen = new Pen(border);
+        graphics.FillPath(brush, path);
+        graphics.DrawPath(pen, path);
+        graphics.SmoothingMode = previous;
+    }
+
+    private void PaintRelaxedCheckBox(Graphics graphics, Rectangle bounds, bool isChecked)
+    {
+        var boxSize = Math.Min(UiTheme.Scale(_rulesGrid, 16), Math.Max(1, bounds.Height - 2));
+        var box = new Rectangle(
+            bounds.X,
+            bounds.Y + Math.Max(0, (bounds.Height - boxSize) / 2),
+            boxSize,
+            boxSize);
+        var rect = new Rectangle(box.X, box.Y, Math.Max(1, box.Width - 1), Math.Max(1, box.Height - 1));
+        var previous = graphics.SmoothingMode;
+        graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+        using (var path = UiTheme.CreateRoundedRectanglePath(rect, UiTheme.Scale(_rulesGrid, 4)))
+        using (var fill = new SolidBrush(isChecked ? UiTheme.AccentSoft : UiTheme.Field))
+        using (var border = new Pen(isChecked ? UiTheme.Accent : UiTheme.Border))
+        {
+            graphics.FillPath(fill, path);
+            graphics.DrawPath(border, path);
+        }
+
+        if (isChecked)
+        {
+            var inset = UiTheme.Scale(_rulesGrid, 3);
+            using var pen = new Pen(UiTheme.Accent, 2);
+            graphics.DrawLines(
+                pen,
+                new[]
+                {
+                    new Point(box.Left + inset, box.Top + box.Height / 2),
+                    new Point(box.Left + box.Width / 2 - 1, box.Bottom - inset),
+                    new Point(box.Right - inset, box.Top + inset)
+                });
+        }
+
+        graphics.SmoothingMode = previous;
+    }
+
+    private void PaintRelaxedValueField(
+        Graphics graphics,
+        Rectangle bounds,
+        string value,
+        string placeholder,
+        Color valueColor,
+        bool withArrow)
+    {
+        PaintRelaxedChrome(graphics, bounds, UiTheme.Field, UiTheme.Border);
+        if (bounds.Width <= 1 || bounds.Height <= 1)
+        {
+            return;
+        }
+
+        var arrowWidth = withArrow ? UiTheme.Scale(_rulesGrid, 18) : UiTheme.Scale(_rulesGrid, 8);
+        var text = string.IsNullOrWhiteSpace(value) ? placeholder : value;
+        var color = string.IsNullOrWhiteSpace(value) ? UiTheme.Muted : valueColor;
+        var textBounds = new Rectangle(
+            bounds.X + UiTheme.Scale(_rulesGrid, 8),
+            bounds.Y,
+            Math.Max(0, bounds.Width - arrowWidth - UiTheme.Scale(_rulesGrid, 8)),
+            bounds.Height);
+        TextRenderer.DrawText(
+            graphics,
+            text,
+            _rulesGrid.Font,
+            textBounds,
+            color,
+            TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis | TextFormatFlags.NoPrefix);
+
+        if (!withArrow)
+        {
+            return;
+        }
+
+        var previous = graphics.SmoothingMode;
+        graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+        var arrow = UiTheme.Scale(_rulesGrid, 8);
+        var centerX = bounds.Right - UiTheme.Scale(_rulesGrid, 12);
+        var centerY = bounds.Top + bounds.Height / 2;
+        using var arrowBrush = new SolidBrush(UiTheme.Muted);
+        graphics.FillPolygon(
+            arrowBrush,
+            new[]
+            {
+                new Point(centerX - arrow / 2, centerY - arrow / 4),
+                new Point(centerX + arrow / 2, centerY - arrow / 4),
+                new Point(centerX, centerY + arrow / 3)
+            });
+        graphics.SmoothingMode = previous;
+    }
+
+    private void PaintRelaxedActionButton(Graphics graphics, Rectangle bounds, string text, bool enabled, bool danger)
+    {
+        PaintRelaxedChrome(graphics, bounds, UiTheme.Field, UiTheme.Border);
+        if (bounds.Width <= 1 || bounds.Height <= 1)
+        {
+            return;
+        }
+
+        var color = !enabled ? UiTheme.Muted : danger ? UiTheme.Danger : UiTheme.Text;
+        TextRenderer.DrawText(
+            graphics,
+            text,
+            _rulesGrid.Font,
+            bounds,
+            color,
+            TextFormatFlags.HorizontalCenter
+            | TextFormatFlags.VerticalCenter
+            | TextFormatFlags.EndEllipsis
+            | TextFormatFlags.NoPrefix);
+    }
+
+    private Rectangle GetRelaxedCommentEditorBounds(Rectangle comment)
+    {
+        if (comment.Width <= 1 || comment.Height <= 1)
+        {
+            return Rectangle.Empty;
+        }
+
+        var padX = UiTheme.Scale(_rulesGrid, 8);
+        var textHeight = TextRenderer.MeasureText(
+            "注释",
+            _rulesGrid.Font,
+            Size.Empty,
+            TextFormatFlags.NoPadding | TextFormatFlags.SingleLine).Height;
+        textHeight = Math.Min(Math.Max(1, comment.Height - 4), textHeight + UiTheme.Scale(_rulesGrid, 2));
+        return new Rectangle(
+            comment.X + padX,
+            comment.Y + Math.Max(0, (comment.Height - textHeight) / 2),
+            Math.Max(1, comment.Width - padX * 2),
+            textHeight);
+    }
+
+    private Rectangle GetRelaxedCardBounds(Rectangle rowBounds)
+    {
+        var metrics = RelaxedRuleMetrics();
+        return new Rectangle(
+            rowBounds.Left + metrics.Side,
+            rowBounds.Top + metrics.CardGap / 2,
+            Math.Max(0, rowBounds.Width - metrics.Side * 2),
+            Math.Max(0, rowBounds.Height - metrics.CardGap));
+    }
+
+    private RelaxedRuleRegions BuildRelaxedRuleRegions(Rectangle bounds)
+    {
+        var metrics = RelaxedRuleMetrics();
+        var x = bounds.Left + metrics.Pad;
+        var y = bounds.Top + metrics.Pad;
+        var contentWidth = Math.Max(0, bounds.Width - metrics.Pad * 2);
+        var check = UiTheme.Scale(_rulesGrid, 16);
+        var enabled = new Rectangle(x, y, check + metrics.LineGap, metrics.Control);
+        x += enabled.Width;
+
+        var icon = new Rectangle(x, y, metrics.Control, metrics.Control);
+        x += icon.Width + metrics.LineGap;
+
+        var commentMin = UiTheme.Scale(_rulesGrid, 96);
+        var dropDown = metrics.DropDown;
+        var available = Math.Max(0, bounds.Right - metrics.Pad - x);
+        var fieldGaps = metrics.LineGap * 3;
+        if (dropDown * 3 + fieldGaps + commentMin > available)
+        {
+            dropDown = Math.Max(UiTheme.Scale(_rulesGrid, 80), (available - fieldGaps - commentMin) / 3);
+        }
+
+        var spell = new Rectangle(x, y, dropDown, metrics.Control);
+        x += dropDown + metrics.LineGap;
+        var unit = new Rectangle(x, y, dropDown, metrics.Control);
+        x += dropDown + metrics.LineGap;
+        var macro = new Rectangle(x, y, dropDown, metrics.Control);
+        x += dropDown + metrics.LineGap;
+        var comment = new Rectangle(x, y, Math.Max(0, bounds.Right - metrics.Pad - x), metrics.Control);
+
+        var condition = new Rectangle(
+            bounds.Left + metrics.Pad,
+            enabled.Bottom + metrics.LineGap,
+            contentWidth,
+            metrics.Control);
+        var buttonY = condition.Bottom + metrics.LineGap;
+        var labels = new[] { "上移一行", "下移一行", "复制到下一行", "在下一行添加空白行", "删除" };
+        var textPad = UiTheme.Scale(_rulesGrid, 16);
+        var widths = labels
+            .Select(label => TextRenderer.MeasureText(label, _rulesGrid.Font).Width + textPad)
+            .ToArray();
+        var total = widths.Sum() + metrics.LineGap * (widths.Length - 1);
+        if (total > contentWidth && total > 0)
+        {
+            var scale = contentWidth / (float)total;
+            var minimum = UiTheme.Scale(_rulesGrid, 28);
+            for (var i = 0; i < widths.Length; i++)
+            {
+                widths[i] = Math.Max(minimum, (int)(widths[i] * scale));
+            }
+
+            total = widths.Sum() + metrics.LineGap * (widths.Length - 1);
+        }
+
+        var buttons = new Rectangle[widths.Length];
+        var buttonX = bounds.Right - metrics.Pad - total;
+        for (var i = 0; i < widths.Length; i++)
+        {
+            buttons[i] = new Rectangle(buttonX, buttonY, widths[i], metrics.Control);
+            buttonX += widths[i] + metrics.LineGap;
+        }
+
+        return new RelaxedRuleRegions(
+            enabled,
+            icon,
+            spell,
+            unit,
+            macro,
+            comment,
+            condition,
+            buttons[0],
+            buttons[1],
+            buttons[2],
+            buttons[3],
+            buttons[4]);
+    }
+
+    private bool TryGetRelaxedRowBounds(int rowIndex, out Rectangle bounds)
+    {
+        bounds = Rectangle.Empty;
+        if (rowIndex < 0 || rowIndex >= _rulesGrid.Rows.Count)
+        {
+            return false;
+        }
+
+        var rowRect = _rulesGrid.GetRowDisplayRectangle(rowIndex, cutOverflow: false);
+        if (rowRect.Height <= 0)
+        {
+            return false;
+        }
+
+        var display = _rulesGrid.DisplayRectangle;
+        bounds = new Rectangle(display.Left, rowRect.Top, display.Width, rowRect.Height);
+        return true;
+    }
+
+    private RelaxedRulePart HitRelaxedRulePart(int rowIndex, Point location)
+    {
+        if (!TryGetRelaxedRowBounds(rowIndex, out var bounds))
+        {
+            return RelaxedRulePart.None;
+        }
+
+        var regions = BuildRelaxedRuleRegions(GetRelaxedCardBounds(bounds));
+        if (regions.Enabled.Contains(location))
+        {
+            return RelaxedRulePart.Enabled;
+        }
+
+        if (regions.Icon.Contains(location) || regions.Spell.Contains(location))
+        {
+            return RelaxedRulePart.Spell;
+        }
+
+        if (regions.Unit.Contains(location))
+        {
+            return RelaxedRulePart.Unit;
+        }
+
+        if (regions.Macro.Contains(location))
+        {
+            return RelaxedRulePart.Macro;
+        }
+
+        if (regions.Condition.Contains(location))
+        {
+            return RelaxedRulePart.Condition;
+        }
+
+        if (regions.MoveUp.Contains(location))
+        {
+            return RelaxedRulePart.MoveUp;
+        }
+
+        if (regions.MoveDown.Contains(location))
+        {
+            return RelaxedRulePart.MoveDown;
+        }
+
+        if (regions.Copy.Contains(location))
+        {
+            return RelaxedRulePart.Copy;
+        }
+
+        if (regions.InsertBlank.Contains(location))
+        {
+            return RelaxedRulePart.InsertBlank;
+        }
+
+        if (regions.Delete.Contains(location))
+        {
+            return RelaxedRulePart.Delete;
+        }
+
+        return RelaxedRulePart.None;
+    }
+
+    private void DispatchRelaxedRuleClick(int rowIndex, Point location)
+    {
+        var part = HitRelaxedRulePart(rowIndex, location);
+        SelectRelaxedRuleRow(rowIndex);
+        switch (part)
+        {
+            case RelaxedRulePart.Enabled:
+                ToggleRelaxedRuleEnabled(rowIndex);
+                break;
+            case RelaxedRulePart.Spell:
+                ShowRulesComboDropDown(rowIndex, _rulesGrid.Columns["Spell"]!.Index);
+                break;
+            case RelaxedRulePart.Unit:
+                ShowRulesComboDropDown(rowIndex, _rulesGrid.Columns["Unit"]!.Index);
+                break;
+            case RelaxedRulePart.Macro:
+                ShowRulesComboDropDown(rowIndex, _rulesGrid.Columns["MacroCondition"]!.Index);
+                break;
+            case RelaxedRulePart.Condition:
+                OpenConditionEditor(rowIndex);
+                break;
+            case RelaxedRulePart.MoveUp when IsRuleIconEnabled("MoveUp", rowIndex):
+                MoveRule(rowIndex, -1);
+                break;
+            case RelaxedRulePart.MoveDown when IsRuleIconEnabled("MoveDown", rowIndex):
+                MoveRule(rowIndex, 1);
+                break;
+            case RelaxedRulePart.Copy when IsRuleIconEnabled("Copy", rowIndex):
+                CopyRule(rowIndex);
+                break;
+            case RelaxedRulePart.InsertBlank when IsRuleIconEnabled("InsertBlank", rowIndex):
+                InsertBlankRule(rowIndex);
+                break;
+            case RelaxedRulePart.Delete when IsRuleIconEnabled("Delete", rowIndex):
+                DeleteRule(rowIndex);
+                break;
+        }
+    }
+
+    private void UpdateRelaxedRuleCursor(Point location)
+    {
+        var hit = _rulesGrid.HitTest(location.X, location.Y);
+        if (hit.RowIndex < 0)
+        {
+            _rulesGrid.Cursor = Cursors.Default;
+            return;
+        }
+
+        var part = HitRelaxedRulePart(hit.RowIndex, location);
+        var interactive = part is RelaxedRulePart.Enabled
+            or RelaxedRulePart.Spell
+            or RelaxedRulePart.Unit
+            or RelaxedRulePart.Macro
+            or RelaxedRulePart.Condition
+            || part switch
+            {
+                RelaxedRulePart.MoveUp => IsRuleIconEnabled("MoveUp", hit.RowIndex),
+                RelaxedRulePart.MoveDown => IsRuleIconEnabled("MoveDown", hit.RowIndex),
+                RelaxedRulePart.Copy => IsRuleIconEnabled("Copy", hit.RowIndex),
+                RelaxedRulePart.InsertBlank => IsRuleIconEnabled("InsertBlank", hit.RowIndex),
+                RelaxedRulePart.Delete => IsRuleIconEnabled("Delete", hit.RowIndex),
+                _ => false
+            };
+        _rulesGrid.Cursor = interactive ? Cursors.Hand : Cursors.Default;
+    }
+
+    private void SelectRelaxedRuleRow(int rowIndex)
+    {
+        if (!IsExistingRuleRow(rowIndex))
+        {
+            return;
+        }
+
+        _rulesGrid.ClearSelection();
+        _rulesGrid.Rows[rowIndex].Selected = true;
+        var cell = _rulesGrid.Rows[rowIndex].Cells["Spell"];
+        if (!ReferenceEquals(_rulesGrid.CurrentCell, cell))
+        {
+            _rulesGrid.CurrentCell = cell;
+        }
+
+        _rulesGrid.HorizontalScrollingOffset = 0;
+    }
+
+    private void ToggleRelaxedRuleEnabled(int rowIndex)
+    {
+        var row = _rulesGrid.Rows[rowIndex];
+        if (row.IsNewRow)
+        {
+            var index = _rulesGrid.Rows.Add(true, null!, string.Empty, string.Empty, string.Empty, string.Empty);
+            SelectRelaxedRuleRow(index);
+            return;
+        }
+
+        row.Cells["Enabled"].Value = !CellBool(row, "Enabled", defaultValue: true);
+        _rulesGrid.InvalidateRow(rowIndex);
+    }
+
+    private Rectangle GetRuleDropDownAnchor(int rowIndex, string columnName)
+    {
+        if (_relaxedRuleView && TryGetRelaxedRowBounds(rowIndex, out var rowBounds))
+        {
+            var regions = BuildRelaxedRuleRegions(GetRelaxedCardBounds(rowBounds));
+            return columnName switch
+            {
+                "Unit" => regions.Unit,
+                "MacroCondition" => regions.Macro,
+                _ => regions.Spell
+            };
+        }
+
+        var columnIndex = _rulesGrid.Columns[columnName]?.Index ?? 0;
+        return _rulesGrid.GetCellDisplayRectangle(columnIndex, rowIndex, cutOverflow: true);
+    }
+
+    private TextBox CreateRelaxedCommentBox()
+    {
+        var editor = new TextBox
+        {
+            Visible = false,
+            PlaceholderText = "注释",
+            TabStop = true,
+            BorderStyle = BorderStyle.None,
+            BackColor = UiTheme.Field,
+            ForeColor = UiTheme.Text
+        };
+        UiTheme.StyleTextBox(editor);
+        editor.BorderStyle = BorderStyle.None;
+        editor.TextChanged += OnRelaxedCommentBoxTextChanged;
+        editor.KeyDown += (_, e) =>
+        {
+            if (e.KeyCode != Keys.Enter)
+            {
+                return;
+            }
+
+            e.SuppressKeyPress = true;
+            e.Handled = true;
+            _rulesGrid.Focus();
+        };
+        _rulesGrid.Controls.Add(editor);
+        return editor;
+    }
+
+    private void OnRelaxedCommentBoxTextChanged(object? sender, EventArgs e)
+    {
+        if (_relaxedCommentSyncing || sender is not TextBox box || box.Tag is not int rowIndex)
+        {
+            return;
+        }
+
+        if (rowIndex < 0 || rowIndex >= _rulesGrid.Rows.Count)
+        {
+            return;
+        }
+
+        var row = _rulesGrid.Rows[rowIndex];
+        if (row.IsNewRow)
+        {
+            if (box.Text.Length == 0)
+            {
+                return;
+            }
+
+            var text = box.Text;
+            var caret = box.SelectionStart;
+            _relaxedCommentSyncing = true;
+            int index;
+            try
+            {
+                index = _rulesGrid.Rows.Add(
+                    true,
+                    null!,
+                    string.Empty,
+                    string.Empty,
+                    string.Empty,
+                    string.Empty,
+                    text);
+                box.Tag = index;
+            }
+            finally
+            {
+                _relaxedCommentSyncing = false;
+            }
+
+            SyncRelaxedCommentBoxes();
+            if (_relaxedCommentBoxes.FirstOrDefault(item => item.Tag is int itemRow && itemRow == index) is TextBox current)
+            {
+                current.Focus();
+                current.SelectionStart = Math.Min(caret, current.Text.Length);
+            }
+
+            return;
+        }
+
+        row.Cells[RuleCommentColumnName].Value = box.Text;
+    }
+
+    private void QueueRelaxedCommentSync()
+    {
+        if (_relaxedCommentSyncQueued || !IsHandleCreated || IsDisposed)
+        {
+            return;
+        }
+
+        _relaxedCommentSyncQueued = true;
+        BeginInvoke(() =>
+        {
+            _relaxedCommentSyncQueued = false;
+            if (!IsDisposed)
+            {
+                SyncRelaxedCommentBoxes();
+            }
+        });
+    }
+
+    private void SyncRelaxedCommentBoxes()
+    {
+        if (_relaxedCommentSyncing || IsDisposed)
+        {
+            return;
+        }
+
+        if (!_relaxedRuleView)
+        {
+            HideRelaxedCommentEditors();
+            return;
+        }
+
+        var display = _rulesGrid.DisplayRectangle;
+        var visible = new List<int>();
+        for (var i = 0; i < _rulesGrid.Rows.Count; i++)
+        {
+            if (!TryGetRelaxedRowBounds(i, out var rowBounds))
+            {
+                continue;
+            }
+
+            if (rowBounds.Bottom <= display.Top || rowBounds.Top >= display.Bottom)
+            {
+                continue;
+            }
+
+            visible.Add(i);
+        }
+
+        while (_relaxedCommentBoxes.Count < visible.Count)
+        {
+            _relaxedCommentBoxes.Add(CreateRelaxedCommentBox());
+        }
+
+        TextBox? focused = null;
+        var focusedRow = -1;
+        foreach (var box in _relaxedCommentBoxes)
+        {
+            if (box.Focused && box.Tag is int row)
+            {
+                focused = box;
+                focusedRow = row;
+                break;
+            }
+        }
+
+        var pool = new List<TextBox>(_relaxedCommentBoxes);
+        var assignment = new List<(TextBox Box, int Row)>();
+        if (focused is not null && visible.Contains(focusedRow))
+        {
+            assignment.Add((focused, focusedRow));
+            pool.Remove(focused);
+            visible.Remove(focusedRow);
+        }
+
+        foreach (var rowIndex in visible)
+        {
+            var box = pool[0];
+            pool.RemoveAt(0);
+            assignment.Add((box, rowIndex));
+        }
+
+        _relaxedCommentSyncing = true;
+        try
+        {
+            var shown = new HashSet<TextBox>();
+            foreach (var (box, rowIndex) in assignment)
+            {
+                if (!TryGetRelaxedRowBounds(rowIndex, out var rowBounds))
+                {
+                    continue;
+                }
+
+                var comment = GetRelaxedCommentEditorBounds(
+                    BuildRelaxedRuleRegions(GetRelaxedCardBounds(rowBounds)).Comment);
+                if (comment.Width <= 1 || comment.Height <= 1)
+                {
+                    continue;
+                }
+
+                if (!ReferenceEquals(box.Font, _rulesGrid.Font))
+                {
+                    box.Font = _rulesGrid.Font;
+                }
+                if (box.Bounds != comment)
+                {
+                    box.Bounds = comment;
+                }
+
+                if (!box.Focused)
+                {
+                    var text = _rulesGrid.Rows[rowIndex].IsNewRow
+                        ? string.Empty
+                        : CellText(_rulesGrid.Rows[rowIndex], RuleCommentColumnName);
+                    if (!string.Equals(box.Text, text, StringComparison.Ordinal))
+                    {
+                        box.Text = text;
+                    }
+                }
+
+                box.Tag = rowIndex;
+                if (!box.Visible)
+                {
+                    box.Visible = true;
+                    box.BringToFront();
+                }
+
+                shown.Add(box);
+            }
+
+            foreach (var box in _relaxedCommentBoxes)
+            {
+                if (shown.Contains(box))
+                {
+                    continue;
+                }
+
+                box.Visible = false;
+                box.Tag = -1;
+            }
+        }
+        finally
+        {
+            _relaxedCommentSyncing = false;
+        }
+    }
+
+    private void HideRelaxedCommentEditors()
+    {
+        _relaxedCommentSyncing = true;
+        try
+        {
+            foreach (var box in _relaxedCommentBoxes)
+            {
+                box.Visible = false;
+                box.Tag = -1;
+            }
+        }
+        finally
+        {
+            _relaxedCommentSyncing = false;
+        }
+    }
+
     private void OnRulesGridCellPainting(object? sender, DataGridViewCellPaintingEventArgs e)
     {
         if (e.RowIndex < 0 || e.ColumnIndex < 0)
@@ -3345,7 +4268,7 @@ public sealed class ModuleEditorControl : UserControl
 
     private void OnRulesGridCellMouseEnter(object? sender, DataGridViewCellEventArgs e)
     {
-        if (e.RowIndex < 0 || e.ColumnIndex < 0)
+        if (_relaxedRuleView || e.RowIndex < 0 || e.ColumnIndex < 0)
         {
             return;
         }
@@ -3374,6 +4297,11 @@ public sealed class ModuleEditorControl : UserControl
 
     private void OnRulesGridCellMouseLeave(object? sender, DataGridViewCellEventArgs e)
     {
+        if (_relaxedRuleView)
+        {
+            return;
+        }
+
         _rulesGrid.Cursor = Cursors.Default;
         _rulesGridToolTip.Hide(_rulesGrid);
     }
@@ -3925,6 +4853,22 @@ public sealed class ModuleEditorControl : UserControl
     // 拖拽手柄按下: 记录起始行(仅限抓手列上的已有规则行)。
     private void OnRulesGridMouseDown(object? sender, MouseEventArgs e)
     {
+        if (_relaxedRuleView)
+        {
+            _dragSourceRow = -1;
+            if (e.Button == MouseButtons.Left)
+            {
+                var relaxedHit = _rulesGrid.HitTest(e.X, e.Y);
+                if (relaxedHit.RowIndex >= 0)
+                {
+                    _suppressNextRulesCellClick = true;
+                    DispatchRelaxedRuleClick(relaxedHit.RowIndex, e.Location);
+                }
+            }
+
+            return;
+        }
+
         _dragSourceRow = -1;
         var hit = _rulesGrid.HitTest(e.X, e.Y);
         if (hit.RowIndex >= 0
@@ -3939,6 +4883,13 @@ public sealed class ModuleEditorControl : UserControl
     // 在抓手上按住左键移动即开始拖拽(DoDragDrop 自带模态循环, 结束后复位)。
     private void OnRulesGridMouseMove(object? sender, MouseEventArgs e)
     {
+        if (_relaxedRuleView)
+        {
+            _dragSourceRow = -1;
+            UpdateRelaxedRuleCursor(e.Location);
+            return;
+        }
+
         if (_dragSourceRow < 0 || (e.Button & MouseButtons.Left) == 0)
         {
             return;
@@ -3973,6 +4924,11 @@ public sealed class ModuleEditorControl : UserControl
 
     private void OnRulesGridPaint(object? sender, PaintEventArgs e)
     {
+        if (_relaxedRuleView)
+        {
+            QueueRelaxedCommentSync();
+        }
+
         if (_dragIndicatorRow < 0)
         {
             return;
@@ -4339,6 +5295,26 @@ public sealed class ModuleEditorControl : UserControl
             openFolderButton,
             "在资源管理器中打开模块目录；若已选中已保存模块则定位到对应文件");
 
+        var pathHost = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            BackColor = UiTheme.Surface,
+            ColumnCount = 2,
+            RowCount = 1,
+            Margin = new Padding(0),
+            Padding = new Padding(0)
+        };
+        pathHost.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 148));
+        pathHost.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        pathHost.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+
+        _ruleViewButton = UiTheme.CreateButton("宽松视图", UiTheme.ButtonKind.Secondary);
+        StyleModuleFooterButton(_ruleViewButton);
+        _ruleViewButton.Dock = DockStyle.Fill;
+        _ruleViewButton.Margin = new Padding(0, 0, 8, 0);
+        _ruleViewButton.Click += (_, _) => ToggleRuleView();
+        _pathToolTip.SetToolTip(_ruleViewButton, "当前为紧缩视图，点击切换为宽松视图");
+
         _pathLabel.Dock = DockStyle.Fill;
         _pathLabel.Margin = new Padding(8, 0, 16, 0);
         _pathLabel.ForeColor = UiTheme.Muted;
@@ -4387,8 +5363,11 @@ public sealed class ModuleEditorControl : UserControl
         buttons.Controls.Add(_deleteButton, 2, 0);
         buttons.Controls.Add(_saveButton, 4, 0);
 
+        pathHost.Controls.Add(_ruleViewButton, 0, 0);
+        pathHost.Controls.Add(_pathLabel, 1, 0);
+
         row.Controls.Add(openFolderButton, 0, 0);
-        row.Controls.Add(_pathLabel, 1, 0);
+        row.Controls.Add(pathHost, 1, 0);
         row.Controls.Add(buttons, 2, 0);
         return row;
     }
@@ -4566,6 +5545,7 @@ public sealed class ModuleEditorControl : UserControl
 
         RefreshAdjustmentFieldColumn();
 
+        HideRelaxedCommentEditors();
         _rulesGrid.Rows.Clear();
         RefreshKeymapColumns();
 
@@ -4621,6 +5601,7 @@ public sealed class ModuleEditorControl : UserControl
         _adjustmentsGrid.Rows.Clear();
         _formulaAdjustmentsGrid.Rows.Clear();
         RefreshAdjustmentFieldColumn();
+        HideRelaxedCommentEditors();
         _rulesGrid.Rows.Clear();
         SetEditorEnabled(hasModule: false);
         _editorBaseline = null;

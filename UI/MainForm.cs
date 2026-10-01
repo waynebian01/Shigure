@@ -185,13 +185,6 @@ public sealed class MainForm : Form, IMessageFilter
         _manualAddonName = _profiles.FindByAddon(_uiCache.SelectedAddonName)?.AddonName;
         _editorProfile = _profiles.FindByAddon(_manualAddonName) ?? _activeProfile.Current;
         _statusForm = new StatusForm(() => _activeProfile.Current);
-        _statusForm.VisibleChanged += (_, _) =>
-        {
-            if (!IsDisposed && !Disposing)
-            {
-                TopMost = !_statusForm.Visible;
-            }
-        };
         _roundedCornerResizeTimer = new System.Windows.Forms.Timer
         {
             Interval = RoundedCornerResizeDebounceMs

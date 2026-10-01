@@ -84,7 +84,10 @@ function Fuyutsui:LoadPlayerBlocks(specIndex)
                         if name then
                             local key = bareKeyCategories[category] and name or (category .. name)
                             blocks.state[key] = index
-                            index = index + 1
+                            local rgbSpell = name == "施法技能" and (category == "目标" or category == "焦点"
+                                or category == "首领1" or category == "首领2" or category == "首领3"
+                                or category == "首领4" or category == "首领5")
+                            index = index + (rgbSpell and 2 or 1)
                         end
                     end
                 end
@@ -340,6 +343,11 @@ function Fuyutsui:LoadPlayerBlocks(specIndex)
         if t.nameplates.threat == true then
             blocks.nameplates.num = blocks.nameplates.num + 1
             blocks.nameplates.threatOffset = blocks.nameplates.num
+        end
+        if t.nameplates.castSpell == true then
+            blocks.nameplates.num = blocks.nameplates.num + 1
+            blocks.nameplates.castSpellOffset = blocks.nameplates.num
+            blocks.nameplates.num = blocks.nameplates.num + 1
         end
         local maxPixels = self.MainPixelMaxCount or self.MainPixelCount
         local nameplateEnd = index + mappingCount + self.NameplateSlotCount * blocks.nameplates.num

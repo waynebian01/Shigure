@@ -127,6 +127,75 @@ function Shingen:CreateTexture(i, b)
     end
 end
 
+local rgbSpellPixels = {}
+
+-- 两格 RGB 施法协议：定位格 (R=4..7, G=格号, B=容量档位)，下一格绘制原始 spellID。
+local function SpellRgbText(unit)
+    local _, _, _, _, _, _, _, _, castingSpellID = UnitCastingInfo(unit)
+    local ok, formatted = pcall(string.format, "|cFF%06X█|r", castingSpellID)
+    if ok then return true, formatted end
+
+    local _, _, _, _, _, _, _, channelSpellID = UnitChannelInfo(unit)
+    ok, formatted = pcall(string.format, "|cFF%06X█|r", channelSpellID)
+    if ok then return true, formatted end
+    return false, nil
+end
+
+function Shingen:ClearRgbSpellPixel(index)
+    local entry = rgbSpellPixels[index]
+    if entry then entry.frame:Hide() end
+end
+
+function Shingen:ClearAllRgbSpellPixels()
+    for _, entry in pairs(rgbSpellPixels) do
+        entry.frame:Hide()
+        entry.frame:SetParent(nil)
+    end
+    wipe(rgbSpellPixels)
+end
+
+function Shingen:RefreshRgbSpellPixel(index, unit)
+    if not index or index < 1 or index + 1 > BLOCK_FIX_CONFIG.capacity then return end
+    local entry = rgbSpellPixels[index]
+    if not entry then
+        local frame = CreateFrame("Frame", nil, colorBars)
+        frame:SetClipsChildren(true)
+        frame:EnableMouse(false)
+        frame:SetFrameStrata(COLOR_BARS_STRATA)
+        frame:SetFrameLevel(AURA_DURATION_LEVEL)
+        local glyph = frame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+        glyph:SetPoint("CENTER", frame, "CENTER")
+        glyph:SetJustifyH("CENTER")
+        glyph:SetJustifyV("MIDDLE")
+        glyph:SetFontHeight(88)
+        glyph:SetTextColor(1, 1, 1)
+        glyph:SetFixedColor(false)
+        entry = { frame = frame, glyph = glyph }
+        rgbSpellPixels[index] = entry
+    end
+
+    local frame = entry.frame
+    frame:SetSize(BLOCK_FIX_CONFIG.blockWidth, BLOCK_FIX_CONFIG.blockHeight)
+    frame:ClearAllPoints()
+    frame:SetPoint("TOPLEFT", colorBars, "TOPLEFT", index * BLOCK_FIX_CONFIG.blockWidth, 0)
+
+    local scheme = math.floor((index - 1) / BLOCK_SCHEME_SPAN)
+    local position = index - scheme * BLOCK_SCHEME_SPAN
+    local marker = createTextureByIndex(index)
+    marker:SetColorTexture((4 + scheme) / 255, position / 255,
+        (BLOCK_FIX_CONFIG.capacity / BLOCK_SCHEME_SPAN) / 255, 1)
+    local payload = createTextureByIndex(index + 1)
+    payload:SetColorTexture(0, 0, 0, 1)
+
+    local hasText, formatted = SpellRgbText(unit)
+    if hasText then
+        entry.glyph:SetText(formatted)
+        frame:Show()
+    else
+        frame:Hide()
+    end
+end
+
 -- 姓名板单位不存在时清除索引通道，读取端由索引是否存在判断单位存在。
 function Shingen:ClearNameplateTexture(i)
     if i > BLOCK_FIX_CONFIG.capacity then return end
@@ -268,6 +337,7 @@ local function RefreshAllCreatedCountPixels()
 end
 
 function Shingen:ClearAllShingenBars()
+    self:ClearAllRgbSpellPixels()
     for _, frame in ipairs(createdCountPixels) do
         frame:UnregisterAllEvents()
         frame:SetScript("OnEvent", nil)

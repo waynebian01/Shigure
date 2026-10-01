@@ -71,29 +71,43 @@
       "type": "int",
       "category": "能量"
     },
-    "目标类型": {
+    "目标施法技能": {
       "step": 12,
       "type": "int",
-      "category": "目标"
+      "category": "目标",
+      "pixelFormat": "rgb24",
+      "payloadStep": 13
     },
-    "目标生命值": {
-      "step": 13,
-      "type": "int",
-      "category": "目标"
-    },
-    "目标距离": {
+    "目标类型": {
       "step": 14,
       "type": "int",
       "category": "目标"
     },
-    "焦点生命值": {
+    "目标生命值": {
       "step": 15,
+      "type": "int",
+      "category": "目标"
+    },
+    "目标距离": {
+      "step": 16,
+      "type": "int",
+      "category": "目标"
+    },
+    "焦点施法技能": {
+      "step": 17,
+      "type": "int",
+      "category": "焦点",
+      "pixelFormat": "rgb24",
+      "payloadStep": 18
+    },
+    "焦点生命值": {
+      "step": 19,
       "type": "int",
       "category": "焦点"
     },
     "spells": {
       "1776.cooldown": {
-        "step": 16,
+        "step": 20,
         "type": "int",
         "displayName": "凿击",
         "spellId": 1776,
@@ -101,7 +115,7 @@
         "displayType": "冷却"
       },
       "5277.cooldown": {
-        "step": 17,
+        "step": 21,
         "type": "int",
         "displayName": "闪避",
         "spellId": 5277,
@@ -109,7 +123,7 @@
         "displayType": "冷却"
       },
       "2983.cooldown": {
-        "step": 18,
+        "step": 22,
         "type": "int",
         "displayName": "疾跑",
         "spellId": 2983,
@@ -117,7 +131,7 @@
         "displayType": "冷却"
       },
       "1766.cooldown": {
-        "step": 19,
+        "step": 23,
         "type": "int",
         "displayName": "脚踢",
         "spellId": 1766,
@@ -125,7 +139,7 @@
         "displayType": "冷却"
       },
       "1856.cooldown": {
-        "step": 20,
+        "step": 24,
         "type": "int",
         "displayName": "消失",
         "spellId": 1856,
@@ -133,7 +147,7 @@
         "displayType": "冷却"
       },
       "408.cooldown": {
-        "step": 21,
+        "step": 25,
         "type": "int",
         "displayName": "肾击",
         "spellId": 408,
@@ -141,7 +155,7 @@
         "displayType": "冷却"
       },
       "2094.cooldown": {
-        "step": 22,
+        "step": 26,
         "type": "int",
         "displayName": "致盲",
         "spellId": 2094,
@@ -149,7 +163,7 @@
         "displayType": "冷却"
       },
       "14177.cooldown": {
-        "step": 23,
+        "step": 27,
         "type": "int",
         "displayName": "冷血",
         "spellId": 14177,
@@ -157,7 +171,7 @@
         "displayType": "冷却"
       },
       "13877.cooldown": {
-        "step": 24,
+        "step": 28,
         "type": "int",
         "displayName": "剑刃乱舞",
         "spellId": 13877,
@@ -165,7 +179,7 @@
         "displayType": "冷却"
       },
       "13750.cooldown": {
-        "step": 25,
+        "step": 29,
         "type": "int",
         "displayName": "冲动",
         "spellId": 13750,
@@ -173,7 +187,7 @@
         "displayType": "冷却"
       },
       "14185.cooldown": {
-        "step": 26,
+        "step": 30,
         "type": "int",
         "displayName": "伺机待发",
         "spellId": 14185,
@@ -181,7 +195,7 @@
         "displayType": "冷却"
       },
       "16511.cooldown": {
-        "step": 27,
+        "step": 31,
         "type": "int",
         "displayName": "出血",
         "spellId": 16511,
@@ -189,7 +203,7 @@
         "displayType": "冷却"
       },
       "14278.cooldown": {
-        "step": 28,
+        "step": 32,
         "type": "int",
         "displayName": "鬼魅攻击",
         "spellId": 14278,
@@ -198,7 +212,7 @@
       }
     },
     "group": {
-      "start": 29,
+      "start": 33,
       "生命值": {
         "step": 1,
         "type": "int"

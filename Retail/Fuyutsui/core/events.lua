@@ -195,8 +195,15 @@ function Fuyutsui:UNIT_SPELLCAST_SENT(_, unitTarget, targetName, castGUID, spell
 end
 
 local function SetUnitCastState(self, unit, stateField, isActive)
+    if type(unit) == "string" and unit:match("^nameplate%d+$") then
+        self:RefreshNameplateCastPixel(unit)
+        return true
+    end
     if not self:SetTrackedUnitCastState(unit, stateField, isActive) then return false end
-    if isActive then return true end
+    if isActive then
+        if unit ~= "player" then self:RefreshUnitCastStateBlocks(unit) end
+        return true
+    end
 
     if unit == "player" then
         if stateField == "casting" then

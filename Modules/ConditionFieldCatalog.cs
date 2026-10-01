@@ -279,6 +279,11 @@ public sealed class ConditionFieldCatalog
                     AddField(fields, seen, prefix + NameplateStateLayout.ThreatField,
                         $"姓名板{slot} / 仇恨值", ConditionFieldType.Int, ConditionFieldCategory.State, "姓名板");
                 }
+                if (JsonHelpers.GetInt(JsonHelpers.Get(nameplates, "castSpellOffset")) is > 0)
+                {
+                    AddField(fields, seen, prefix + NameplateStateLayout.CastSpellField,
+                        $"姓名板{slot} / 施法技能", ConditionFieldType.Int, ConditionFieldCategory.State, "姓名板");
+                }
                 for (var auraIndex = 1; auraIndex <= auraCount; auraIndex++)
                 {
                     var name = $"光环{auraIndex}";
@@ -394,6 +399,12 @@ public sealed class ConditionFieldCatalog
         => _config is not null
             && JsonHelpers.Get(_config.BuildStateConfig(classId, specId), "nameplates") is JsonObject nameplates
             && JsonHelpers.GetInt(JsonHelpers.Get(nameplates, "threatOffset")) is > 0;
+
+    /// <summary>姓名板是否配置了原始施法 spellID 像素。</summary>
+    public bool HasNameplateCastSpell(int? classId, int? specId)
+        => _config is not null
+            && JsonHelpers.Get(_config.BuildStateConfig(classId, specId), "nameplates") is JsonObject nameplates
+            && JsonHelpers.GetInt(JsonHelpers.Get(nameplates, "castSpellOffset")) is > 0;
 
     /// <summary>返回姓名板光环，字段名统一为 auras.{spellId}.value。</summary>
     public IReadOnlyList<ConditionField> GetNameplateAuraFields(int? classId, int? specId)

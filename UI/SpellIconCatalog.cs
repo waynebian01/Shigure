@@ -255,6 +255,15 @@ internal static class SpellIconCatalog
         }
     }
 
+    internal static string? GetSpellName(long spellId)
+    {
+        lock (SyncRoot)
+        {
+            return _package?.SpellNamesById.GetValueOrDefault(spellId)
+                ?? RegisteredSpellNamesById.GetValueOrDefault(spellId);
+        }
+    }
+
     internal static string? ResolveItemSuggestionName(long itemId, string? packageName)
     {
         if (!string.IsNullOrWhiteSpace(packageName))

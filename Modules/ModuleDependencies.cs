@@ -87,12 +87,14 @@ public sealed class ModuleNameplateSnapshot
 {
     public bool? ImprovedGarrote { get; set; }
     public bool? Threat { get; set; }
+    public bool? CastSpell { get; set; }
     public List<ModuleAuraSnapshot> Auras { get; set; } = new();
 
     public ModuleNameplateSnapshot Clone() => new()
     {
         ImprovedGarrote = ImprovedGarrote,
         Threat = Threat,
+        CastSpell = CastSpell,
         Auras = (Auras ?? []).Where(entry => entry is not null).Select(entry => entry.Clone()).ToList()
     };
 }

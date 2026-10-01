@@ -91,29 +91,43 @@
       "type": "int",
       "category": "能量"
     },
-    "目标类型": {
+    "目标施法技能": {
       "step": 11,
       "type": "int",
-      "category": "目标"
+      "category": "目标",
+      "pixelFormat": "rgb24",
+      "payloadStep": 12
     },
-    "目标生命值": {
-      "step": 12,
-      "type": "int",
-      "category": "目标"
-    },
-    "目标距离": {
+    "目标类型": {
       "step": 13,
       "type": "int",
       "category": "目标"
     },
-    "焦点生命值": {
+    "目标生命值": {
       "step": 14,
+      "type": "int",
+      "category": "目标"
+    },
+    "目标距离": {
+      "step": 15,
+      "type": "int",
+      "category": "目标"
+    },
+    "焦点施法技能": {
+      "step": 16,
+      "type": "int",
+      "category": "焦点",
+      "pixelFormat": "rgb24",
+      "payloadStep": 17
+    },
+    "焦点生命值": {
+      "step": 18,
       "type": "int",
       "category": "焦点"
     },
     "spells": {
       "5116.cooldown": {
-        "step": 15,
+        "step": 19,
         "type": "int",
         "displayName": "震荡射击",
         "spellId": 5116,
@@ -121,7 +135,7 @@
         "displayType": "冷却"
       },
       "13795.cooldown": {
-        "step": 16,
+        "step": 20,
         "type": "int",
         "displayName": "献祭陷阱",
         "spellId": 13795,
@@ -129,7 +143,7 @@
         "displayType": "冷却"
       },
       "2643.cooldown": {
-        "step": 17,
+        "step": 21,
         "type": "int",
         "displayName": "多重射击",
         "spellId": 2643,
@@ -137,7 +151,7 @@
         "displayType": "冷却"
       },
       "781.cooldown": {
-        "step": 18,
+        "step": 22,
         "type": "int",
         "displayName": "逃脱",
         "spellId": 781,
@@ -145,7 +159,7 @@
         "displayType": "冷却"
       },
       "1499.cooldown": {
-        "step": 19,
+        "step": 23,
         "type": "int",
         "displayName": "冰冻陷阱",
         "spellId": 1499,
@@ -153,7 +167,7 @@
         "displayType": "冷却"
       },
       "3045.cooldown": {
-        "step": 20,
+        "step": 24,
         "type": "int",
         "displayName": "急速射击",
         "spellId": 3045,
@@ -161,7 +175,7 @@
         "displayType": "冷却"
       },
       "13809.cooldown": {
-        "step": 21,
+        "step": 25,
         "type": "int",
         "displayName": "冰霜陷阱",
         "spellId": 13809,
@@ -169,7 +183,7 @@
         "displayType": "冷却"
       },
       "5384.cooldown": {
-        "step": 22,
+        "step": 26,
         "type": "int",
         "displayName": "假死",
         "spellId": 5384,
@@ -177,7 +191,7 @@
         "displayType": "冷却"
       },
       "1543.cooldown": {
-        "step": 23,
+        "step": 27,
         "type": "int",
         "displayName": "照明弹",
         "spellId": 1543,
@@ -185,7 +199,7 @@
         "displayType": "冷却"
       },
       "13813.cooldown": {
-        "step": 24,
+        "step": 28,
         "type": "int",
         "displayName": "爆炸陷阱",
         "spellId": 13813,
@@ -193,7 +207,7 @@
         "displayType": "冷却"
       },
       "1510.cooldown": {
-        "step": 25,
+        "step": 29,
         "type": "int",
         "displayName": "乱射",
         "spellId": 1510,
@@ -201,7 +215,7 @@
         "displayType": "冷却"
       },
       "19434.cooldown": {
-        "step": 26,
+        "step": 30,
         "type": "int",
         "displayName": "瞄准射击",
         "spellId": 19434,
@@ -209,7 +223,7 @@
         "displayType": "冷却"
       },
       "19574.cooldown": {
-        "step": 27,
+        "step": 31,
         "type": "int",
         "displayName": "狂野怒火",
         "spellId": 19574,
@@ -217,7 +231,7 @@
         "displayType": "冷却"
       },
       "19577.cooldown": {
-        "step": 28,
+        "step": 32,
         "type": "int",
         "displayName": "胁迫",
         "spellId": 19577,
@@ -225,7 +239,7 @@
         "displayType": "冷却"
       },
       "19503.cooldown": {
-        "step": 29,
+        "step": 33,
         "type": "int",
         "displayName": "驱散射击",
         "spellId": 19503,
@@ -233,7 +247,7 @@
         "displayType": "冷却"
       },
       "19506.cooldown": {
-        "step": 30,
+        "step": 34,
         "type": "int",
         "displayName": "强击光环",
         "spellId": 19506,
@@ -241,7 +255,7 @@
         "displayType": "冷却"
       },
       "19306.cooldown": {
-        "step": 31,
+        "step": 35,
         "type": "int",
         "displayName": "反击",
         "spellId": 19306,
@@ -249,7 +263,7 @@
         "displayType": "冷却"
       },
       "19263.cooldown": {
-        "step": 32,
+        "step": 36,
         "type": "int",
         "displayName": "威慑",
         "spellId": 19263,
@@ -258,7 +272,7 @@
       }
     },
     "group": {
-      "start": 33,
+      "start": 37,
       "生命值": {
         "step": 1,
         "type": "int"

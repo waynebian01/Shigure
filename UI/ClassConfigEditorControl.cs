@@ -70,6 +70,7 @@ public sealed class ClassConfigEditorControl : UserControl
     private readonly CheckBox _nameplateEnabledBox = new();
     private readonly CheckBox _nameplateImprovedGarroteBox = new();
     private readonly CheckBox _nameplateThreatBox = new();
+    private readonly CheckBox _nameplateCastSpellBox = new();
     private Control _nameplateImprovedGarroteCard = null!;
     private readonly DataGridView _nameplateAurasGrid = new UiThemedDataGridView();
 
@@ -1602,6 +1603,22 @@ public sealed class ClassConfigEditorControl : UserControl
         var threatCard = CreateGroupCard("仇恨值", _nameplateThreatBox);
         _toolTip.SetToolTip(threatCard, threatHint);
         fields.Controls.Add(threatCard);
+        _nameplateCastSpellBox.Text = "启用";
+        _nameplateCastSpellBox.AutoSize = true;
+        _nameplateCastSpellBox.ForeColor = UiTheme.Text;
+        _nameplateCastSpellBox.CheckedChanged += (_, _) =>
+        {
+            if (!_suppressUi)
+            {
+                MarkDirty();
+                UpdateNameplatePixelSummary();
+            }
+        };
+        const string castSpellHint = "为每个敌对姓名板槽位显示原始施法或引导 spellID；启用后增加 80 格像素。";
+        _toolTip.SetToolTip(_nameplateCastSpellBox, castSpellHint);
+        var castSpellCard = CreateGroupCard("施法技能", _nameplateCastSpellBox);
+        _toolTip.SetToolTip(castSpellCard, castSpellHint);
+        fields.Controls.Add(castSpellCard);
 
         // 与队伍页共用固定尺寸卡片；统计文字独立占据右侧，不随可见卡片数量拉伸。
         var nameplateHeader = new TableLayoutPanel
@@ -1661,6 +1678,7 @@ public sealed class ClassConfigEditorControl : UserControl
     {
         _nameplateAurasGrid.Rows.Clear();
         _nameplateThreatBox.Checked = _currentSpec?.Nameplates?.Threat == true;
+        _nameplateCastSpellBox.Checked = _currentSpec?.Nameplates?.CastSpell == true;
         _nameplateImprovedGarroteCard.Visible = SupportsNameplateImprovedGarrote;
         _nameplateImprovedGarroteBox.Checked = SupportsNameplateImprovedGarrote
             && _currentSpec?.Nameplates?.ImprovedGarrote != false;
@@ -1695,6 +1713,7 @@ public sealed class ClassConfigEditorControl : UserControl
         _nameplateAurasGrid.ReadOnly = !enabled;
         _nameplateImprovedGarroteBox.Enabled = enabled && SupportsNameplateImprovedGarrote;
         _nameplateThreatBox.Enabled = enabled;
+        _nameplateCastSpellBox.Enabled = enabled;
         UpdateNameplatePixelSummary();
     }
 
@@ -1717,6 +1736,7 @@ public sealed class ClassConfigEditorControl : UserControl
 
         if (SupportsNameplateImprovedGarrote && _nameplateImprovedGarroteBox.Checked) fields++;
         if (_nameplateThreatBox.Checked) fields++;
+        if (_nameplateCastSpellBox.Checked) fields += 2;
         var total = NameplateStateLayout.TotalPixelCount(fields);
         _nameplatePixelSummary.Text = _nameplateEnabledBox.Checked
             ? $"主像素（队伍后）\n映射 {NameplateStateLayout.MappingFieldCount} + {NameplateStateLayout.SlotCount} × {fields} = {total} 格\n固定 {NameplateStateLayout.FixedFieldCount} 格/槽：生命值/距离/战斗"
@@ -4293,7 +4313,8 @@ public sealed class ClassConfigEditorControl : UserControl
             ImprovedGarrote = SupportsNameplateImprovedGarrote
                 ? _nameplateImprovedGarroteBox.Checked
                 : _currentSpec.Nameplates?.ImprovedGarrote,
-            Threat = _nameplateThreatBox.Checked
+            Threat = _nameplateThreatBox.Checked,
+            CastSpell = _nameplateCastSpellBox.Checked
         };
         foreach (DataGridViewRow row in _nameplateAurasGrid.Rows)
         {

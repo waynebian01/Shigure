@@ -32,6 +32,9 @@ end
 
 local function ClearSlot(slot)
     if not pixelConfig then return end
+    if pixelConfig.castSpellOffset then
+        Fuyutsui:ClearRgbSpellPixel(PixelIndex(pixelConfig, slot, pixelConfig.castSpellOffset))
+    end
     for offset = 1, pixelConfig.num do
         Fuyutsui:ClearNameplateTexture(PixelIndex(pixelConfig, slot, offset))
     end
@@ -140,6 +143,11 @@ function Fuyutsui:LoadNameplatePixels(config)
     self:ReleaseNameplateAuraContainers()
     -- 旧分配可能已被新专精使用，恢复普通零值索引。
     if pixelConfig then
+        if pixelConfig.castSpellOffset then
+            for slot = 1, NAMEPLATE_SLOT_COUNT do
+                self:ClearRgbSpellPixel(PixelIndex(pixelConfig, slot, pixelConfig.castSpellOffset))
+            end
+        end
         for index = pixelConfig.start, RegionEnd(pixelConfig) do
             self:CreateTexture(index, 0)
         end
@@ -193,8 +201,26 @@ function Fuyutsui:RefreshNameplatePixels()
                 -- 无仇恨记录时 API 返回 nil，与状态 0 一并表示未坦克该单位。
                 self:CreateTexture(PixelIndex(config, slot, config.threatOffset), (status or 0) / 255)
             end
+            if config.castSpellOffset then
+                self:RefreshRgbSpellPixel(PixelIndex(config, slot, config.castSpellOffset), unit)
+            end
             RefreshAuraContainer(slot, unit, config)
         end
+    end
+end
+
+function Fuyutsui:RefreshNameplateCastPixel(unit)
+    local config = pixelConfig
+    if not config or not config.castSpellOffset then return end
+    local slot = tonumber(string.match(unit or "", "^nameplate(%d+)$"))
+    if not slot or slot < 1 or slot > NAMEPLATE_SLOT_COUNT then return end
+    local index = PixelIndex(config, slot, config.castSpellOffset)
+    if UnitExists(unit) and not UnitIsFriend("player", unit) then
+        self:RefreshRgbSpellPixel(index, unit)
+    else
+        self:ClearRgbSpellPixel(index)
+        self:ClearNameplateTexture(index)
+        self:ClearNameplateTexture(index + 1)
     end
 end
 

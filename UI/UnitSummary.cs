@@ -113,11 +113,14 @@ internal static class UnitSummary
             CountConditionFieldKind.Combat => "战斗",
             CountConditionFieldKind.ImprovedGarrote => "强化锁喉",
             CountConditionFieldKind.Threat => "仇恨值",
+            CountConditionFieldKind.CastSpell => "施法技能",
             CountConditionFieldKind.Aura => $"[{FormatAura(condition.AuraSpellId.GetValueOrDefault(), resolveAuraName)}]",
             _ => "?"
         };
-        var value = condition.ValueKind == CountConditionValueKind.StateField
-            ? $"[{condition.ValueField}]"
+        var value = condition.ValueKind == CountConditionValueKind.NumberArray
+            ? condition.ValueField ?? "?"
+            : condition.ValueKind == CountConditionValueKind.StateField
+                ? $"[{condition.ValueField}]"
             : DescribeCountValue(condition);
         return $"{field}{CountComparisonOperator(condition.Comparison)}{value}";
     }
@@ -156,6 +159,8 @@ internal static class UnitSummary
             CountConditionComparisonKind.LessThan => "<",
             CountConditionComparisonKind.GreaterThanOrEqual => ">=",
             CountConditionComparisonKind.LessThanOrEqual => "<=",
+            CountConditionComparisonKind.In => " in ",
+            CountConditionComparisonKind.NotIn => " not in ",
             _ => "?"
         };
 

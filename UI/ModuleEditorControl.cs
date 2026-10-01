@@ -40,6 +40,7 @@ public sealed class ModuleEditorControl : UserControl
     private readonly DataGridViewTextBoxColumn _adjustmentFieldColumn = new();
     private readonly DataGridViewComboBoxColumn _adjustmentTypeColumn = new();
     private readonly ListView _unitsList = new UiThemedListView();
+    private readonly ListView _numberArraysList = new UiThemedListView();
     private readonly Label _pathLabel = new();
     private readonly Label _unitsEmptyHint = new();
     private readonly Label _editorEmptyHint = new();
@@ -68,6 +69,7 @@ public sealed class ModuleEditorControl : UserControl
     private readonly List<ModuleEnemyCountField> _enemyCounts = new();
     private readonly List<ModuleAverageHealthField> _averageHealthFields = new();
     private readonly List<ModuleValueAdjustment> _valueAdjustments = new();
+    private readonly List<ModuleNumberArray> _numberArrays = new();
     private readonly Dictionary<string, List<long>> _currentClassSpellIdsByName =
         new(StringComparer.Ordinal);
     private readonly Dictionary<string, List<long>> _currentSpecItemIdsByName =
@@ -214,6 +216,7 @@ public sealed class ModuleEditorControl : UserControl
             EnemyCounts = _enemyCounts,
             AverageHealthFields = _averageHealthFields,
             ValueAdjustments = _valueAdjustments,
+            NumberArrays = _numberArrays,
             Rules = GridRows(_rulesGrid),
             Adjustments = GridRows(_adjustmentsGrid),
             FormulaAdjustments = GridRows(_formulaAdjustmentsGrid)
@@ -729,11 +732,14 @@ public sealed class ModuleEditorControl : UserControl
         {
             Dock = DockStyle.Fill,
             BackColor = UiTheme.SurfaceRaised,
-            ColumnCount = 1,
+            ColumnCount = 2,
             RowCount = 4,
             Padding = new Padding(UiTheme.CardPadding),
             Margin = new Padding(0)
         };
+
+        panel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
+        panel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
 
         panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 28));
         panel.RowStyles.Add(new RowStyle(SizeType.Percent, 50));
@@ -742,10 +748,106 @@ public sealed class ModuleEditorControl : UserControl
 
         panel.Controls.Add(CreateSectionLabel("条件动态数值"), 0, 0);
         panel.Controls.Add(BuildAdjustmentsGrid(), 0, 1);
+        panel.SetColumnSpan(panel.GetControlFromPosition(0, 0)!, 2);
+        panel.SetColumnSpan(panel.GetControlFromPosition(0, 1)!, 2);
         panel.Controls.Add(CreateSectionLabel("公式动态数值"), 0, 2);
         panel.Controls.Add(BuildFormulaAdjustmentsGrid(), 0, 3);
+        panel.Controls.Add(CreateSectionLabel("数组"), 1, 2);
+        panel.Controls.Add(BuildNumberArraysPanel(), 1, 3);
 
         return panel;
+    }
+
+    private Control BuildNumberArraysPanel()
+    {
+        var panel = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            BackColor = UiTheme.SurfaceRaised,
+            ColumnCount = 2,
+            RowCount = 1,
+            Margin = new Padding(8, 0, 0, 0)
+        };
+        panel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        panel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120));
+        panel.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        UiTheme.ConfigureListViewColumns(
+            _numberArraysList,
+            Font,
+            "module-number-arrays",
+            new UiTheme.ListColumn("名称", 140, 420),
+            new UiTheme.ListColumn("数组", 240, 2000, FillRemaining: true));
+        _numberArraysList.MultiSelect = false;
+        _numberArraysList.DoubleClick += (_, _) => EditSelectedNumberArray();
+        panel.Controls.Add(_numberArraysList, 0, 0);
+
+        var buttons = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            FlowDirection = FlowDirection.TopDown,
+            WrapContents = false,
+            BackColor = UiTheme.SurfaceRaised,
+            Margin = new Padding(8, 0, 0, 0)
+        };
+        buttons.Resize += (_, _) => LayoutUnitActionButtons(buttons);
+        var add = CreateUnitActionButton("添加", UiTheme.Field, UiTheme.Text, bottomGap: true);
+        add.Click += (_, _) => AddNumberArray();
+        var edit = CreateUnitActionButton("编辑", UiTheme.Field, UiTheme.Text, bottomGap: true);
+        edit.Click += (_, _) => EditSelectedNumberArray();
+        var delete = CreateUnitActionButton("删除", UiTheme.Field, UiTheme.Danger, bottomGap: false);
+        delete.Click += (_, _) => DeleteSelectedNumberArray();
+        buttons.Controls.Add(add);
+        buttons.Controls.Add(edit);
+        buttons.Controls.Add(delete);
+        panel.Controls.Add(buttons, 1, 0);
+        return panel;
+    }
+
+    private void RefreshNumberArraysList(int selectIndex = -1)
+    {
+        _numberArraysList.BeginUpdate();
+        _numberArraysList.Items.Clear();
+        foreach (var array in _numberArrays)
+        {
+            var values = $"{{ {string.Join(", ", array.Numbers.Select(number => $"[{number}] = true"))} }}";
+            _numberArraysList.Items.Add(new ListViewItem([array.Name, values])
+            {
+                ToolTipText = $"{array.Name} = {values}"
+            });
+        }
+        _numberArraysList.EndUpdate();
+        if (selectIndex >= 0 && selectIndex < _numberArraysList.Items.Count)
+        {
+            _numberArraysList.Items[selectIndex].Selected = true;
+        }
+    }
+
+    private void AddNumberArray()
+    {
+        if (_selectedModule is null) return;
+        using var editor = new ModuleNumberArrayEditorForm(null, _numberArrays.Select(array => array.Name));
+        if (editor.ShowDialog(FindForm()) != DialogResult.OK || editor.Result is null) return;
+        _numberArrays.Add(editor.Result);
+        RefreshNumberArraysList(_numberArrays.Count - 1);
+    }
+
+    private void EditSelectedNumberArray()
+    {
+        if (_selectedModule is null || _numberArraysList.SelectedIndices.Count == 0) return;
+        var index = _numberArraysList.SelectedIndices[0];
+        using var editor = new ModuleNumberArrayEditorForm(
+            _numberArrays[index],
+            _numberArrays.Where((_, i) => i != index).Select(array => array.Name));
+        if (editor.ShowDialog(FindForm()) != DialogResult.OK || editor.Result is null) return;
+        _numberArrays[index] = editor.Result;
+        RefreshNumberArraysList(index);
+    }
+
+    private void DeleteSelectedNumberArray()
+    {
+        if (_selectedModule is null || _numberArraysList.SelectedIndices.Count == 0) return;
+        _numberArrays.RemoveAt(_numberArraysList.SelectedIndices[0]);
+        RefreshNumberArraysList();
     }
 
     private Control BuildRulesPanel()
@@ -1775,8 +1877,14 @@ public sealed class ModuleEditorControl : UserControl
         var availableSpellIds = _currentClassConditionSpells.Select(spell => spell.SpellId).ToHashSet();
         foreach (var term in ConditionExpression.Parse(expression))
         {
+            if (term.NamedArray && !_numberArrays.Any(array => string.Equals(array.Name, term.Value, StringComparison.Ordinal)))
+            {
+                AddUnique(messages, $"数组“{term.Value}”不存在");
+                continue;
+            }
             if (SpellIdConditionFields.Contains(term.Field))
             {
+                if (ConditionExpression.IsInOperator(term.Op)) continue;
                 if (!long.TryParse(term.Value.Trim(), out var spellId)
                     || spellId <= 0
                     || !availableSpellIds.Contains(spellId))
@@ -2154,7 +2262,10 @@ public sealed class ModuleEditorControl : UserControl
             hasNameplateImprovedGarrote: _fieldCatalog.HasNameplateImprovedGarrote(
                 ReadMatchCombo(_classBox), ReadMatchCombo(_specBox)),
             hasNameplateThreat: _fieldCatalog.HasNameplateThreat(
-                ReadMatchCombo(_classBox), ReadMatchCombo(_specBox)));
+                ReadMatchCombo(_classBox), ReadMatchCombo(_specBox)),
+            hasNameplateCastSpell: _fieldCatalog.HasNameplateCastSpell(
+                ReadMatchCombo(_classBox), ReadMatchCombo(_specBox)),
+            numberArrayNames: _numberArrays.Select(array => array.Name).ToArray());
         if (editor.ShowDialog(FindForm()) != DialogResult.OK)
         {
             return;
@@ -2208,7 +2319,9 @@ public sealed class ModuleEditorControl : UserControl
             existingEnemyCount,
             existingAverageHealth,
             _fieldCatalog.HasNameplateImprovedGarrote(ReadMatchCombo(_classBox), ReadMatchCombo(_specBox)),
-            _fieldCatalog.HasNameplateThreat(ReadMatchCombo(_classBox), ReadMatchCombo(_specBox)));
+            _fieldCatalog.HasNameplateThreat(ReadMatchCombo(_classBox), ReadMatchCombo(_specBox)),
+            _fieldCatalog.HasNameplateCastSpell(ReadMatchCombo(_classBox), ReadMatchCombo(_specBox)),
+            _numberArrays.Select(array => array.Name).ToArray());
         if (editor.ShowDialog(FindForm()) != DialogResult.OK)
         {
             return;
@@ -2830,6 +2943,8 @@ public sealed class ModuleEditorControl : UserControl
                     continue;
                 }
 
+                if (ConditionExpression.IsInOperator(term.Op)) continue;
+
                 var value = term.Value.Trim();
                 if (long.TryParse(value, out var spellId)
                     && spellId > 0
@@ -3023,6 +3138,7 @@ public sealed class ModuleEditorControl : UserControl
         {
             var field = FormatConditionFieldForDisplay(term.Field);
             var value = SpellIdConditionFields.Contains(term.Field)
+                && !ConditionExpression.IsInOperator(term.Op)
                 ? FormatConditionSpellValueForDisplay(term.Value)
                 : ItemIdConditionFields.Contains(term.Field)
                     ? FormatConditionItemValueForDisplay(term.Value)
@@ -3629,7 +3745,8 @@ public sealed class ModuleEditorControl : UserControl
             spells: RefreshAndBuildConditionSpells(),
             conditionSpellsProvider: () => RefreshAndBuildConditionSpells(),
             items: RefreshAndBuildConditionItems(),
-            conditionItemsProvider: () => RefreshAndBuildConditionItems());
+            conditionItemsProvider: () => RefreshAndBuildConditionItems(),
+            numberArrayNames: _numberArrays.Select(array => array.Name).ToArray());
         if (editor.ShowDialog(FindForm()) != DialogResult.OK)
         {
             return;
@@ -4004,7 +4121,8 @@ public sealed class ModuleEditorControl : UserControl
             spells: spells,
             conditionSpellsProvider: () => RefreshAndBuildConditionSpells(),
             items: items,
-            conditionItemsProvider: () => RefreshAndBuildConditionItems());
+            conditionItemsProvider: () => RefreshAndBuildConditionItems(),
+            numberArrayNames: _numberArrays.Select(array => array.Name).ToArray());
         if (editor.ShowDialog(FindForm()) != DialogResult.OK)
         {
             return;
@@ -4395,6 +4513,9 @@ public sealed class ModuleEditorControl : UserControl
         _averageHealthFields.AddRange(module.AverageHealthFields.Select(field => field.Clone()));
         _valueAdjustments.Clear();
         _valueAdjustments.AddRange(module.ValueAdjustments.Select(adjustment => adjustment.Clone()));
+        _numberArrays.Clear();
+        _numberArrays.AddRange(module.NumberArrays.Select(array => array.Clone()));
+        RefreshNumberArraysList();
         SelectClass(module.Match.ClassId);
         SelectSpec(module.Match.SpecId);
         SelectPartyType(module.Match.PartyType);
@@ -4467,6 +4588,8 @@ public sealed class ModuleEditorControl : UserControl
         _enemyCounts.Clear();
         _averageHealthFields.Clear();
         _valueAdjustments.Clear();
+        _numberArrays.Clear();
+        RefreshNumberArraysList();
         RefreshUnitsList();
         SelectClass(null);
         SelectSpec(null);
@@ -4638,6 +4761,7 @@ public sealed class ModuleEditorControl : UserControl
         }
 
         module.ValueAdjustments = valueAdjustments;
+        module.NumberArrays = _numberArrays.Select(array => array.Clone()).ToList();
         if (!TryReadRules(out var rules, out var rulesError))
         {
             MessageBox.Show(rulesError, "Shigure", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -4645,12 +4769,77 @@ public sealed class ModuleEditorControl : UserControl
         }
 
         module.Rules = rules;
+        if (!TryValidateNumberArrayReferences(module, out var arrayError))
+        {
+            MessageBox.Show(arrayError, "Shigure", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return false;
+        }
         if (!TryUpgradeLegacySpellReferences(module, out var upgradeError))
         {
             MessageBox.Show(upgradeError, "Shigure", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             return false;
         }
 
+        return true;
+    }
+
+    private static bool TryValidateNumberArrayReferences(ModuleDefinition module, out string error)
+    {
+        error = string.Empty;
+        var names = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var array in module.NumberArrays)
+        {
+            if (!ConditionExpression.IsArrayName(array.Name) || !names.Add(array.Name))
+            {
+                error = $"数组名称“{array.Name}”无效或重复。";
+                return false;
+            }
+        }
+
+        static string? MissingName(string? expression, HashSet<string> names)
+        {
+            foreach (var term in ConditionExpression.Parse(expression))
+            {
+                if (term.NamedArray && !names.Contains(term.Value))
+                    return term.Value;
+            }
+            return null;
+        }
+
+        for (var i = 0; i < module.Rules.Count; i++)
+        {
+            if (MissingName(module.Rules[i].Condition, names) is { } missing)
+            {
+                error = $"规则第 {i + 1} 行引用的数组“{missing}”不存在。";
+                return false;
+            }
+            foreach (var sub in module.Rules[i].SubConditions ?? [])
+            {
+                if (MissingName(sub, names) is not { } subMissing) continue;
+                error = $"规则第 {i + 1} 行子条件引用的数组“{subMissing}”不存在。";
+                return false;
+            }
+        }
+        for (var i = 0; i < module.ValueAdjustments.Count; i++)
+        {
+            if (MissingName(module.ValueAdjustments[i].Condition, names) is not { } missing) continue;
+            error = $"动态数值第 {i + 1} 行引用的数组“{missing}”不存在。";
+            return false;
+        }
+        var filters = module.Units.Select(unit => (unit.Name, unit.FilterGroups))
+            .Concat(module.Counts.Select(count => (count.Name, count.FilterGroups)))
+            .Concat(module.EnemyCounts.Select(count => (count.Name, count.FilterGroups)))
+            .Concat(module.AverageHealthFields.Select(field => (field.Name, field.FilterGroups)));
+        foreach (var (fieldName, groups) in filters)
+        {
+            foreach (var condition in groups.SelectMany(group => group.Conditions))
+            {
+                if (condition.ValueKind != CountConditionValueKind.NumberArray) continue;
+                if (condition.ValueField is { } arrayName && names.Contains(arrayName)) continue;
+                error = $"动态字段“{fieldName}”引用的数组“{condition.ValueField}”不存在。";
+                return false;
+            }
+        }
         return true;
     }
 

@@ -355,7 +355,16 @@ internal static class FuyutsuiConfigConverter
                             ? category + stateName
                             : stateName;
                         AddStateField(result, key, index, skipCommon: true, category);
-                        index++;
+                        if (IsRgbSpellState(category, stateName) && result[key] is JsonObject rgbField)
+                        {
+                            rgbField["pixelFormat"] = "rgb24";
+                            rgbField["payloadStep"] = index + 1;
+                            index += 2;
+                        }
+                        else
+                        {
+                            index++;
+                        }
                     }
                 }
             }
@@ -682,6 +691,11 @@ internal static class FuyutsuiConfigConverter
             {
                 nameplateJson["threatOffset"] = ++fieldCount;
             }
+            if (nameplates.GetBool("castSpell") == true)
+            {
+                nameplateJson["castSpellOffset"] = ++fieldCount;
+                nameplateJson["castSpellPayloadOffset"] = ++fieldCount;
+            }
             nameplateJson["num"] = fieldCount;
             var totalPixels = NameplateStateLayout.TotalPixelCount(fieldCount);
             if (regionStart + totalPixels - 1 > MainPixelLayout.MaxCapacity)
@@ -857,6 +871,13 @@ internal static class FuyutsuiConfigConverter
 
         return result;
     }
+
+    private static bool IsRgbSpellState(string category, string stateName)
+        => stateName == "施法技能" && category is
+            ClassStateCatalog.CategoryTarget or ClassStateCatalog.CategoryFocus or
+            ClassStateCatalog.CategoryBoss1 or ClassStateCatalog.CategoryBoss2 or
+            ClassStateCatalog.CategoryBoss3 or ClassStateCatalog.CategoryBoss4 or
+            ClassStateCatalog.CategoryBoss5;
 
     private static void AddStateField(
         JsonObject result,

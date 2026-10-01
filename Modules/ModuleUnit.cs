@@ -99,7 +99,8 @@ public enum CountConditionFieldKind
     Aura,
     Class,
     ImprovedGarrote,
-    Threat
+    Threat,
+    CastSpell
 }
 
 /// <summary>数量筛选的比较方式。</summary>
@@ -110,14 +111,17 @@ public enum CountConditionComparisonKind
     GreaterThan,
     LessThan,
     GreaterThanOrEqual,
-    LessThanOrEqual
+    LessThanOrEqual,
+    In,
+    NotIn
 }
 
 /// <summary>数量筛选右值的来源。</summary>
 public enum CountConditionValueKind
 {
     Constant,
-    StateField
+    StateField,
+    NumberArray
 }
 
 /// <summary>一条通用数量筛选条件。</summary>

@@ -175,7 +175,9 @@ end
 function Shingen:RefreshUnitCastStateBlocks(unit)
     local cache = GetUnitState(unit)
     local category = unitZHMap[unit]
-    if not cache or not category or not UnitExists(unit) then return end
+    if not cache or not category then return end
+    self:UpdateStateBlock(category, "施法技能")
+    if not UnitExists(unit) then return end
 
     if cache.casting then
         self:UpdateStateBlock(category, "施法(倒计时)")
@@ -192,6 +194,7 @@ function Shingen:ClearUnitCastStateBlocks(unit, stateField)
     local cache = GetUnitState(unit)
     local category = unitZHMap[unit]
     if not cache or not category then return end
+    self:UpdateStateBlock(category, "施法技能")
 
     if stateField == "casting" then
         self:UpdateStateBlock(category, "施法(倒计时)")

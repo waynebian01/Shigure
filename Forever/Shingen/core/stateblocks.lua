@@ -347,7 +347,20 @@ for powerType, powerName in pairs(Shingen.powerNameMap) do
 end
 
 -- UpdateStateBlock("状态", "职业") / UpdateStateBlock("能量", "符文") / UpdateStateBlock("目标", "生命值")
+local rgbSpellUnits = {
+    ["目标"] = "target", ["焦点"] = "focus",
+    ["首领1"] = "boss1", ["首领2"] = "boss2", ["首领3"] = "boss3",
+    ["首领4"] = "boss4", ["首领5"] = "boss5",
+}
+
 function Shingen:UpdateStateBlock(category, name)
+    if name == "施法技能" and rgbSpellUnits[category] then
+        local key = category .. name
+        local blocks = self.blocks
+        local index = blocks and blocks.state and blocks.state[key]
+        if index then self:RefreshRgbSpellPixel(index, rgbSpellUnits[category]) end
+        return
+    end
     local cat = stateBlockGetters[category]
     if not cat then return end
     local getter = cat[name]

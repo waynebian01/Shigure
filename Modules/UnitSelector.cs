@@ -214,7 +214,7 @@ public static class UnitSelector
     }
 
     /// <summary>
-    /// 解析敌人数量字段为整数: 统计姓名板中距离 &gt; 0 且满足全部已启用筛选(生命值 / 光环 / 距离 / 战斗)的敌人。
+    /// 解析敌人数量字段为整数: 统计姓名板中距离 &gt; 0 且满足全部已启用筛选的敌人。
     /// 姓名板未配置距离时该字段恒为 0, 结果也恒为 0。
     /// </summary>
     public static int Resolve(ModuleEnemyCountField count, GameState state)
@@ -360,6 +360,7 @@ public static class UnitSelector
                     or CountConditionFieldKind.Threat
                     or CountConditionFieldKind.Combat
                     or CountConditionFieldKind.ImprovedGarrote
+                    or CountConditionFieldKind.CastSpell
                     or CountConditionFieldKind.Aura
                 : condition.Field is CountConditionFieldKind.Health
                     or CountConditionFieldKind.HealingAbsorb
@@ -370,6 +371,19 @@ public static class UnitSelector
             if (!allowed
                 || condition.Field == CountConditionFieldKind.Aura && condition.AuraSpellId is not > 0
                 || condition.Field != CountConditionFieldKind.Aura && condition.AuraSpellId is not null
+                || (condition.Comparison is CountConditionComparisonKind.In or CountConditionComparisonKind.NotIn)
+                    && (condition.Field != CountConditionFieldKind.CastSpell
+                        || condition.ValueKind != CountConditionValueKind.NumberArray
+                        || string.IsNullOrWhiteSpace(condition.ValueField))
+                || condition.ValueKind == CountConditionValueKind.NumberArray
+                    && (condition.Field != CountConditionFieldKind.CastSpell
+                        || condition.Comparison is not (CountConditionComparisonKind.In or CountConditionComparisonKind.NotIn)
+                        || string.IsNullOrWhiteSpace(condition.ValueField))
+                || condition.Field == CountConditionFieldKind.CastSpell
+                    && condition.Comparison is not (CountConditionComparisonKind.Equal
+                        or CountConditionComparisonKind.NotEqual
+                        or CountConditionComparisonKind.In
+                        or CountConditionComparisonKind.NotIn)
                 || (condition.Field is CountConditionFieldKind.Role
                         or CountConditionFieldKind.Dispel
                         or CountConditionFieldKind.Class
@@ -434,6 +448,16 @@ public static class UnitSelector
         if (!TryReadCountConditionValue(data, condition, out var actual))
         {
             return false;
+        }
+
+        if (condition.Comparison is CountConditionComparisonKind.In or CountConditionComparisonKind.NotIn)
+        {
+            if (!state.Values.TryGetValue("$numberArrays", out var arraysValue)
+                || arraysValue is not IReadOnlyDictionary<string, IReadOnlySet<long>> arrays
+                || !arrays.TryGetValue(condition.ValueField ?? string.Empty, out var numbers))
+                return false;
+            var contains = numbers.Contains(actual);
+            return condition.Comparison == CountConditionComparisonKind.In ? contains : !contains;
         }
 
         var expected = condition.ValueKind == CountConditionValueKind.StateField
@@ -515,6 +539,7 @@ public static class UnitSelector
             CountConditionFieldKind.Range => "距离",
             CountConditionFieldKind.ImprovedGarrote => NameplateStateLayout.ImprovedGarroteField,
             CountConditionFieldKind.Threat => NameplateStateLayout.ThreatField,
+            CountConditionFieldKind.CastSpell => NameplateStateLayout.CastSpellField,
             _ => string.Empty
         };
         if (field.Length == 0)

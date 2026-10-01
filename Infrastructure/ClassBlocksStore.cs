@@ -139,6 +139,7 @@ internal static class ClassBlocksStore
         // null 保留旧配置省略值；正式服奇袭的有效默认值为 true。
         public bool? ImprovedGarrote { get; set; }
         public bool? Threat { get; set; }
+        public bool? CastSpell { get; set; }
         public List<AuraEntry> Auras { get; } = new();
     }
 
@@ -713,7 +714,8 @@ internal static class ClassBlocksStore
             var blocks = new NameplateBlocks
             {
                 ImprovedGarrote = nameplates.GetBool("improvedGarrote"),
-                Threat = nameplates.GetBool("threat")
+                Threat = nameplates.GetBool("threat"),
+                CastSpell = nameplates.GetBool("castSpell")
             };
             AppendAuraList(nameplates.GetTable("auras"), blocks.Auras);
             result.Nameplates = blocks;
@@ -983,6 +985,11 @@ internal static class ClassBlocksStore
             {
                 sb.Append(indent).Append("    threat = ")
                     .Append(threat ? "true" : "false").AppendLine(",");
+            }
+            if (nameplates.CastSpell is { } castSpell)
+            {
+                sb.Append(indent).Append("    castSpell = ")
+                    .Append(castSpell ? "true" : "false").AppendLine(",");
             }
             if (nameplates.Auras.Count > 0)
             {

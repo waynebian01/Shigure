@@ -8,7 +8,7 @@ namespace Shigure;
 /// <summary>
 /// 单个比较项: 与上一项的连接方式(且/或)、字段、判断符号、值。
 /// </summary>
-public sealed record ConditionTerm(bool OrWithPrevious, string Field, string Op, string Value);
+public sealed record ConditionTerm(bool OrWithPrevious, string Field, string Op, string Value, bool NamedArray = false);
 
 /// <summary>
 /// 条件表达式文本与比较项列表之间的双向转换。
@@ -17,7 +17,7 @@ public sealed record ConditionTerm(bool OrWithPrevious, string Field, string Op,
 public static class ConditionExpression
 {
     private static readonly Regex InRegex = new(
-        @"^\s*(?<field>.+?)\s+(?<op>not\s+in|in)\s*\((?<value>.*?)\)\s*$",
+        @"^\s*(?<field>.+?)\s+(?<op>not\s+in|in)(?:\s*\((?<value>.*?)\)|\s+(?<array>[^\s(),&|]+))\s*$",
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     private static readonly Regex ComparisonRegex = new(
@@ -71,7 +71,8 @@ public static class ConditionExpression
             builder.Append(term.Field).Append(' ').Append(op).Append(' ');
             if (IsInOperator(op))
             {
-                builder.Append('(').Append(value).Append(')');
+                if (term.NamedArray) builder.Append(value);
+                else builder.Append('(').Append(value).Append(')');
             }
             else
             {
@@ -91,7 +92,10 @@ public static class ConditionExpression
                 orWithPrevious,
                 inMatch.Groups["field"].Value.Trim(),
                 NormalizeOperator(inMatch.Groups["op"].Value),
-                NormalizeInValue(inMatch.Groups["value"].Value));
+                inMatch.Groups["array"].Success
+                    ? inMatch.Groups["array"].Value
+                    : NormalizeInValue(inMatch.Groups["value"].Value),
+                NamedArray: inMatch.Groups["array"].Success);
         }
 
         var comparison = ComparisonRegex.Match(term);
@@ -130,6 +134,14 @@ public static class ConditionExpression
 
         return text;
     }
+
+    public static bool IsArrayName(string? value)
+    {
+        var text = value?.Trim();
+        return !string.IsNullOrEmpty(text)
+            && Regex.IsMatch(text, @"^[^\s(),&|]+$")
+            && !long.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out _);
+    }
 }
 
 /// <summary>
@@ -157,7 +169,7 @@ public sealed class ConditionEditorForm : Form
     private static readonly string[] AllOperators = ["==", "!=", ">", ">=", "<", "<=", "in", "not in"];
     private static readonly string[] TextOperators = ["==", "!=", "in", "not in"];
     private static readonly string[] BoolOperators = ["==", "!="];
-    private static readonly string[] SpellOperators = ["==", "!="];
+    private static readonly string[] SpellOperators = ["==", "!=", "in", "not in"];
     private static readonly string[] DelayOperators = ["=="];
     private static readonly CategoryItem[] CategoryItems =
     [
@@ -174,6 +186,7 @@ public sealed class ConditionEditorForm : Form
     private readonly IReadOnlyList<ConditionField> _valueReferenceFields;
     private readonly IReadOnlyList<ConditionSpell> _spells;
     private readonly IReadOnlyList<ConditionItem> _items;
+    private readonly IReadOnlyList<string> _numberArrayNames;
     private readonly Func<IReadOnlyList<ConditionField>>? _conditionFieldsProvider;
     private readonly Func<IReadOnlyList<ConditionSpell>>? _conditionSpellsProvider;
     private readonly Func<IReadOnlyList<ConditionItem>>? _conditionItemsProvider;
@@ -212,7 +225,8 @@ public sealed class ConditionEditorForm : Form
         IReadOnlyList<ConditionSpell>? spells = null,
         Func<IReadOnlyList<ConditionSpell>>? conditionSpellsProvider = null,
         IReadOnlyList<ConditionItem>? items = null,
-        Func<IReadOnlyList<ConditionItem>>? conditionItemsProvider = null)
+        Func<IReadOnlyList<ConditionItem>>? conditionItemsProvider = null,
+        IReadOnlyList<string>? numberArrayNames = null)
     {
         // 保存独立快照，避免父级字段集合后续刷新时影响当前弹窗；子弹窗则通过 provider 取得最新目录。
         _fields = fields.ToArray();
@@ -223,6 +237,7 @@ public sealed class ConditionEditorForm : Form
             .ToArray();
         _spells = (spells ?? []).ToArray();
         _items = (items ?? []).ToArray();
+        _numberArrayNames = (numberArrayNames ?? []).ToArray();
         _conditionFieldsProvider = conditionFieldsProvider;
         _conditionSpellsProvider = conditionSpellsProvider;
         _conditionItemsProvider = conditionItemsProvider;
@@ -554,7 +569,8 @@ public sealed class ConditionEditorForm : Form
             spells: spells,
             conditionSpellsProvider: _conditionSpellsProvider,
             items: items,
-            conditionItemsProvider: _conditionItemsProvider);
+            conditionItemsProvider: _conditionItemsProvider,
+            numberArrayNames: _numberArrayNames);
         return editor.ShowDialog(this) == DialogResult.OK ? editor.ConditionText : null;
     }
 
@@ -1737,7 +1753,8 @@ public sealed class ConditionEditorForm : Form
     private void ConfigureValueCell(DataGridViewRow row, string? rawValue, bool preserveRaw)
     {
         var field = SelectedField(row);
-        if (SpellIdConditionFields.Contains(field?.Name))
+        if (SpellIdConditionFields.Contains(field?.Name)
+            && !ConditionExpression.IsInOperator(row.Cells[OperatorColumn].Value?.ToString()))
         {
             ConfigureSpellValueCell(row, rawValue, preserveRaw);
             return;
@@ -1813,11 +1830,18 @@ public sealed class ConditionEditorForm : Form
         row.Cells[ValueColumn] = SupportsValueReference(row, field)
             ? new ReferenceValueCell { Value = text }
             : new DataGridViewTextBoxCell { Value = text };
+        if (ConditionExpression.IsInOperator(row.Cells[OperatorColumn].Value?.ToString())
+            && _numberArrayNames.Count > 0)
+        {
+            row.Cells[ValueColumn].ToolTipText = "可输入数组名：" + string.Join("、", _numberArrayNames) + "；或输入逗号分隔的数字";
+        }
     }
 
-    // 数值字段的值既可手填数字, 也可引用动态数值字段; in/not in 是字面量列表, 不参与。
+    // in/not in 可以从下拉选择模块数组，也可手填原有字面量列表。
     private bool SupportsValueReference(DataGridViewRow row, FieldItem? field)
     {
+        if (ConditionExpression.IsInOperator(row.Cells[OperatorColumn].Value?.ToString()))
+            return _numberArrayNames.Count > 0;
         return _valueReferenceFields.Count > 0
             && field is not null
             && (field.IsCustom || field.Type == ConditionFieldType.Int)
@@ -1837,6 +1861,38 @@ public sealed class ConditionEditorForm : Form
 
         _conditionsGrid.CurrentCell = cell;
         var currentValue = cell.Value?.ToString()?.Trim() ?? string.Empty;
+        if (ConditionExpression.IsInOperator(_conditionsGrid.Rows[rowIndex].Cells[OperatorColumn].Value?.ToString()))
+        {
+            var arrayOptions = new List<UiDropDownOption>
+            {
+                new(currentValue, "手动输入列表", LeadingText: currentValue)
+            };
+            arrayOptions.AddRange(_numberArrayNames.Select(name => new UiDropDownOption(name, name)));
+            var bounds = _conditionsGrid.GetCellDisplayRectangle(columnIndex, rowIndex, cutOverflow: true);
+            ToolStripDropDown? arrayDropDown = null;
+            arrayDropDown = UiDropDownPopup.Show(
+                _conditionsGrid,
+                bounds,
+                arrayOptions,
+                currentValue,
+                selected =>
+                {
+                    var value = selected.Value?.ToString() ?? string.Empty;
+                    cell.Value = value;
+                    _conditionsGrid.InvalidateCell(cell);
+                    UpdatePreview();
+                    if (ReferenceEquals(selected, arrayOptions[0]))
+                        BeginInvoke(() => BeginEditValueCell(cell));
+                },
+                preferredWidth: 300,
+                closed: () =>
+                {
+                    if (ReferenceEquals(_conditionComboDropDown, arrayDropDown))
+                        _conditionComboDropDown = null;
+                });
+            _conditionComboDropDown = arrayDropDown;
+            return;
+        }
         // 首项回到手动数字: 当前填的是数字就保留, 填的是引用名则回落到 0。
         var manualValue = currentValue.Length > 0 && TryParseIntegerText(currentValue, out var number)
             ? number.ToString("0", CultureInfo.InvariantCulture)
@@ -1985,7 +2041,8 @@ public sealed class ConditionEditorForm : Form
     private string? GetMissingSpellMessage(DataGridViewRow row)
     {
         var field = SelectedField(row)?.Name;
-        if (!SpellIdConditionFields.Contains(field))
+        if (!SpellIdConditionFields.Contains(field)
+            || ConditionExpression.IsInOperator(row.Cells[OperatorColumn].Value?.ToString()))
         {
             return null;
         }
@@ -2044,7 +2101,9 @@ public sealed class ConditionEditorForm : Form
                 OrWithPrevious: i > 0 && row.Cells[ConnectorColumn].Value?.ToString() == "或",
                 field,
                 op,
-                value));
+                value,
+                NamedArray: ConditionExpression.IsInOperator(op)
+                    && _numberArrayNames.Contains(value, StringComparer.Ordinal)));
         }
 
         return terms;

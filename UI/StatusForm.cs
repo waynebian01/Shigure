@@ -2444,6 +2444,7 @@ public sealed partial class StatusForm : Form
         rows.Add((category, "nameplates.N.生命值"));
         rows.Add((category, "nameplates.N.距离"));
         rows.Add((category, "nameplates.N.战斗"));
+        rows.Add((category, "nameplates.N.施法技能"));
         rows.Add((category, "nameplates.N.TTD"));
         rows.Add((category, "nameplates.N.光环N"));
         return rows;

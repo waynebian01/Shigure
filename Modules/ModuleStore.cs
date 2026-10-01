@@ -26,6 +26,7 @@ public sealed class ModuleDefinition
     public List<ModuleEnemyCountField> EnemyCounts { get; set; } = new();
     public List<ModuleAverageHealthField> AverageHealthFields { get; set; } = new();
     public List<ModuleValueAdjustment> ValueAdjustments { get; set; } = new();
+    public List<ModuleNumberArray> NumberArrays { get; set; } = new();
     public List<ModuleRule> Rules { get; set; } = new();
     public ModuleDependencySnapshot? Dependencies { get; set; }
 
@@ -50,6 +51,7 @@ public sealed class ModuleDefinition
             EnemyCounts = EnemyCounts.Select(count => count.Clone()).ToList(),
             AverageHealthFields = AverageHealthFields.Select(field => field.Clone()).ToList(),
             ValueAdjustments = ValueAdjustments.Select(adjustment => adjustment.Clone()).ToList(),
+            NumberArrays = NumberArrays.Select(array => array.Clone()).ToList(),
             Rules = Rules.Select(rule => rule.Clone()).ToList(),
             Dependencies = Dependencies?.Clone()
         };
@@ -67,6 +69,18 @@ public sealed class ModuleDefinition
             Rules = []
         };
     }
+}
+
+public sealed class ModuleNumberArray
+{
+    public string Name { get; set; } = string.Empty;
+    public List<long> Numbers { get; set; } = new();
+
+    public ModuleNumberArray Clone() => new()
+    {
+        Name = Name,
+        Numbers = Numbers.ToList()
+    };
 }
 
 public sealed class ModuleMatch
@@ -688,11 +702,18 @@ public sealed class ModuleStore
         module.EnemyCounts ??= new List<ModuleEnemyCountField>();
         module.AverageHealthFields ??= new List<ModuleAverageHealthField>();
         module.ValueAdjustments ??= new List<ModuleValueAdjustment>();
+        module.NumberArrays ??= new List<ModuleNumberArray>();
         module.Units.RemoveAll(unit => string.IsNullOrWhiteSpace(unit.Name));
         module.Counts.RemoveAll(count => string.IsNullOrWhiteSpace(count.Name));
         module.EnemyCounts.RemoveAll(count => string.IsNullOrWhiteSpace(count.Name));
         module.AverageHealthFields.RemoveAll(field => string.IsNullOrWhiteSpace(field.Name));
         module.ValueAdjustments.RemoveAll(adjustment => string.IsNullOrWhiteSpace(adjustment.Field));
+        module.NumberArrays.RemoveAll(array => string.IsNullOrWhiteSpace(array.Name));
+        foreach (var array in module.NumberArrays)
+        {
+            array.Name = array.Name.Trim();
+            array.Numbers = (array.Numbers ?? []).Distinct().ToList();
+        }
         foreach (var unit in module.Units)
         {
             unit.Name = unit.Name.Trim();
@@ -819,7 +840,8 @@ public sealed class ModuleStore
             group.Conditions ??= new List<ModuleCountCondition>();
             foreach (var condition in group.Conditions)
             {
-                condition.ValueField = condition.ValueKind == CountConditionValueKind.StateField
+                condition.ValueField = condition.ValueKind is CountConditionValueKind.StateField
+                    or CountConditionValueKind.NumberArray
                     && !string.IsNullOrWhiteSpace(condition.ValueField)
                         ? condition.ValueField.Trim()
                         : null;
@@ -1100,6 +1122,10 @@ public static class ModuleLogic
             return existingUnits;
         }
 
+        state.Values["$numberArrays"] = module.NumberArrays
+            .Where(array => !string.IsNullOrWhiteSpace(array.Name))
+            .GroupBy(array => array.Name, StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => (IReadOnlySet<long>)group.First().Numbers.ToHashSet(), StringComparer.Ordinal);
         var earlyAppliedAdjustments = ApplyValueAdjustments(
             module,
             state,
@@ -1476,7 +1502,7 @@ public static class ModuleLogic
 public static class ModuleConditionEvaluator
 {
     private static readonly Regex InRegex = new(
-        @"^\s*(?<field>.+?)\s+(?<op>not\s+in|in)\s*\((?<value>.*?)\)\s*$",
+        @"^\s*(?<field>.+?)\s+(?<op>not\s+in|in)(?:\s*\((?<value>.*?)\)|\s+(?<array>[^\s(),&|]+))\s*$",
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     private static readonly Regex ComparisonRegex = new(
@@ -1622,7 +1648,7 @@ public static class ModuleConditionEvaluator
         if (inMatch.Success)
         {
             var inField = inMatch.Groups["field"].Value.Trim();
-            if (SpellIdConditionFields.Contains(inField) || ItemIdConditionFields.Contains(inField))
+            if (ItemIdConditionFields.Contains(inField))
             {
                 error = $"{inField} 仅支持 == 或 != 判断。";
                 return false;
@@ -1635,7 +1661,44 @@ public static class ModuleConditionEvaluator
                 return true;
             }
             var inOp = NormalizeOperator(inMatch.Groups["op"].Value);
-            var values = ParseListLiterals(inMatch.Groups["value"].Value);
+            IReadOnlyList<object?> values;
+            if (inMatch.Groups["array"].Success)
+            {
+                var arrayName = inMatch.Groups["array"].Value;
+                if (!state.Values.TryGetValue("$numberArrays", out var arraysValue)
+                    || arraysValue is not IReadOnlyDictionary<string, IReadOnlySet<long>> arrays
+                    || !arrays.TryGetValue(arrayName, out var numbers))
+                {
+                    error = $"数组“{arrayName}”不存在。";
+                    return false;
+                }
+
+                values = numbers.Select(number => (object?)number).ToArray();
+            }
+            else
+            {
+                values = ParseListLiterals(inMatch.Groups["value"].Value);
+            }
+
+            if (SpellIdConditionFields.Contains(inField))
+            {
+                // 玩家施法技能等字段保留本地索引协议；数组里存的仍是原始 spellID。
+                if (spellIndices is null)
+                {
+                    matched = false;
+                    return true;
+                }
+                var localIndices = new List<object?>();
+                foreach (var value in values)
+                {
+                    if (TryToInt64(value, out var spellId)
+                        && spellIndices.TryGetValue(spellId, out var localIndex))
+                    {
+                        localIndices.Add(localIndex);
+                    }
+                }
+                values = localIndices;
+            }
             return TryCompareIn(inLeft, inOp, values, out matched, out error);
         }
 

@@ -1,7 +1,8 @@
 namespace Shigure;
 
 /// <summary>
-/// 姓名板像素布局：先 7 个单位映射格，再按槽位排列生命值/距离/战斗/光环；层数紧跟光环，锁喉类型与仇恨值可选地追加在末尾。
+/// 姓名板像素布局：先 7 个单位映射格，再按槽位排列生命值/距离/战斗/光环；
+/// 可选施法技能在槽位末尾占定位格及紧邻的 RGB 数据格。
 /// 插件 (Fuyutsui/main.lua、nameplates.lua)、config 转换与运行时状态构建共用这套常量。
 /// </summary>
 internal static class NameplateStateLayout
@@ -20,6 +21,7 @@ internal static class NameplateStateLayout
 
     public const string ImprovedGarroteField = "强化锁喉";
     public const string ThreatField = "仇恨值";
+    public const string CastSpellField = "施法技能";
 
     // 专精配置使用职业内的一基序号，奇袭为潜行者的第 1 专精。
     public static bool SupportsImprovedGarrote(string? classDirectory, int? classId, int? specIndex)

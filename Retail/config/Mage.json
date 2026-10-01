@@ -219,109 +219,123 @@
       "type": "int",
       "category": "能量"
     },
-    "目标类型": {
+    "目标施法技能": {
       "step": 23,
       "type": "int",
-      "category": "目标"
+      "category": "目标",
+      "pixelFormat": "rgb24",
+      "payloadStep": 24
     },
-    "目标施法(倒计时)": {
-      "step": 24,
-      "type": "int",
-      "category": "目标"
-    },
-    "目标施法(正计时)": {
+    "目标类型": {
       "step": 25,
       "type": "int",
       "category": "目标"
     },
-    "目标施法可打断": {
+    "目标施法(倒计时)": {
       "step": 26,
       "type": "int",
       "category": "目标"
     },
-    "目标引导": {
+    "目标施法(正计时)": {
       "step": 27,
       "type": "int",
       "category": "目标"
     },
-    "目标引导可打断": {
+    "目标施法可打断": {
       "step": 28,
       "type": "int",
       "category": "目标"
     },
-    "焦点施法(倒计时)": {
+    "目标引导": {
       "step": 29,
       "type": "int",
-      "category": "焦点"
+      "category": "目标"
     },
-    "焦点施法(正计时)": {
+    "目标引导可打断": {
       "step": 30,
       "type": "int",
-      "category": "焦点"
+      "category": "目标"
     },
-    "焦点施法可打断": {
+    "焦点施法技能": {
       "step": 31,
       "type": "int",
-      "category": "焦点"
+      "category": "焦点",
+      "pixelFormat": "rgb24",
+      "payloadStep": 32
     },
-    "焦点引导": {
-      "step": 32,
-      "type": "int",
-      "category": "焦点"
-    },
-    "焦点引导可打断": {
+    "焦点施法(倒计时)": {
       "step": 33,
       "type": "int",
       "category": "焦点"
     },
-    "鼠标类型": {
+    "焦点施法(正计时)": {
       "step": 34,
       "type": "int",
-      "category": "鼠标"
+      "category": "焦点"
     },
-    "鼠标驱散类型": {
+    "焦点施法可打断": {
       "step": 35,
       "type": "int",
-      "category": "鼠标"
+      "category": "焦点"
     },
-    "鼠标生命值": {
+    "焦点引导": {
       "step": 36,
       "type": "int",
-      "category": "鼠标"
+      "category": "焦点"
     },
-    "鼠标距离": {
+    "焦点引导可打断": {
       "step": 37,
       "type": "int",
-      "category": "鼠标"
+      "category": "焦点"
     },
-    "鼠标施法(倒计时)": {
+    "鼠标类型": {
       "step": 38,
       "type": "int",
       "category": "鼠标"
     },
-    "鼠标施法(正计时)": {
+    "鼠标驱散类型": {
       "step": 39,
       "type": "int",
       "category": "鼠标"
     },
-    "鼠标施法可打断": {
+    "鼠标生命值": {
       "step": 40,
       "type": "int",
       "category": "鼠标"
     },
-    "鼠标引导": {
+    "鼠标距离": {
       "step": 41,
       "type": "int",
       "category": "鼠标"
     },
-    "鼠标引导可打断": {
+    "鼠标施法(倒计时)": {
       "step": 42,
+      "type": "int",
+      "category": "鼠标"
+    },
+    "鼠标施法(正计时)": {
+      "step": 43,
+      "type": "int",
+      "category": "鼠标"
+    },
+    "鼠标施法可打断": {
+      "step": 44,
+      "type": "int",
+      "category": "鼠标"
+    },
+    "鼠标引导": {
+      "step": 45,
+      "type": "int",
+      "category": "鼠标"
+    },
+    "鼠标引导可打断": {
+      "step": 46,
       "type": "int",
       "category": "鼠标"
     },
     "auras": {
       "player.1242974.value": {
-        "step": 43,
+        "step": 47,
         "type": "int",
         "category": "玩家",
         "displayName": "奥数齐射",
@@ -333,7 +347,7 @@
         ]
       },
       "player.1242974.apps": {
-        "step": 44,
+        "step": 48,
         "type": "int",
         "category": "玩家",
         "displayName": "奥数齐射层数",
@@ -345,7 +359,7 @@
         ]
       },
       "player.394195.value": {
-        "step": 45,
+        "step": 49,
         "type": "int",
         "category": "玩家",
         "displayName": "溢流能量",
@@ -357,7 +371,7 @@
         ]
       },
       "player.394195.apps": {
-        "step": 46,
+        "step": 50,
         "type": "int",
         "category": "玩家",
         "displayName": "溢流能量层数",
@@ -369,7 +383,7 @@
         ]
       },
       "player.263725.value": {
-        "step": 47,
+        "step": 51,
         "type": "int",
         "category": "玩家",
         "displayName": "节能施法",
@@ -381,7 +395,7 @@
         ]
       },
       "player.263725.apps": {
-        "step": 48,
+        "step": 52,
         "type": "int",
         "category": "玩家",
         "displayName": "节能施法层数",
@@ -393,7 +407,7 @@
         ]
       },
       "player.1277009.value": {
-        "step": 49,
+        "step": 53,
         "type": "int",
         "category": "玩家",
         "displayName": "过载飞弹",
@@ -405,7 +419,7 @@
         ]
       },
       "player.1223797.value": {
-        "step": 50,
+        "step": 54,
         "type": "int",
         "category": "玩家",
         "displayName": "敏锐直觉",
@@ -417,7 +431,7 @@
         ]
       },
       "player.451038.value": {
-        "step": 51,
+        "step": 55,
         "type": "int",
         "category": "玩家",
         "displayName": "奥术之魂",
@@ -429,7 +443,7 @@
         ]
       },
       "player.365362.value": {
-        "step": 52,
+        "step": 56,
         "type": "int",
         "category": "玩家",
         "displayName": "奥术涌动",
@@ -441,7 +455,7 @@
         ]
       },
       "player.235450.value": {
-        "step": 53,
+        "step": 57,
         "type": "int",
         "category": "玩家",
         "displayName": "棱光护体",
@@ -550,103 +564,117 @@
       "type": "int",
       "category": "能量"
     },
-    "目标类型": {
+    "目标施法技能": {
       "step": 23,
       "type": "int",
-      "category": "目标"
+      "category": "目标",
+      "pixelFormat": "rgb24",
+      "payloadStep": 24
     },
-    "目标施法(倒计时)": {
-      "step": 24,
-      "type": "int",
-      "category": "目标"
-    },
-    "目标施法(正计时)": {
+    "目标类型": {
       "step": 25,
       "type": "int",
       "category": "目标"
     },
-    "目标施法可打断": {
+    "目标施法(倒计时)": {
       "step": 26,
       "type": "int",
       "category": "目标"
     },
-    "目标引导": {
+    "目标施法(正计时)": {
       "step": 27,
       "type": "int",
       "category": "目标"
     },
-    "目标引导可打断": {
+    "目标施法可打断": {
       "step": 28,
       "type": "int",
       "category": "目标"
     },
-    "焦点施法(倒计时)": {
+    "目标引导": {
       "step": 29,
       "type": "int",
-      "category": "焦点"
+      "category": "目标"
     },
-    "焦点施法(正计时)": {
+    "目标引导可打断": {
       "step": 30,
       "type": "int",
-      "category": "焦点"
+      "category": "目标"
     },
-    "焦点施法可打断": {
+    "焦点施法技能": {
       "step": 31,
       "type": "int",
-      "category": "焦点"
+      "category": "焦点",
+      "pixelFormat": "rgb24",
+      "payloadStep": 32
     },
-    "焦点引导": {
-      "step": 32,
-      "type": "int",
-      "category": "焦点"
-    },
-    "焦点引导可打断": {
+    "焦点施法(倒计时)": {
       "step": 33,
       "type": "int",
       "category": "焦点"
     },
-    "鼠标类型": {
+    "焦点施法(正计时)": {
       "step": 34,
       "type": "int",
-      "category": "鼠标"
+      "category": "焦点"
     },
-    "鼠标驱散类型": {
+    "焦点施法可打断": {
       "step": 35,
       "type": "int",
-      "category": "鼠标"
+      "category": "焦点"
     },
-    "鼠标生命值": {
+    "焦点引导": {
       "step": 36,
       "type": "int",
-      "category": "鼠标"
+      "category": "焦点"
     },
-    "鼠标距离": {
+    "焦点引导可打断": {
       "step": 37,
       "type": "int",
-      "category": "鼠标"
+      "category": "焦点"
     },
-    "鼠标施法(倒计时)": {
+    "鼠标类型": {
       "step": 38,
       "type": "int",
       "category": "鼠标"
     },
-    "鼠标施法(正计时)": {
+    "鼠标驱散类型": {
       "step": 39,
       "type": "int",
       "category": "鼠标"
     },
-    "鼠标施法可打断": {
+    "鼠标生命值": {
       "step": 40,
       "type": "int",
       "category": "鼠标"
     },
-    "鼠标引导": {
+    "鼠标距离": {
       "step": 41,
       "type": "int",
       "category": "鼠标"
     },
-    "鼠标引导可打断": {
+    "鼠标施法(倒计时)": {
       "step": 42,
+      "type": "int",
+      "category": "鼠标"
+    },
+    "鼠标施法(正计时)": {
+      "step": 43,
+      "type": "int",
+      "category": "鼠标"
+    },
+    "鼠标施法可打断": {
+      "step": 44,
+      "type": "int",
+      "category": "鼠标"
+    },
+    "鼠标引导": {
+      "step": 45,
+      "type": "int",
+      "category": "鼠标"
+    },
+    "鼠标引导可打断": {
+      "step": 46,
       "type": "int",
       "category": "鼠标"
     }
@@ -752,103 +780,117 @@
       "type": "int",
       "category": "能量"
     },
-    "目标类型": {
+    "目标施法技能": {
       "step": 24,
       "type": "int",
-      "category": "目标"
+      "category": "目标",
+      "pixelFormat": "rgb24",
+      "payloadStep": 25
     },
-    "目标施法(倒计时)": {
-      "step": 25,
-      "type": "int",
-      "category": "目标"
-    },
-    "目标施法(正计时)": {
+    "目标类型": {
       "step": 26,
       "type": "int",
       "category": "目标"
     },
-    "目标施法可打断": {
+    "目标施法(倒计时)": {
       "step": 27,
       "type": "int",
       "category": "目标"
     },
-    "目标引导": {
+    "目标施法(正计时)": {
       "step": 28,
       "type": "int",
       "category": "目标"
     },
-    "目标引导可打断": {
+    "目标施法可打断": {
       "step": 29,
       "type": "int",
       "category": "目标"
     },
-    "焦点施法(倒计时)": {
+    "目标引导": {
       "step": 30,
       "type": "int",
-      "category": "焦点"
+      "category": "目标"
     },
-    "焦点施法(正计时)": {
+    "目标引导可打断": {
       "step": 31,
       "type": "int",
-      "category": "焦点"
+      "category": "目标"
     },
-    "焦点施法可打断": {
+    "焦点施法技能": {
       "step": 32,
       "type": "int",
-      "category": "焦点"
+      "category": "焦点",
+      "pixelFormat": "rgb24",
+      "payloadStep": 33
     },
-    "焦点引导": {
-      "step": 33,
-      "type": "int",
-      "category": "焦点"
-    },
-    "焦点引导可打断": {
+    "焦点施法(倒计时)": {
       "step": 34,
       "type": "int",
       "category": "焦点"
     },
-    "鼠标类型": {
+    "焦点施法(正计时)": {
       "step": 35,
       "type": "int",
-      "category": "鼠标"
+      "category": "焦点"
     },
-    "鼠标驱散类型": {
+    "焦点施法可打断": {
       "step": 36,
       "type": "int",
-      "category": "鼠标"
+      "category": "焦点"
     },
-    "鼠标生命值": {
+    "焦点引导": {
       "step": 37,
       "type": "int",
-      "category": "鼠标"
+      "category": "焦点"
     },
-    "鼠标距离": {
+    "焦点引导可打断": {
       "step": 38,
       "type": "int",
-      "category": "鼠标"
+      "category": "焦点"
     },
-    "鼠标施法(倒计时)": {
+    "鼠标类型": {
       "step": 39,
       "type": "int",
       "category": "鼠标"
     },
-    "鼠标施法(正计时)": {
+    "鼠标驱散类型": {
       "step": 40,
       "type": "int",
       "category": "鼠标"
     },
-    "鼠标施法可打断": {
+    "鼠标生命值": {
       "step": 41,
       "type": "int",
       "category": "鼠标"
     },
-    "鼠标引导": {
+    "鼠标距离": {
       "step": 42,
       "type": "int",
       "category": "鼠标"
     },
-    "鼠标引导可打断": {
+    "鼠标施法(倒计时)": {
       "step": 43,
+      "type": "int",
+      "category": "鼠标"
+    },
+    "鼠标施法(正计时)": {
+      "step": 44,
+      "type": "int",
+      "category": "鼠标"
+    },
+    "鼠标施法可打断": {
+      "step": 45,
+      "type": "int",
+      "category": "鼠标"
+    },
+    "鼠标引导": {
+      "step": 46,
+      "type": "int",
+      "category": "鼠标"
+    },
+    "鼠标引导可打断": {
+      "step": 47,
       "type": "int",
       "category": "鼠标"
     }

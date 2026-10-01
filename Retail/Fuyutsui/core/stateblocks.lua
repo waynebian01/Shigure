@@ -236,9 +236,8 @@ local stateBlockGetters = {
         ["天启骑士数量"] = function() return state.knightCount or 0 end,
         ["自律"] = function() return state.forbearance or 0 end,
         ["沸点"] = function() return state.boilingPoint or 0 end,
-        ["强化锁喉"] = function() return state.improvedGarrote or 0 end,
         -- 原生图标槽覆盖数值通道；此处始终绘制无光环时的底色。
-        ["目标强化锁喉"] = function() return 0 end,
+        ["强化锁喉"] = function() return 0 end,
         ["风暴涌流图腾"] = function() return state.stormSurgeTotem or 0 end,
         ["风暴涌流图腾数量"] = function() return state.stormSurgeTotemCount or 0 end,
         ["治疗之泉图腾"] = function() return state.healingStreamTotem or 0 end,

@@ -116,6 +116,7 @@ Fuyutsui.ClassMacros = {
             "[@mouseover]圣疗术",
             "[@mouseover]圣洁鸣钟",
             "奥术洪流",
+            "[@focus]清毒术",
         },
         specialSpells = {
             "/stopcasting", -- 停止施法
@@ -220,6 +221,9 @@ Fuyutsui.ClassMacros = {
             "速效药膏",
             "致伤药膏",
             "萎缩药膏",
+            "[@focus]脚踢",
+            "[@target]脚踢",
+            "奥术洪流",
         },
         specialSpells = {
             "/castsequence reset=1 潜行,x", -- 潜行
@@ -349,6 +353,18 @@ Fuyutsui.ClassMacros = {
         },
         specialSpells = {
             "/castsequence reset=1 死亡之握,x", -- 死亡之握
+            "/use 剧毒狂怒之泉", -- 剧毒狂怒之泉
+            "/use 治疗石", -- 治疗石
+            "/use 浓缩银月城生命药水", -- 浓缩银月城生命药水
+            "/se cd on", -- 开启爆发
+            "/se cd off", -- 关闭爆发
+            "/stopcasting\n/cast [target=focus,harm,nodead][target=mouseover,harm,nodead][harm,nodead] 窒息", -- 窒息
+            "/cast [target=player] 血魔之握", -- 血魔之握
+            "/stopattack\n/stopcasting\n/cleartarget\n/targetenemy\n/cast [target=focus,harm]心灵冰冻;[target=mouseover,harm,nodead]心灵冰冻;心灵冰冻\n/targetlasttarget", -- 心灵冰冻
+            "/cast [target=mouseover,dead,help,combat]复活盟友;[target=mouseover,nodead,harm]控制亡灵;[dead,help,combat]复活盟友;[nodead,harm]控制亡灵", -- 复活盟友
+            "/cast [@cursor] 反魔法领域", -- 反魔法领域
+            "/cast [@cursor] 枯萎凋零", -- 枯萎凋零
+            "/cast 亡者大军\n/use 13", -- 亡者大军
         },
     },
 
@@ -400,6 +416,10 @@ Fuyutsui.ClassMacros = {
             "[@target]治疗波",
             "[@player]天怒",
             "[@player]治疗之雨",
+            "妖术领主的厄运神像",
+            "盘魂者仪式容器",
+            "货运者水壶",
+            "动荡的邪心水晶",
         },
         specialSpells = {
             "/stopcasting", -- 停止施法
@@ -462,6 +482,7 @@ Fuyutsui.ClassMacros = {
             "霜火之箭",
             "灼烧",
             "造餐术",
+            "[nochanneling]棱彩飞弹",
         },
         specialSpells = {},
     },

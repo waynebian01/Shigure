@@ -150,6 +150,8 @@ Fuyutsui.ClassBlocks = {
             [241288] = { name = "鲁莽药水", isEquipped = false },
             [241304] = { name = "治疗药水", isEquipped = false },
             [241308] = { name = "圣光潜力", isEquipped = false },
+            [250215] = { name = "货运者水壶", isEquipped = false },
+            [250255] = { name = "动荡的邪心水晶", isEquipped = false },
             [270169] = { name = "妖术领主的厄运神像", isEquipped = true },
             [271883] = { name = "浓缩银月城治疗药水", isEquipped = false },
             [273796] = { name = "一瓶肮脏的烈性毒液", isEquipped = true },
@@ -379,8 +381,11 @@ Fuyutsui.ClassBlocks = {
         items = {
             [5512] = { name = "治疗石", isEquipped = false },
             [241304] = { name = "银月城生命药水", isEquipped = false },
+            [250215] = { name = "货运者水壶", isEquipped = true },
+            [250255] = { name = "动荡的邪心水晶", isEquipped = true },
             [270162] = { name = "盘魂者仪式容器", isEquipped = true },
             [270169] = { name = "妖术领主的厄运神像", isEquipped = true },
+            [271884] = { name = "浓缩银月城治疗药水", isEquipped = false },
         },
         group = {
             state = { "healthPercent", "role", "dispel", },
@@ -522,4 +527,6 @@ Fuyutsui.itemsList = {
     [273796] = { index = 20, name = "一瓶肮脏的烈性毒液" },
     [270162] = { index = 21, name = "盘魂者仪式容器" },
     [270169] = { index = 22, name = "妖术领主的厄运神像" },
+    [250215] = { index = 23, name = "货运者水壶" },
+    [250255] = { index = 24, name = "动荡的邪心水晶" },
 }

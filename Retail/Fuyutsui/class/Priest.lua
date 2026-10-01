@@ -43,6 +43,9 @@ Fuyutsui.ClassBlocks = {
                 "施法可打断",
                 "驱散类型",
             },
+            ["焦点"] = {
+                "施法技能",
+            },
             ["鼠标"] = {
                 "类型",
                 "驱散类型",
@@ -54,8 +57,6 @@ Fuyutsui.ClassBlocks = {
                 "引导",
                 "引导可打断",
             },
-
-            ["焦点"] = { "施法技能" },
         },
         auras = {
             player = {
@@ -107,6 +108,7 @@ Fuyutsui.ClassBlocks = {
             { spellId = 1235211, name = "暗影分流" },
             { spellId = 586, name = "渐隐术" },
             { spellId = 10060, name = "能量灌注" },
+            { spellId = 132157, name = "神圣新星" },
         },
         items = {
             [5512] = { name = "治疗石", isEquipped = false },
@@ -245,6 +247,7 @@ Fuyutsui.ClassBlocks = {
             { spellId = 528, name = "驱散魔法" },
             { spellId = 10060, name = "能量灌注" },
             { spellId = 357214, name = "飞翼打击" },
+            { spellId = 132157, name = "神圣新星" },
         },
         items = {
             [5512] = { name = "治疗石", isEquipped = false },
@@ -260,6 +263,10 @@ Fuyutsui.ClassBlocks = {
                 { name = "恢复", spellId = 139, },
                 { name = "愈合祷言", spellId = 41635, },
             },
+        },
+        nameplates = {
+            threat = false,
+            castSpell = true,
         },
     },
     [3] = {
@@ -287,6 +294,7 @@ Fuyutsui.ClassBlocks = {
                 "首领战",
                 "难度",
                 "施法技能",
+                "公共冷却",
             },
             ["特殊"] = {
                 "姿态",
@@ -318,6 +326,7 @@ Fuyutsui.ClassBlocks = {
                 "施法可打断",
                 "引导",
                 "引导可打断",
+                "类型",
             },
             ["鼠标"] = {
                 "类型",
@@ -329,6 +338,11 @@ Fuyutsui.ClassBlocks = {
                 "施法可打断",
                 "引导",
                 "引导可打断",
+            },
+            ["首领1"] = {
+                "生命值",
+                "能量值",
+                "引导",
             },
         },
         auras = {
@@ -356,6 +370,9 @@ Fuyutsui.ClassBlocks = {
                     { name = "精神鞭笞", spellId = 15407, isPlayer = true, },
                     { name = "惊魂幻象", spellId = 1243069, maxApps = 100, isPlayer = true, },
                 },
+                helpful = {
+                    { name = "爆发已开", spellIds = { 1276767, 389539 }, isPlayer = false, },
+                },
             },
         },
         spells = {
@@ -373,10 +390,15 @@ Fuyutsui.ClassBlocks = {
             { spellId = 120644, name = "光晕" },
             { spellId = 1242173, name = "虚空齐射" },
             { spellId = 10060, name = "能量灌注" },
+            { spellId = 586, name = "渐隐术" },
+        },
+        items = {
+            [250144] = { name = "烬翼羽毛", isEquipped = false },
         },
         nameplates = {
             auras = {
                 { name = "暗言术：痛", spellId = 589, isPlayer = true, },
+                { name = "吸血鬼之触", spellId = 34914, isPlayer = true, },
             },
         },
     },
@@ -470,6 +492,7 @@ Fuyutsui.spellsList = {
     [368970]  = { index = 253, name = "扫尾" },
     [357214]  = { index = 254, name = "飞翼打击" },
     [436344]  = { index = 255, name = "艾泽里特涌动" },
+    [586] = { index = 41, name = "渐隐术" },
 }
 
 Fuyutsui.itemsList = {
@@ -492,4 +515,5 @@ Fuyutsui.itemsList = {
     [271883] = { index = 17, name = "浓缩银月城生命药水" },
     [271884] = { index = 18, name = "浓缩银月城生命药水" },
     [270162] = { index = 19, name = "盘魂者仪式容器" },
+    [250144] = { index = 20, name = "烬翼羽毛" },
 }

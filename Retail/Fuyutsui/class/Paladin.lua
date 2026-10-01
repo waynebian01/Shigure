@@ -51,6 +51,13 @@ Fuyutsui.ClassBlocks = {
                 "驱散类型",
                 "生命值",
             },
+            ["焦点"] = {
+                "施法技能",
+                "驱散类型",
+                "距离",
+                "生命值",
+                "类型",
+            },
             ["鼠标"] = {
                 "类型",
                 "驱散类型",
@@ -68,8 +75,6 @@ Fuyutsui.ClassBlocks = {
             ["首领2"] = {
                 "施法(正计时)",
             },
-
-            ["焦点"] = { "施法技能" },
         },
         auras = {
             player = {
@@ -116,6 +121,7 @@ Fuyutsui.ClassBlocks = {
             { spellId = 432459, name = "神圣壁垒", charge = true, maxCharge = 2 },
             { spellId = 391054, name = "代祷" },
             { spellId = 155145, name = "奥术洪流" },
+            { spellId = 393024, name = "强化清洁术" },
         },
         items = {
             [5512] = { name = "治疗石", isEquipped = false },
@@ -124,7 +130,7 @@ Fuyutsui.ClassBlocks = {
             [271884] = { name = "浓缩银月城生命药水", isEquipped = false },
         },
         group = {
-            state = { "healthPercent", "role", "dispel","class" },
+            state = { "healthPercent", "role", "dispel", "class", },
             aura = {
                 { name = "圣光道标", spellIds = { 53563, 156910, 1244893 }, },
                 { name = "永恒之火", spellId = 156322, },
@@ -428,6 +434,7 @@ Fuyutsui.spellsList = {
     [357214]  = { index = 254, name = "飞翼打击" },
     [436344]  = { index = 255, name = "艾泽里特涌动" },
     [53563] = { index = 36, name = "圣光道标" },
+    [393024] = { index = 37, name = "强化清洁术" },
 }
 
 Fuyutsui.itemsList = {

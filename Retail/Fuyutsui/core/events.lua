@@ -176,10 +176,6 @@ function Fuyutsui:PLAYER_STOPPED_MOVING()
     self:SetPlayerMoving(false)
 end
 
-function Fuyutsui:UPDATE_STEALTH()
-    self:RefreshPlayerStealthState()
-end
-
 function Fuyutsui:UNIT_SPELLCAST_SENT(_, unitTarget, targetName, castGUID, spellID)
     if unitTarget ~= "player" then return end
     if not isSec(targetName) then
@@ -291,7 +287,6 @@ function Fuyutsui:UNIT_SPELLCAST_SUCCEEDED(_, unitTarget, castGUID, spellID, cas
     self:UpdateInsertSpellBySuccess(spellID)
     self:UpdateInsertItemBySuccess(spellID)
     self:PreviousSkill(spellID)
-    self:UpdateImprovedGarrote(spellID)
     self:UpdateActiveTotemRemainingTime(spellID)
     if spellID == 384255 then
         self:ClearAllFuyutsuiBars()
@@ -643,8 +638,6 @@ function Fuyutsui:OnUpdate(elapsed)
 
     self.timeElapsed = self.timeElapsed + elapsed
     if self.timeElapsed > 0.2 then
-        RunUpdateSafely(self, "RefreshPlayerStealthState")
-        RunUpdateSafely(self, "RefreshImprovedGarroteState")
         RunUpdateSafely(self, "UpdateSpellCooldown")
         RunUpdateSafely(self, "RefreshAssistedCombatSuggestion")
         RunUpdateSafely(self, "UpdateRune")

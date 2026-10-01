@@ -1035,7 +1035,7 @@ end
 
 local function GetUnitGarroteStateIndex(unit)
     local stateBlocks = Fuyutsui.blocks and Fuyutsui.blocks.state
-    return unit == "target" and stateBlocks and stateBlocks["目标强化锁喉"] or nil
+    return unit == "target" and stateBlocks and stateBlocks["强化锁喉"] or nil
 end
 
 local function AddGarroteIconSlot(container, index, slotKey)

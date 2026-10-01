@@ -404,48 +404,6 @@ end
 
 -- ============================ 职业特殊状态 ============================
 
-local playerWasStealthed = false
-local garroteStealthGraceUntil = nil
-local improvedGarroteExpires = 0
-local IMPROVED_GARROTE_DURATION = 24
-local IMPROVED_GARROTE_MAX_DURATION = 32
-local GARROTE_STEALTH_GRACE_DURATION = 6
-
-function Fuyutsui:RefreshPlayerStealthState()
-    if state.classFilename ~= "ROGUE" then return end
-    local stealthed = IsStealthed()
-    if issecretvalue(stealthed) then return end
-    stealthed = not not stealthed
-
-    if stealthed then
-        garroteStealthGraceUntil = nil
-    elseif playerWasStealthed then
-        garroteStealthGraceUntil = GetTime() + GARROTE_STEALTH_GRACE_DURATION
-    end
-    playerWasStealthed = stealthed
-    return stealthed
-end
-
-function Fuyutsui:RefreshImprovedGarroteState()
-    if state.classFilename ~= "ROGUE" then return end
-    local remaining = math.max(0, improvedGarroteExpires - GetTime())
-    state.improvedGarrote = math.ceil(remaining) / 255
-    self:UpdateStateBlock("特殊", "强化锁喉")
-end
-
-function Fuyutsui:UpdateImprovedGarrote(spellID)
-    if spellID ~= 703 or state.classFilename ~= "ROGUE" then return end
-    -- 施法成功可能先于脱潜事件到达；此处主动刷新，保留破潜锁喉的触发资格。
-    local stealthed = self:RefreshPlayerStealthState()
-    if stealthed == nil then return end
-    local now = GetTime()
-    if not stealthed and (not garroteStealthGraceUntil or now >= garroteStealthGraceUntil) then return end
-
-    local remaining = math.max(0, improvedGarroteExpires - now)
-    improvedGarroteExpires = now + math.min(IMPROVED_GARROTE_MAX_DURATION, remaining + IMPROVED_GARROTE_DURATION)
-    self:RefreshImprovedGarroteState()
-end
-
 function Fuyutsui:UpdatePlayerStagger()
     local unit = "player"
     local damage = UnitStagger(unit)

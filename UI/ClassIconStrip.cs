@@ -252,13 +252,6 @@ internal sealed class ClassIconStrip : Panel
             g.PixelOffsetMode = PixelOffsetMode.HighQuality;
 
             var bounds = ClientRectangle;
-            if (_selected || _hovered)
-            {
-                var fill = _selected ? UiTheme.Hover : UiTheme.Field;
-                using var brush = new SolidBrush(fill);
-                g.FillRectangle(brush, bounds);
-            }
-
             var drawnIconSize = Math.Min(
                 UiTheme.Scale(this, IconSize),
                 Math.Min(bounds.Width, bounds.Height) - UiTheme.Scale(this, 4));
@@ -270,12 +263,24 @@ internal sealed class ClassIconStrip : Panel
                 drawnIconSize,
                 drawnIconSize);
 
+            var frame = new Rectangle(
+                iconBounds.X,
+                iconBounds.Y,
+                Math.Max(1, iconBounds.Width - 1),
+                Math.Max(1, iconBounds.Height - 1));
+            var radius = UiTheme.RoundedIconRadius(this, frame);
+            using var shape = UiTheme.CreateRoundedRectanglePath(frame, radius);
+            if (_selected || _hovered)
+            {
+                using var brush = new SolidBrush(_selected ? UiTheme.Hover : UiTheme.Field);
+                g.FillPath(brush, shape);
+            }
             if (ClassId is { } classId)
             {
                 var icon = UiTheme.GetClassIcon(classId);
                 if (icon is not null)
                 {
-                    g.DrawImage(icon, iconBounds);
+                    UiTheme.DrawImageRounded(g, icon, frame, radius);
                 }
                 else
                 {
@@ -283,7 +288,7 @@ internal sealed class ClassIconStrip : Panel
                         g,
                         "?",
                         Font,
-                        iconBounds,
+                        frame,
                         UiTheme.Muted,
                         TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
                 }
@@ -294,18 +299,13 @@ internal sealed class ClassIconStrip : Panel
                     g,
                     "全部",
                     Font,
-                    iconBounds,
+                    frame,
                     _selected ? UiTheme.Text : UiTheme.Muted,
                     TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
             }
 
             using var border = new Pen(_selected ? UiTheme.Accent : UiTheme.Border);
-            g.DrawRectangle(
-                border,
-                iconBounds.X,
-                iconBounds.Y,
-                iconBounds.Width - 1,
-                iconBounds.Height - 1);
+            g.DrawPath(border, shape);
         }
     }
 }

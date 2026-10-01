@@ -810,6 +810,36 @@ internal static class UiTheme
         return card;
     }
 
+    internal static int RoundedIconRadius(Control control, Rectangle bounds)
+        => Math.Min(
+            Scale(control, ControlCornerRadius),
+            Math.Max(1, Math.Min(bounds.Width, bounds.Height) / 4));
+
+    internal static void DrawImageRounded(Graphics graphics, Image image, Rectangle bounds, int radius)
+    {
+        if (bounds.Width <= 1 || bounds.Height <= 1)
+        {
+            return;
+        }
+
+        using var scaled = new Bitmap(bounds.Width, bounds.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+        using (var canvas = Graphics.FromImage(scaled))
+        {
+            canvas.Clear(Color.Transparent);
+            canvas.InterpolationMode = InterpolationMode.HighQualityBicubic;
+            canvas.PixelOffsetMode = PixelOffsetMode.HighQuality;
+            canvas.DrawImage(image, 0, 0, bounds.Width, bounds.Height);
+        }
+
+        using var brush = new TextureBrush(scaled);
+        brush.TranslateTransform(bounds.X, bounds.Y);
+        using var path = CreateRoundedRectanglePath(bounds, radius);
+        var previous = graphics.SmoothingMode;
+        graphics.SmoothingMode = SmoothingMode.AntiAlias;
+        graphics.FillPath(brush, path);
+        graphics.SmoothingMode = previous;
+    }
+
     public static GraphicsPath CreateRoundedRectanglePath(Rectangle bounds, int radius)
     {
         var path = new GraphicsPath();
@@ -1084,7 +1114,7 @@ internal static class UiTheme
                         e.Bounds.Top + (e.Bounds.Height - iconSize) / 2,
                         iconSize,
                         iconSize);
-                    e.Graphics.DrawImage(icon, iconBounds);
+                    DrawImageRounded(e.Graphics, icon, iconBounds, RoundedIconRadius(listBox, iconBounds));
                     textLeft = iconBounds.Right + 4;
                 }
             }

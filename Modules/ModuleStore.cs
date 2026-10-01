@@ -71,15 +71,31 @@ public sealed class ModuleDefinition
     }
 }
 
+public enum ModuleNumberArrayKind
+{
+    [JsonStringEnumMemberName("spell")]
+    Spell = 0,
+    [JsonStringEnumMemberName("boss")]
+    Boss,
+    [JsonStringEnumMemberName("map")]
+    Map,
+    [JsonStringEnumMemberName("other")]
+    Other
+}
+
 public sealed class ModuleNumberArray
 {
     public string Name { get; set; } = string.Empty;
     public List<long> Numbers { get; set; } = new();
 
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public ModuleNumberArrayKind Kind { get; set; }
+
     public ModuleNumberArray Clone() => new()
     {
         Name = Name,
-        Numbers = Numbers.ToList()
+        Numbers = Numbers.ToList(),
+        Kind = Kind
     };
 }
 

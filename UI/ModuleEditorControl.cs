@@ -648,6 +648,7 @@ public sealed class ModuleEditorControl : UserControl
         {
             Dock = DockStyle.Fill,
             BackColor = UiTheme.Surface,
+            FillColor = UiTheme.Surface,
             ColumnCount = 1,
             RowCount = 1,
             Margin = new Padding(0),
@@ -659,7 +660,7 @@ public sealed class ModuleEditorControl : UserControl
         var contentHost = new Panel
         {
             Dock = DockStyle.Fill,
-            BackColor = UiTheme.SurfaceRaised,
+            BackColor = UiTheme.Surface,
             Margin = new Padding(0)
         };
         contentCard.Controls.Add(contentHost, 0, 0);
@@ -674,7 +675,6 @@ public sealed class ModuleEditorControl : UserControl
         {
             page.Dock = DockStyle.Fill;
             page.Visible = false;
-            page.BackColor = UiTheme.SurfaceRaised;
             contentHost.Controls.Add(page);
         }
 
@@ -682,7 +682,7 @@ public sealed class ModuleEditorControl : UserControl
         _editorEmptyHint.Dock = DockStyle.Fill;
         _editorEmptyHint.TextAlign = ContentAlignment.MiddleCenter;
         _editorEmptyHint.ForeColor = UiTheme.Muted;
-        _editorEmptyHint.BackColor = UiTheme.SurfaceRaised;
+        _editorEmptyHint.BackColor = UiTheme.Surface;
         _editorEmptyHint.Visible = false;
         contentHost.Controls.Add(_editorEmptyHint);
         _editorEmptyHint.BringToFront();
@@ -728,34 +728,67 @@ public sealed class ModuleEditorControl : UserControl
 
     private Control BuildAdjustmentsPanel()
     {
+        var gap = UiTheme.PageGap;
         var panel = new TableLayoutPanel
         {
             Dock = DockStyle.Fill,
-            BackColor = UiTheme.SurfaceRaised,
-            ColumnCount = 2,
-            RowCount = 4,
-            Padding = new Padding(UiTheme.CardPadding),
+            BackColor = UiTheme.Surface,
+            ColumnCount = 3,
+            RowCount = 3,
+            Padding = new Padding(gap),
             Margin = new Padding(0)
         };
 
         panel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
+        panel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, gap));
         panel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
+        panel.RowStyles.Add(new RowStyle(SizeType.Percent, 55));
+        panel.RowStyles.Add(new RowStyle(SizeType.Absolute, gap));
+        panel.RowStyles.Add(new RowStyle(SizeType.Percent, 45));
 
-        panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 28));
-        panel.RowStyles.Add(new RowStyle(SizeType.Percent, 50));
-        panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
-        panel.RowStyles.Add(new RowStyle(SizeType.Percent, 50));
-
-        panel.Controls.Add(CreateSectionLabel("条件动态数值"), 0, 0);
-        panel.Controls.Add(BuildAdjustmentsGrid(), 0, 1);
-        panel.SetColumnSpan(panel.GetControlFromPosition(0, 0)!, 2);
-        panel.SetColumnSpan(panel.GetControlFromPosition(0, 1)!, 2);
-        panel.Controls.Add(CreateSectionLabel("公式动态数值"), 0, 2);
-        panel.Controls.Add(BuildFormulaAdjustmentsGrid(), 0, 3);
-        panel.Controls.Add(CreateSectionLabel("数组"), 1, 2);
-        panel.Controls.Add(BuildNumberArraysPanel(), 1, 3);
-
+        var conditionCard = CreateEditorSectionCard("条件动态数值", BuildAdjustmentsGrid());
+        panel.Controls.Add(conditionCard, 0, 0);
+        panel.SetColumnSpan(conditionCard, 3);
+        panel.Controls.Add(CreateEditorSectionCard("公式动态数值", BuildFormulaAdjustmentsGrid()), 0, 2);
+        panel.Controls.Add(CreateEditorSectionCard("数组", BuildNumberArraysPanel()), 2, 2);
         return panel;
+    }
+
+    private Control CreateEditorCardPage(string title, Control body)
+    {
+        var panel = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            BackColor = UiTheme.Surface,
+            ColumnCount = 1,
+            RowCount = 1,
+            Padding = new Padding(UiTheme.PageGap),
+            Margin = new Padding(0)
+        };
+        panel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        panel.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        panel.Controls.Add(CreateEditorSectionCard(title, body), 0, 0);
+        return panel;
+    }
+
+    private Control CreateEditorSectionCard(string title, Control body)
+    {
+        var card = new UiCardPanel
+        {
+            Dock = DockStyle.Fill,
+            FillColor = UiTheme.SurfaceRaised,
+            ColumnCount = 1,
+            RowCount = 2,
+            Padding = new Padding(UiTheme.CardPadding, 10, UiTheme.CardPadding, UiTheme.CardPadding),
+            Margin = new Padding(0)
+        };
+        card.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        card.RowStyles.Add(new RowStyle(SizeType.Absolute, 36));
+        card.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        card.Controls.Add(UiTheme.CreateSectionTitle(Font, title), 0, 0);
+        body.Margin = new Padding(0, 4, 0, 0);
+        card.Controls.Add(body, 0, 1);
+        return card;
     }
 
     private Control BuildNumberArraysPanel()
@@ -766,7 +799,7 @@ public sealed class ModuleEditorControl : UserControl
             BackColor = UiTheme.SurfaceRaised,
             ColumnCount = 2,
             RowCount = 1,
-            Margin = new Padding(8, 0, 0, 0)
+            Margin = new Padding(0)
         };
         panel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
         panel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120));
@@ -809,10 +842,10 @@ public sealed class ModuleEditorControl : UserControl
         _numberArraysList.Items.Clear();
         foreach (var array in _numberArrays)
         {
-            var values = $"{{ {string.Join(", ", array.Numbers.Select(number => $"[{number}] = true"))} }}";
+            var values = string.Join(", ", array.Numbers);
             _numberArraysList.Items.Add(new ListViewItem([array.Name, values])
             {
-                ToolTipText = $"{array.Name} = {values}"
+                ToolTipText = values
             });
         }
         _numberArraysList.EndUpdate();
@@ -852,20 +885,9 @@ public sealed class ModuleEditorControl : UserControl
 
     private Control BuildRulesPanel()
     {
-        var panel = new TableLayoutPanel
-        {
-            Dock = DockStyle.Fill,
-            BackColor = UiTheme.SurfaceRaised,
-            ColumnCount = 1,
-            RowCount = 1,
-            Padding = new Padding(UiTheme.CardPadding),
-            Margin = new Padding(0)
-        };
-
-        panel.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-        panel.Controls.Add(BuildRulesGrid(), 0, 0);
+        var page = CreateEditorCardPage("逻辑规则", BuildRulesGrid());
         _rulesGrid.ScrollBars = ScrollBars.Both;
-        return panel;
+        return page;
     }
 
     private Control BuildUnitsPanel()
@@ -876,7 +898,7 @@ public sealed class ModuleEditorControl : UserControl
             BackColor = UiTheme.SurfaceRaised,
             ColumnCount = 2,
             RowCount = 1,
-            Padding = new Padding(UiTheme.CardPadding),
+            Padding = new Padding(0),
             Margin = new Padding(0)
         };
         panel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
@@ -933,7 +955,7 @@ public sealed class ModuleEditorControl : UserControl
         buttons.Controls.Add(deleteButton);
         panel.Controls.Add(buttons, 1, 0);
 
-        return panel;
+        return CreateEditorCardPage("动态单位", panel);
     }
 
     private Control BuildNameRow()
@@ -5292,19 +5314,6 @@ public sealed class ModuleEditorControl : UserControl
             BackColor = Color.Transparent,
             TextAlign = ContentAlignment.MiddleLeft,
             AutoEllipsis = true
-        };
-    }
-
-    private static Label CreateSectionLabel(string text)
-    {
-        return new Label
-        {
-            Text = text,
-            Dock = DockStyle.Fill,
-            ForeColor = UiTheme.Muted,
-            TextAlign = ContentAlignment.MiddleLeft,
-            AutoEllipsis = true,
-            Padding = new Padding(0, 2, 0, 0)
         };
     }
 

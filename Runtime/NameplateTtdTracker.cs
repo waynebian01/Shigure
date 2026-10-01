@@ -1,15 +1,19 @@
 namespace Shigure;
 
 /// <summary>
-/// 为每个姓名板槽位维护最近 5 秒生命值样本，用线性回归估算掉血速度并计算 TTD。
+/// 为每个姓名板槽位维护最近 15 秒生命值样本，自适应窗口回归并平滑掉血速度。
+/// 暂时无法估算时最多沿用 3 秒；姓名板消失或死亡立即清空。
 /// 目标/焦点/首领 TTD 只转发映射槽位结果，不维护第二份历史。
 /// </summary>
 internal sealed class NameplateTtdTracker
 {
-    private const double HistorySeconds = 5;
+    private const double HistorySeconds = 15;
     private const double MinSpanSeconds = 1;
+    private const double EstimateRetentionSeconds = 3;
+    private const double SmoothingSeconds = 2;
+    private static readonly double[] WindowSeconds = [5, 10, HistorySeconds];
 
-    private readonly Dictionary<int, List<HpSample>> _history = new();
+    private readonly Dictionary<int, SlotHistory> _history = new();
 
     public void Clear() => _history.Clear();
 
@@ -74,28 +78,77 @@ internal sealed class NameplateTtdTracker
 
     private int? UpdateSlot(int slot, int health, DateTimeOffset now)
     {
-        if (!_history.TryGetValue(slot, out var samples))
+        if (!_history.TryGetValue(slot, out var history))
         {
-            samples = [];
-            _history[slot] = samples;
+            history = new SlotHistory();
+            _history[slot] = history;
         }
 
+        var samples = history.Samples;
+        // 时钟回退或扫描间断超过历史窗口时，旧趋势已不可用。
+        if (samples.Count > 0
+            && (now < samples[^1].At || (now - samples[^1].At).TotalSeconds > HistorySeconds))
+        {
+            samples.Clear();
+            history.LossPerSecond = null;
+            history.LastEstimateAt = null;
+        }
         samples.Add(new HpSample(now, health));
         var cutoff = now - TimeSpan.FromSeconds(HistorySeconds);
         samples.RemoveAll(sample => sample.At < cutoff);
-        return TryComputeTtd(samples, health);
+
+        double? lossPerSecond = null;
+        foreach (var windowSeconds in WindowSeconds)
+        {
+            var windowStart = now - TimeSpan.FromSeconds(windowSeconds);
+            var startIndex = samples.FindIndex(sample => sample.At >= windowStart);
+            lossPerSecond = TryComputeLossPerSecond(samples, startIndex);
+            if (lossPerSecond.HasValue)
+            {
+                break;
+            }
+        }
+
+        if (lossPerSecond is double currentLoss)
+        {
+            if (history.LossPerSecond is double previousLoss
+                && history.LastEstimateAt is DateTimeOffset previousAt
+                && (now - previousAt).TotalSeconds <= EstimateRetentionSeconds)
+            {
+                // 按实际采样间隔计算权重，使 2 秒时间常数不受扫描频率影响。
+                var weight = 1 - Math.Exp(-(now - previousAt).TotalSeconds / SmoothingSeconds);
+                history.LossPerSecond = previousLoss + weight * (currentLoss - previousLoss);
+            }
+            else
+            {
+                history.LossPerSecond = currentLoss;
+            }
+            history.LastEstimateAt = now;
+        }
+        else if (history.LastEstimateAt is not DateTimeOffset estimatedAt
+            || (now - estimatedAt).TotalSeconds > EstimateRetentionSeconds)
+        {
+            // 保留期间不更新成功估算时间，避免旧值被无限续期。
+            history.LossPerSecond = null;
+            history.LastEstimateAt = null;
+        }
+
+        // 保留的是掉血速度；始终使用当前血量，不把旧 TTD 当作倒计时。
+        return history.LossPerSecond is double loss
+            ? (int)Math.Min(int.MaxValue, Math.Ceiling(health / loss))
+            : null;
     }
 
     private void ClearSlot(int slot) => _history.Remove(slot);
 
-    private static int? TryComputeTtd(IReadOnlyList<HpSample> samples, int currentHealth)
+    private static double? TryComputeLossPerSecond(IReadOnlyList<HpSample> samples, int startIndex)
     {
-        if (samples.Count < 2 || currentHealth <= 0)
+        if (startIndex < 0 || samples.Count - startIndex < 2)
         {
             return null;
         }
 
-        var first = samples[0];
+        var first = samples[startIndex];
         var last = samples[^1];
         var spanSeconds = (last.At - first.At).TotalSeconds;
         if (spanSeconds < MinSpanSeconds)
@@ -109,14 +162,15 @@ internal sealed class NameplateTtdTracker
             return null;
         }
 
-        double n = samples.Count;
+        double n = samples.Count - startIndex;
         double sumX = 0;
         double sumY = 0;
         double sumXy = 0;
         double sumXx = 0;
         var origin = first.At;
-        foreach (var sample in samples)
+        for (var index = startIndex; index < samples.Count; index++)
         {
+            var sample = samples[index];
             var x = (sample.At - origin).TotalSeconds;
             var y = sample.Health;
             sumX += x;
@@ -126,7 +180,7 @@ internal sealed class NameplateTtdTracker
         }
 
         var denominator = n * sumXx - sumX * sumX;
-        if (Math.Abs(denominator) < double.Epsilon)
+        if (denominator <= 0)
         {
             return null;
         }
@@ -137,13 +191,7 @@ internal sealed class NameplateTtdTracker
             return null;
         }
 
-        var dps = -slope;
-        if (dps <= double.Epsilon)
-        {
-            return null;
-        }
-
-        return (int)Math.Ceiling(currentHealth / dps);
+        return double.IsFinite(slope) ? -slope : null;
     }
 
     private static Dictionary<string, IReadOnlyDictionary<string, object?>> EnsureMutableNameplates(GameState state)
@@ -157,6 +205,13 @@ internal sealed class NameplateTtdTracker
         var created = new Dictionary<string, IReadOnlyDictionary<string, object?>>();
         state.Values["nameplates"] = created;
         return created;
+    }
+
+    private sealed class SlotHistory
+    {
+        public List<HpSample> Samples { get; } = [];
+        public double? LossPerSecond { get; set; }
+        public DateTimeOffset? LastEstimateAt { get; set; }
     }
 
     private readonly record struct HpSample(DateTimeOffset At, int Health);

@@ -110,7 +110,8 @@ internal static class UiTheme
         int MinimumWidth,
         int MaximumWidth = 480,
         bool FillRemaining = false,
-        bool FixedWidth = false);
+        bool FixedWidth = false,
+        double RemainingWidthWeight = 0);
 
     [DllImport("dwmapi.dll")]
     private static extern int DwmSetWindowAttribute(nint hwnd, int attribute, ref int value, int size);
@@ -2130,7 +2131,8 @@ internal static class UiTheme
                 for (var columnIndex = 0; columnIndex < state.Columns.Count; columnIndex++)
                 {
                     var layout = state.Columns[columnIndex];
-                    if (layout.FillRemaining
+                    if (state.HiddenColumns.Contains(layout.Text)
+                        || layout.FillRemaining
                         || !state.CachedWidths.TryGetValue(layout.Text, out var width)
                         || width <= 0)
                     {
@@ -2159,7 +2161,7 @@ internal static class UiTheme
             }
 
             var layout = state.Columns[e.ColumnIndex];
-            if (layout.FillRemaining)
+            if (state.HiddenColumns.Contains(layout.Text) || layout.FillRemaining)
             {
                 return;
             }
@@ -2169,6 +2171,24 @@ internal static class UiTheme
         };
 
         ApplyCachedWidths();
+    }
+
+    public static void SetListViewColumnVisible(ListView listView, string columnText, bool visible)
+    {
+        if (listView.IsDisposed
+            || !ListColumnLayouts.TryGetValue(listView, out var state)
+            || !state.Columns.Any(column => column.Text == columnText))
+        {
+            return;
+        }
+
+        var changed = visible
+            ? state.HiddenColumns.Remove(columnText)
+            : state.HiddenColumns.Add(columnText);
+        if (changed)
+        {
+            FitListViewColumns(listView);
+        }
     }
 
     public static void FitListViewColumns(ListView listView)
@@ -2192,6 +2212,11 @@ internal static class UiTheme
             for (var columnIndex = 0; columnIndex < state.Columns.Count; columnIndex++)
             {
                 var layout = state.Columns[columnIndex];
+                // 隐藏列不占宽度，也不覆盖用户之前保存的列宽。
+                if (state.HiddenColumns.Contains(layout.Text))
+                {
+                    continue;
+                }
                 var minimum = Scale(listView, layout.MinimumWidth);
                 var maximum = Scale(listView, Math.Max(layout.MinimumWidth, layout.MaximumWidth));
                 var cachedWidth = 0;
@@ -2216,12 +2241,27 @@ internal static class UiTheme
             if (fillIndexes.Count > 0)
             {
                 var remaining = Math.Max(0, availableWidth - usedWidth);
-                var share = remaining / fillIndexes.Count;
-                foreach (var index in fillIndexes)
+                // 填充列默认权重为 1；其它列可按权重分享空余宽度，保留原有基础宽度。
+                var weights = state.Columns.Select(layout => state.HiddenColumns.Contains(layout.Text)
+                    ? 0 : layout.RemainingWidthWeight > 0
+                        ? layout.RemainingWidthWeight : layout.FillRemaining ? 1 : 0).ToArray();
+                var totalWeight = weights.Sum();
+                var allocated = 0;
+                var cumulativeWeight = 0D;
+                for (var index = 0; index < widths.Length; index++)
                 {
+                    if (weights[index] <= 0)
+                    {
+                        continue;
+                    }
+
+                    cumulativeWeight += weights[index];
+                    var target = (int)Math.Round(remaining * cumulativeWeight / totalWeight);
+                    var share = target - allocated;
+                    allocated = target;
                     var layout = state.Columns[index];
                     widths[index] = Math.Clamp(
-                        share,
+                        layout.FillRemaining ? share : widths[index] + share,
                         Scale(listView, layout.MinimumWidth),
                         Scale(listView, Math.Max(layout.MinimumWidth, layout.MaximumWidth)));
                 }
@@ -2304,6 +2344,7 @@ internal static class UiTheme
     private sealed class ListColumnLayoutState(IReadOnlyList<ListColumn> columns)
     {
         public IReadOnlyList<ListColumn> Columns { get; } = columns;
+        public HashSet<string> HiddenColumns { get; } = new(StringComparer.Ordinal);
         public Dictionary<string, int>? CachedWidths { get; set; }
         public bool IsApplyingCachedWidths { get; set; }
         public bool IsFitting { get; set; }

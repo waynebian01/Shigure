@@ -565,35 +565,48 @@ public sealed partial class StatusForm : Form
         _moduleHost = CreatePageHost();
         _aboutHost = CreatePageHost();
 
-        // 实时数据列表的短字段保持定宽，名称列吸收剩余空间。
-        _stateList = UiTheme.CreateListView(Font, "status-state-v5",
+        // 序号列保持定宽；名称列保留原剩余宽度的一半，另一半由其余列均分。
+        _stateList = UiTheme.CreateListView(Font, "status-state-v7",
             new UiTheme.ListColumn("#", 28, 28, FixedWidth: true),
-            new UiTheme.ListColumn("分类", 56, 56, FixedWidth: true),
-            new UiTheme.ListColumn("名称", 40, 1000, FillRemaining: true),
-            new UiTheme.ListColumn("值", 64, 64, FixedWidth: true));
-        _auraList = UiTheme.CreateListView(Font, "status-aura-v4",
+            new UiTheme.ListColumn("分类", 56, 2000, FixedWidth: true, RemainingWidthWeight: 1),
+            new UiTheme.ListColumn("名称", 40, 2000, FillRemaining: true, RemainingWidthWeight: 2),
+            new UiTheme.ListColumn("值", 64, 2000, FixedWidth: true, RemainingWidthWeight: 1));
+        _auraList = UiTheme.CreateListView(Font, "status-aura-v6",
             new UiTheme.ListColumn("#", 28, 28, FixedWidth: true),
-            new UiTheme.ListColumn("名称", 70, 1000, FillRemaining: true),
-            new UiTheme.ListColumn("spellId", 64, 64, FixedWidth: true),
-            new UiTheme.ListColumn("类型", 48, 48, FixedWidth: true),
-            new UiTheme.ListColumn("值", 64, 64, FixedWidth: true));
+            new UiTheme.ListColumn("名称", 70, 2000, FillRemaining: true, RemainingWidthWeight: 3),
+            new UiTheme.ListColumn("spellId", 64, 2000, FixedWidth: true, RemainingWidthWeight: 1),
+            new UiTheme.ListColumn("类型", 48, 2000, FixedWidth: true, RemainingWidthWeight: 1),
+            new UiTheme.ListColumn("值", 64, 2000, FixedWidth: true, RemainingWidthWeight: 1));
         _dynamicUnitList = UiTheme.CreateListView(Font, "status-dynamic-unit-v4",
             new UiTheme.ListColumn("类型", 72, 72, FixedWidth: true),
             new UiTheme.ListColumn("名称", 40, 1000, FillRemaining: true),
             new UiTheme.ListColumn("值", 64, 64, FixedWidth: true));
-        _spellList = UiTheme.CreateListView(Font, "status-spell-v4",
+        _spellList = UiTheme.CreateListView(Font, "status-spell-v6",
             new UiTheme.ListColumn("#", 28, 28, FixedWidth: true),
-            new UiTheme.ListColumn("名称", 70, 1000, FillRemaining: true),
-            new UiTheme.ListColumn("spellId", 64, 64, FixedWidth: true),
-            new UiTheme.ListColumn("类型", 58, 58, FixedWidth: true),
-            new UiTheme.ListColumn("值", 64, 64, FixedWidth: true));
+            new UiTheme.ListColumn("名称", 70, 2000, FillRemaining: true, RemainingWidthWeight: 3),
+            new UiTheme.ListColumn("spellId", 64, 2000, FixedWidth: true, RemainingWidthWeight: 1),
+            new UiTheme.ListColumn("类型", 58, 2000, FixedWidth: true, RemainingWidthWeight: 1),
+            new UiTheme.ListColumn("值", 64, 2000, FixedWidth: true, RemainingWidthWeight: 1));
 
-        _partyList = UiTheme.CreateListView(Font, "status-party",
-            new UiTheme.ListColumn("单位", 120, 180, FixedWidth: true),
-            new UiTheme.ListColumn("摘要", 320, 1600, FillRemaining: true));
-        _nameplateList = UiTheme.CreateListView(Font, "status-nameplates",
-            new UiTheme.ListColumn("单位", 120, 180, FixedWidth: true),
-            new UiTheme.ListColumn("摘要", 320, 1600, FillRemaining: true));
+        _partyList = UiTheme.CreateListView(Font, "status-party-v2",
+            new UiTheme.ListColumn("单位", 88, 120, FixedWidth: true),
+            new UiTheme.ListColumn("生命值", 72, 96),
+            new UiTheme.ListColumn("治疗吸收", 88, 112),
+            new UiTheme.ListColumn("职责", 64, 88),
+            new UiTheme.ListColumn("职业", 96, 160),
+            new UiTheme.ListColumn("驱散", 64, 88),
+            new UiTheme.ListColumn("光环 / 其他", 160, 1600, FillRemaining: true));
+        _nameplateList = UiTheme.CreateListView(Font, "status-nameplates-v2",
+            new UiTheme.ListColumn("单位", 112, 140, FixedWidth: true),
+            new UiTheme.ListColumn("生命值", 72, 96),
+            new UiTheme.ListColumn("距离", 64, 88),
+            new UiTheme.ListColumn("战斗", 64, 88),
+            new UiTheme.ListColumn("TTD", 64, 88),
+            new UiTheme.ListColumn("仇恨值", 72, 96),
+            new UiTheme.ListColumn("施法技能", 88, 120),
+            new UiTheme.ListColumn("强化锁喉", 88, 112),
+            new UiTheme.ListColumn("光环 / 其他", 160, 1600, FillRemaining: true));
+        UiTheme.SetListViewColumnVisible(_nameplateList, NameplateStateLayout.ImprovedGarroteField, false);
         _unitInfoList = UiTheme.CreateListView(Font, "status-unit-info",
             new UiTheme.ListColumn("名称", 180, 320),
             new UiTheme.ListColumn("值", 320, 1400, FillRemaining: true));
@@ -674,8 +687,9 @@ public sealed partial class StatusForm : Form
         ReplaceItems(_auraList, [new ListViewItem(["-", "光环", "-", "-", "无数据"])]);
         ReplaceItems(_spellList, [new ListViewItem(["-", "冷却", "-", "-", "无数据"])]);
         ReplaceItems(_dynamicUnitList, [new ListViewItem(["-", "动态单位", "等待游戏状态"])]);
-        ReplaceItems(_partyList, [new ListViewItem(["队伍", "无队伍数据"])]);
-        ReplaceItems(_nameplateList, [new ListViewItem(["姓名板", "无姓名板数据"])]);
+        ReplaceItems(_partyList, [CreateUnitStatusRow(_partyList, "队伍", null, false, "无队伍数据")]);
+        ReplaceItems(_nameplateList, Enumerable.Range(1, NameplateStateLayout.SlotCount)
+            .Select(slot => CreateUnitStatusRow(_nameplateList, $"nameplate{slot}", null, true)).ToArray());
         ReplaceItems(_unitInfoList, [new ListViewItem(["逻辑信息", "无推荐目标"])]);
     }
 
@@ -3016,22 +3030,15 @@ public sealed partial class StatusForm : Form
         var partyCount = snapshot.State?.GetInt("队伍人数") ?? 0;
         if (snapshot.State is null || partyCount <= 0)
         {
-            items.Add(new ListViewItem(new[] { "队伍", "无队伍数据" }));
+            items.Add(CreateUnitStatusRow(_partyList, "队伍", null, false, "无队伍数据"));
         }
         else
         {
             for (var i = 1; i <= partyCount; i++)
             {
                 var unitKey = i.ToString();
-                if (!snapshot.State.Group.TryGetValue(unitKey, out var unitData))
-                {
-                    items.Add(new ListViewItem(new[] { $"Unit {unitKey}", "-" }));
-                    continue;
-                }
-
-                var summary = string.Join("  ", unitData.Select(kv =>
-                    $"{DisplayPartyFieldName(kv.Key)}: {DisplayPartyFieldValue(kv.Key, kv.Value)}"));
-                items.Add(new ListViewItem(new[] { $"Unit {unitKey}", summary }));
+                snapshot.State.Group.TryGetValue(unitKey, out var unitData);
+                items.Add(CreateUnitStatusRow(_partyList, $"Unit {unitKey}", unitData, false));
             }
         }
 
@@ -3040,34 +3047,58 @@ public sealed partial class StatusForm : Form
 
     private void UpdateNameplateList(RenderSnapshot snapshot)
     {
+        // 字段由当前运行配置的像素布局决定；即使没有可见敌人，空槽位也保留配置字段。
+        // 正式服奇袭且配置启用强化锁喉时才有该字段，不受编辑界面版本选择影响。
+        var showImprovedGarrote = snapshot.State?.Nameplates.Values.Any(
+            plate => plate.ContainsKey(NameplateStateLayout.ImprovedGarroteField)) == true;
+        UiTheme.SetListViewColumnVisible(_nameplateList, NameplateStateLayout.ImprovedGarroteField, showImprovedGarrote);
         var items = new List<ListViewItem>();
         for (var slot = 1; slot <= NameplateStateLayout.SlotCount; slot++)
         {
             var key = slot.ToString();
-            if (snapshot.State?.Nameplates.TryGetValue(key, out var data) != true || data is null)
+            IReadOnlyDictionary<string, object?>? data = null;
+            if (snapshot.State?.Nameplates.TryGetValue(key, out var plate) == true
+                && plate.TryGetValue("存在", out var presentValue) && presentValue is true)
             {
-                items.Add(new ListViewItem([$"nameplate{slot}", "-"]));
-                continue;
+                data = plate;
             }
-
-            var present = data.TryGetValue("存在", out var presentValue) && presentValue is bool flag && flag;
-            if (!present)
-            {
-                items.Add(new ListViewItem([$"nameplate{slot}", "-"]));
-                continue;
-            }
-
-            // 同一光环的时间和层数都有序号、名称与结构化键，页面只展示名称那份。
-            var summary = string.Join("  ", data
-                .Where(pair => pair.Key is not "存在"
-                    && !pair.Key.StartsWith("光环", StringComparison.Ordinal)
-                    && !SpellFieldKey.TryParseAuraMember(pair.Key, out _, out _))
-                .Select(pair => $"{pair.Key}: {UiTheme.FormatValue(pair.Value)}"));
-
-            items.Add(new ListViewItem([$"nameplate{slot}", summary]));
+            items.Add(CreateUnitStatusRow(_nameplateList, $"nameplate{slot}", data, true));
         }
 
         ReplaceItems(_nameplateList, items);
+    }
+
+    private static ListViewItem CreateUnitStatusRow(
+        ListView listView,
+        string unit,
+        IReadOnlyDictionary<string, object?>? data,
+        bool isNameplate,
+        string emptyText = "-")
+    {
+        var fields = listView.Columns.Cast<ColumnHeader>().Skip(1).SkipLast(1)
+            .Select(column => column.Text).ToArray();
+        var cells = new List<string> { unit };
+        foreach (var field in fields)
+        {
+            var value = data is not null && data.TryGetValue(field, out var found) ? found : null;
+            cells.Add(field == "TTD"
+                ? value is int seconds ? seconds.ToString() : "null"
+                : DisplayPartyFieldValue(field, value));
+        }
+
+        // 固定状态逐列显示；同一姓名板光环的别名只保留名称那份。
+        var details = data?.Where(pair => !fields.Contains(pair.Key, StringComparer.Ordinal)
+            && pair.Key != "存在"
+            && (!isNameplate || (!pair.Key.StartsWith("光环", StringComparison.Ordinal)
+                && !SpellFieldKey.TryParseAuraMember(pair.Key, out _, out _))))
+            .Select(pair => $"{DisplayPartyFieldName(pair.Key)}: {DisplayPartyFieldValue(pair.Key, pair.Value)}")
+            .ToArray();
+        cells.Add(details is { Length: > 0 } ? string.Join("  ", details) : emptyText);
+        var row = new ListViewItem(cells.ToArray());
+        row.ToolTipText = string.Join("  ", listView.Columns.Cast<ColumnHeader>()
+            .Where(column => column.Width > 0)
+            .Select(column => $"{column.Text}: {cells[column.Index]}"));
+        return row;
     }
 
     private static string DisplayPartyFieldName(string key)

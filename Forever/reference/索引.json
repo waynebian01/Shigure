@@ -1,0 +1,52 @@
+{
+  "schema": "shigure_reference_snapshot_v1",
+  "version": "Forever",
+  "savedAt": "2026-10-01",
+  "purpose": "永久服参考数据模板",
+  "usage": "仅保存数据；程序仍使用现有读取逻辑，修改此目录不会改变当前界面。",
+  "sourceNote": "永久服参考数据已清空，保留 JSON 结构供手动填写；各版本在各自的 reference 目录独立维护。",
+  "files": [
+    {
+      "file": "首领.json",
+      "page": "首领",
+      "count": 0,
+      "source": [],
+      "description": "按当前赛季、第一赛季保存副本、首领顺序、名称和像素编号"
+    },
+    {
+      "file": "副本技能.json",
+      "page": "副本技能",
+      "count": 0,
+      "source": [],
+      "description": "spells 保留原始技能数据；mapNames、bossNames 使用插件表中的像素编号作为键"
+    },
+    {
+      "file": "EX首领事件.json",
+      "page": "EX 事件",
+      "count": 0,
+      "source": [],
+      "description": "使用原有目录结构与 eventKeyTable，mechanicTypes 保存类型编码"
+    },
+    {
+      "file": "EX小怪事件.json",
+      "page": "EX 事件",
+      "count": 0,
+      "source": [],
+      "description": "使用原有目录结构、位置数据与 eventKeyTable，mechanicTypes 保存类型编码"
+    },
+    {
+      "file": "BW事件.json",
+      "page": "BW 事件",
+      "count": 0,
+      "source": [],
+      "description": "使用原有目录结构与 eventKeyTable，eventTypes 保存类型编码"
+    },
+    {
+      "file": "字段.json",
+      "page": "字段",
+      "count": 0,
+      "source": [],
+      "description": "按玩家与资源、单位字段保存界面实际显示的分类与字段；nameplates.N 的 N 为槽位占位符"
+    }
+  ]
+}

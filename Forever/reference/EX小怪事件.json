@@ -1,0 +1,14 @@
+{
+  "schema": "ex_trash_skill_catalog_v1",
+  "source": {
+    "file": ""
+  },
+  "summary": {
+    "mapCount": 0,
+    "mobCount": 0,
+    "sourceRowCount": 0,
+    "eventCount": 0
+  },
+  "eventKeyTable": [],
+  "mechanicTypes": []
+}

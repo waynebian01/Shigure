@@ -1,0 +1,764 @@
+[
+  {
+    "title": "玩家与资源",
+    "fields": [
+      {
+        "category": "玩家",
+        "field": "职业"
+      },
+      {
+        "category": "玩家",
+        "field": "专精"
+      },
+      {
+        "category": "玩家",
+        "field": "有效性"
+      },
+      {
+        "category": "玩家",
+        "field": "地图"
+      },
+      {
+        "category": "玩家",
+        "field": "战斗时间"
+      },
+      {
+        "category": "玩家",
+        "field": "移动"
+      },
+      {
+        "category": "玩家",
+        "field": "生命值"
+      },
+      {
+        "category": "玩家",
+        "field": "一键辅助"
+      },
+      {
+        "category": "玩家",
+        "field": "插入法术"
+      },
+      {
+        "category": "玩家",
+        "field": "插入物品"
+      },
+      {
+        "category": "玩家",
+        "field": "队伍类型"
+      },
+      {
+        "category": "玩家",
+        "field": "队伍人数"
+      },
+      {
+        "category": "玩家",
+        "field": "首领战"
+      },
+      {
+        "category": "玩家",
+        "field": "难度"
+      },
+      {
+        "category": "玩家",
+        "field": "英雄天赋"
+      },
+      {
+        "category": "玩家",
+        "field": "施法目标"
+      },
+      {
+        "category": "玩家",
+        "field": "施法技能"
+      },
+      {
+        "category": "玩家",
+        "field": "施法(正计时)"
+      },
+      {
+        "category": "玩家",
+        "field": "施法(倒计时)"
+      },
+      {
+        "category": "玩家",
+        "field": "引导"
+      },
+      {
+        "category": "玩家",
+        "field": "蓄力"
+      },
+      {
+        "category": "玩家",
+        "field": "蓄力层数"
+      },
+      {
+        "category": "玩家",
+        "field": "上个技能"
+      },
+      {
+        "category": "玩家",
+        "field": "公共冷却"
+      },
+      {
+        "category": "特殊",
+        "field": "计时器"
+      },
+      {
+        "category": "特殊",
+        "field": "循环计时器"
+      },
+      {
+        "category": "特殊",
+        "field": "战斗计时(秒)"
+      },
+      {
+        "category": "特殊",
+        "field": "战斗计时(分)"
+      },
+      {
+        "category": "特殊",
+        "field": "倒数"
+      },
+      {
+        "category": "特殊",
+        "field": "EX首领技能类型"
+      },
+      {
+        "category": "特殊",
+        "field": "EX首领技能事件"
+      },
+      {
+        "category": "特殊",
+        "field": "EX首领技能倒计时"
+      },
+      {
+        "category": "特殊",
+        "field": "EX小怪技能类型"
+      },
+      {
+        "category": "特殊",
+        "field": "EX小怪技能事件"
+      },
+      {
+        "category": "特殊",
+        "field": "EX小怪技能倒计时"
+      },
+      {
+        "category": "特殊",
+        "field": "BigWigs首领技能类型"
+      },
+      {
+        "category": "特殊",
+        "field": "BigWigs首领技能事件"
+      },
+      {
+        "category": "特殊",
+        "field": "BigWigs首领技能倒计时"
+      },
+      {
+        "category": "特殊",
+        "field": "酒池"
+      },
+      {
+        "category": "特殊",
+        "field": "符文"
+      },
+      {
+        "category": "特殊",
+        "field": "姿态"
+      },
+      {
+        "category": "特殊",
+        "field": "神圣军备"
+      },
+      {
+        "category": "特殊",
+        "field": "自律"
+      },
+      {
+        "category": "特殊",
+        "field": "天启骑士数量"
+      },
+      {
+        "category": "特殊",
+        "field": "英勇打击"
+      },
+      {
+        "category": "特殊",
+        "field": "吸血鬼打击"
+      },
+      {
+        "category": "特殊",
+        "field": "收割者战刃"
+      },
+      {
+        "category": "特殊",
+        "field": "沸点"
+      },
+      {
+        "category": "特殊",
+        "field": "强化锁喉"
+      },
+      {
+        "category": "特殊",
+        "field": "目标强化锁喉"
+      },
+      {
+        "category": "特殊",
+        "field": "风暴涌流图腾"
+      },
+      {
+        "category": "特殊",
+        "field": "风暴涌流图腾数量"
+      },
+      {
+        "category": "特殊",
+        "field": "治疗之泉图腾"
+      },
+      {
+        "category": "特殊",
+        "field": "治疗之泉图腾数量"
+      },
+      {
+        "category": "能量",
+        "field": "法力值"
+      },
+      {
+        "category": "能量",
+        "field": "怒气值"
+      },
+      {
+        "category": "能量",
+        "field": "集中值"
+      },
+      {
+        "category": "能量",
+        "field": "能量值"
+      },
+      {
+        "category": "能量",
+        "field": "符文"
+      },
+      {
+        "category": "能量",
+        "field": "符文能量"
+      },
+      {
+        "category": "能量",
+        "field": "星界能量"
+      },
+      {
+        "category": "能量",
+        "field": "漩涡值"
+      },
+      {
+        "category": "能量",
+        "field": "狂乱值"
+      },
+      {
+        "category": "能量",
+        "field": "奥术充能"
+      },
+      {
+        "category": "能量",
+        "field": "恶魔之怒"
+      },
+      {
+        "category": "能量",
+        "field": "痛苦值"
+      },
+      {
+        "category": "能量",
+        "field": "连击点"
+      },
+      {
+        "category": "能量",
+        "field": "神圣能量"
+      },
+      {
+        "category": "能量",
+        "field": "精华能量"
+      },
+      {
+        "category": "能量",
+        "field": "灵魂碎片"
+      },
+      {
+        "category": "能量",
+        "field": "真气"
+      },
+      {
+        "category": "能量",
+        "field": "增压层数"
+      },
+      {
+        "category": "配置开关",
+        "field": "爆发开关"
+      },
+      {
+        "category": "配置开关",
+        "field": "AOE开关"
+      },
+      {
+        "category": "配置开关",
+        "field": "输出模式"
+      },
+      {
+        "category": "配置开关",
+        "field": "爆发药水开关"
+      },
+      {
+        "category": "配置开关",
+        "field": "延迟"
+      }
+    ]
+  },
+  {
+    "title": "单位字段",
+    "fields": [
+      {
+        "category": "目标",
+        "field": "类型"
+      },
+      {
+        "category": "目标",
+        "field": "驱散类型"
+      },
+      {
+        "category": "目标",
+        "field": "生命值"
+      },
+      {
+        "category": "目标",
+        "field": "能量值"
+      },
+      {
+        "category": "目标",
+        "field": "距离"
+      },
+      {
+        "category": "目标",
+        "field": "施法技能"
+      },
+      {
+        "category": "目标",
+        "field": "施法(倒计时)"
+      },
+      {
+        "category": "目标",
+        "field": "施法(正计时)"
+      },
+      {
+        "category": "目标",
+        "field": "施法可打断"
+      },
+      {
+        "category": "目标",
+        "field": "引导"
+      },
+      {
+        "category": "目标",
+        "field": "引导可打断"
+      },
+      {
+        "category": "焦点",
+        "field": "类型"
+      },
+      {
+        "category": "焦点",
+        "field": "驱散类型"
+      },
+      {
+        "category": "焦点",
+        "field": "生命值"
+      },
+      {
+        "category": "焦点",
+        "field": "能量值"
+      },
+      {
+        "category": "焦点",
+        "field": "距离"
+      },
+      {
+        "category": "焦点",
+        "field": "施法技能"
+      },
+      {
+        "category": "焦点",
+        "field": "施法(倒计时)"
+      },
+      {
+        "category": "焦点",
+        "field": "施法(正计时)"
+      },
+      {
+        "category": "焦点",
+        "field": "施法可打断"
+      },
+      {
+        "category": "焦点",
+        "field": "引导"
+      },
+      {
+        "category": "焦点",
+        "field": "引导可打断"
+      },
+      {
+        "category": "鼠标",
+        "field": "类型"
+      },
+      {
+        "category": "鼠标",
+        "field": "驱散类型"
+      },
+      {
+        "category": "鼠标",
+        "field": "生命值"
+      },
+      {
+        "category": "鼠标",
+        "field": "能量值"
+      },
+      {
+        "category": "鼠标",
+        "field": "距离"
+      },
+      {
+        "category": "鼠标",
+        "field": "施法(倒计时)"
+      },
+      {
+        "category": "鼠标",
+        "field": "施法(正计时)"
+      },
+      {
+        "category": "鼠标",
+        "field": "施法可打断"
+      },
+      {
+        "category": "鼠标",
+        "field": "引导"
+      },
+      {
+        "category": "鼠标",
+        "field": "引导可打断"
+      },
+      {
+        "category": "宠物",
+        "field": "存在"
+      },
+      {
+        "category": "宠物",
+        "field": "生命值"
+      },
+      {
+        "category": "宠物",
+        "field": "能量值"
+      },
+      {
+        "category": "首领1",
+        "field": "类型"
+      },
+      {
+        "category": "首领1",
+        "field": "驱散类型"
+      },
+      {
+        "category": "首领1",
+        "field": "生命值"
+      },
+      {
+        "category": "首领1",
+        "field": "能量值"
+      },
+      {
+        "category": "首领1",
+        "field": "距离"
+      },
+      {
+        "category": "首领1",
+        "field": "施法技能"
+      },
+      {
+        "category": "首领1",
+        "field": "施法(倒计时)"
+      },
+      {
+        "category": "首领1",
+        "field": "施法(正计时)"
+      },
+      {
+        "category": "首领1",
+        "field": "施法可打断"
+      },
+      {
+        "category": "首领1",
+        "field": "引导"
+      },
+      {
+        "category": "首领1",
+        "field": "引导可打断"
+      },
+      {
+        "category": "首领2",
+        "field": "类型"
+      },
+      {
+        "category": "首领2",
+        "field": "驱散类型"
+      },
+      {
+        "category": "首领2",
+        "field": "生命值"
+      },
+      {
+        "category": "首领2",
+        "field": "能量值"
+      },
+      {
+        "category": "首领2",
+        "field": "距离"
+      },
+      {
+        "category": "首领2",
+        "field": "施法技能"
+      },
+      {
+        "category": "首领2",
+        "field": "施法(倒计时)"
+      },
+      {
+        "category": "首领2",
+        "field": "施法(正计时)"
+      },
+      {
+        "category": "首领2",
+        "field": "施法可打断"
+      },
+      {
+        "category": "首领2",
+        "field": "引导"
+      },
+      {
+        "category": "首领2",
+        "field": "引导可打断"
+      },
+      {
+        "category": "首领3",
+        "field": "类型"
+      },
+      {
+        "category": "首领3",
+        "field": "驱散类型"
+      },
+      {
+        "category": "首领3",
+        "field": "生命值"
+      },
+      {
+        "category": "首领3",
+        "field": "能量值"
+      },
+      {
+        "category": "首领3",
+        "field": "距离"
+      },
+      {
+        "category": "首领3",
+        "field": "施法技能"
+      },
+      {
+        "category": "首领3",
+        "field": "施法(倒计时)"
+      },
+      {
+        "category": "首领3",
+        "field": "施法(正计时)"
+      },
+      {
+        "category": "首领3",
+        "field": "施法可打断"
+      },
+      {
+        "category": "首领3",
+        "field": "引导"
+      },
+      {
+        "category": "首领3",
+        "field": "引导可打断"
+      },
+      {
+        "category": "首领4",
+        "field": "类型"
+      },
+      {
+        "category": "首领4",
+        "field": "驱散类型"
+      },
+      {
+        "category": "首领4",
+        "field": "生命值"
+      },
+      {
+        "category": "首领4",
+        "field": "能量值"
+      },
+      {
+        "category": "首领4",
+        "field": "距离"
+      },
+      {
+        "category": "首领4",
+        "field": "施法技能"
+      },
+      {
+        "category": "首领4",
+        "field": "施法(倒计时)"
+      },
+      {
+        "category": "首领4",
+        "field": "施法(正计时)"
+      },
+      {
+        "category": "首领4",
+        "field": "施法可打断"
+      },
+      {
+        "category": "首领4",
+        "field": "引导"
+      },
+      {
+        "category": "首领4",
+        "field": "引导可打断"
+      },
+      {
+        "category": "首领5",
+        "field": "类型"
+      },
+      {
+        "category": "首领5",
+        "field": "驱散类型"
+      },
+      {
+        "category": "首领5",
+        "field": "生命值"
+      },
+      {
+        "category": "首领5",
+        "field": "能量值"
+      },
+      {
+        "category": "首领5",
+        "field": "距离"
+      },
+      {
+        "category": "首领5",
+        "field": "施法技能"
+      },
+      {
+        "category": "首领5",
+        "field": "施法(倒计时)"
+      },
+      {
+        "category": "首领5",
+        "field": "施法(正计时)"
+      },
+      {
+        "category": "首领5",
+        "field": "施法可打断"
+      },
+      {
+        "category": "首领5",
+        "field": "引导"
+      },
+      {
+        "category": "首领5",
+        "field": "引导可打断"
+      },
+      {
+        "category": "姓名板",
+        "field": "姓名板目标"
+      },
+      {
+        "category": "姓名板",
+        "field": "姓名板焦点"
+      },
+      {
+        "category": "姓名板",
+        "field": "姓名板首领1"
+      },
+      {
+        "category": "姓名板",
+        "field": "姓名板首领2"
+      },
+      {
+        "category": "姓名板",
+        "field": "姓名板首领3"
+      },
+      {
+        "category": "姓名板",
+        "field": "姓名板首领4"
+      },
+      {
+        "category": "姓名板",
+        "field": "姓名板首领5"
+      },
+      {
+        "category": "姓名板",
+        "field": "目标TTD"
+      },
+      {
+        "category": "姓名板",
+        "field": "焦点TTD"
+      },
+      {
+        "category": "姓名板",
+        "field": "首领1TTD"
+      },
+      {
+        "category": "姓名板",
+        "field": "首领2TTD"
+      },
+      {
+        "category": "姓名板",
+        "field": "首领3TTD"
+      },
+      {
+        "category": "姓名板",
+        "field": "首领4TTD"
+      },
+      {
+        "category": "姓名板",
+        "field": "首领5TTD"
+      },
+      {
+        "category": "姓名板",
+        "field": "nameplates.N.存在"
+      },
+      {
+        "category": "姓名板",
+        "field": "nameplates.N.生命值"
+      },
+      {
+        "category": "姓名板",
+        "field": "nameplates.N.距离"
+      },
+      {
+        "category": "姓名板",
+        "field": "nameplates.N.战斗"
+      },
+      {
+        "category": "姓名板",
+        "field": "nameplates.N.施法技能"
+      },
+      {
+        "category": "姓名板",
+        "field": "nameplates.N.TTD"
+      },
+      {
+        "category": "姓名板",
+        "field": "nameplates.N.光环N"
+      }
+    ]
+  }
+]

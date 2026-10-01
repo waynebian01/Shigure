@@ -1,6 +1,0 @@
-## Interface: 120100
-## Title: Focus Cast RGB Test
-## Notes-zhCN: 将焦点施法或引导的 spellID 显示为屏幕中央的 RGB 方块
-## Version: 1.1.0
-
-FocusCastRGBTest.lua

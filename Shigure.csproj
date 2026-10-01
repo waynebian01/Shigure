@@ -28,7 +28,8 @@
     <EmbeddedResource Include="Assets\*.png" />
     <EmbeddedResource Include="Assets\*.svg" />
     <EmbeddedResource Include="Assets\UiIcons\*.svg" />
-    <EmbeddedResource Include="Assets\GameLogos\*.png" />
+    <EmbeddedResource Include="Assets\GameLogos\forever-wordmark.png" />
+    <EmbeddedResource Include="Assets\GameLogos\midnight-wordmark.png" />
     <EmbeddedResource Include="Assets\Class\*.jpg" />
     <EmbeddedResource Include="Assets\Spec\*.jpg" />
     <!-- Only the small, application-specific spell images are embedded. The complete

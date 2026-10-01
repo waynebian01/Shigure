@@ -3,7 +3,7 @@ namespace Shigure;
 internal static class GameExecutablePath
 {
     public static bool TryValidate(
-        string? path, string expectedFileName, out string fullPath, out string error)
+        string? path, out string fullPath, out string error)
     {
         fullPath = string.Empty;
         error = string.Empty;
@@ -23,10 +23,10 @@ internal static class GameExecutablePath
             return false;
         }
 
-        if (!string.Equals(Path.GetFileName(fullPath), expectedFileName,
+        if (!string.Equals(Path.GetExtension(fullPath), ".exe",
                 StringComparison.OrdinalIgnoreCase))
         {
-            error = $"请选择 {expectedFileName}。";
+            error = "请选择游戏的 .exe 可执行文件。";
             return false;
         }
 

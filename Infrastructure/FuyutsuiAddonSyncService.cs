@@ -17,18 +17,18 @@ internal sealed class FuyutsuiAddonSyncService
     private readonly IReadOnlyList<string> _processNames;
     private readonly string _addonName;
     private readonly string? _selectedExecutablePath;
-    private readonly string _expectedExecutableName;
+    private readonly bool _deployInterfaceIcons;
 
     public FuyutsuiAddonSyncService(
         string sourceRoot, WowProcessLocator processLocator, IReadOnlyList<string> processNames,
-        string? selectedExecutablePath, string expectedExecutableName)
+        string? selectedExecutablePath, bool deployInterfaceIcons)
     {
         _sourceRoot = Path.GetFullPath(sourceRoot);
         _processLocator = processLocator;
         _processNames = processNames;
         _addonName = Path.GetFileName(_sourceRoot);
         _selectedExecutablePath = selectedExecutablePath;
-        _expectedExecutableName = expectedExecutableName;
+        _deployInterfaceIcons = deployInterfaceIcons;
     }
 
     public string SourceRoot => _sourceRoot;
@@ -62,7 +62,7 @@ internal sealed class FuyutsuiAddonSyncService
                 var relativePath = Path.GetRelativePath(_sourceRoot, sourcePath);
                 SynchronizeCore(sourcePath, relativePath, targetRoot, copied, skipped, failures);
             }
-            if (includeInterfaceIcons && _expectedExecutableName.Equals("Wow.exe", StringComparison.OrdinalIgnoreCase))
+            if (includeInterfaceIcons && _deployInterfaceIcons)
             {
                 // 正式服纹理位于插件项目的同级 Interface，部署到游戏 Interface 而非 AddOns。
                 var interfaceRoot = Path.GetDirectoryName(Path.GetDirectoryName(targetRoot))!;
@@ -110,7 +110,7 @@ internal sealed class FuyutsuiAddonSyncService
         var warnings = new List<string>();
         if (!string.IsNullOrWhiteSpace(_selectedExecutablePath))
         {
-            if (GameExecutablePath.TryValidate(_selectedExecutablePath, _expectedExecutableName,
+            if (GameExecutablePath.TryValidate(_selectedExecutablePath,
                     out var selectedPath, out var error))
             {
                 var selectedAddOnsDirectory = WowAddonLocator.FindAddOnsDirectoryFromProcessPath(selectedPath);
@@ -121,7 +121,7 @@ internal sealed class FuyutsuiAddonSyncService
             }
             else
             {
-                warnings.Add($"已保存的 {_expectedExecutableName} 路径不可用：{error}");
+                warnings.Add($"已保存的游戏程序路径不可用：{error}");
             }
         }
 

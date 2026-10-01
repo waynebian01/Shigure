@@ -7,11 +7,6 @@
     },
     {
       "process": "WowT",
-      "version": "Retail",
-      "addon": "Fuyutsui"
-    },
-    {
-      "process": "WowClassic",
       "version": "Forever",
       "addon": "Shingen"
     }

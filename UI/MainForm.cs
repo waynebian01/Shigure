@@ -30,8 +30,8 @@ public sealed class MainForm : Form, IMessageFilter
     /// <summary>圆形程序图标相对容器略偏左，向右微调以利水平居中（展开/折叠共用）。</summary>
     private const int HeaderIconNudgeX = 2;
     private const string HeaderIconResourcePath = "Assets.arasaka-icon-transparent.png";
-    private const string RetailGameIconResourcePath = "Assets.GameLogos.retail.png";
-    private const string ForeverGameIconResourcePath = "Assets.GameLogos.forever.png";
+    private const string ForeverWordmarkResourcePath = "Assets.GameLogos.forever-wordmark.png";
+    private const string MidnightWordmarkResourcePath = "Assets.GameLogos.midnight-wordmark.png";
     private const string ModuleWebsiteUrl = "https://www.shigure.club";
     private static readonly Color DefaultHeaderIconColor = Color.White;
     private static readonly IReadOnlyDictionary<int, Color> ClassIconColors = new Dictionary<int, Color>
@@ -95,8 +95,10 @@ public sealed class MainForm : Form, IMessageFilter
 
     private readonly List<TopBarIconButton> _enableButtons = [];
     private readonly List<PictureBox> _headerIcons = [];
-    private readonly List<PictureBox> _gameIcons = [];
     private readonly List<Label> _titleLabels = [];
+    private PictureBox? _foreverWordmark;
+    private Bitmap? _foreverWordmarkImage;
+    private Bitmap? _midnightWordmarkImage;
     private readonly List<Label> _runtimeStatusLabels = [];
     private Control _horizontalTopBar = null!;
     private Control _verticalTopBar = null!;
@@ -548,10 +550,13 @@ public sealed class MainForm : Form, IMessageFilter
         _trayEnabledIcon?.Dispose();
         _roundedCornerResizeTimer.Dispose();
         _wowProcessMonitorTimer.Dispose();
-        foreach (var gameIcon in _gameIcons)
+        if (_foreverWordmark is not null)
         {
-            gameIcon.Image?.Dispose();
+            _foreverWordmark.Image = null;
         }
+
+        _foreverWordmarkImage?.Dispose();
+        _midnightWordmarkImage?.Dispose();
         base.OnFormClosed(e);
     }
 
@@ -638,7 +643,7 @@ public sealed class MainForm : Form, IMessageFilter
             _uiCache.SelectedModuleId = null;
             SaveUiCache();
         }
-        UpdateGameIcon();
+        UpdateForeverWordmark();
         ResetDefaultClassOptions();
         ResetDefaultSpecOptions(null);
         ResetDefaultHeroTalentOptions(null, null);
@@ -695,6 +700,7 @@ public sealed class MainForm : Form, IMessageFilter
             _classMacrosEditor.ReloadFromAddon();
         }
         UpdateProfileButtons();
+        UpdateForeverWordmark();
     }
 
     private async Task TryResumeDeferredImportAsync(GameProfile profile)
@@ -751,18 +757,18 @@ public sealed class MainForm : Form, IMessageFilter
 
     private void UpdateGamePathLabels()
     {
-        UpdateGamePathLabel(_retailGamePathLabel, _uiCache.RetailGameExecutablePath, "Wow.exe");
-        UpdateGamePathLabel(_foreverGamePathLabel, _uiCache.ForeverGameExecutablePath, "WowClassic.exe");
+        UpdateGamePathLabel(_retailGamePathLabel, _uiCache.RetailGameExecutablePath);
+        UpdateGamePathLabel(_foreverGamePathLabel, _uiCache.ForeverGameExecutablePath);
     }
 
-    private void UpdateGamePathLabel(Label label, string? selectedPath, string executableName)
+    private void UpdateGamePathLabel(Label label, string? selectedPath)
     {
         if (string.IsNullOrWhiteSpace(selectedPath))
         {
             label.Text = "未选择；运行中的对应客户端仍会自动同步";
             label.ForeColor = UiTheme.Muted;
         }
-        else if (GameExecutablePath.TryValidate(selectedPath, executableName,
+        else if (GameExecutablePath.TryValidate(selectedPath,
                      out var fullPath, out var error))
         {
             label.Text = fullPath;
@@ -777,27 +783,27 @@ public sealed class MainForm : Form, IMessageFilter
         _settingsToolTip.SetToolTip(label, label.Text);
     }
 
-    private void SelectGameExecutablePath(string version, string executableName)
+    private void SelectGameExecutablePath(string version)
     {
         var selectedPath = SelectedGameExecutablePath(version);
         using var dialog = new OpenFileDialog
         {
-            Title = $"选择 {executableName}",
-            Filter = $"{executableName} ({executableName})|{executableName}|可执行文件 (*.exe)|*.exe",
+            Title = $"选择 {version} 游戏程序",
+            Filter = "可执行文件 (*.exe)|*.exe",
             FilterIndex = 1,
-            FileName = executableName,
             CheckFileExists = true,
             Multiselect = false,
             RestoreDirectory = true
         };
-        if (GameExecutablePath.TryValidate(selectedPath, executableName,
+        if (GameExecutablePath.TryValidate(selectedPath,
                 out var existingPath, out _))
         {
             dialog.InitialDirectory = Path.GetDirectoryName(existingPath);
+            dialog.FileName = Path.GetFileName(existingPath);
         }
 
         if (dialog.ShowDialog(_statusForm) != DialogResult.OK) return;
-        if (!GameExecutablePath.TryValidate(dialog.FileName, executableName,
+        if (!GameExecutablePath.TryValidate(dialog.FileName,
                 out var fullPath, out var error))
         {
             MessageBox.Show(_statusForm, error, "无法选择游戏程序",
@@ -817,8 +823,7 @@ public sealed class MainForm : Form, IMessageFilter
         => new(profile.AddonRoot, _processLocator,
             _profiles.FindAllByAddon(profile.AddonName).Select(item => item.ProcessName).ToArray(),
             SelectedGameExecutablePath(profile.Version),
-            profile.Version.Equals("Retail", StringComparison.OrdinalIgnoreCase)
-                ? "Wow.exe" : "WowClassic.exe");
+            deployInterfaceIcons: profile.Version.Equals("Retail", StringComparison.OrdinalIgnoreCase));
 
     private GameWorkspace Workspace(GameProfile profile) => _workspaces[profile.AddonName];
 
@@ -946,7 +951,7 @@ public sealed class MainForm : Form, IMessageFilter
 
         _currentHeaderIconColor = null;
         UpdateHeaderIconColor(null);
-        UpdateGameIcon();
+        UpdateForeverWordmark();
         return host;
     }
 
@@ -996,18 +1001,17 @@ public sealed class MainForm : Form, IMessageFilter
         };
 
         brand.Controls.Add(headerIcon);
-        var gameIcon = CreateGameIcon(vertical: false);
-        brand.Controls.Add(gameIcon);
         brand.Controls.Add(titleLabel);
+        _foreverWordmark = CreateForeverWordmark();
+        brand.Controls.Add(_foreverWordmark);
         _horizontalButtons = BuildTopBarButtons(vertical: false);
 
         RegisterTopBarPresentation(headerIcon, titleLabel, runtimeStatusLabel);
-        _gameIcons.Add(gameIcon);
         EnableDrag(bar);
         EnableDrag(brand);
         EnableHeaderIconCollapseToggle(headerIcon);
-        EnableDrag(gameIcon);
         EnableDrag(titleLabel);
+        EnableDrag(_foreverWordmark);
         EnableDrag(runtimeStatusLabel);
 
         bar.Controls.Add(brand, 0, 0);
@@ -1069,17 +1073,13 @@ public sealed class MainForm : Form, IMessageFilter
         runtimeStatusLabel.Rotated = true;
 
         brand.Controls.Add(headerIcon);
-        var gameIcon = CreateGameIcon(vertical: true);
-        brand.Controls.Add(gameIcon);
         brand.Controls.Add(titleLabel);
         _verticalButtons = BuildTopBarButtons(vertical: true);
 
         RegisterTopBarPresentation(headerIcon, titleLabel, runtimeStatusLabel);
-        _gameIcons.Add(gameIcon);
         EnableDrag(bar);
         EnableDrag(brand);
         EnableHeaderIconCollapseToggle(headerIcon);
-        EnableDrag(gameIcon);
         EnableDrag(titleLabel);
         EnableDrag(runtimeStatusLabel);
 
@@ -1125,32 +1125,43 @@ public sealed class MainForm : Form, IMessageFilter
         _runtimeStatusLabels.Add(status);
     }
 
-    private static PictureBox CreateGameIcon(bool vertical)
+    private PictureBox CreateForeverWordmark()
     {
-        return new PictureBox
+        var box = new PictureBox
         {
-            Size = new Size(44, 36),
+            Size = new Size(116, 28),
             SizeMode = PictureBoxSizeMode.Zoom,
             BackColor = Color.Transparent,
-            Anchor = vertical ? AnchorStyles.Top : AnchorStyles.Left,
-            Margin = vertical ? new Padding(0, 6, 0, 0) : new Padding(8, 0, 0, 0)
+            Margin = new Padding(12, 14, 0, 0),
+            Anchor = AnchorStyles.Left,
+            Visible = false,
+            AccessibleName = "Midnight"
         };
+        _foreverWordmarkImage = LoadEmbeddedBitmap(ForeverWordmarkResourcePath);
+        _midnightWordmarkImage = LoadEmbeddedBitmap(MidnightWordmarkResourcePath);
+        return box;
     }
 
-    private void UpdateGameIcon()
+    private bool IsForeverEditor()
+        => _editorProfile.AddonName.Equals("Shingen", StringComparison.OrdinalIgnoreCase);
+
+    private void UpdateForeverWordmark()
     {
-        var forever = string.Equals(_activeProfile.Current.AddonName, "Shingen", StringComparison.OrdinalIgnoreCase);
-        var resourcePath = forever ? ForeverGameIconResourcePath : RetailGameIconResourcePath;
-        foreach (var gameIcon in _gameIcons)
+        if (_foreverWordmark is null)
         {
-            var previous = gameIcon.Image;
-            gameIcon.Image = LoadGameIcon(resourcePath);
-            gameIcon.AccessibleName = forever ? "Forever 游戏图标" : "Retail 游戏图标";
-            previous?.Dispose();
+            return;
         }
+
+        var forever = IsForeverEditor();
+        _foreverWordmark.Image = forever ? _foreverWordmarkImage : _midnightWordmarkImage;
+        _foreverWordmark.Size = forever ? new Size(116, 28) : new Size(126, 20);
+        _foreverWordmark.Margin = forever ? new Padding(12, 14, 0, 0) : new Padding(12, 6, 0, 0);
+        _foreverWordmark.AccessibleName = forever ? "Forever" : "Midnight";
+        _settingsToolTip.SetToolTip(_foreverWordmark, forever ? "无限服" : "正式服");
+        _foreverWordmark.Visible = !_mainBarCollapsed;
     }
 
-    private static Bitmap? LoadGameIcon(string resourcePath)
+    private static Bitmap? LoadEmbeddedBitmap(string resourcePath)
     {
         using var stream = typeof(MainForm).Assembly.GetManifestResourceStream($"{typeof(MainForm).Namespace}.{resourcePath}");
         if (stream is null)
@@ -1469,12 +1480,12 @@ public sealed class MainForm : Form, IMessageFilter
             profileActions.Controls.Add(button);
             _profileButtons.Add((profile.AddonName, button));
         }
-        FlowLayoutPanel CreateGamePathActions(string version, string executableName)
+        FlowLayoutPanel CreateGamePathActions(string version)
         {
             var actions = CreateActionsHost();
             var button = UiTheme.CreateButton("选择程序", UiTheme.ButtonKind.Secondary);
             SizeActionControl(button, primaryControlWidth);
-            button.Click += (_, _) => SelectGameExecutablePath(version, executableName);
+            button.Click += (_, _) => SelectGameExecutablePath(version);
             actions.Controls.Add(button);
             return actions;
         }
@@ -1489,11 +1500,11 @@ public sealed class MainForm : Form, IMessageFilter
             CreateSettingRow(
                 "魔兽世界-正式服",
                 _retailGamePathLabel = CreateRowDescription("未选择"),
-                CreateGamePathActions("Retail", "Wow.exe")),
+                CreateGamePathActions("Retail")),
             CreateSettingRow(
                 "魔兽世界-无限服",
                 _foreverGamePathLabel = CreateRowDescription("未选择"),
-                CreateGamePathActions("Forever", "WowClassic.exe")));
+                CreateGamePathActions("Forever")));
         _retailGamePathLabel.UseMnemonic = false;
         _foreverGamePathLabel.UseMnemonic = false;
         UpdateGamePathLabels();
@@ -4015,9 +4026,9 @@ public sealed class MainForm : Form, IMessageFilter
             title.Visible = visible;
         }
 
-        foreach (var gameIcon in _gameIcons)
+        if (_foreverWordmark is not null)
         {
-            gameIcon.Visible = visible;
+            _foreverWordmark.Visible = visible;
         }
 
         foreach (var status in _runtimeStatusLabels)

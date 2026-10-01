@@ -693,7 +693,12 @@ internal sealed class CountFilterEditorControl : UserControl
 
                 if (_grid.Columns[e.ColumnIndex].Name is FieldColumn or ComparisonColumn)
                 {
-                    ConfigureRow(_grid.Rows[e.RowIndex], null);
+                    var row = _grid.Rows[e.RowIndex];
+                    // 只切换判断时保留已填写的阈值；切换字段仍按新字段重建默认值。
+                    var seed = _grid.Columns[e.ColumnIndex].Name == ComparisonColumn
+                        ? TryReadCondition(row)
+                        : null;
+                    ConfigureRow(row, seed);
                 }
                 _owner.OnChanged();
             };
@@ -1107,8 +1112,14 @@ internal sealed class CountFilterEditorControl : UserControl
                 cell.Value,
                 selected =>
                 {
+                    if (_grid.IsDisposed || cell.DataGridView != _grid)
+                    {
+                        return;
+                    }
+
                     cell.Value = selected.Value;
-                    _grid.InvalidateCell(cell);
+                    // ValueChanged 会同步重建判断和值单元格，按位置刷新当前单元格。
+                    _grid.InvalidateCell(columnIndex, rowIndex);
                 },
                 closed: () =>
                 {

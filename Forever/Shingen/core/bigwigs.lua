@@ -54,9 +54,15 @@ local pendingEventIDs = {}
 local bridgeOwner = {}
 local currentModule = nil
 
+local function IsSecret(value)
+    return issecretvalue and issecretvalue(value) or false
+end
+
 local function SafeNumber(value)
+    -- pcall 只捕获转换错误，不能把 secret value 转成可安全索引或比较的普通数值。
+    if IsSecret(value) then return nil end
     local ok, number = pcall(tonumber, value)
-    return ok and number or nil
+    return ok and not IsSecret(number) and number or nil
 end
 
 local function GetNow()
@@ -85,13 +91,15 @@ end
 local function ResolveSpellID(key, icon)
     local spellID = SafeNumber(key)
     if spellID and eventKeyBySpellID[spellID] then return spellID end
-    if type(key) == "string" and STRING_KEY_ALIASES[key] then return STRING_KEY_ALIASES[key] end
+    if not IsSecret(key) and type(key) == "string" and STRING_KEY_ALIASES[key] then return STRING_KEY_ALIASES[key] end
     spellID = SafeNumber(icon)
     if spellID and eventKeyBySpellID[spellID] then return spellID end
     return nil
 end
 
 local function TimerIdentity(module, key, text)
+    -- 含受保护字段的计时器无法可靠匹配启动与停止事件，不将其纳入时间线。
+    if IsSecret(key) or IsSecret(text) then return nil end
     return ModuleIdentity(module) .. "|" .. tostring(key or "") .. "|" .. tostring(text or "")
 end
 
@@ -102,6 +110,7 @@ local function AddTimer(module, key, duration, text, icon, typeCode, forceCountd
 
     local spellID = ResolveSpellID(key, icon)
     local timerKey = TimerIdentity(module, key, text)
+    if not timerKey then return end
     if forceCountdown ~= nil then
         timerKey = timerKey .. "|notice:" .. tostring(GetNow())
     end
@@ -133,13 +142,15 @@ local function ClearModule(module)
 end
 
 local function OnStartBar(_, module, key, text, time, icon, isApprox, maxTime, eventID)
-    if IsRaidBossModule(module) and eventID then
-        pendingEventIDs[TimerIdentity(module, key, text)] = eventID
+    if IsRaidBossModule(module) and not IsSecret(eventID) and eventID then
+        local timerKey = TimerIdentity(module, key, text)
+        if timerKey then pendingEventIDs[timerKey] = eventID end
     end
 end
 
 local function OnTimer(_, module, key, time, maxTime, text, counter, icon, isApprox)
-    AddTimer(module, key, time, text, icon, isApprox == true and TYPE_APPROXIMATE_CD or TYPE_EXACT_TIMER)
+    AddTimer(module, key, time, text, icon,
+        not IsSecret(isApprox) and isApprox == true and TYPE_APPROXIMATE_CD or TYPE_EXACT_TIMER)
 end
 
 local function OnTargetTimer(_, module, key, time, maxTime, text, counter, icon)
@@ -151,12 +162,15 @@ local function OnCastTimer(_, module, key, time, maxTime, text, counter, icon)
 end
 
 local function OnMessage(_, module, key, text, color, icon)
+    if not IsRaidBossModule(module) then return end
     if ResolveSpellID(key, icon) then
         AddTimer(module, key, NOTICE_SECONDS, text, icon, TYPE_MESSAGE, 0)
     end
 end
 
 local function OnStopBar(_, module, text, eventID)
+    if IsSecret(text) then text = nil end
+    if IsSecret(eventID) then eventID = nil end
     for key, timer in pairs(activeTimers) do
         if (module == nil or timer.module == module)
             and ((eventID ~= nil and timer.eventID == eventID)

@@ -60,9 +60,9 @@ Fuyutsui.ClassBlocks = {
         },
         auras = {
             player = {
-                { name = "奥数齐射", spellId = 1242974, maxApps = 20, isPlayer = true,},
-                { name = "溢流能量", spellId = 394195, maxApps = 5, isPlayer = true,},
-                { name = "节能施法", spellId = 263725, maxApps = 3, isPlayer = true,},
+                { name = "奥数齐射", spellId = 1242974, maxApps = true, isPlayer = true,},
+                { name = "溢流能量", spellId = 394195, maxApps = true, isPlayer = true,},
+                { name = "节能施法", spellId = 263725, maxApps = true, isPlayer = true,},
                 { name = "过载飞弹", spellId = 1277009, isPlayer = true,},
                 { name = "敏锐直觉", spellId = 1223797, isPlayer = true,},
                 { name = "奥术之魂", spellId = 451038, isPlayer = true,},

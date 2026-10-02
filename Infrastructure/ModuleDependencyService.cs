@@ -440,7 +440,6 @@ internal sealed class ModuleDependencyService
             Name = entry.Name,
             SpellId = entry.SpellId,
             Charge = entry.Charge,
-            MaxCharge = entry.MaxCharge,
             CastCount = entry.CastCount,
             ForcedKnown = entry.ForcedKnown,
             InSpellBook = entry.InSpellBook
@@ -846,7 +845,6 @@ internal sealed class ModuleDependencyService
                 Name = entry.Name,
                 SpellId = entry.SpellId,
                 Charge = entry.Charge,
-                MaxCharge = entry.MaxCharge,
                 CastCount = entry.CastCount,
                 ForcedKnown = entry.ForcedKnown,
                 InSpellBook = entry.InSpellBook
@@ -1000,7 +998,6 @@ internal sealed class ModuleDependencyService
             target,
             incoming.Name,
             incoming.Charge,
-            incoming.MaxCharge,
             incoming.CastCount,
             incoming.ForcedKnown,
             incoming.InSpellBook,
@@ -1016,7 +1013,6 @@ internal sealed class ModuleDependencyService
             target,
             incoming.Name,
             incoming.Charge,
-            incoming.MaxCharge,
             incoming.CastCount,
             incoming.ForcedKnown,
             incoming.InSpellBook,
@@ -1027,7 +1023,6 @@ internal sealed class ModuleDependencyService
         ClassBlocksStore.SpellEntry target,
         string? incomingName,
         bool incomingCharge,
-        int? incomingMaxCharge,
         int? incomingCastCount,
         bool incomingForcedKnown,
         bool incomingInSpellBook,
@@ -1051,11 +1046,6 @@ internal sealed class ModuleDependencyService
             changed = true;
         }
 
-        MergeNullable(
-            target.MaxCharge,
-            incomingMaxCharge,
-            value => target.MaxCharge = value,
-            "最大充能");
         MergeNullable(
             target.CastCount,
             incomingCastCount,
@@ -1497,7 +1487,6 @@ internal sealed class ModuleDependencyService
     private static bool SpellEquals(ClassBlocksStore.SpellEntry left, ModuleSpellSnapshot right)
         => left.SpellId == right.SpellId
            && left.Charge == right.Charge
-           && left.MaxCharge == right.MaxCharge
            && left.CastCount == right.CastCount
            && left.ForcedKnown == right.ForcedKnown
            && left.InSpellBook == right.InSpellBook;

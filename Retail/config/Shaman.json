@@ -127,7 +127,9 @@
     "19": 5512,
     "20": 273796,
     "21": 270162,
-    "22": 270169
+    "22": 270169,
+    "23": 250215,
+    "24": 250255
   },
   "1": {
     "队伍类型": {
@@ -452,22 +454,36 @@
       "itemId": 241308,
       "isEquipped": false
     },
-    "妖术领主的厄运神像": {
+    "货运者水壶": {
       "step": 127,
+      "type": "int",
+      "category": "物品",
+      "itemId": 250215,
+      "isEquipped": false
+    },
+    "动荡的邪心水晶": {
+      "step": 128,
+      "type": "int",
+      "category": "物品",
+      "itemId": 250255,
+      "isEquipped": false
+    },
+    "妖术领主的厄运神像": {
+      "step": 129,
       "type": "int",
       "category": "物品",
       "itemId": 270169,
       "isEquipped": true
     },
     "浓缩银月城治疗药水": {
-      "step": 128,
+      "step": 130,
       "type": "int",
       "category": "物品",
       "itemId": 271883,
       "isEquipped": false
     },
     "一瓶肮脏的烈性毒液": {
-      "step": 129,
+      "step": 131,
       "type": "int",
       "category": "物品",
       "itemId": 273796,
@@ -1062,42 +1078,42 @@
       }
     },
     "姓名板目标": {
-      "step": 130,
-      "type": "int",
-      "category": "姓名板"
-    },
-    "姓名板焦点": {
-      "step": 131,
-      "type": "int",
-      "category": "姓名板"
-    },
-    "姓名板首领1": {
       "step": 132,
       "type": "int",
       "category": "姓名板"
     },
-    "姓名板首领2": {
+    "姓名板焦点": {
       "step": 133,
       "type": "int",
       "category": "姓名板"
     },
-    "姓名板首领3": {
+    "姓名板首领1": {
       "step": 134,
       "type": "int",
       "category": "姓名板"
     },
-    "姓名板首领4": {
+    "姓名板首领2": {
       "step": 135,
       "type": "int",
       "category": "姓名板"
     },
-    "姓名板首领5": {
+    "姓名板首领3": {
       "step": 136,
       "type": "int",
       "category": "姓名板"
     },
+    "姓名板首领4": {
+      "step": 137,
+      "type": "int",
+      "category": "姓名板"
+    },
+    "姓名板首领5": {
+      "step": 138,
+      "type": "int",
+      "category": "姓名板"
+    },
     "nameplates": {
-      "start": 130,
+      "start": 132,
       "mappingCount": 7,
       "healthPercent": 1,
       "range": 2,
@@ -1789,32 +1805,53 @@
       "category": "首领2"
     },
     "治疗石": {
-      "step": 109,
+      "step": 110,
       "type": "int",
       "category": "物品",
       "itemId": 5512,
       "isEquipped": false
     },
     "银月城生命药水": {
-      "step": 110,
+      "step": 111,
       "type": "int",
       "category": "物品",
       "itemId": 241304,
       "isEquipped": false
     },
+    "货运者水壶": {
+      "step": 112,
+      "type": "int",
+      "category": "物品",
+      "itemId": 250215,
+      "isEquipped": true
+    },
+    "动荡的邪心水晶": {
+      "step": 113,
+      "type": "int",
+      "category": "物品",
+      "itemId": 250255,
+      "isEquipped": true
+    },
     "盘魂者仪式容器": {
-      "step": 111,
+      "step": 114,
       "type": "int",
       "category": "物品",
       "itemId": 270162,
       "isEquipped": true
     },
     "妖术领主的厄运神像": {
-      "step": 112,
+      "step": 115,
       "type": "int",
       "category": "物品",
       "itemId": 270169,
       "isEquipped": true
+    },
+    "浓缩银月城治疗药水": {
+      "step": 116,
+      "type": "int",
+      "category": "物品",
+      "itemId": 271884,
+      "isEquipped": false
     },
     "auras": {
       "player.383648.value": {
@@ -2151,8 +2188,16 @@
         "metric": "chargeCooldown",
         "displayType": "充能"
       },
-      "61295.cooldown": {
+      "51505.count": {
         "step": 92,
+        "type": "int",
+        "displayName": "熔岩爆裂层数",
+        "spellId": 51505,
+        "metric": "count",
+        "displayType": "充能层数"
+      },
+      "61295.cooldown": {
+        "step": 93,
         "type": "int",
         "displayName": "激流",
         "spellId": 61295,
@@ -2160,7 +2205,7 @@
         "displayType": "冷却"
       },
       "61295.chargeCooldown": {
-        "step": 93,
+        "step": 94,
         "type": "int",
         "displayName": "激流充能",
         "spellId": 61295,
@@ -2168,7 +2213,7 @@
         "displayType": "充能"
       },
       "61295.count": {
-        "step": 94,
+        "step": 95,
         "type": "int",
         "displayName": "激流层数",
         "spellId": 61295,
@@ -2176,7 +2221,7 @@
         "displayType": "充能层数"
       },
       "5394.cooldown": {
-        "step": 95,
+        "step": 96,
         "type": "int",
         "displayName": "治疗之泉图腾",
         "spellId": 5394,
@@ -2184,7 +2229,7 @@
         "displayType": "冷却"
       },
       "5394.chargeCooldown": {
-        "step": 96,
+        "step": 97,
         "type": "int",
         "displayName": "治疗之泉图腾充能",
         "spellId": 5394,
@@ -2192,7 +2237,7 @@
         "displayType": "充能"
       },
       "5394.count": {
-        "step": 97,
+        "step": 98,
         "type": "int",
         "displayName": "治疗之泉图腾层数",
         "spellId": 5394,
@@ -2200,7 +2245,7 @@
         "displayType": "充能层数"
       },
       "470411.cooldown": {
-        "step": 98,
+        "step": 99,
         "type": "int",
         "displayName": "烈焰震击",
         "spellId": 470411,
@@ -2208,7 +2253,7 @@
         "displayType": "冷却"
       },
       "77130.cooldown": {
-        "step": 99,
+        "step": 100,
         "type": "int",
         "displayName": "净化灵魂",
         "spellId": 77130,
@@ -2216,7 +2261,7 @@
         "displayType": "冷却"
       },
       "73685.cooldown": {
-        "step": 100,
+        "step": 101,
         "type": "int",
         "displayName": "生命释放",
         "spellId": 73685,
@@ -2224,7 +2269,7 @@
         "displayType": "冷却"
       },
       "443454.cooldown": {
-        "step": 101,
+        "step": 102,
         "type": "int",
         "displayName": "先祖迅捷",
         "spellId": 443454,
@@ -2232,7 +2277,7 @@
         "displayType": "冷却"
       },
       "444995.cooldown": {
-        "step": 102,
+        "step": 103,
         "type": "int",
         "displayName": "涌动图腾",
         "spellId": 444995,
@@ -2240,7 +2285,7 @@
         "displayType": "冷却"
       },
       "98008.cooldown": {
-        "step": 103,
+        "step": 104,
         "type": "int",
         "displayName": "灵魂链接图腾",
         "spellId": 98008,
@@ -2248,7 +2293,7 @@
         "displayType": "冷却"
       },
       "114052.cooldown": {
-        "step": 104,
+        "step": 105,
         "type": "int",
         "displayName": "升腾",
         "spellId": 114052,
@@ -2256,7 +2301,7 @@
         "displayType": "冷却"
       },
       "108280.cooldown": {
-        "step": 105,
+        "step": 106,
         "type": "int",
         "displayName": "治疗之潮图腾",
         "spellId": 108280,
@@ -2264,7 +2309,7 @@
         "displayType": "冷却"
       },
       "73920.cooldown": {
-        "step": 106,
+        "step": 107,
         "type": "int",
         "displayName": "治疗之雨",
         "spellId": 73920,
@@ -2272,7 +2317,7 @@
         "displayType": "冷却"
       },
       "370.cooldown": {
-        "step": 107,
+        "step": 108,
         "type": "int",
         "displayName": "净化术",
         "spellId": 370,
@@ -2280,7 +2325,7 @@
         "displayType": "冷却"
       },
       "192077.cooldown": {
-        "step": 108,
+        "step": 109,
         "type": "int",
         "displayName": "狂风图腾",
         "spellId": 192077,
@@ -2289,7 +2334,7 @@
       }
     },
     "group": {
-      "start": 113,
+      "start": 117,
       "生命值": {
         "step": 1,
         "type": "int"

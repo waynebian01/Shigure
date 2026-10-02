@@ -1226,6 +1226,14 @@
         "spellId": 17962,
         "metric": "chargeCooldown",
         "displayType": "充能"
+      },
+      "17962.count": {
+        "step": 64,
+        "type": "int",
+        "displayName": "燃烧层数",
+        "spellId": 17962,
+        "metric": "count",
+        "displayType": "充能层数"
       }
     }
   }

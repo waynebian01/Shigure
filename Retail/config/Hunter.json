@@ -553,8 +553,16 @@
         "metric": "chargeCooldown",
         "displayType": "充能"
       },
-      "217200.cooldown": {
+      "34026.count": {
         "step": 73,
+        "type": "int",
+        "displayName": "杀戮命令层数",
+        "spellId": 34026,
+        "metric": "count",
+        "displayType": "充能层数"
+      },
+      "217200.cooldown": {
+        "step": 74,
         "type": "int",
         "displayName": "倒刺射击",
         "spellId": 217200,
@@ -562,15 +570,23 @@
         "displayType": "冷却"
       },
       "217200.chargeCooldown": {
-        "step": 74,
+        "step": 75,
         "type": "int",
         "displayName": "倒刺射击充能",
         "spellId": 217200,
         "metric": "chargeCooldown",
         "displayType": "充能"
       },
+      "217200.count": {
+        "step": 76,
+        "type": "int",
+        "displayName": "倒刺射击层数",
+        "spellId": 217200,
+        "metric": "count",
+        "displayType": "充能层数"
+      },
       "147362.cooldown": {
-        "step": 75,
+        "step": 77,
         "type": "int",
         "displayName": "反制射击",
         "spellId": 147362,
@@ -578,7 +594,7 @@
         "displayType": "冷却"
       },
       "19574.cooldown": {
-        "step": 76,
+        "step": 78,
         "type": "int",
         "displayName": "狂野怒火",
         "spellId": 19574,
@@ -586,7 +602,7 @@
         "displayType": "冷却"
       },
       "1264359.cooldown": {
-        "step": 77,
+        "step": 79,
         "type": "int",
         "displayName": "狂野鞭笞",
         "spellId": 1264359,
@@ -902,8 +918,16 @@
         "metric": "chargeCooldown",
         "displayType": "充能"
       },
-      "257044.cooldown": {
+      "19434.count": {
         "step": 59,
+        "type": "int",
+        "displayName": "瞄准射击层数",
+        "spellId": 19434,
+        "metric": "count",
+        "displayType": "充能层数"
+      },
+      "257044.cooldown": {
+        "step": 60,
         "type": "int",
         "displayName": "急速射击",
         "spellId": 257044,
@@ -911,7 +935,7 @@
         "displayType": "冷却"
       },
       "288613.cooldown": {
-        "step": 60,
+        "step": 61,
         "type": "int",
         "displayName": "百发百中",
         "spellId": 288613,

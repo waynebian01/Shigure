@@ -1035,8 +1035,16 @@
         "metric": "chargeCooldown",
         "displayType": "充能"
       },
-      "61336.cooldown": {
+      "22842.count": {
         "step": 62,
+        "type": "int",
+        "displayName": "狂暴回复层数",
+        "spellId": 22842,
+        "metric": "count",
+        "displayType": "充能层数"
+      },
+      "61336.cooldown": {
+        "step": 63,
         "type": "int",
         "displayName": "生存本能",
         "spellId": 61336,
@@ -1044,7 +1052,7 @@
         "displayType": "冷却"
       },
       "102558.cooldown": {
-        "step": 63,
+        "step": 64,
         "type": "int",
         "displayName": "化身：乌索克的守护者",
         "spellId": 102558,
@@ -1052,7 +1060,7 @@
         "displayType": "冷却"
       },
       "1261867.cooldown": {
-        "step": 64,
+        "step": 65,
         "type": "int",
         "displayName": "野性之心",
         "spellId": 1261867,
@@ -1060,7 +1068,7 @@
         "displayType": "冷却"
       },
       "1253799.cooldown": {
-        "step": 65,
+        "step": 66,
         "type": "int",
         "displayName": "碎甲咆哮",
         "spellId": 1253799,
@@ -1068,7 +1076,7 @@
         "displayType": "冷却"
       },
       "1252871.cooldown": {
-        "step": 66,
+        "step": 67,
         "type": "int",
         "displayName": "赤红之月",
         "spellId": 1252871,
@@ -1076,7 +1084,7 @@
         "displayType": "冷却"
       },
       "6807.cooldown": {
-        "step": 67,
+        "step": 68,
         "type": "int",
         "displayName": "重殴",
         "spellId": 6807,
@@ -1084,7 +1092,7 @@
         "displayType": "冷却"
       },
       "77758.cooldown": {
-        "step": 68,
+        "step": 69,
         "type": "int",
         "displayName": "痛击",
         "spellId": 77758,
@@ -1345,8 +1353,16 @@
         "metric": "chargeCooldown",
         "displayType": "充能"
       },
-      "48438.cooldown": {
+      "18562.count": {
         "step": 51,
+        "type": "int",
+        "displayName": "迅捷治愈层数",
+        "spellId": 18562,
+        "metric": "count",
+        "displayType": "充能层数"
+      },
+      "48438.cooldown": {
+        "step": 52,
         "type": "int",
         "displayName": "野性成长",
         "spellId": 48438,
@@ -1354,7 +1370,7 @@
         "displayType": "冷却"
       },
       "391528.cooldown": {
-        "step": 52,
+        "step": 53,
         "type": "int",
         "displayName": "万灵之召",
         "spellId": 391528,
@@ -1362,7 +1378,7 @@
         "displayType": "冷却"
       },
       "88423.cooldown": {
-        "step": 53,
+        "step": 54,
         "type": "int",
         "displayName": "自然之愈",
         "spellId": 88423,
@@ -1370,7 +1386,7 @@
         "displayType": "冷却"
       },
       "102342.cooldown": {
-        "step": 54,
+        "step": 55,
         "type": "int",
         "displayName": "铁木树皮",
         "spellId": 102342,
@@ -1378,7 +1394,7 @@
         "displayType": "冷却"
       },
       "132158.cooldown": {
-        "step": 55,
+        "step": 56,
         "type": "int",
         "displayName": "自然迅捷",
         "spellId": 132158,
@@ -1386,7 +1402,7 @@
         "displayType": "冷却"
       },
       "1261867.cooldown": {
-        "step": 56,
+        "step": 57,
         "type": "int",
         "displayName": "野性之心",
         "spellId": 1261867,
@@ -1395,7 +1411,7 @@
       }
     },
     "group": {
-      "start": 57,
+      "start": 58,
       "生命值": {
         "step": 1,
         "type": "int"

@@ -1904,8 +1904,16 @@
         "metric": "chargeCooldown",
         "displayType": "充能"
       },
-      "385952.cooldown": {
+      "2565.count": {
         "step": 60,
+        "type": "int",
+        "displayName": "盾牌格挡层数",
+        "spellId": 2565,
+        "metric": "count",
+        "displayType": "充能层数"
+      },
+      "385952.cooldown": {
+        "step": 61,
         "type": "int",
         "displayName": "盾牌冲锋",
         "spellId": 385952,
@@ -1913,7 +1921,7 @@
         "displayType": "冷却"
       },
       "107574.cooldown": {
-        "step": 61,
+        "step": 62,
         "type": "int",
         "displayName": "天神下凡",
         "spellId": 107574,
@@ -1921,7 +1929,7 @@
         "displayType": "冷却"
       },
       "1160.cooldown": {
-        "step": 62,
+        "step": 63,
         "type": "int",
         "displayName": "挫志怒吼",
         "spellId": 1160,
@@ -1929,7 +1937,7 @@
         "displayType": "冷却"
       },
       "6552.cooldown": {
-        "step": 63,
+        "step": 64,
         "type": "int",
         "displayName": "拳击",
         "spellId": 6552,
@@ -1937,7 +1945,7 @@
         "displayType": "冷却"
       },
       "190456.cooldown": {
-        "step": 64,
+        "step": 65,
         "type": "int",
         "displayName": "无视苦痛",
         "spellId": 190456,
@@ -1945,7 +1953,7 @@
         "displayType": "冷却"
       },
       "6572.cooldown": {
-        "step": 65,
+        "step": 66,
         "type": "int",
         "displayName": "复仇",
         "spellId": 6572,
@@ -1953,7 +1961,7 @@
         "displayType": "冷却"
       },
       "163201.cooldown": {
-        "step": 66,
+        "step": 67,
         "type": "int",
         "displayName": "斩杀",
         "spellId": 163201,
@@ -1961,7 +1969,7 @@
         "displayType": "冷却"
       },
       "57755.cooldown": {
-        "step": 67,
+        "step": 68,
         "type": "int",
         "displayName": "英勇投掷",
         "spellId": 57755,

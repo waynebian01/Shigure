@@ -110,10 +110,11 @@ public sealed class ModuleItemSnapshot
 
 public sealed class ModuleAuraSnapshot
 {
+    private int? _maxApps;
     public string Name { get; set; } = string.Empty;
     public long? SpellId { get; set; }
     public List<long> SpellIds { get; set; } = new();
-    public int? MaxApps { get; set; }
+    public int? MaxApps { get => _maxApps; set => _maxApps = value is > 0 ? 1 : null; }
     // null 表示旧模块未保存该字段；旧版固定使用 PLAYER，导入时按 true 兼容。
     public bool? IsPlayer { get; set; }
 
@@ -129,11 +130,11 @@ public sealed class ModuleAuraSnapshot
 
 public sealed class ModuleSpellSnapshot
 {
+    private int? _castCount;
     public string Name { get; set; } = string.Empty;
     public long SpellId { get; set; }
     public bool Charge { get; set; }
-    public int? MaxCharge { get; set; }
-    public int? CastCount { get; set; }
+    public int? CastCount { get => _castCount; set => _castCount = value is > 0 ? 1 : null; }
     public bool ForcedKnown { get; set; }
     public bool InSpellBook { get; set; }
 
@@ -178,10 +179,11 @@ public sealed class ModuleGroupSnapshot
 
 public sealed class ModuleGroupAuraSnapshot
 {
+    private int? _maxApps;
     public string Name { get; set; } = string.Empty;
     public long? SpellId { get; set; }
     public List<long> SpellIds { get; set; } = new();
-    public int? MaxApps { get; set; }
+    public int? MaxApps { get => _maxApps; set => _maxApps = value is > 0 ? 1 : null; }
 
     public ModuleGroupAuraSnapshot Clone() => new()
     {

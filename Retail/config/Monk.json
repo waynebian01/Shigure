@@ -351,8 +351,16 @@
         "metric": "chargeCooldown",
         "displayType": "充能"
       },
-      "119582.cooldown": {
+      "121253.count": {
         "step": 52,
+        "type": "int",
+        "displayName": "醉酿投层数",
+        "spellId": 121253,
+        "metric": "count",
+        "displayType": "充能层数"
+      },
+      "119582.cooldown": {
+        "step": 53,
         "type": "int",
         "displayName": "活血酒",
         "spellId": 119582,
@@ -360,15 +368,23 @@
         "displayType": "冷却"
       },
       "119582.chargeCooldown": {
-        "step": 53,
+        "step": 54,
         "type": "int",
         "displayName": "活血酒充能",
         "spellId": 119582,
         "metric": "chargeCooldown",
         "displayType": "充能"
       },
+      "119582.count": {
+        "step": 55,
+        "type": "int",
+        "displayName": "活血酒层数",
+        "spellId": 119582,
+        "metric": "count",
+        "displayType": "充能层数"
+      },
       "322507.cooldown": {
-        "step": 54,
+        "step": 56,
         "type": "int",
         "displayName": "天神酒",
         "spellId": 322507,
@@ -376,15 +392,23 @@
         "displayType": "冷却"
       },
       "322507.chargeCooldown": {
-        "step": 55,
+        "step": 57,
         "type": "int",
         "displayName": "天神酒充能",
         "spellId": 322507,
         "metric": "chargeCooldown",
         "displayType": "充能"
       },
+      "322507.count": {
+        "step": 58,
+        "type": "int",
+        "displayName": "天神酒层数",
+        "spellId": 322507,
+        "metric": "count",
+        "displayType": "充能层数"
+      },
       "1241059.cooldown": {
-        "step": 56,
+        "step": 59,
         "type": "int",
         "displayName": "天神灌注",
         "spellId": 1241059,
@@ -392,15 +416,23 @@
         "displayType": "冷却"
       },
       "1241059.chargeCooldown": {
-        "step": 57,
+        "step": 60,
         "type": "int",
         "displayName": "天神灌注充能",
         "spellId": 1241059,
         "metric": "chargeCooldown",
         "displayType": "充能"
       },
+      "1241059.count": {
+        "step": 61,
+        "type": "int",
+        "displayName": "天神灌注层数",
+        "spellId": 1241059,
+        "metric": "count",
+        "displayType": "充能层数"
+      },
       "322109.cooldown": {
-        "step": 58,
+        "step": 62,
         "type": "int",
         "displayName": "轮回之触",
         "spellId": 322109,
@@ -408,7 +440,7 @@
         "displayType": "冷却"
       },
       "119381.cooldown": {
-        "step": 59,
+        "step": 63,
         "type": "int",
         "displayName": "扫堂腿",
         "spellId": 119381,
@@ -416,7 +448,7 @@
         "displayType": "冷却"
       },
       "322101.cooldown": {
-        "step": 60,
+        "step": 64,
         "type": "int",
         "displayName": "移花接木",
         "spellId": 322101,
@@ -424,7 +456,7 @@
         "displayType": "冷却"
       },
       "322101.count": {
-        "step": 61,
+        "step": 65,
         "type": "int",
         "displayName": "移花接木层数",
         "spellId": 322101,
@@ -432,7 +464,7 @@
         "displayType": "施法次数"
       },
       "101643.cooldown": {
-        "step": 62,
+        "step": 66,
         "type": "int",
         "displayName": "魂体双分",
         "spellId": 101643,
@@ -440,7 +472,7 @@
         "displayType": "冷却"
       },
       "119996.cooldown": {
-        "step": 63,
+        "step": 67,
         "type": "int",
         "displayName": "魂体双分：转移",
         "spellId": 119996,
@@ -448,7 +480,7 @@
         "displayType": "冷却"
       },
       "116705.cooldown": {
-        "step": 64,
+        "step": 68,
         "type": "int",
         "displayName": "切喉手",
         "spellId": 116705,
@@ -456,7 +488,7 @@
         "displayType": "冷却"
       },
       "115181.cooldown": {
-        "step": 65,
+        "step": 69,
         "type": "int",
         "displayName": "火焰之息",
         "spellId": 115181,
@@ -464,7 +496,7 @@
         "displayType": "冷却"
       },
       "123986.cooldown": {
-        "step": 66,
+        "step": 70,
         "type": "int",
         "displayName": "真气爆裂",
         "spellId": 123986,
@@ -472,7 +504,7 @@
         "displayType": "冷却"
       },
       "325153.cooldown": {
-        "step": 67,
+        "step": 71,
         "type": "int",
         "displayName": "爆炸酒桶",
         "spellId": 325153,
@@ -480,7 +512,7 @@
         "displayType": "冷却"
       },
       "198898.cooldown": {
-        "step": 68,
+        "step": 72,
         "type": "int",
         "displayName": "赤精之歌",
         "spellId": 198898,
@@ -488,7 +520,7 @@
         "displayType": "冷却"
       },
       "115399.cooldown": {
-        "step": 69,
+        "step": 73,
         "type": "int",
         "displayName": "玄牛酒",
         "spellId": 115399,
@@ -496,7 +528,7 @@
         "displayType": "冷却"
       },
       "116844.cooldown": {
-        "step": 70,
+        "step": 74,
         "type": "int",
         "displayName": "平心之环",
         "spellId": 116844,
@@ -504,7 +536,7 @@
         "displayType": "冷却"
       },
       "115078.cooldown": {
-        "step": 71,
+        "step": 75,
         "type": "int",
         "displayName": "分筋错骨",
         "spellId": 115078,
@@ -512,7 +544,7 @@
         "displayType": "冷却"
       },
       "132578.cooldown": {
-        "step": 72,
+        "step": 76,
         "type": "int",
         "displayName": "玄牛下凡",
         "spellId": 132578,
@@ -520,7 +552,7 @@
         "displayType": "冷却"
       },
       "205523.cooldown": {
-        "step": 73,
+        "step": 77,
         "type": "int",
         "displayName": "幻灭踢",
         "spellId": 205523,
@@ -741,8 +773,16 @@
         "metric": "chargeCooldown",
         "displayType": "充能"
       },
-      "115151.cooldown": {
+      "116680.count": {
         "step": 46,
+        "type": "int",
+        "displayName": "雷光聚神茶层数",
+        "spellId": 116680,
+        "metric": "count",
+        "displayType": "充能层数"
+      },
+      "115151.cooldown": {
+        "step": 47,
         "type": "int",
         "displayName": "复苏之雾",
         "spellId": 115151,
@@ -750,15 +790,23 @@
         "displayType": "冷却"
       },
       "115151.chargeCooldown": {
-        "step": 47,
+        "step": 48,
         "type": "int",
         "displayName": "复苏之雾充能",
         "spellId": 115151,
         "metric": "chargeCooldown",
         "displayType": "充能"
       },
+      "115151.count": {
+        "step": 49,
+        "type": "int",
+        "displayName": "复苏之雾层数",
+        "spellId": 115151,
+        "metric": "count",
+        "displayType": "充能层数"
+      },
       "115310.cooldown": {
-        "step": 48,
+        "step": 50,
         "type": "int",
         "displayName": "还魂术",
         "spellId": 115310,
@@ -766,7 +814,7 @@
         "displayType": "冷却"
       },
       "116849.cooldown": {
-        "step": 49,
+        "step": 51,
         "type": "int",
         "displayName": "作茧缚命",
         "spellId": 116849,
@@ -774,7 +822,7 @@
         "displayType": "冷却"
       },
       "115450.cooldown": {
-        "step": 50,
+        "step": 52,
         "type": "int",
         "displayName": "清创生血",
         "spellId": 115450,
@@ -782,7 +830,7 @@
         "displayType": "冷却"
       },
       "443028.cooldown": {
-        "step": 51,
+        "step": 53,
         "type": "int",
         "displayName": "天神御身",
         "spellId": 443028,
@@ -790,7 +838,7 @@
         "displayType": "冷却"
       },
       "322109.cooldown": {
-        "step": 52,
+        "step": 54,
         "type": "int",
         "displayName": "轮回之触",
         "spellId": 322109,
@@ -798,7 +846,7 @@
         "displayType": "冷却"
       },
       "119381.cooldown": {
-        "step": 53,
+        "step": 55,
         "type": "int",
         "displayName": "扫堂腿",
         "spellId": 119381,
@@ -806,7 +854,7 @@
         "displayType": "冷却"
       },
       "1270621.cooldown": {
-        "step": 54,
+        "step": 56,
         "type": "int",
         "displayName": "宁神茶",
         "spellId": 1270621,
@@ -814,7 +862,7 @@
         "displayType": "冷却"
       },
       "101643.cooldown": {
-        "step": 55,
+        "step": 57,
         "type": "int",
         "displayName": "魂体双分",
         "spellId": 101643,
@@ -822,7 +870,7 @@
         "displayType": "冷却"
       },
       "119996.cooldown": {
-        "step": 56,
+        "step": 58,
         "type": "int",
         "displayName": "魂体双分：转移",
         "spellId": 119996,
@@ -830,7 +878,7 @@
         "displayType": "冷却"
       },
       "107428.cooldown": {
-        "step": 57,
+        "step": 59,
         "type": "int",
         "displayName": "旭日东升踢",
         "spellId": 107428,
@@ -838,7 +886,7 @@
         "displayType": "冷却"
       },
       "100784.cooldown": {
-        "step": 58,
+        "step": 60,
         "type": "int",
         "displayName": "幻灭踢",
         "spellId": 100784,
@@ -846,7 +894,7 @@
         "displayType": "冷却"
       },
       "116844.cooldown": {
-        "step": 59,
+        "step": 61,
         "type": "int",
         "displayName": "平心之环",
         "spellId": 116844,
@@ -854,7 +902,7 @@
         "displayType": "冷却"
       },
       "115078.cooldown": {
-        "step": 60,
+        "step": 62,
         "type": "int",
         "displayName": "分筋错骨",
         "spellId": 115078,
@@ -862,7 +910,7 @@
         "displayType": "冷却"
       },
       "115294.cooldown": {
-        "step": 61,
+        "step": 63,
         "type": "int",
         "displayName": "法力茶",
         "spellId": 115294,
@@ -870,7 +918,7 @@
         "displayType": "冷却"
       },
       "115294.count": {
-        "step": 62,
+        "step": 64,
         "type": "int",
         "displayName": "法力茶层数",
         "spellId": 115294,
@@ -878,7 +926,7 @@
         "displayType": "施法次数"
       },
       "399491.cooldown": {
-        "step": 63,
+        "step": 65,
         "type": "int",
         "displayName": "神龙之赐",
         "spellId": 399491,
@@ -886,7 +934,7 @@
         "displayType": "冷却"
       },
       "399491.count": {
-        "step": 64,
+        "step": 66,
         "type": "int",
         "displayName": "神龙之赐层数",
         "spellId": 399491,
@@ -895,7 +943,7 @@
       }
     },
     "group": {
-      "start": 65,
+      "start": 67,
       "生命值": {
         "step": 1,
         "type": "int"

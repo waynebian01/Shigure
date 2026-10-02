@@ -476,9 +476,8 @@ internal static class FuyutsuiConfigConverter
                     index++;
                 }
 
-                var maxCharge = spell.GetNumber("maxCharge");
-                var castCount = spell.GetNumber("castCount");
-                if (charge && maxCharge is not null)
+                var castCount = spell.GetBool("castCount") == true;
+                if (charge)
                 {
                     if (countSpellIds.Add(id))
                     {
@@ -490,7 +489,7 @@ internal static class FuyutsuiConfigConverter
                             "充能层数");
                     }
                 }
-                else if (castCount is not null && castCount.Value > 0)
+                else if (castCount)
                 {
                     if (countSpellIds.Add(id))
                     {
@@ -592,7 +591,7 @@ internal static class FuyutsuiConfigConverter
                         "group",
                         SpellFieldKey.AuraValue,
                         ids);
-                    if (auraInfo.GetNumber("maxApps") is > 0)
+                    if (auraInfo.GetBool("maxApps") == true)
                     {
                         groupJson[$"auras.{canonicalId}.{SpellFieldKey.AuraApplications}"] = AuraField(
                             ++groupFieldCount,
@@ -662,7 +661,7 @@ internal static class FuyutsuiConfigConverter
                         ["spellId"] = ids[0],
                         ["valueOffset"] = ++fieldCount
                     };
-                    if (aura.GetNumber("maxApps") is > 0)
+                    if (aura.GetBool("maxApps") == true)
                     {
                         auraJson["appsOffset"] = ++fieldCount;
                     }
@@ -829,7 +828,7 @@ internal static class FuyutsuiConfigConverter
                 classification);
             index++;
 
-            if (aura.GetNumber("maxApps") is > 0)
+            if (aura.GetBool("maxApps") == true)
             {
                 var appsKey = $"{scope}.{canonicalId}.{SpellFieldKey.AuraApplications}";
                 aurasObject[appsKey] = AuraField(

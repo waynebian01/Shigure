@@ -790,7 +790,7 @@ local function MakeGarroteIconSlotInitializer(index)
 end
 
 local function AddDurationAuraSlotPair(container, slotKeyPrefix, filter, includeSpellIDs, index, maxApps)
-    local hasApplications = type(maxApps) == "number" and maxApps > 0
+    local hasApplications = maxApps == true
     -- 先限时后永久：若容器对 auraInstance 互斥分配，避免限时光环被永久槽抢走。
     -- 限时槽：maxDuration 排除永久；底层 b=0 + █ 曲线
     container:AddAuraSlot(slotKeyPrefix .. "_timed_" .. index, filter, {

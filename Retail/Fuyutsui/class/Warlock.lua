@@ -149,7 +149,7 @@ Fuyutsui.ClassBlocks = {
             { spellId = 1271802, name = "语言灾厄" },
             { spellId = 48018, name = "恶魔法阵" },
             { spellId = 48020, name = "恶魔法阵：传送" },
-            { spellId = 196277, name = "内爆", castCount = 20 },
+            { spellId = 196277, name = "内爆", castCount = true },
             { spellId = 265187, name = "召唤恶魔暴君" },
             { spellId = 1276467, name = "魔典：邪能破坏者" },
             { spellId = 105174, name = "古尔丹之手" },

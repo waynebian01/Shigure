@@ -71,7 +71,7 @@ Fuyutsui.ClassBlocks = {
         auras = {
             player = {
                 { name = "猎群领袖之嚎", spellId = 471877, isPlayer = true,},
-                { name = "眼镜蛇利牙", spellId = 1299389, maxApps = 4, isPlayer = true,},
+                { name = "眼镜蛇利牙", spellId = 1299389, maxApps = true, isPlayer = true,},
                 { name = "自然之友", spellId = 1276720, isPlayer = true,},
                 { name = "野兽顺劈", spellId = 268877, isPlayer = true,},
                 { name = "龙", spellId = 471878, isPlayer = true,},

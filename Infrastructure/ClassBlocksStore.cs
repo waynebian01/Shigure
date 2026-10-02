@@ -113,7 +113,6 @@ internal static class ClassBlocksStore
         public string Name { get; set; } = string.Empty;
         public long SpellId { get; set; }
         public bool Charge { get; set; }
-        public int? MaxCharge { get; set; }
         public int? CastCount { get; set; }
         public bool ForcedKnown { get; set; }
         public bool InSpellBook { get; set; }
@@ -653,8 +652,7 @@ internal static class ClassBlocksStore
                     SpellId = (long)spellId.Value,
                     Name = spell.GetString("name")?.Trim() ?? string.Empty,
                     Charge = spell.GetBool("charge") == true,
-                    MaxCharge = spell.GetNumber("maxCharge") is { } maxCharge ? (int)maxCharge : null,
-                    CastCount = spell.GetNumber("castCount") is { } castCount ? (int)castCount : null,
+                    CastCount = ReadEnabledFlag(spell, "castCount"),
                     ForcedKnown = spell.GetBool("forcedKnown") == true,
                     InSpellBook = spell.GetBool("inSpellBook") == true
                 });
@@ -683,7 +681,7 @@ internal static class ClassBlocksStore
                     var entry = new GroupAuraEntry
                     {
                         Name = auraInfo.GetString("name")?.Trim() ?? string.Empty,
-                        MaxApps = auraInfo.GetNumber("maxApps") is { } maxApps ? (int)maxApps : null
+                        MaxApps = ReadEnabledFlag(auraInfo, "maxApps")
                     };
                     if (auraInfo.GetNumber("spellId") is { } sid)
                     {
@@ -781,7 +779,7 @@ internal static class ClassBlocksStore
             var entry = new AuraEntry
             {
                 Name = aura.GetString("name")?.Trim() ?? string.Empty,
-                MaxApps = aura.GetNumber("maxApps") is { } maxApps ? (int)maxApps : null,
+                MaxApps = ReadEnabledFlag(aura, "maxApps"),
                 IsPlayer = aura.GetBool("isPlayer") == true
             };
             if (aura.GetNumber("spellId") is { } sid)
@@ -892,14 +890,9 @@ internal static class ClassBlocksStore
                     sb.Append(", charge = true");
                 }
 
-                if (spell.MaxCharge is { } maxCharge)
+                if (spell.CastCount is > 0)
                 {
-                    sb.Append(", maxCharge = ").Append(maxCharge);
-                }
-
-                if (spell.CastCount is { } castCount)
-                {
-                    sb.Append(", castCount = ").Append(castCount);
+                    sb.Append(", castCount = true");
                 }
 
                 if (spell.ForcedKnown)
@@ -960,9 +953,9 @@ internal static class ClassBlocksStore
                     }
 
                     WriteSpellIdFields(sb, aura.SpellId, aura.SpellIds);
-                    if (aura.MaxApps is { } maxApps)
+                    if (aura.MaxApps is > 0)
                     {
-                        sb.Append(" maxApps = ").Append(maxApps).Append(',');
+                        sb.Append(" maxApps = true,");
                     }
                     sb.AppendLine(" },");
                 }
@@ -1156,6 +1149,10 @@ internal static class ClassBlocksStore
         sb.Append(indent).AppendLine("},");
     }
 
+    // 内部快照仍用 1 表示启用，以兼容旧模块的数字字段；新 Lua 统一写 true。
+    private static int? ReadEnabledFlag(TableValue table, string key)
+        => table.GetBool(key) == true || table.GetNumber(key) is > 0 ? 1 : null;
+
     private static void WriteAuraEntry(StringBuilder sb, AuraEntry aura, string indent)
     {
         sb.Append(indent).Append("{");
@@ -1165,9 +1162,9 @@ internal static class ClassBlocksStore
         }
 
         WriteSpellIdFields(sb, aura.SpellId, aura.SpellIds);
-        if (aura.MaxApps is { } maxApps)
+        if (aura.MaxApps is > 0)
         {
-            sb.Append(" maxApps = ").Append(maxApps).Append(',');
+            sb.Append(" maxApps = true,");
         }
 
         sb.Append(" isPlayer = ").Append(aura.IsPlayer ? "true" : "false").Append(',');

@@ -847,7 +847,7 @@ public sealed class ClassConfigEditorControl : UserControl
             HeaderText = "玩家施放",
             Width = 90
         });
-        _aurasGrid.Columns.Add(new DataGridViewTextBoxColumn { Name = "MaxApps", HeaderText = "maxApps", Width = 135 });
+        _aurasGrid.Columns.Add(CreateSpellCheckColumn("MaxApps", "显示层数", 90));
         _aurasGrid.Columns.Add(CreateDeleteColumn());
         _aurasGrid.CellContentClick += HandleDeleteClick;
         _aurasGrid.CellValueChanged += (_, e) =>
@@ -1018,19 +1018,18 @@ public sealed class ClassConfigEditorControl : UserControl
         spellTitle.Anchor = AnchorStyles.Left;
         spellHeader.Controls.Add(spellTitle, 0, 0);
         var textureOrderHint = CreateFieldCaption(
-            "充能法术连续占 2 格：冷却 → 充能冷却。");
+            "显示充能时连续占 3 格：冷却 → 充能冷却 → 充能数。");
         textureOrderHint.TextAlign = ContentAlignment.MiddleRight;
         spellHeader.Controls.Add(textureOrderHint, 1, 0);
         spellCard.Controls.Add(spellHeader, 0, 0);
 
         ConfigureGrid(_spellsGrid, "class-config-spells");
-        // 冷却技能表：图标 ×0.8，法术 ID/最大充能/施法次数/强制已学/法术书中 ×0.9；名称仍为唯一 Fill。
+        // 冷却技能表：图标 ×0.8，法术 ID/计数开关/强制已学/法术书中 ×0.9；名称仍为唯一 Fill。
         _spellsGrid.Columns.Add(CreateSpellIconColumn(43));
         _spellsGrid.Columns.Add(CreateSpellTextColumn("Name", "名称", 160, fill: true));
         _spellsGrid.Columns.Add(CreateSpellTextColumn("SpellId", "法术 ID", 108));
-        _spellsGrid.Columns.Add(CreateSpellCheckColumn("Charge", "充能", 80));
-        _spellsGrid.Columns.Add(CreateSpellTextColumn("MaxCharge", "最大充能", 99));
-        _spellsGrid.Columns.Add(CreateSpellTextColumn("CastCount", "施法次数", 99));
+        _spellsGrid.Columns.Add(CreateSpellCheckColumn("Charge", "显示充能", 99));
+        _spellsGrid.Columns.Add(CreateSpellCheckColumn("CastCount", "显示施法次数", 110));
         _spellsGrid.Columns.Add(CreateSpellCheckColumn("ForcedKnown", "强制已学", 99));
         _spellsGrid.Columns.Add(CreateSpellCheckColumn("InSpellBook", "法术书中", 99));
         _spellsGrid.Columns.Add(CreateDeleteColumn());
@@ -1500,7 +1499,7 @@ public sealed class ClassConfigEditorControl : UserControl
         _groupAurasGrid.Columns.Add(CreateSpellIconColumn());
         _groupAurasGrid.Columns.Add(new DataGridViewTextBoxColumn { Name = "Name", HeaderText = "名称", Width = 160 });
         _groupAurasGrid.Columns.Add(new DataGridViewTextBoxColumn { Name = "SpellId", HeaderText = "spellId", Width = 110 });
-        _groupAurasGrid.Columns.Add(new DataGridViewTextBoxColumn { Name = "MaxApps", HeaderText = "maxApps", Width = 85 });
+        _groupAurasGrid.Columns.Add(CreateSpellCheckColumn("MaxApps", "显示层数", 90));
         _groupAurasGrid.Columns.Add(new DataGridViewTextBoxColumn
         {
             Name = "SpellIds",
@@ -1641,7 +1640,7 @@ public sealed class ClassConfigEditorControl : UserControl
         _nameplateAurasGrid.Columns.Add(CreateSpellIconColumn());
         _nameplateAurasGrid.Columns.Add(new DataGridViewTextBoxColumn { Name = "Name", HeaderText = "名称", Width = 220 });
         _nameplateAurasGrid.Columns.Add(new DataGridViewTextBoxColumn { Name = "SpellId", HeaderText = "spellId", Width = 120 });
-        _nameplateAurasGrid.Columns.Add(new DataGridViewTextBoxColumn { Name = "MaxApps", HeaderText = "maxApps", Width = 85 });
+        _nameplateAurasGrid.Columns.Add(CreateSpellCheckColumn("MaxApps", "显示层数", 90));
         _nameplateAurasGrid.Columns.Add(new DataGridViewTextBoxColumn
         {
             Name = "SpellIds",
@@ -1688,14 +1687,15 @@ public sealed class ClassConfigEditorControl : UserControl
             foreach (var aura in nameplates.Auras)
             {
                 var icon = GetAuraIcon(aura.SpellId, aura.SpellIds, aura.Name);
-                _nameplateAurasGrid.Rows.Add(
+                var rowIndex = _nameplateAurasGrid.Rows.Add(
                     icon!,
                     aura.Name,
                     aura.SpellId?.ToString(CultureInfo.InvariantCulture) ?? "",
-                    aura.MaxApps?.ToString(CultureInfo.InvariantCulture) ?? "",
+                    aura.MaxApps is > 0,
                     string.Join(", ", aura.SpellIds),
                     aura.IsPlayer,
                     "×");
+                _nameplateAurasGrid.Rows[rowIndex].Cells["MaxApps"].Tag = aura.MaxApps;
             }
         }
         else
@@ -1727,7 +1727,7 @@ public sealed class ClassConfigEditorControl : UserControl
                     || ParseIdList(row.Cells["SpellIds"].Value?.ToString() ?? string.Empty).Any()))
             {
                 fields++;
-                if (int.TryParse(row.Cells["MaxApps"].Value?.ToString(), out var maxApps) && maxApps > 0)
+                if (row.Cells["MaxApps"].Value is true)
                 {
                     fields++;
                 }
@@ -1829,6 +1829,13 @@ public sealed class ClassConfigEditorControl : UserControl
         grid.MultiSelect = false;
         grid.EditMode = DataGridViewEditMode.EditOnEnter;
         grid.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None;
+        grid.CurrentCellDirtyStateChanged += (_, _) =>
+        {
+            if (grid.IsCurrentCellDirty && grid.CurrentCell is DataGridViewCheckBoxCell)
+            {
+                grid.CommitEdit(DataGridViewDataErrorContexts.Commit);
+            }
+        };
     }
 
     private static DataGridViewButtonColumn CreateDeleteColumn()
@@ -3033,14 +3040,15 @@ public sealed class ClassConfigEditorControl : UserControl
         {
             var icon = GetAuraIcon(aura.SpellId, aura.SpellIds, aura.Name);
 
-            _aurasGrid.Rows.Add(
+            var rowIndex = _aurasGrid.Rows.Add(
                 icon!,
                 aura.Name,
                 aura.SpellId?.ToString(CultureInfo.InvariantCulture) ?? "",
                 string.Join(", ", aura.SpellIds),
                 aura.IsPlayer,
-                aura.MaxApps?.ToString(CultureInfo.InvariantCulture) ?? "",
+                aura.MaxApps is > 0,
                 "×");
+            _aurasGrid.Rows[rowIndex].Cells["MaxApps"].Tag = aura.MaxApps;
         }
     }
 
@@ -3056,16 +3064,16 @@ public sealed class ClassConfigEditorControl : UserControl
         foreach (var spell in _currentSpec.Spells)
         {
             SpellIconCatalog.Register(spell.SpellId, spell.Name);
-            _spellsGrid.Rows.Add(
+            var rowIndex = _spellsGrid.Rows.Add(
                 SpellIconCatalog.Get(spell.SpellId)!,
                 spell.Name,
                 spell.SpellId.ToString(CultureInfo.InvariantCulture),
                 spell.Charge,
-                spell.MaxCharge?.ToString(CultureInfo.InvariantCulture) ?? "",
-                spell.CastCount?.ToString(CultureInfo.InvariantCulture) ?? "",
+                spell.CastCount is > 0,
                 spell.ForcedKnown,
                 spell.InSpellBook,
                 "×");
+            _spellsGrid.Rows[rowIndex].Cells["CastCount"].Tag = spell.CastCount;
         }
     }
 
@@ -3441,13 +3449,14 @@ public sealed class ClassConfigEditorControl : UserControl
             foreach (var aura in group.Auras)
             {
                 var icon = GetAuraIcon(aura.SpellId, aura.SpellIds, aura.Name);
-                _groupAurasGrid.Rows.Add(
+                var rowIndex = _groupAurasGrid.Rows.Add(
                     icon!,
                     aura.Name,
                     aura.SpellId?.ToString(CultureInfo.InvariantCulture) ?? "",
-                    aura.MaxApps?.ToString(CultureInfo.InvariantCulture) ?? "",
+                    aura.MaxApps is > 0,
                     string.Join(", ", aura.SpellIds),
                     "×");
+                _groupAurasGrid.Rows[rowIndex].Cells["MaxApps"].Tag = aura.MaxApps;
             }
         }
         else
@@ -3487,7 +3496,7 @@ public sealed class ClassConfigEditorControl : UserControl
                     || ParseIdList(row.Cells["SpellIds"].Value?.ToString() ?? string.Empty).Any()))
             {
                 fields++;
-                if (int.TryParse(row.Cells["MaxApps"].Value?.ToString(), out var maxApps) && maxApps > 0)
+                if (row.Cells["MaxApps"].Value is true)
                 {
                     fields++;
                 }
@@ -4020,7 +4029,6 @@ public sealed class ClassConfigEditorControl : UserControl
             var name = row.Cells["Name"].Value?.ToString()?.Trim() ?? "";
             var spellIdsText = row.Cells["SpellIds"].Value?.ToString()?.Trim() ?? "";
             var spellIdText = row.Cells["SpellId"].Value?.ToString()?.Trim() ?? "";
-            var maxAppsText = row.Cells["MaxApps"].Value?.ToString()?.Trim() ?? "";
             if (string.IsNullOrWhiteSpace(name) && string.IsNullOrWhiteSpace(spellIdText) && string.IsNullOrWhiteSpace(spellIdsText))
             {
                 continue;
@@ -4041,13 +4049,22 @@ public sealed class ClassConfigEditorControl : UserControl
                 entry.SpellId = sid;
             }
 
-            if (int.TryParse(maxAppsText, NumberStyles.Integer, CultureInfo.InvariantCulture, out var maxApps))
-            {
-                entry.MaxApps = maxApps;
-            }
+            entry.MaxApps = ReadEnabledNumber(row, "MaxApps");
 
             list.Add(entry);
         }
+    }
+
+    // 内部快照仍用 1 表示启用；写回 Lua 时统一序列化为 true。
+    private static int? ReadEnabledNumber(DataGridViewRow row, string columnName)
+    {
+        var cell = row.Cells[columnName];
+        if (cell.Value is not true)
+        {
+            return null;
+        }
+
+        return cell.Tag is int original && original > 0 ? original : 1;
     }
 
     private void WriteBackItems()
@@ -4111,15 +4128,7 @@ public sealed class ClassConfigEditorControl : UserControl
                 ForcedKnown = row.Cells["ForcedKnown"].Value is true,
                 InSpellBook = row.Cells["InSpellBook"].Value is true
             };
-            if (int.TryParse(row.Cells["MaxCharge"].Value?.ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var maxCharge))
-            {
-                entry.MaxCharge = maxCharge;
-            }
-
-            if (int.TryParse(row.Cells["CastCount"].Value?.ToString(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var castCount))
-            {
-                entry.CastCount = castCount;
-            }
+            entry.CastCount = ReadEnabledNumber(row, "CastCount");
 
             _currentSpec.Spells.Add(entry);
         }
@@ -4162,8 +4171,7 @@ public sealed class ClassConfigEditorControl : UserControl
             var entry = new ClassBlocksStore.GroupAuraEntry
             {
                 Name = row.Cells["Name"].Value?.ToString()?.Trim() ?? "",
-                MaxApps = int.TryParse(row.Cells["MaxApps"].Value?.ToString(), NumberStyles.Integer,
-                    CultureInfo.InvariantCulture, out var maxApps) ? maxApps : null
+                MaxApps = ReadEnabledNumber(row, "MaxApps")
             };
             var spellIdsText = row.Cells["SpellIds"].Value?.ToString()?.Trim() ?? "";
             foreach (var id in ParseIdList(spellIdsText))
@@ -4220,8 +4228,7 @@ public sealed class ClassConfigEditorControl : UserControl
             {
                 Name = name,
                 IsPlayer = row.Cells["IsPlayer"].Value is true,
-                MaxApps = int.TryParse(row.Cells["MaxApps"].Value?.ToString(), NumberStyles.Integer,
-                    CultureInfo.InvariantCulture, out var maxApps) ? maxApps : null
+                MaxApps = ReadEnabledNumber(row, "MaxApps")
             };
             foreach (var id in ParseIdList(spellIdsText))
             {
@@ -4554,8 +4561,7 @@ public sealed class ClassConfigEditorControl : UserControl
                 entry.Name,
                 entry.SpellId.ToString(CultureInfo.InvariantCulture),
                 false,
-                "",
-                "",
+                false,
                 false,
                 false,
                 "×");
@@ -4683,13 +4689,20 @@ public sealed class ClassConfigEditorControl : UserControl
         }
 
         var values = new object[grid.Columns.Count];
+        var tags = new object?[grid.Columns.Count];
         for (var i = 0; i < grid.Columns.Count; i++)
         {
-            values[i] = grid.Rows[index].Cells[i].Value ?? DBNull.Value;
+            var cell = grid.Rows[index].Cells[i];
+            values[i] = cell.Value ?? (cell is DataGridViewCheckBoxCell ? false : DBNull.Value);
+            tags[i] = cell.Tag;
         }
 
         grid.Rows.RemoveAt(index);
         grid.Rows.Insert(target, values);
+        for (var i = 0; i < grid.Columns.Count; i++)
+        {
+            grid.Rows[target].Cells[i].Tag = tags[i];
+        }
         grid.ClearSelection();
         grid.Rows[target].Selected = true;
         grid.CurrentCell = grid.Rows[target].Cells[0];

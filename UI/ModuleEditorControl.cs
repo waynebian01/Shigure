@@ -5885,7 +5885,7 @@ public sealed class ModuleEditorControl : UserControl
                 {
                     Add($"spells.{spell.Name}充能", SpellFieldKey.Spell(spell.SpellId, SpellFieldKey.SpellChargeCooldown));
                 }
-                if (spell.MaxCharge is not null || spell.CastCount is not null)
+                if (spell.Charge || spell.CastCount is > 0)
                 {
                     Add($"spells.{spell.Name}层数", SpellFieldKey.Spell(spell.SpellId, SpellFieldKey.SpellCount));
                 }

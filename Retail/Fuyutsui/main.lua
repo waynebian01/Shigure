@@ -112,7 +112,7 @@ function Fuyutsui:LoadPlayerBlocks(specIndex)
                     if aura.isPlayer == true then
                         auraFilter = auraFilter .. "|PLAYER"
                     end
-                    local hasApplications = type(aura.maxApps) == "number" and aura.maxApps > 0
+                    local hasApplications = aura.maxApps == true
                     blocks.auras[index] = {
                         name = aura.name,
                         spellId = aura.spellId,
@@ -184,9 +184,9 @@ function Fuyutsui:LoadPlayerBlocks(specIndex)
                     blocks.spells[spellId].inSpellBook = spell.inSpellBook
                 end
                 local countType
-                if spell.charge and type(spell.maxCharge) == "number" then
+                if spell.charge == true then
                     countType = "charge"
-                elseif type(spell.castCount) == "number" and spell.castCount > 0 then
+                elseif spell.castCount == true then
                     countType = "castCount"
                 end
                 if countType and not countSpellIds[spellId] then
@@ -278,7 +278,7 @@ function Fuyutsui:LoadPlayerBlocks(specIndex)
             if hasSpell then
                 groups.num = groups.num + 1
                 groups.aura[groups.num] = aura
-                if type(aura.maxApps) == "number" and aura.maxApps > 0 then
+                if aura.maxApps == true then
                     groups.num = groups.num + 1
                 end
             end
@@ -320,7 +320,7 @@ function Fuyutsui:LoadPlayerBlocks(specIndex)
                 if hasSpell then
                     local valueOffset = blocks.nameplates.num + 1
                     blocks.nameplates.num = valueOffset
-                    local maxApps = type(aura.maxApps) == "number" and aura.maxApps > 0 and aura.maxApps or nil
+                    local maxApps = aura.maxApps == true and true or nil
                     tinsert(blocks.nameplates.auras, {
                         name = aura.name,
                         spellId = aura.spellId,

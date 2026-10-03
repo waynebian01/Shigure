@@ -736,7 +736,7 @@ public sealed class ModuleEditorControl : UserControl
             BackColor = UiTheme.Surface,
             ColumnCount = 3,
             RowCount = 3,
-            Padding = new Padding(gap),
+            Padding = Padding.Empty,
             Margin = new Padding(0)
         };
 
@@ -763,7 +763,7 @@ public sealed class ModuleEditorControl : UserControl
             BackColor = UiTheme.Surface,
             ColumnCount = 1,
             RowCount = 1,
-            Padding = new Padding(UiTheme.PageGap),
+            Padding = Padding.Empty,
             Margin = new Padding(0)
         };
         panel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));

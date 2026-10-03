@@ -389,6 +389,13 @@ internal static class UiTheme
         return button;
     }
 
+    public static Button CreateExternalLinkButton(string text, Color backColor, Color foreColor)
+    {
+        var button = (UiButton)CreateButton(text, backColor, foreColor);
+        button.ShowExternalLinkIcon = true;
+        return button;
+    }
+
     public static void StyleButton(Button button, string text, Color backColor, Color foreColor)
     {
         button.Text = text;
@@ -447,25 +454,34 @@ internal static class UiTheme
         var bounds = new Rectangle(0, 0, button.ClientSize.Width - 1, button.ClientSize.Height - 1);
         using var path = CreateRoundedRectanglePath(bounds, Scale(button, ControlCornerRadius));
         using var backgroundBrush = new SolidBrush(fill);
-        e.Graphics.Clear(button.Parent?.BackColor ?? Surface);
+        // 卡片实际背景由 FillColor 绘制，BackColor 仅用于圆角外侧的底色。
+        e.Graphics.Clear(button.Parent is UiCardPanel card ? card.FillColor : button.Parent?.BackColor ?? Surface);
         e.Graphics.FillPath(backgroundBrush, path);
         if (button.FlatAppearance.BorderSize > 0)
         {
             using var borderPen = new Pen(button.FlatAppearance.BorderColor, button.FlatAppearance.BorderSize);
             e.Graphics.DrawPath(borderPen, path);
         }
-        TextRenderer.DrawText(
-            e.Graphics,
-            button.Text,
-            button.Font,
-            button.ClientRectangle,
-            button.Enabled ? button.ForeColor : Muted,
-            TextFormatFlags.HorizontalCenter
-            | TextFormatFlags.VerticalCenter
-            | TextFormatFlags.SingleLine
-            | TextFormatFlags.EndEllipsis
-            | TextFormatFlags.NoPadding
-            | TextFormatFlags.NoPrefix);
+        if (button is UiButton { ShowExternalLinkIcon: true })
+        {
+            DrawExternalLinkContent(e.Graphics, button.ClientRectangle, button.Text, button.Font,
+                button.Enabled ? button.ForeColor : Muted, button.DeviceDpi / 96F);
+        }
+        else
+        {
+            TextRenderer.DrawText(
+                e.Graphics,
+                button.Text,
+                button.Font,
+                button.ClientRectangle,
+                button.Enabled ? button.ForeColor : Muted,
+                TextFormatFlags.HorizontalCenter
+                | TextFormatFlags.VerticalCenter
+                | TextFormatFlags.SingleLine
+                | TextFormatFlags.EndEllipsis
+                | TextFormatFlags.NoPadding
+                | TextFormatFlags.NoPrefix);
+        }
         if (button is UiButton { DisplayFocusCue: true } && button.Focused && !pressed)
         {
             using var focusPen = new Pen(Accent);
@@ -863,7 +879,7 @@ internal static class UiTheme
         return path;
     }
 
-    public static void DrawExternalLinkIcon(
+    private static void DrawExternalLinkContent(
         Graphics graphics,
         Rectangle clientBounds,
         string text,
@@ -873,17 +889,25 @@ internal static class UiTheme
     {
         var iconSize = 17F * scale;
         var iconGap = 6F * scale;
+        var textFlags = TextFormatFlags.NoPadding | TextFormatFlags.SingleLine | TextFormatFlags.NoPrefix;
         var textSize = TextRenderer.MeasureText(
             graphics,
             text,
             font,
             Size.Empty,
-            TextFormatFlags.NoPadding | TextFormatFlags.SingleLine);
-        var groupWidth = textSize.Width + iconGap + iconSize;
-        var left = clientBounds.Left
-            + ((clientBounds.Width - groupWidth) / 2F)
-            + textSize.Width
-            + iconGap;
+            textFlags);
+        // 文字与图标作为同一组居中绘制；窄按钮只省略文字，始终为图标保留独立区域。
+        var availableWidth = Math.Max(0, clientBounds.Width - 4F * scale);
+        var groupWidth = Math.Min(textSize.Width + iconGap + iconSize, availableWidth);
+        var groupLeft = clientBounds.Left + (clientBounds.Width - groupWidth) / 2F;
+        var textWidth = Math.Max(0, (int)Math.Floor(groupWidth - iconGap - iconSize));
+        if (textWidth > 0)
+        {
+            TextRenderer.DrawText(graphics, text, font,
+                new Rectangle((int)Math.Round(groupLeft), clientBounds.Top, textWidth, clientBounds.Height),
+                color, textFlags | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
+        }
+        var left = groupLeft + groupWidth - iconSize;
         var top = clientBounds.Top + (clientBounds.Height - iconSize) / 2F;
 
         UiIconCatalog.Draw(

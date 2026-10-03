@@ -275,11 +275,55 @@ public sealed class ModuleRule
 
 public sealed class ModuleValueAdjustment
 {
+    internal const string ConditionBooleanValue = "布尔值";
     public bool Enabled { get; set; } = true;
     public string Condition { get; set; } = string.Empty;
     public string Field { get; set; } = string.Empty;
     public int Delta { get; set; }
+    public string Operation { get; set; } = "+";
+    public string? Value { get; set; }
+    public bool IsCustom { get; set; }
     public string Formula { get; set; } = string.Empty;
+
+    internal string EffectiveOperation => IsCustom ? "=" : Operation;
+    internal bool IsConditionBoolean => string.IsNullOrWhiteSpace(Formula)
+        && string.Equals(Value?.Trim(), ConditionBooleanValue, StringComparison.Ordinal);
+
+    // 旧模块只保存 Delta；新模块的调整值保留文本，以区分整数与布尔值。
+    internal bool TryGetOperand(out object? value)
+    {
+        value = null;
+        if (EffectiveOperation is not ("+" or "-" or "="))
+        {
+            return false;
+        }
+
+        if (Value is null)
+        {
+            value = Delta;
+            return true;
+        }
+
+        if (int.TryParse(Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var number))
+        {
+            value = number;
+            return true;
+        }
+
+        if (EffectiveOperation == "=" && IsConditionBoolean)
+        {
+            value = false;
+            return true;
+        }
+
+        if (EffectiveOperation == "=" && bool.TryParse(Value, out var boolean))
+        {
+            value = boolean;
+            return true;
+        }
+
+        return false;
+    }
 
     public ModuleValueAdjustment Clone()
     {
@@ -289,6 +333,9 @@ public sealed class ModuleValueAdjustment
             Condition = Condition,
             Field = Field,
             Delta = Delta,
+            Operation = Operation,
+            Value = Value,
+            IsCustom = IsCustom,
             Formula = Formula
         };
     }
@@ -772,6 +819,8 @@ public sealed class ModuleStore
             adjustment.Field = adjustment.Field.Trim();
             adjustment.Condition = adjustment.Condition?.Trim() ?? string.Empty;
             adjustment.Formula = adjustment.Formula?.Trim() ?? string.Empty;
+            adjustment.Operation = adjustment.IsCustom ? "=" : adjustment.Operation?.Trim() ?? "+";
+            adjustment.Value = adjustment.Value?.Trim();
         }
 
         module.Rules ??= new List<ModuleRule>();
@@ -1142,6 +1191,14 @@ public static class ModuleLogic
             .Where(array => !string.IsNullOrWhiteSpace(array.Name))
             .GroupBy(array => array.Name, StringComparer.Ordinal)
             .ToDictionary(group => group.Key, group => (IReadOnlySet<long>)group.First().Numbers.ToHashSet(), StringComparer.Ordinal);
+        // 自建字段每帧从默认值开始，条件未命中时也能参与后续条件求值。
+        foreach (var adjustment in module.ValueAdjustments.Where(adjustment => adjustment.IsCustom))
+        {
+            if (adjustment.TryGetOperand(out var operand))
+            {
+                SetDynamicValue(state, adjustment.Field, operand is bool ? false : 0);
+            }
+        }
         var earlyAppliedAdjustments = ApplyValueAdjustments(
             module,
             state,
@@ -1232,8 +1289,7 @@ public static class ModuleLogic
         var applied = new HashSet<ModuleValueAdjustment>();
         foreach (var adjustment in module.ValueAdjustments.Where(adjustment => adjustment.Enabled))
         {
-            if (string.IsNullOrWhiteSpace(adjustment.Field)
-                || (adjustment.Delta == 0 && string.IsNullOrWhiteSpace(adjustment.Formula)))
+            if (string.IsNullOrWhiteSpace(adjustment.Field))
             {
                 continue;
             }
@@ -1250,12 +1306,12 @@ public static class ModuleLogic
                     out _,
                     spellIndices: spellIndices,
                     itemIndices: itemIndices)
-                || !matched)
+                || (!matched && !adjustment.IsConditionBoolean))
             {
                 continue;
             }
 
-            if (!ApplyValueAdjustment(state, adjustment))
+            if (!ApplyValueAdjustment(state, adjustment, matched))
             {
                 continue;
             }
@@ -1318,7 +1374,7 @@ public static class ModuleLogic
         }
     }
 
-    private static bool ApplyValueAdjustment(GameState state, ModuleValueAdjustment adjustment)
+    private static bool ApplyValueAdjustment(GameState state, ModuleValueAdjustment adjustment, bool conditionMatched)
     {
         if (!string.IsNullOrWhiteSpace(adjustment.Formula))
         {
@@ -1331,7 +1387,81 @@ public static class ModuleLogic
             return true;
         }
 
-        ApplyValueDelta(state, adjustment.Field, adjustment.Delta);
+        if (!adjustment.TryGetOperand(out var operand))
+        {
+            return false;
+        }
+
+        if (adjustment.EffectiveOperation == "=")
+        {
+            // “布尔值”直接保存本行条件的结果，未命中也必须覆盖为 false。
+            return SetAdjustedValue(state, adjustment.Field,
+                adjustment.IsConditionBoolean ? conditionMatched : operand, adjustment.IsCustom);
+        }
+
+        if (operand is not int number)
+        {
+            return false;
+        }
+
+        // 加零不创建新的旧式目标字段，保留历史模块的行为。
+        if (number != 0)
+        {
+            var current = ModuleConditionEvaluator.ResolveValue(state, adjustment.Field);
+            var result = TryToInt(current, out var existing) ? existing : 0;
+            result = adjustment.EffectiveOperation == "-" ? result - number : result + number;
+            return SetAdjustedValue(state, adjustment.Field, result, adjustment.IsCustom);
+        }
+        return true;
+    }
+
+    private static bool SetAdjustedValue(GameState state, string field, object? value, bool isCustom)
+    {
+        var key = field.Trim();
+        if (key.StartsWith("state.", StringComparison.OrdinalIgnoreCase))
+        {
+            key = key["state.".Length..];
+        }
+        if (isCustom)
+        {
+            GetOrCreateDynamicValues(state)[key] = value;
+        }
+        else if (key.StartsWith("auras.", StringComparison.OrdinalIgnoreCase)
+                 || key.StartsWith("aura.", StringComparison.OrdinalIgnoreCase))
+        {
+            GetOrCreateMutableDict(state, "auras")[key[(key.IndexOf('.') + 1)..]] = value;
+        }
+        else if (key.StartsWith("spells.", StringComparison.OrdinalIgnoreCase)
+                 || key.StartsWith("spell.", StringComparison.OrdinalIgnoreCase))
+        {
+            GetOrCreateMutableDict(state, "spells")[key[(key.IndexOf('.') + 1)..]] = value;
+        }
+        else if (state.Values.TryGetValue("$counts", out var countsObj)
+                 && countsObj is Dictionary<string, int> counts && counts.ContainsKey(key))
+        {
+            if (value is int count)
+            {
+                counts[key] = count;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        else if (state.Values.TryGetValue("$unithealth", out var healthObj)
+                 && healthObj is Dictionary<string, object?> health && health.ContainsKey(key))
+        {
+            health[key] = value;
+        }
+        else if (state.Values.TryGetValue("$dynamicvalues", out var dynamicObj)
+                 && dynamicObj is Dictionary<string, object?> dynamicValues && dynamicValues.ContainsKey(key))
+        {
+            dynamicValues[key] = value;
+        }
+        else
+        {
+            state.Values[key] = value;
+        }
         return true;
     }
 
@@ -1400,56 +1530,6 @@ public static class ModuleLogic
         var dict = new Dictionary<string, object?>(StringComparer.Ordinal);
         state.Values[dictKey] = dict;
         return dict;
-    }
-
-    private static void ApplyValueDelta(GameState state, string field, int delta)
-    {
-        var key = field.Trim();
-        if (key.Length == 0)
-        {
-            return;
-        }
-
-        if (key.StartsWith("auras.", StringComparison.OrdinalIgnoreCase))
-        {
-            var auraKey = key["auras.".Length..];
-            var dict = GetOrCreateMutableDict(state, "auras");
-            var current = dict.TryGetValue(auraKey, out var v) ? v : null;
-            dict[auraKey] = AddDelta(current, delta);
-            return;
-        }
-
-        if (key.StartsWith("spells.", StringComparison.OrdinalIgnoreCase))
-        {
-            var spellKey = key["spells.".Length..];
-            var dict = GetOrCreateMutableDict(state, "spells");
-            var current = dict.TryGetValue(spellKey, out var v) ? v : null;
-            dict[spellKey] = AddDelta(current, delta);
-            return;
-        }
-
-        if (state.Values.TryGetValue("$counts", out var countsObj)
-            && countsObj is Dictionary<string, int> counts
-            && counts.TryGetValue(key, out var countValue))
-        {
-            counts[key] = countValue + delta;
-            return;
-        }
-
-        if (state.Values.TryGetValue("$unithealth", out var healthObj)
-            && healthObj is Dictionary<string, object?> unitHealth
-            && unitHealth.ContainsKey(key))
-        {
-            unitHealth[key] = AddDelta(unitHealth[key], delta);
-            return;
-        }
-
-        state.Values[key] = AddDelta(state.Values.TryGetValue(key, out var value) ? value : null, delta);
-    }
-
-    private static int AddDelta(object? value, int delta)
-    {
-        return TryToInt(value, out var number) ? number + delta : delta;
     }
 
     private static Dictionary<string, object?> CreateInfo(ModuleDefinition module, GameState state)
@@ -1857,7 +1937,7 @@ public static class ModuleConditionEvaluator
         }
     }
 
-    private static object? ResolveValue(
+    internal static object? ResolveValue(
         GameState state,
         string fieldName,
         IReadOnlyDictionary<int, long>? failedSpells = null,

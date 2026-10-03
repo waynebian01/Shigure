@@ -1,9 +1,14 @@
+using System.ComponentModel;
+
 namespace Shigure;
 
 /// <summary>避免应用级深色模式覆盖现有按钮的自绘样式。</summary>
 internal class UiButton : Button
 {
     internal bool DisplayFocusCue => ShowFocusCues;
+    [Browsable(false)]
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+    internal bool ShowExternalLinkIcon { get; set; }
 
     protected override CreateParams CreateParams
     {

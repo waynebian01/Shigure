@@ -232,8 +232,9 @@ public sealed class ConditionEditorForm : Form
         _fields = fields.ToArray();
         _valueReferenceFields = _fields
             .Where(field => field.Type == ConditionFieldType.Int
-                && field.Category is ConditionFieldCategory.DynamicValue
-                    or ConditionFieldCategory.DynamicUnit)
+                && (field.Category is ConditionFieldCategory.DynamicValue or ConditionFieldCategory.DynamicUnit
+                    || (field.Category == ConditionFieldCategory.Shigure
+                        && !ShigureConditionFields.IsRuleSetting(field.Name))))
             .ToArray();
         _spells = (spells ?? []).ToArray();
         _items = (items ?? []).ToArray();

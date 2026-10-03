@@ -1751,19 +1751,11 @@ public sealed class MainForm : Form, IMessageFilter
         _settingsToolTip.SetToolTip(moduleWebsiteLabel, $"在默认浏览器中打开 {ModuleWebsiteUrl}");
 
         var moduleWebsiteButtonColor = Color.FromArgb(252, 238, 10);
-        var openModuleWebsiteButton = UiTheme.CreateButton("获取模块", moduleWebsiteButtonColor, Color.Black);
+        var openModuleWebsiteButton = UiTheme.CreateExternalLinkButton("获取模块", moduleWebsiteButtonColor, Color.Black);
         SizeActionControl(openModuleWebsiteButton, primaryControlWidth, rightGap: 10);
-        openModuleWebsiteButton.Padding = new Padding(0, 2, 24, 2);
         openModuleWebsiteButton.FlatAppearance.BorderColor = moduleWebsiteButtonColor;
         openModuleWebsiteButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(255, 244, 64);
         openModuleWebsiteButton.FlatAppearance.MouseDownBackColor = Color.FromArgb(220, 207, 8);
-        openModuleWebsiteButton.Paint += (_, e) => UiTheme.DrawExternalLinkIcon(
-            e.Graphics,
-            openModuleWebsiteButton.ClientRectangle,
-            openModuleWebsiteButton.Text,
-            openModuleWebsiteButton.Font,
-            openModuleWebsiteButton.ForeColor,
-            openModuleWebsiteButton.DeviceDpi / 96F);
         openModuleWebsiteButton.Click += (_, _) => OpenModuleWebsite();
 
         var openModuleDirectoryButton = UiTheme.CreateButton("打开模块目录", UiTheme.ButtonKind.Secondary);

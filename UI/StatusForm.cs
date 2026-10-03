@@ -316,6 +316,7 @@ public sealed partial class StatusForm : Form
     private SettingsPage _selectedPage = SettingsPage.General;
 
     private ListView _stateList = null!;
+    private readonly UiDropDown _stateCategoryFilter = new();
     private ListView _auraList = null!;
     private ListView _dynamicUnitList = null!;
     private ListView _spellList = null!;
@@ -639,7 +640,7 @@ public sealed partial class StatusForm : Form
         AddNavItem(nav, SettingsPage.Macros, "宏", "Macros", _macrosHost);
         AddNavItem(nav, SettingsPage.Modules, "模块", "Modules", _moduleHost);
         AddSidebarGroup(nav, "实时数据");
-        AddNavItem(nav, SettingsPage.Status, "状态", "Status", BuildFixedWidthSectionPage("状态", _stateList, "基础字段与当前模块"));
+        AddNavItem(nav, SettingsPage.Status, "状态", "Status", BuildStatePage());
         AddNavItem(nav, SettingsPage.Auras, "光环", "capslock", BuildFixedWidthSectionPage("光环", _auraList, "时间与层数"));
         AddNavItem(nav, SettingsPage.Cooldowns, "冷却", "book", BuildFixedWidthSectionPage("冷却", _spellList, "冷却、充能与次数"));
         AddNavItem(nav, SettingsPage.DynamicUnits, "动态单位", "person-gear", BuildFixedWidthSectionPage("动态单位", _dynamicUnitList, "模块运行时计算值"));
@@ -744,23 +745,10 @@ public sealed partial class StatusForm : Form
             Font = new Font(Font.FontFamily, 11F, FontStyle.Bold),
             BackColor = Color.Transparent
         };
-        var windowTitle = new Label
-        {
-            Text = "设置",
-            AutoSize = true,
-            MinimumSize = new Size(0, NavBrandIconSize),
-            Margin = Padding.Empty,
-            TextAlign = ContentAlignment.MiddleLeft,
-            ForeColor = UiTheme.Muted,
-            Font = new Font(Font.FontFamily, 9F),
-            BackColor = Color.Transparent
-        };
         brand.Controls.Add(brandIcon);
         brand.Controls.Add(brandTitle);
-        brand.Controls.Add(windowTitle);
         EnableDrag(brand);
         EnableDrag(brandTitle);
-        EnableDrag(windowTitle);
 
         var chromeActions = new FlowLayoutPanel
         {
@@ -1321,6 +1309,63 @@ public sealed partial class StatusForm : Form
         scrollHost.HandleCreated += (_, _) => BeginInvoke(SyncScrollLayout);
         SyncScrollLayout();
         return scrollHost;
+    }
+
+    private Control BuildStatePage()
+    {
+        var content = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            BackColor = Color.Transparent,
+            ColumnCount = 1,
+            RowCount = 2,
+            Margin = new Padding(0)
+        };
+        content.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        content.RowStyles.Add(new RowStyle(SizeType.Absolute, 44));
+        content.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+
+        var toolbar = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            BackColor = Color.Transparent,
+            FlowDirection = FlowDirection.LeftToRight,
+            WrapContents = false,
+            Margin = new Padding(0)
+        };
+        toolbar.Controls.Add(new Label
+        {
+            Text = "分类",
+            Size = new Size(52, 36),
+            ForeColor = UiTheme.Muted,
+            BackColor = Color.Transparent,
+            TextAlign = ContentAlignment.MiddleLeft,
+            Margin = new Padding(0, 4, 8, 4)
+        });
+        _stateCategoryFilter.Size = new Size(220, 36);
+        _stateCategoryFilter.DropDownWidth = 220;
+        _stateCategoryFilter.Margin = new Padding(0, 4, 0, 4);
+        UiTheme.StyleComboBox(_stateCategoryFilter);
+        _stateCategoryFilter.Items.Add("全部");
+        foreach (var category in ClassStateCatalog.TopCategories
+                     .Select(ClassStateCatalog.GetCategoryDisplayName)
+                     .Concat(new[] { "模块", NameplateStateLayout.MappingClassification })
+                     .Distinct(StringComparer.Ordinal))
+        {
+            _stateCategoryFilter.Items.Add(category);
+        }
+        _stateCategoryFilter.SelectedIndex = 0;
+        _stateCategoryFilter.SelectedIndexChanged += (_, _) =>
+        {
+            if (_lastSnapshot is { } snapshot)
+            {
+                UpdateStateList(snapshot);
+            }
+        };
+        toolbar.Controls.Add(_stateCategoryFilter);
+        content.Controls.Add(toolbar, 0, 0);
+        content.Controls.Add(_stateList, 0, 1);
+        return BuildFixedWidthSectionPage("状态", content, "基础字段与当前模块", _stateList);
     }
 
     private Control BuildLogPage()
@@ -2849,6 +2894,13 @@ public sealed partial class StatusForm : Form
             }
         }
 
+        var selectedCategory = _stateCategoryFilter.SelectedIndex > 0
+            ? _stateCategoryFilter.SelectedItem?.ToString() : null;
+        if (snapshot.State is not null && selectedCategory is not null)
+        {
+            items = items.Where(item => string.Equals(item.Tag as string, selectedCategory, StringComparison.Ordinal))
+                .ToList();
+        }
         ReplaceItems(_stateList, items);
     }
 

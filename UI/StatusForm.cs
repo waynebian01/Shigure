@@ -578,10 +578,11 @@ public sealed partial class StatusForm : Form
             new UiTheme.ListColumn("spellId", 64, 2000, FixedWidth: true, RemainingWidthWeight: 1),
             new UiTheme.ListColumn("类型", 48, 2000, FixedWidth: true, RemainingWidthWeight: 1),
             new UiTheme.ListColumn("值", 64, 2000, FixedWidth: true, RemainingWidthWeight: 1));
-        _dynamicUnitList = UiTheme.CreateListView(Font, "status-dynamic-unit-v4",
+        // 名称原有的弹性宽度按 60% / 40% 分配，值列保留基础宽度；不套用旧固定列宽缓存。
+        _dynamicUnitList = UiTheme.CreateListView(Font,
             new UiTheme.ListColumn("类型", 72, 72, FixedWidth: true),
-            new UiTheme.ListColumn("名称", 40, 1000, FillRemaining: true),
-            new UiTheme.ListColumn("值", 64, 64, FixedWidth: true));
+            new UiTheme.ListColumn("名称", 40, 2000, FillRemaining: true, RemainingWidthWeight: 3),
+            new UiTheme.ListColumn("值", 64, 2000, FixedWidth: true, RemainingWidthWeight: 2));
         _spellList = UiTheme.CreateListView(Font, "status-spell-v6",
             new UiTheme.ListColumn("#", 28, 28, FixedWidth: true),
             new UiTheme.ListColumn("名称", 70, 2000, FillRemaining: true, RemainingWidthWeight: 3),

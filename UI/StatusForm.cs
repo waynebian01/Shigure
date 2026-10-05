@@ -1363,7 +1363,7 @@ public sealed partial class StatusForm : Form
         _stateCategoryFilter.SelectedIndex = 0;
         _stateCategoryFilter.SelectedIndexChanged += (_, _) =>
         {
-            if (_lastSnapshot is { } snapshot)
+            if (Visible && _selectedPage == SettingsPage.Status && _lastSnapshot is { } snapshot)
             {
                 UpdateStateList(snapshot);
             }
@@ -1612,6 +1612,11 @@ public sealed partial class StatusForm : Form
             {
                 view.BringToFront();
             }
+        }
+
+        if (Visible && _lastSnapshot is { } snapshot)
+        {
+            UpdateSelectedPage(snapshot);
         }
     }
 
@@ -2788,7 +2793,6 @@ public sealed partial class StatusForm : Form
         if (snapshot is not null)
         {
             _lastSnapshot = snapshot;
-            UpdateLists(snapshot);
         }
 
         if (!Visible)
@@ -2801,6 +2805,11 @@ public sealed partial class StatusForm : Form
         {
             _hasKnownBounds = true;
             Activate();
+        }
+
+        if (_lastSnapshot is { } latestSnapshot)
+        {
+            UpdateSelectedPage(latestSnapshot);
         }
     }
 
@@ -2835,7 +2844,7 @@ public sealed partial class StatusForm : Form
             return;
         }
 
-        UpdateLists(snapshot);
+        UpdateSelectedPage(snapshot);
     }
 
     public void AppendLog(string message)
@@ -2860,15 +2869,33 @@ public sealed partial class StatusForm : Form
         }
     }
 
-    private void UpdateLists(RenderSnapshot snapshot)
+    private void UpdateSelectedPage(RenderSnapshot snapshot)
     {
-        UpdateStateList(snapshot);
-        UpdateAuraList(snapshot);
-        UpdateDynamicUnitList(snapshot);
-        UpdateSpellList(snapshot);
-        UpdatePartyList(snapshot);
-        UpdateNameplateList(snapshot);
-        UpdateUnitInfoList(snapshot);
+        // 隐藏页面只保留最新快照，切换页面或重新打开窗口时再补上数据。
+        switch (_selectedPage)
+        {
+            case SettingsPage.Status:
+                UpdateStateList(snapshot);
+                break;
+            case SettingsPage.Auras:
+                UpdateAuraList(snapshot);
+                break;
+            case SettingsPage.Cooldowns:
+                UpdateSpellList(snapshot);
+                break;
+            case SettingsPage.DynamicUnits:
+                UpdateDynamicUnitList(snapshot);
+                break;
+            case SettingsPage.Party:
+                UpdatePartyList(snapshot);
+                break;
+            case SettingsPage.Nameplates:
+                UpdateNameplateList(snapshot);
+                break;
+            case SettingsPage.Logic:
+                UpdateUnitInfoList(snapshot);
+                break;
+        }
     }
 
     private void UpdateStateList(RenderSnapshot snapshot)

@@ -88,6 +88,7 @@ public sealed class ModuleNameplateSnapshot
     public bool? ImprovedGarrote { get; set; }
     public bool? Threat { get; set; }
     public bool? CastSpell { get; set; }
+    public bool? CastCountdown { get; set; }
     public List<ModuleAuraSnapshot> Auras { get; set; } = new();
 
     public ModuleNameplateSnapshot Clone() => new()
@@ -95,6 +96,7 @@ public sealed class ModuleNameplateSnapshot
         ImprovedGarrote = ImprovedGarrote,
         Threat = Threat,
         CastSpell = CastSpell,
+        CastCountdown = CastCountdown,
         Auras = (Auras ?? []).Where(entry => entry is not null).Select(entry => entry.Clone()).ToList()
     };
 }

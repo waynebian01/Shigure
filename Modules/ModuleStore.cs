@@ -1751,7 +1751,9 @@ public static class ModuleConditionEvaluator
             }
 
             var inLeft = ResolveValue(state, inField, failedSpells, insertItems);
-            if (inLeft is null && (IsStructuredSpellReference(inField) || NameplateStateLayout.IsComputedTtdField(inField)))
+            if (inLeft is null && (IsStructuredSpellReference(inField)
+                || NameplateStateLayout.IsComputedTtdField(inField)
+                || NameplateStateLayout.IsCastCountdownField(inField)))
             {
                 matched = false;
                 return true;
@@ -1804,7 +1806,9 @@ public static class ModuleConditionEvaluator
             var invert = trimmed.StartsWith('!');
             var fieldName = invert ? trimmed[1..].Trim() : trimmed;
             var value = ResolveValue(state, fieldName, failedSpells, insertItems);
-            if (value is null && (IsStructuredSpellReference(fieldName) || NameplateStateLayout.IsComputedTtdField(fieldName)))
+            if (value is null && (IsStructuredSpellReference(fieldName)
+                || NameplateStateLayout.IsComputedTtdField(fieldName)
+                || NameplateStateLayout.IsCastCountdownField(fieldName)))
             {
                 matched = false;
                 return true;
@@ -1815,7 +1819,9 @@ public static class ModuleConditionEvaluator
 
         var comparisonField = comparison.Groups["field"].Value.Trim();
         var left = ResolveValue(state, comparisonField, failedSpells, insertItems);
-        if (left is null && (IsStructuredSpellReference(comparisonField) || NameplateStateLayout.IsComputedTtdField(comparisonField)))
+        if (left is null && (IsStructuredSpellReference(comparisonField)
+            || NameplateStateLayout.IsComputedTtdField(comparisonField)
+            || NameplateStateLayout.IsCastCountdownField(comparisonField)))
         {
             matched = false;
             return true;

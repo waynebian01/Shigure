@@ -114,6 +114,7 @@ internal static class UnitSummary
             CountConditionFieldKind.ImprovedGarrote => "强化锁喉",
             CountConditionFieldKind.Threat => "仇恨值",
             CountConditionFieldKind.CastSpell => "施法技能",
+            CountConditionFieldKind.CastCountdown => NameplateStateLayout.CastCountdownField,
             CountConditionFieldKind.Aura => $"[{FormatAura(condition.AuraSpellId.GetValueOrDefault(), resolveAuraName)}]",
             _ => "?"
         };

@@ -606,6 +606,7 @@ public sealed partial class StatusForm : Form
             new UiTheme.ListColumn("TTD", 64, 88),
             new UiTheme.ListColumn("仇恨值", 72, 96),
             new UiTheme.ListColumn("施法技能", 88, 120),
+            new UiTheme.ListColumn(NameplateStateLayout.CastCountdownField, 120, 160),
             new UiTheme.ListColumn("强化锁喉", 88, 112),
             new UiTheme.ListColumn("光环 / 其他", 160, 1600, FillRemaining: true));
         UiTheme.SetListViewColumnVisible(_nameplateList, NameplateStateLayout.ImprovedGarroteField, false);
@@ -2505,6 +2506,7 @@ public sealed partial class StatusForm : Form
         rows.Add((category, "nameplates.N.距离"));
         rows.Add((category, "nameplates.N.战斗"));
         rows.Add((category, "nameplates.N.施法技能"));
+        rows.Add((category, "nameplates.N.施法(倒计时)"));
         rows.Add((category, "nameplates.N.TTD"));
         rows.Add((category, "nameplates.N.光环N"));
         return rows;
@@ -3150,7 +3152,9 @@ public sealed partial class StatusForm : Form
         var row = new ListViewItem(cells.ToArray());
         row.ToolTipText = string.Join("  ", listView.Columns.Cast<ColumnHeader>()
             .Where(column => column.Width > 0)
-            .Select(column => $"{column.Text}: {cells[column.Index]}"));
+            .Select(column => column.Text == NameplateStateLayout.CastCountdownField
+                ? $"{column.Text}: {cells[column.Index]}（单位 0.1 秒，10 ≈ 1 秒）"
+                : $"{column.Text}: {cells[column.Index]}"));
         return row;
     }
 

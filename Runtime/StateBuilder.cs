@@ -129,6 +129,11 @@ public sealed class StateBuilder : IRuntimeStateBuilder
             {
                 values[NameplateStateLayout.CastSpellField] = ReadField(castSpellOffset);
             }
+            if (JsonHelpers.GetInt(JsonHelpers.Get(config, "castCountdownOffset"))
+                is > 0 and var castCountdownOffset && castCountdownOffset <= fieldCount)
+            {
+                values[NameplateStateLayout.CastCountdownField] = ReadField(castCountdownOffset);
+            }
 
             if (auraConfigs is not null)
             {

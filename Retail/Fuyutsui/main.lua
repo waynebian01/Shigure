@@ -347,6 +347,10 @@ function Fuyutsui:LoadPlayerBlocks(specIndex)
             blocks.nameplates.castSpellOffset = blocks.nameplates.num
             blocks.nameplates.num = blocks.nameplates.num + 1
         end
+        if t.nameplates.castCountdown == true then
+            blocks.nameplates.num = blocks.nameplates.num + 1
+            blocks.nameplates.castCountdownOffset = blocks.nameplates.num
+        end
         local maxPixels = self.MainPixelMaxCount or self.MainPixelCount
         local nameplateEnd = index + mappingCount + self.NameplateSlotCount * blocks.nameplates.num
         if nameplateEnd - 1 > maxPixels then

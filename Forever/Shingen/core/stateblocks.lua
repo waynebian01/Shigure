@@ -76,6 +76,16 @@ function Shingen:GetUnitCastPixel(unit, mode)
     return b
 end
 
+-- 姓名板倒计时同时支持普通施法和引导，秘密颜色通道原样交给像素。
+function Shingen:GetUnitCastCountdownPixel(unit)
+    local duration = UnitCastingDuration(unit) or UnitChannelDuration(unit)
+    if not duration then return 0 end
+    local color = duration:EvaluateRemainingDuration(self.castCurve)
+    ---@diagnostic disable-next-line: param-type-mismatch
+    local _, _, value = color:GetRGB()
+    return value
+end
+
 --- mode: "cast" | "channel"
 function Shingen:GetUnitInterruptiblePixel(unit, mode)
     if mode == "channel" then

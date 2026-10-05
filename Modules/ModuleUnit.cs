@@ -100,7 +100,8 @@ public enum CountConditionFieldKind
     Class,
     ImprovedGarrote,
     Threat,
-    CastSpell
+    CastSpell,
+    CastCountdown
 }
 
 /// <summary>数量筛选的比较方式。</summary>

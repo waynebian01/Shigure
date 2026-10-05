@@ -1,6 +1,6 @@
 local addon, ns = ...
 
--- 姓名板主像素：先 7 格单位映射（目标/焦点/首领1–5），再每单位 num 格（生命值、距离、战斗、光环及可选仇恨值）。
+-- 姓名板主像素：先 7 格单位映射（目标/焦点/首领1–5），再每单位 num 格（生命值、距离、战斗、光环及可选状态）。
 -- 槽位像素：index = start + mappingCount + (slot - 1) * num + offset - 1；沿用主像素 R/G 索引与 B 数值。
 -- 不存在的单位整段置黑（无索引），无需增加存在标记格。
 local NAMEPLATE_SLOT_COUNT = 40
@@ -195,6 +195,10 @@ function Shingen:RefreshNameplatePixels()
             if config.castSpellOffset then
                 self:RefreshRgbSpellPixel(PixelIndex(config, slot, config.castSpellOffset), unit)
             end
+            if config.castCountdownOffset then
+                self:CreateTexture(PixelIndex(config, slot, config.castCountdownOffset),
+                    self:GetUnitCastCountdownPixel(unit))
+            end
             RefreshAuraContainer(slot, unit, config)
         end
     end
@@ -202,16 +206,27 @@ end
 
 function Shingen:RefreshNameplateCastPixel(unit)
     local config = pixelConfig
-    if not config or not config.castSpellOffset then return end
+    if not config or not (config.castSpellOffset or config.castCountdownOffset) then return end
     local slot = tonumber(string.match(unit or "", "^nameplate(%d+)$"))
     if not slot or slot < 1 or slot > NAMEPLATE_SLOT_COUNT then return end
-    local index = PixelIndex(config, slot, config.castSpellOffset)
-    if UnitExists(unit) and not UnitIsFriend("player", unit) then
-        self:RefreshRgbSpellPixel(index, unit)
-    else
-        self:ClearRgbSpellPixel(index)
-        self:ClearNameplateTexture(index)
-        self:ClearNameplateTexture(index + 1)
+    local hostile = UnitExists(unit) and not UnitIsFriend("player", unit)
+    if config.castSpellOffset then
+        local index = PixelIndex(config, slot, config.castSpellOffset)
+        if hostile then
+            self:RefreshRgbSpellPixel(index, unit)
+        else
+            self:ClearRgbSpellPixel(index)
+            self:ClearNameplateTexture(index)
+            self:ClearNameplateTexture(index + 1)
+        end
+    end
+    if config.castCountdownOffset then
+        local index = PixelIndex(config, slot, config.castCountdownOffset)
+        if hostile then
+            self:CreateTexture(index, self:GetUnitCastCountdownPixel(unit))
+        else
+            self:ClearNameplateTexture(index)
+        end
     end
 end
 

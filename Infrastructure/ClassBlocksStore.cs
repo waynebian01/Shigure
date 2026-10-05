@@ -132,13 +132,14 @@ internal static class ClassBlocksStore
         public int? MaxApps { get; set; }
     }
 
-    // 生命值/距离/战斗是固定像素；配置保存光环列表及可选的锁喉类型、仇恨值开关。
+    // 生命值/距离/战斗是固定像素；配置保存光环列表及可选的锁喉类型、仇恨值和施法开关。
     public sealed class NameplateBlocks
     {
         // null 保留旧配置省略值；正式服奇袭的有效默认值为 true。
         public bool? ImprovedGarrote { get; set; }
         public bool? Threat { get; set; }
         public bool? CastSpell { get; set; }
+        public bool? CastCountdown { get; set; }
         public List<AuraEntry> Auras { get; } = new();
     }
 
@@ -713,7 +714,8 @@ internal static class ClassBlocksStore
             {
                 ImprovedGarrote = nameplates.GetBool("improvedGarrote"),
                 Threat = nameplates.GetBool("threat"),
-                CastSpell = nameplates.GetBool("castSpell")
+                CastSpell = nameplates.GetBool("castSpell"),
+                CastCountdown = nameplates.GetBool("castCountdown")
             };
             AppendAuraList(nameplates.GetTable("auras"), blocks.Auras);
             result.Nameplates = blocks;
@@ -983,6 +985,11 @@ internal static class ClassBlocksStore
             {
                 sb.Append(indent).Append("    castSpell = ")
                     .Append(castSpell ? "true" : "false").AppendLine(",");
+            }
+            if (nameplates.CastCountdown is { } castCountdown)
+            {
+                sb.Append(indent).Append("    castCountdown = ")
+                    .Append(castCountdown ? "true" : "false").AppendLine(",");
             }
             if (nameplates.Auras.Count > 0)
             {

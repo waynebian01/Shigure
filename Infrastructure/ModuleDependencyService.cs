@@ -460,6 +460,7 @@ internal sealed class ModuleDependencyService
             ImprovedGarrote = spec.Nameplates.ImprovedGarrote,
             Threat = spec.Nameplates.Threat,
             CastSpell = spec.Nameplates.CastSpell,
+            CastCountdown = spec.Nameplates.CastCountdown,
             Auras = spec.Nameplates.Auras.Select(CaptureAura).ToList()
         }
     };
@@ -637,7 +638,8 @@ internal sealed class ModuleDependencyService
             {
                 ImprovedGarrote = incoming.ImprovedGarrote,
                 Threat = incoming.Threat,
-                CastSpell = incoming.CastSpell
+                CastSpell = incoming.CastSpell,
+                CastCountdown = incoming.CastCountdown
             };
             counters.ConfigAdded++;
         }

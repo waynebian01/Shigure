@@ -97,7 +97,8 @@ public sealed class UnitEditorForm : Form
         bool hasNameplateImprovedGarrote = false,
         bool hasNameplateThreat = false,
         bool hasNameplateCastSpell = false,
-        IReadOnlyList<string>? numberArrayNames = null)
+        IReadOnlyList<string>? numberArrayNames = null,
+        bool hasNameplateCastCountdown = false)
     {
         _auraFields = auraFields;
         _nameplateAuraFields = nameplateAuraFields;
@@ -110,7 +111,8 @@ public sealed class UnitEditorForm : Form
             hasNameplateImprovedGarrote,
             hasNameplateThreat,
             hasNameplateCastSpell,
-            numberArrayNames);
+            numberArrayNames,
+            hasNameplateCastCountdown);
         _countFilterEditor.Changed += (_, _) => UpdatePreview();
         InitializeComponent();
         Seed(existingUnit, existingCount, existingEnemyCount, existingAverageHealth);

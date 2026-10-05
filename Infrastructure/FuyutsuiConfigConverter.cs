@@ -695,6 +695,10 @@ internal static class FuyutsuiConfigConverter
                 nameplateJson["castSpellOffset"] = ++fieldCount;
                 nameplateJson["castSpellPayloadOffset"] = ++fieldCount;
             }
+            if (nameplates.GetBool("castCountdown") == true)
+            {
+                nameplateJson["castCountdownOffset"] = ++fieldCount;
+            }
             nameplateJson["num"] = fieldCount;
             var totalPixels = NameplateStateLayout.TotalPixelCount(fieldCount);
             if (regionStart + totalPixels - 1 > MainPixelLayout.MaxCapacity)

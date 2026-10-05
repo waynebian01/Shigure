@@ -361,6 +361,7 @@ public static class UnitSelector
                     or CountConditionFieldKind.Combat
                     or CountConditionFieldKind.ImprovedGarrote
                     or CountConditionFieldKind.CastSpell
+                    or CountConditionFieldKind.CastCountdown
                     or CountConditionFieldKind.Aura
                 : condition.Field is CountConditionFieldKind.Health
                     or CountConditionFieldKind.HealingAbsorb
@@ -540,6 +541,7 @@ public static class UnitSelector
             CountConditionFieldKind.ImprovedGarrote => NameplateStateLayout.ImprovedGarroteField,
             CountConditionFieldKind.Threat => NameplateStateLayout.ThreatField,
             CountConditionFieldKind.CastSpell => NameplateStateLayout.CastSpellField,
+            CountConditionFieldKind.CastCountdown => NameplateStateLayout.CastCountdownField,
             _ => string.Empty
         };
         if (field.Length == 0)

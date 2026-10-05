@@ -2366,7 +2366,9 @@ public sealed class ModuleEditorControl : UserControl
                 ReadMatchCombo(_classBox), ReadMatchCombo(_specBox)),
             hasNameplateCastSpell: _fieldCatalog.HasNameplateCastSpell(
                 ReadMatchCombo(_classBox), ReadMatchCombo(_specBox)),
-            numberArrayNames: _numberArrays.Select(array => array.Name).ToArray());
+            numberArrayNames: _numberArrays.Select(array => array.Name).ToArray(),
+            hasNameplateCastCountdown: _fieldCatalog.HasNameplateCastCountdown(
+                ReadMatchCombo(_classBox), ReadMatchCombo(_specBox)));
         if (editor.ShowDialog(FindForm()) != DialogResult.OK)
         {
             return;
@@ -2422,7 +2424,8 @@ public sealed class ModuleEditorControl : UserControl
             _fieldCatalog.HasNameplateImprovedGarrote(ReadMatchCombo(_classBox), ReadMatchCombo(_specBox)),
             _fieldCatalog.HasNameplateThreat(ReadMatchCombo(_classBox), ReadMatchCombo(_specBox)),
             _fieldCatalog.HasNameplateCastSpell(ReadMatchCombo(_classBox), ReadMatchCombo(_specBox)),
-            _numberArrays.Select(array => array.Name).ToArray());
+            _numberArrays.Select(array => array.Name).ToArray(),
+            _fieldCatalog.HasNameplateCastCountdown(ReadMatchCombo(_classBox), ReadMatchCombo(_specBox)));
         if (editor.ShowDialog(FindForm()) != DialogResult.OK)
         {
             return;

@@ -1,4 +1,5 @@
 using System.Drawing;
+using System.Globalization;
 
 namespace Shigure;
 
@@ -75,6 +76,8 @@ internal sealed class CountFilterEditorControl : UserControl
     private bool _retainedThreat;
     private readonly bool _hasNameplateCastSpell;
     private bool _retainedCastSpell;
+    private readonly bool _hasNameplateCastCountdown;
+    private bool _retainedCastCountdown;
     private readonly IReadOnlyList<string> _numberArrayNames;
 
     public event EventHandler? Changed;
@@ -87,13 +90,15 @@ internal sealed class CountFilterEditorControl : UserControl
         bool hasNameplateImprovedGarrote = false,
         bool hasNameplateThreat = false,
         bool hasNameplateCastSpell = false,
-        IReadOnlyList<string>? numberArrayNames = null)
+        IReadOnlyList<string>? numberArrayNames = null,
+        bool hasNameplateCastCountdown = false)
     {
         _allyAuras = allyAuras;
         _enemyAuras = enemyAuras;
         _hasNameplateImprovedGarrote = hasNameplateImprovedGarrote;
         _hasNameplateThreat = hasNameplateThreat;
         _hasNameplateCastSpell = hasNameplateCastSpell;
+        _hasNameplateCastCountdown = hasNameplateCastCountdown;
         _numberArrayNames = (numberArrayNames ?? []).ToArray();
         _thresholdFields = new HashSet<string>(thresholdFields, StringComparer.Ordinal);
         _formulaValueNames = formulaValueNames
@@ -224,6 +229,8 @@ internal sealed class CountFilterEditorControl : UserControl
                 .Any(condition => condition.Field == CountConditionFieldKind.Threat);
             _retainedCastSpell = (groups ?? []).SelectMany(group => group.Conditions ?? [])
                 .Any(condition => condition.Field == CountConditionFieldKind.CastSpell);
+            _retainedCastCountdown = (groups ?? []).SelectMany(group => group.Conditions ?? [])
+                .Any(condition => condition.Field == CountConditionFieldKind.CastCountdown);
             foreach (var editor in _groups)
             {
                 _groupsPanel.Controls.Remove(editor.Root);
@@ -344,6 +351,10 @@ internal sealed class CountFilterEditorControl : UserControl
         if (_enemy && (_hasNameplateCastSpell || _retainedCastSpell))
         {
             options.Add(new FieldOption("施法技能", CountConditionFieldKind.CastSpell));
+        }
+        if (_enemy && (_hasNameplateCastCountdown || _retainedCastCountdown))
+        {
+            options.Add(new FieldOption(NameplateStateLayout.CastCountdownField, CountConditionFieldKind.CastCountdown));
         }
         foreach (var aura in (_enemy ? _enemyAuras : _allyAuras))
         {
@@ -886,6 +897,15 @@ internal sealed class CountFilterEditorControl : UserControl
                     is CountConditionComparisonKind.In or CountConditionComparisonKind.NotIn
                     ? $"数组: {text}"
                     : _owner.IsFormulaValueName(text) ? $"公式动态数值: {text}" : string.Empty;
+                if (ParseFieldKey(_grid.Rows[e.RowIndex].Cells[FieldColumn].Value?.ToString()).Kind
+                    == CountConditionFieldKind.CastCountdown)
+                {
+                    var timeHint = int.TryParse(text, out var ticks)
+                        ? $"约 {(ticks / 10m).ToString("0.#", CultureInfo.InvariantCulture)} 秒"
+                        : "整数单位为 0.1 秒，10 ≈ 1 秒";
+                    cell.ToolTipText = string.IsNullOrEmpty(cell.ToolTipText)
+                        ? timeHint : $"{cell.ToolTipText}；{timeHint}";
+                }
             };
             _grid.Disposed += (_, _) =>
             {
@@ -956,6 +976,10 @@ internal sealed class CountFilterEditorControl : UserControl
                 if (option.Kind == CountConditionFieldKind.Threat)
                 {
                     valueCell.ToolTipText = "0 未坦克 / 1 仇恨高但未坦克 / 2 坦克但仇恨不稳 / 3 稳定坦克；无仇恨记录按 0 处理。";
+                }
+                if (option.Kind == CountConditionFieldKind.CastCountdown)
+                {
+                    valueCell.ToolTipText = "普通施法或引导的剩余时间，整数单位为 0.1 秒，10 ≈ 1 秒；无施法时为 0。";
                 }
             }
             finally

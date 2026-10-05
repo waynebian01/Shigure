@@ -61,6 +61,9 @@ public static class UnitSelector
             return null;
         }
 
+        if (GroupDispelCatalog.Find(unit.TargetField) is { } dispelField)
+            return TryInt(GetField(data, dispelField.FieldName), out var duration) ? duration : null;
+
         return unit.TargetField switch
         {
             UnitTargetFieldKind.Health => TryInt(GetField(data, "生命值"), out var health) ? health : null,
@@ -76,6 +79,9 @@ public static class UnitSelector
 
     private static bool IsValidUnitSelection(ModuleUnit unit)
     {
+        if (GroupDispelCatalog.Find(unit.TargetField) is not null)
+            return unit.SelectionMode is UnitSelectionMode.Longest or UnitSelectionMode.Shortest;
+
         return unit.TargetField switch
         {
             UnitTargetFieldKind.Health or UnitTargetFieldKind.HealingAbsorb
@@ -98,6 +104,10 @@ public static class UnitSelector
         {
             return null;
         }
+
+        if (GroupDispelCatalog.Find(unit.TargetField) is { } dispelField)
+            return SelectByField(candidates, dispelField.FieldName,
+                smallest: unit.SelectionMode == UnitSelectionMode.Shortest, positiveOnly: true);
 
         return unit.TargetField switch
         {
@@ -129,13 +139,14 @@ public static class UnitSelector
     private static string? SelectByField(
         IReadOnlyList<(string Key, IReadOnlyDictionary<string, object?> Data)> candidates,
         string field,
-        bool smallest)
+        bool smallest,
+        bool positiveOnly = false)
     {
         string? bestKey = null;
         var bestValue = smallest ? int.MaxValue : int.MinValue;
         foreach (var candidate in candidates)
         {
-            if (!TryInt(GetField(candidate.Data, field), out var value))
+            if (!TryInt(GetField(candidate.Data, field), out var value) || positiveOnly && value <= 0)
             {
                 continue;
             }
@@ -368,7 +379,8 @@ public static class UnitSelector
                     or CountConditionFieldKind.Role
                     or CountConditionFieldKind.Dispel
                     or CountConditionFieldKind.Class
-                    or CountConditionFieldKind.Aura;
+                    or CountConditionFieldKind.Aura
+                    || GroupDispelCatalog.Find(condition.Field) is not null;
             if (!allowed
                 || condition.Field == CountConditionFieldKind.Aura && condition.AuraSpellId is not > 0
                 || condition.Field != CountConditionFieldKind.Aura && condition.AuraSpellId is not null
@@ -518,6 +530,9 @@ public static class UnitSelector
         ModuleCountCondition condition,
         out int value)
     {
+        if (GroupDispelCatalog.Find(condition.Field) is { } dispelField)
+            return TryInt(GetField(data, dispelField.FieldName), out value);
+
         if (condition.Field == CountConditionFieldKind.Aura)
         {
             value = condition.AuraSpellId is { } spellId ? GetAuraDuration(data, spellId) : 0;

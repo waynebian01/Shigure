@@ -349,7 +349,7 @@ public sealed class ConditionFieldCatalog
     /// 返回指定职业/专精下 group 队伍成员的字段(生命值/职责/驱散 + 该专精光环字段), 带类型。
     /// 供动态单位编辑器选择光环、以及条件编辑器构造 单位.字段 选项使用。
     /// </summary>
-    public IReadOnlyList<ConditionField> GetGroupFields(int? classId, int? specId)
+    public IReadOnlyList<ConditionField> GetGroupFields(int? classId, int? specId, bool includeLegacyDispel = false)
     {
         var fields = new List<ConditionField>();
         if (_config is null)
@@ -381,6 +381,10 @@ public sealed class ConditionFieldCatalog
                     ReadType(field)));
             }
         }
+
+        // 旧驱散类型只由新时间字段推导，不占像素，供旧模块文本继续解析。
+        if (includeLegacyDispel && GroupDispelCatalog.Entries.Any(entry => seen.Contains(entry.FieldName)) && seen.Add("驱散"))
+            fields.Add(new ConditionField("驱散", "驱散（旧类型编号）", ConditionFieldType.Int));
 
         // 治疗吸收由网格扫描注入，不在 config 的 group 字段里声明。
         if (seen.Add("治疗吸收"))

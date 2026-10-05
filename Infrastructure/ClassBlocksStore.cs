@@ -301,6 +301,13 @@ internal static class ClassBlocksStore
             throw new InvalidOperationException("当前文件仍是旧版稀疏索引 ClassBlocks，无法用图形编辑器保存。");
         }
 
+        var classDirectory = Path.GetDirectoryName(document.FilePath)!;
+        var classId = ClassNames.GetClasses().FirstOrDefault(item =>
+            ClassNames.GetConfigFileName(item.Id).Equals(Path.GetFileNameWithoutExtension(document.FilePath), StringComparison.OrdinalIgnoreCase)).Id;
+        foreach (var (specId, spec) in document.Specs)
+            FuyutsuiConfigConverter.EnsurePixelCapacity(spec, $"{Path.GetFileName(document.FilePath)}[{specId}]",
+                NameplateStateLayout.SupportsImprovedGarrote(classDirectory, classId, specId));
+
         var updated = UpdateSpellsListEntries(
             document.SourceText,
             document.SpellsList,

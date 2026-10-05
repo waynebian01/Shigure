@@ -905,6 +905,7 @@ public sealed class ModuleStore
             group.Conditions ??= new List<ModuleCountCondition>();
             foreach (var condition in group.Conditions)
             {
+                GroupDispelCatalog.MigrateCondition(condition);
                 condition.ValueField = condition.ValueKind is CountConditionValueKind.StateField
                     or CountConditionValueKind.NumberArray
                     && !string.IsNullOrWhiteSpace(condition.ValueField)

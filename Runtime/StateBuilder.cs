@@ -259,6 +259,9 @@ public sealed class StateBuilder : IRuntimeStateBuilder
                 AddAuraAliases(sub, field, value, includeScope: false);
             }
 
+            if (GroupDispelCatalog.Entries.Any(entry => sub.ContainsKey(entry.FieldName)))
+                sub["驱散"] = GroupDispelCatalog.ReadLegacyType(sub);
+
             // 治疗吸收来自网格扫描：白块右侧像素的 B=单位编号，G-1=吸收值。
             // 插件像素里的生命值含吸收盾，这里折算为真实生命：生命值 -= 治疗吸收。
             // 保留 0 和负数，供最低生命值选择器比较治疗吸收后的有效生命值。

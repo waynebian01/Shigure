@@ -101,14 +101,6 @@ public sealed class ModuleEditorControl : UserControl
         new("团队 (1-40)", "1-40"),
         new("队伍 (46)", "46")
     ];
-    private static readonly HashSet<string> NonAuraGroupFields = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "生命值",
-        "职责",
-        "驱散",
-        "职业",
-        "治疗吸收"
-    };
     // 条件动态数值"类型"下拉: 决定"字段"可选项的过滤类别, 顺序与界面一致。
     private static readonly (string Text, ConditionFieldCategory Category)[] AdjustmentTypeOptions =
     [
@@ -2380,7 +2372,8 @@ public sealed class ModuleEditorControl : UserControl
                 ReadMatchCombo(_classBox), ReadMatchCombo(_specBox)),
             numberArrayNames: _numberArrays.Select(array => array.Name).ToArray(),
             hasNameplateCastCountdown: _fieldCatalog.HasNameplateCastCountdown(
-                ReadMatchCombo(_classBox), ReadMatchCombo(_specBox)));
+                ReadMatchCombo(_classBox), ReadMatchCombo(_specBox)),
+            groupDispelFields: GetGroupDispelFields());
         if (editor.ShowDialog(FindForm()) != DialogResult.OK)
         {
             return;
@@ -2437,7 +2430,8 @@ public sealed class ModuleEditorControl : UserControl
             _fieldCatalog.HasNameplateThreat(ReadMatchCombo(_classBox), ReadMatchCombo(_specBox)),
             _fieldCatalog.HasNameplateCastSpell(ReadMatchCombo(_classBox), ReadMatchCombo(_specBox)),
             _numberArrays.Select(array => array.Name).ToArray(),
-            _fieldCatalog.HasNameplateCastCountdown(ReadMatchCombo(_classBox), ReadMatchCombo(_specBox)));
+            _fieldCatalog.HasNameplateCastCountdown(ReadMatchCombo(_classBox), ReadMatchCombo(_specBox)),
+            GetGroupDispelFields());
         if (editor.ShowDialog(FindForm()) != DialogResult.OK)
         {
             return;
@@ -2658,11 +2652,16 @@ public sealed class ModuleEditorControl : UserControl
         InvalidateConditionFieldValidation();
     }
 
+    private IReadOnlyList<string> GetGroupDispelFields()
+        => _fieldCatalog.GetGroupFields(ReadMatchCombo(_classBox), ReadMatchCombo(_specBox))
+            .Where(field => GroupDispelCatalog.Entries.Any(entry => entry.FieldName == field.Name))
+            .Select(field => field.Name).ToArray();
+
     private IReadOnlyList<ConditionField> GetAuraFields()
     {
         return _fieldCatalog
             .GetGroupFields(ReadMatchCombo(_classBox), ReadMatchCombo(_specBox))
-            .Where(field => !NonAuraGroupFields.Contains(field.Name))
+            .Where(field => SpellFieldKey.TryParseAuraMember(field.Name, out _, out _))
             .ToList();
     }
 
@@ -3153,7 +3152,7 @@ public sealed class ModuleEditorControl : UserControl
         var classId = ReadMatchCombo(_classBox);
         var specId = ReadMatchCombo(_specBox);
         _availableGroupConditionFields = new HashSet<string>(
-            _fieldCatalog.GetGroupFields(classId, specId).Select(field => field.Name),
+            _fieldCatalog.GetGroupFields(classId, specId, includeLegacyDispel: true).Select(field => field.Name),
             StringComparer.Ordinal);
         _availableConditionFields.UnionWith(
             _fieldCatalog.GetAuraAliasFieldNames(classId, specId, groupOnly: false));

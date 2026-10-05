@@ -63,7 +63,8 @@ public sealed class ClassConfigEditorControl : UserControl
     private readonly CheckBox _groupEnabledBox = new();
     private readonly CheckBox _groupHasHealthBox = new();
     private readonly CheckBox _groupHasRoleBox = new();
-    private readonly CheckBox _groupHasDispelBox = new();
+    private readonly Dictionary<string, CheckBox> _groupDispelBoxes = GroupDispelCatalog.Entries
+        .ToDictionary(entry => entry.ConfigName, _ => new CheckBox());
     private readonly CheckBox _groupHasClassBox = new();
     private readonly DataGridView _groupAurasGrid = new UiThemedDataGridView();
     private readonly Label _nameplatePixelSummary = new() { AutoSize = true };
@@ -1451,7 +1452,7 @@ public sealed class ClassConfigEditorControl : UserControl
                 UpdateGroupEditorsEnabled();
             }
         };
-        foreach (var box in new[] { _groupHasHealthBox, _groupHasRoleBox, _groupHasDispelBox, _groupHasClassBox })
+        foreach (var box in new[] { _groupHasHealthBox, _groupHasRoleBox, _groupHasClassBox }.Concat(_groupDispelBoxes.Values))
         {
             box.Text = "启用";
             box.AutoSize = true;
@@ -1467,14 +1468,16 @@ public sealed class ClassConfigEditorControl : UserControl
         _groupPixelSummary.TextAlign = ContentAlignment.MiddleRight;
         _groupPixelSummary.Margin = Padding.Empty;
         _groupPixelSummary.Padding = new Padding(0, 0, 8, 0);
-        var groupCards = new Control[]
+        var groupCards = new List<Control>
         {
             CreateGroupCard("GROUP", _groupEnabledBox),
             CreateGroupCard("生命值", _groupHasHealthBox),
-            CreateGroupCard("职责", _groupHasRoleBox),
-            CreateGroupCard("驱散", _groupHasDispelBox),
-            CreateGroupCard("职业", _groupHasClassBox)
+            CreateGroupCard("职责", _groupHasRoleBox)
         };
+        // 五种驱散各自占一张卡片，没有共用的“启用驱散”开关。
+        foreach (var entry in GroupDispelCatalog.Entries)
+            groupCards.Add(CreateGroupCard(entry.Name, _groupDispelBoxes[entry.ConfigName], 120));
+        groupCards.Add(CreateGroupCard("职业", _groupHasClassBox));
         foreach (var card in groupCards)
         {
             fields.Controls.Add(card);
@@ -3464,7 +3467,8 @@ public sealed class ClassConfigEditorControl : UserControl
             _groupEnabledBox.Checked = true;
             _groupHasHealthBox.Checked = true;
             _groupHasRoleBox.Checked = true;
-            _groupHasDispelBox.Checked = group.State.Contains("dispel");
+            foreach (var (field, box) in _groupDispelBoxes)
+                box.Checked = group.State.Contains(field);
             _groupHasClassBox.Checked = group.State.Contains("class");
             foreach (var aura in group.Auras)
             {
@@ -3484,7 +3488,7 @@ public sealed class ClassConfigEditorControl : UserControl
             _groupEnabledBox.Checked = false;
             _groupHasHealthBox.Checked = false;
             _groupHasRoleBox.Checked = false;
-            _groupHasDispelBox.Checked = false;
+            foreach (var box in _groupDispelBoxes.Values) box.Checked = false;
             _groupHasClassBox.Checked = false;
         }
 
@@ -3498,7 +3502,7 @@ public sealed class ClassConfigEditorControl : UserControl
         _groupHasRoleBox.Checked = enabled;
         _groupHasHealthBox.Enabled = false;
         _groupHasRoleBox.Enabled = false;
-        _groupHasDispelBox.Enabled = enabled;
+        foreach (var box in _groupDispelBoxes.Values) box.Enabled = enabled;
         _groupHasClassBox.Enabled = enabled;
         _groupAurasGrid.Enabled = enabled;
         _groupAurasGrid.ReadOnly = !enabled;
@@ -3508,7 +3512,7 @@ public sealed class ClassConfigEditorControl : UserControl
     private void UpdateGroupPixelSummary()
     {
         var fields = (_groupHasHealthBox.Checked ? 1 : 0) + (_groupHasRoleBox.Checked ? 1 : 0)
-            + (_groupHasDispelBox.Checked ? 1 : 0) + (_groupHasClassBox.Checked ? 1 : 0);
+            + _groupDispelBoxes.Values.Count(box => box.Checked) + (_groupHasClassBox.Checked ? 1 : 0);
         foreach (DataGridViewRow row in _groupAurasGrid.Rows)
         {
             if (!row.IsNewRow
@@ -4172,9 +4176,9 @@ public sealed class ClassConfigEditorControl : UserControl
         {
             ["healthPercent"] = true,
             ["role"] = true,
-            ["dispel"] = _groupHasDispelBox.Checked,
             ["class"] = _groupHasClassBox.Checked
         };
+        foreach (var (field, box) in _groupDispelBoxes) enabledFields[field] = box.Checked;
         // 保留配置中的 state 顺序；新启用的字段追加到末尾。
         foreach (var field in (_currentSpec.Group?.State ?? []).Concat(GroupStateLayout.SupportedFields).Distinct())
         {

@@ -2343,12 +2343,28 @@
         "step": 2,
         "type": "int"
       },
-      "驱散": {
+      "驱散魔法": {
         "step": 3,
         "type": "int"
       },
-      "auras.61295.value": {
+      "驱散诅咒": {
         "step": 4,
+        "type": "int"
+      },
+      "驱散疾病": {
+        "step": 5,
+        "type": "int"
+      },
+      "驱散中毒": {
+        "step": 6,
+        "type": "int"
+      },
+      "驱散流血": {
+        "step": 7,
+        "type": "int"
+      },
+      "auras.61295.value": {
+        "step": 8,
         "type": "int",
         "displayName": "激流",
         "spellId": 61295,
@@ -2359,7 +2375,7 @@
         ]
       },
       "auras.974.value": {
-        "step": 5,
+        "step": 9,
         "type": "int",
         "displayName": "大地之盾",
         "spellId": 974,

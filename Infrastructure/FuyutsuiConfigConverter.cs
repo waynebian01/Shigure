@@ -55,6 +55,21 @@ internal static class FuyutsuiConfigConverter
             throw new DirectoryNotFoundException($"找不到 Fuyutsui class 目录: {classDirectory}");
         }
 
+        // 全量转换先验证所有职业，避免旧驱散展开后超限而留下半次配置更新。
+        foreach (var (classId, _) in ClassNames.GetClasses())
+        {
+            var fileName = ClassNames.GetConfigFileName(classId);
+            var luaPath = Path.Combine(classDirectory, fileName + ".lua");
+            if (!File.Exists(luaPath)) continue;
+            var source = File.ReadAllText(luaPath, Encoding.UTF8);
+            var blocks = ExtractAssignedTable(source, AddonLuaNames.Assignment(source, "ClassBlocks"))
+                ?? throw new InvalidDataException($"{fileName}.lua 中未找到 ClassBlocks");
+            for (var specId = 1; specId <= 4; specId++)
+                if (blocks.Get((long)specId) is TableValue spec)
+                    CompileSpec(spec, $"{fileName}[{specId}]",
+                        NameplateStateLayout.SupportsImprovedGarrote(classDirectory, classId, specId), rejectPixelOverflow: true);
+        }
+
         Directory.CreateDirectory(configDirectory);
         EnsureCommonConfig(configDirectory);
         var updated = new List<string>();
@@ -307,7 +322,7 @@ internal static class FuyutsuiConfigConverter
 
     internal sealed class PixelCapacityExceededException(string label, string region, int requiredPixels)
         : InvalidOperationException(
-            $"合并失败：{label} 合并后的{region}布局需要 {requiredPixels} 格，超过主像素行 {MainPixelLayout.MaxCapacity} 格上限；该模块的配置和宏均未写入。");
+            $"布局校验失败：{label} 的{region}布局需要 {requiredPixels} 格，超过主像素行 {MainPixelLayout.MaxCapacity} 格上限；配置和宏均未写入。");
 
     public static void EnsurePixelCapacity(
         ClassBlocksStore.SpecBlocks spec, string label, bool supportsImprovedGarrote)

@@ -590,13 +590,17 @@ public sealed partial class StatusForm : Form
             new UiTheme.ListColumn("类型", 58, 2000, FixedWidth: true, RemainingWidthWeight: 1),
             new UiTheme.ListColumn("值", 64, 2000, FixedWidth: true, RemainingWidthWeight: 1));
 
-        _partyList = UiTheme.CreateListView(Font, "status-party-v2",
+        _partyList = UiTheme.CreateListView(Font, "status-party-v3",
             new UiTheme.ListColumn("单位", 88, 120, FixedWidth: true),
             new UiTheme.ListColumn("生命值", 72, 96),
             new UiTheme.ListColumn("治疗吸收", 88, 112),
             new UiTheme.ListColumn("职责", 64, 88),
             new UiTheme.ListColumn("职业", 96, 160),
-            new UiTheme.ListColumn("驱散", 64, 88),
+            new UiTheme.ListColumn("驱散魔法", 80, 96),
+            new UiTheme.ListColumn("驱散诅咒", 80, 96),
+            new UiTheme.ListColumn("驱散疾病", 80, 96),
+            new UiTheme.ListColumn("驱散中毒", 80, 96),
+            new UiTheme.ListColumn("驱散流血", 80, 96),
             new UiTheme.ListColumn("光环 / 其他", 160, 1600, FillRemaining: true));
         _nameplateList = UiTheme.CreateListView(Font, "status-nameplates-v2",
             new UiTheme.ListColumn("单位", 112, 140, FixedWidth: true),
@@ -3144,6 +3148,7 @@ public sealed partial class StatusForm : Form
         // 固定状态逐列显示；同一姓名板光环的别名只保留名称那份。
         var details = data?.Where(pair => !fields.Contains(pair.Key, StringComparer.Ordinal)
             && pair.Key != "存在"
+            && (isNameplate || pair.Key != "驱散")
             && (!isNameplate || (!pair.Key.StartsWith("光环", StringComparison.Ordinal)
                 && !SpellFieldKey.TryParseAuraMember(pair.Key, out _, out _))))
             .Select(pair => $"{DisplayPartyFieldName(pair.Key)}: {DisplayPartyFieldValue(pair.Key, pair.Value)}")

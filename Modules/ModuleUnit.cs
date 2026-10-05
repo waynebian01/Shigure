@@ -16,7 +16,14 @@ public enum UnitTargetFieldKind
     Dispel,
 
     /// <summary>光环剩余时间：最长 / 最短；或按队伍槽位正序 / 倒序。</summary>
-    Aura
+    Aura,
+
+    // 新字段追加，保留历史枚举编号；五类均按剩余时间选择最长 / 最短。
+    DispelMagic,
+    DispelCurse,
+    DispelDisease,
+    DispelPoison,
+    DispelBleed
 }
 
 /// <summary>队友单位在筛选后的唯一选取方式。</summary>
@@ -101,7 +108,12 @@ public enum CountConditionFieldKind
     ImprovedGarrote,
     Threat,
     CastSpell,
-    CastCountdown
+    CastCountdown,
+    DispelMagic,
+    DispelCurse,
+    DispelDisease,
+    DispelPoison,
+    DispelBleed
 }
 
 /// <summary>数量筛选的比较方式。</summary>

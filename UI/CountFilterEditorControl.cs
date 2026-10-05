@@ -79,6 +79,9 @@ internal sealed class CountFilterEditorControl : UserControl
     private readonly bool _hasNameplateCastCountdown;
     private bool _retainedCastCountdown;
     private readonly IReadOnlyList<string> _numberArrayNames;
+    private readonly HashSet<string> _groupDispelFields;
+    private readonly HashSet<CountConditionFieldKind> _retainedDispelFields = [];
+    private bool _retainedLegacyDispel;
 
     public event EventHandler? Changed;
 
@@ -91,7 +94,8 @@ internal sealed class CountFilterEditorControl : UserControl
         bool hasNameplateThreat = false,
         bool hasNameplateCastSpell = false,
         IReadOnlyList<string>? numberArrayNames = null,
-        bool hasNameplateCastCountdown = false)
+        bool hasNameplateCastCountdown = false,
+        IReadOnlyList<string>? groupDispelFields = null)
     {
         _allyAuras = allyAuras;
         _enemyAuras = enemyAuras;
@@ -100,6 +104,7 @@ internal sealed class CountFilterEditorControl : UserControl
         _hasNameplateCastSpell = hasNameplateCastSpell;
         _hasNameplateCastCountdown = hasNameplateCastCountdown;
         _numberArrayNames = (numberArrayNames ?? []).ToArray();
+        _groupDispelFields = new HashSet<string>(groupDispelFields ?? [], StringComparer.Ordinal);
         _thresholdFields = new HashSet<string>(thresholdFields, StringComparer.Ordinal);
         _formulaValueNames = formulaValueNames
             .Where(name => !string.IsNullOrWhiteSpace(name))
@@ -222,6 +227,11 @@ internal sealed class CountFilterEditorControl : UserControl
         _loading = true;
         try
         {
+            _retainedDispelFields.Clear();
+            var conditions = (groups ?? []).SelectMany(group => group.Conditions ?? []).ToArray();
+            foreach (var condition in conditions.Where(condition => GroupDispelCatalog.Find(condition.Field) is not null))
+                _retainedDispelFields.Add(condition.Field);
+            _retainedLegacyDispel = conditions.Any(condition => condition.Field == CountConditionFieldKind.Dispel);
             // 功能关闭后仍保留已保存的筛选，避免编辑时静默改成生命值条件。
             _retainedImprovedGarrote = (groups ?? []).SelectMany(group => group.Conditions ?? [])
                 .Any(condition => condition.Field == CountConditionFieldKind.ImprovedGarrote);
@@ -337,9 +347,19 @@ internal sealed class CountFilterEditorControl : UserControl
                 new("生命值", CountConditionFieldKind.Health),
                 new("治疗吸收", CountConditionFieldKind.HealingAbsorb),
                 new("职责", CountConditionFieldKind.Role),
-                new("驱散", CountConditionFieldKind.Dispel),
                 new("职业", CountConditionFieldKind.Class)
             };
+        if (!_enemy)
+        {
+            foreach (var entry in GroupDispelCatalog.Entries)
+            {
+                var available = _groupDispelFields.Contains(entry.FieldName);
+                if (available || _retainedDispelFields.Contains(entry.ConditionField))
+                    options.Add(new FieldOption(entry.FieldName + (available ? "" : "（未配置）"), entry.ConditionField));
+            }
+            if (_retainedLegacyDispel)
+                options.Add(new FieldOption("驱散（旧类型编号）", CountConditionFieldKind.Dispel));
+        }
         if (_enemy && (_hasNameplateImprovedGarrote || _retainedImprovedGarrote))
         {
             options.Add(new FieldOption("强化锁喉", CountConditionFieldKind.ImprovedGarrote));

@@ -22,7 +22,6 @@ public sealed class UnitEditorForm : Form
         new("生命值", UnitTargetFieldKind.Health),
         new("治疗吸收", UnitTargetFieldKind.HealingAbsorb),
         new("职责", UnitTargetFieldKind.Role),
-        new("驱散", UnitTargetFieldKind.Dispel),
         new("光环", UnitTargetFieldKind.Aura)
     ];
 
@@ -46,6 +45,8 @@ public sealed class UnitEditorForm : Form
         new("倒序", UnitSelectionMode.Descending)
     ];
 
+    private static readonly SelectionModeItem[] DispelSelectionModes = AuraSelectionModes[..2];
+
     private static readonly AverageTargetItem[] AverageTargetOptions =
     [
         new("队友", AverageHealthTargetKind.Allies),
@@ -55,6 +56,7 @@ public sealed class UnitEditorForm : Form
     private readonly IReadOnlyList<ConditionField> _auraFields;
     private readonly IReadOnlyList<ConditionField> _nameplateAuraFields;
     private readonly HashSet<string> _takenNames;
+    private readonly HashSet<string> _groupDispelFields;
     private readonly CountFilterEditorControl _countFilterEditor;
 
     private readonly Label _valueNameLabel = new();
@@ -98,11 +100,13 @@ public sealed class UnitEditorForm : Form
         bool hasNameplateThreat = false,
         bool hasNameplateCastSpell = false,
         IReadOnlyList<string>? numberArrayNames = null,
-        bool hasNameplateCastCountdown = false)
+        bool hasNameplateCastCountdown = false,
+        IReadOnlyList<string>? groupDispelFields = null)
     {
         _auraFields = auraFields;
         _nameplateAuraFields = nameplateAuraFields;
         _takenNames = new HashSet<string>(takenNames, StringComparer.OrdinalIgnoreCase);
+        _groupDispelFields = new HashSet<string>(groupDispelFields ?? [], StringComparer.Ordinal);
         _countFilterEditor = new CountFilterEditorControl(
             auraFields,
             nameplateAuraFields,
@@ -112,7 +116,8 @@ public sealed class UnitEditorForm : Form
             hasNameplateThreat,
             hasNameplateCastSpell,
             numberArrayNames,
-            hasNameplateCastCountdown);
+            hasNameplateCastCountdown,
+            groupDispelFields);
         _countFilterEditor.Changed += (_, _) => UpdatePreview();
         InitializeComponent();
         Seed(existingUnit, existingCount, existingEnemyCount, existingAverageHealth);
@@ -557,6 +562,8 @@ public sealed class UnitEditorForm : Form
     {
         _targetFieldBox.Items.Clear();
         _targetFieldBox.Items.AddRange(TargetFieldOptions.Cast<object>().ToArray());
+        foreach (var entry in GroupDispelCatalog.Entries.Where(entry => _groupDispelFields.Contains(entry.FieldName)))
+            _targetFieldBox.Items.Add(new TargetFieldItem(entry.FieldName, entry.TargetField));
         _targetFieldBox.SelectedIndex = 0;
         PopulateSelectionModes(preserveSelection: false);
     }
@@ -591,6 +598,7 @@ public sealed class UnitEditorForm : Form
             UnitTargetFieldKind.Health or UnitTargetFieldKind.HealingAbsorb => HealthSelectionModes,
             UnitTargetFieldKind.Role or UnitTargetFieldKind.Dispel => OrderSelectionModes,
             UnitTargetFieldKind.Aura => AuraSelectionModes,
+            _ when GroupDispelCatalog.Find(field) is not null => DispelSelectionModes,
             _ => HealthSelectionModes
         };
 
@@ -891,6 +899,8 @@ public sealed class UnitEditorForm : Form
             UnitTargetFieldKind.Aura
                 => mode is UnitSelectionMode.Longest or UnitSelectionMode.Shortest
                     or UnitSelectionMode.Ascending or UnitSelectionMode.Descending,
+            _ when GroupDispelCatalog.Find(field) is not null
+                => mode is UnitSelectionMode.Longest or UnitSelectionMode.Shortest,
             _ => false
         };
 
@@ -957,6 +967,13 @@ public sealed class UnitEditorForm : Form
 
     private void SelectTargetField(UnitTargetFieldKind kind)
     {
+        if (!_targetFieldBox.Items.Cast<TargetFieldItem>().Any(item => item.Kind == kind))
+        {
+            if (kind == UnitTargetFieldKind.Dispel)
+                _targetFieldBox.Items.Add(new TargetFieldItem("驱散（旧槽位选择）", kind));
+            else if (GroupDispelCatalog.Find(kind) is { } entry)
+                _targetFieldBox.Items.Add(new TargetFieldItem(entry.FieldName + "（未配置）", kind));
+        }
         for (var i = 0; i < _targetFieldBox.Items.Count; i++)
         {
             if (_targetFieldBox.Items[i] is TargetFieldItem item && item.Kind == kind)

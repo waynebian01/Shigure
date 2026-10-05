@@ -69,6 +69,13 @@
     "66": 783,
     "67": 102558,
     "68": 77764,
+    "69": 474750,
+    "70": 1261872,
+    "71": 1261868,
+    "72": 1261870,
+    "73": 106898,
+    "74": 117679,
+    "75": 33891,
     "210": 384255,
     "211": 200749,
     "212": 28730,
@@ -1197,108 +1204,399 @@
       "type": "int",
       "category": "状态"
     },
-    "姿态": {
+    "施法目标": {
       "step": 23,
+      "type": "int",
+      "category": "状态"
+    },
+    "姿态": {
+      "step": 24,
+      "type": "int",
+      "category": "特殊"
+    },
+    "倒数": {
+      "step": 25,
       "type": "int",
       "category": "特殊"
     },
     "法力值": {
-      "step": 24,
+      "step": 26,
       "type": "int",
       "category": "能量"
     },
     "连击点": {
-      "step": 25,
+      "step": 27,
       "type": "int",
       "category": "能量"
     },
+    "爆发开关": {
+      "step": 28,
+      "type": "int",
+      "category": "配置开关"
+    },
     "目标施法技能": {
-      "step": 26,
+      "step": 29,
       "type": "int",
       "category": "目标",
       "pixelFormat": "rgb24",
-      "payloadStep": 27
+      "payloadStep": 30
     },
     "目标类型": {
-      "step": 28,
-      "type": "int",
-      "category": "目标"
-    },
-    "目标距离": {
-      "step": 29,
-      "type": "int",
-      "category": "目标"
-    },
-    "目标施法(倒计时)": {
-      "step": 30,
-      "type": "int",
-      "category": "目标"
-    },
-    "目标施法(正计时)": {
       "step": 31,
       "type": "int",
       "category": "目标"
     },
-    "目标施法可打断": {
+    "目标距离": {
       "step": 32,
       "type": "int",
       "category": "目标"
     },
-    "焦点施法技能": {
+    "目标施法(倒计时)": {
       "step": 33,
+      "type": "int",
+      "category": "目标"
+    },
+    "目标施法(正计时)": {
+      "step": 34,
+      "type": "int",
+      "category": "目标"
+    },
+    "目标施法可打断": {
+      "step": 35,
+      "type": "int",
+      "category": "目标"
+    },
+    "焦点施法技能": {
+      "step": 36,
       "type": "int",
       "category": "焦点",
       "pixelFormat": "rgb24",
-      "payloadStep": 34
+      "payloadStep": 37
     },
     "鼠标类型": {
-      "step": 35,
-      "type": "int",
-      "category": "鼠标"
-    },
-    "鼠标驱散类型": {
-      "step": 36,
-      "type": "int",
-      "category": "鼠标"
-    },
-    "鼠标生命值": {
-      "step": 37,
-      "type": "int",
-      "category": "鼠标"
-    },
-    "鼠标距离": {
       "step": 38,
       "type": "int",
       "category": "鼠标"
     },
-    "鼠标施法(倒计时)": {
+    "鼠标驱散类型": {
       "step": 39,
       "type": "int",
       "category": "鼠标"
     },
-    "鼠标施法(正计时)": {
+    "鼠标生命值": {
       "step": 40,
       "type": "int",
       "category": "鼠标"
     },
-    "鼠标施法可打断": {
+    "鼠标距离": {
       "step": 41,
       "type": "int",
       "category": "鼠标"
     },
-    "鼠标引导": {
+    "鼠标施法(倒计时)": {
       "step": 42,
       "type": "int",
       "category": "鼠标"
     },
-    "鼠标引导可打断": {
+    "鼠标施法(正计时)": {
       "step": 43,
       "type": "int",
       "category": "鼠标"
     },
+    "鼠标施法可打断": {
+      "step": 44,
+      "type": "int",
+      "category": "鼠标"
+    },
+    "鼠标引导": {
+      "step": 45,
+      "type": "int",
+      "category": "鼠标"
+    },
+    "鼠标引导可打断": {
+      "step": 46,
+      "type": "int",
+      "category": "鼠标"
+    },
+    "首领1引导": {
+      "step": 47,
+      "type": "int",
+      "category": "首领1"
+    },
+    "首领1能量值": {
+      "step": 48,
+      "type": "int",
+      "category": "首领1"
+    },
+    "首领1施法技能": {
+      "step": 49,
+      "type": "int",
+      "category": "首领1",
+      "pixelFormat": "rgb24",
+      "payloadStep": 50
+    },
+    "首领1施法(倒计时)": {
+      "step": 51,
+      "type": "int",
+      "category": "首领1"
+    },
+    "首领2施法技能": {
+      "step": 52,
+      "type": "int",
+      "category": "首领2",
+      "pixelFormat": "rgb24",
+      "payloadStep": 53
+    },
+    "首领2施法(倒计时)": {
+      "step": 54,
+      "type": "int",
+      "category": "首领2"
+    },
+    "auras": {
+      "player.16870.value": {
+        "step": 55,
+        "type": "int",
+        "category": "玩家",
+        "displayName": "节能施法",
+        "spellId": 16870,
+        "scope": "player",
+        "metric": "value",
+        "spellIds": [
+          16870
+        ]
+      },
+      "player.33763.value": {
+        "step": 56,
+        "type": "int",
+        "category": "玩家",
+        "displayName": "生命绽放",
+        "spellId": 33763,
+        "scope": "player",
+        "metric": "value",
+        "spellIds": [
+          33763
+        ]
+      },
+      "player.33763.apps": {
+        "step": 57,
+        "type": "int",
+        "category": "玩家",
+        "displayName": "生命绽放层数",
+        "spellId": 33763,
+        "scope": "player",
+        "metric": "apps",
+        "spellIds": [
+          33763
+        ]
+      },
+      "player.132158.value": {
+        "step": 58,
+        "type": "int",
+        "category": "玩家",
+        "displayName": "自然迅捷",
+        "spellId": 132158,
+        "scope": "player",
+        "metric": "value",
+        "spellIds": [
+          132158
+        ]
+      },
+      "player.1301989.value": {
+        "step": 59,
+        "type": "int",
+        "category": "玩家",
+        "displayName": "过度生长",
+        "spellId": 1301989,
+        "scope": "player",
+        "metric": "value",
+        "spellIds": [
+          1301989
+        ]
+      },
+      "player.774.value": {
+        "step": 60,
+        "type": "int",
+        "category": "玩家",
+        "displayName": "回春术",
+        "spellId": 774,
+        "scope": "player",
+        "metric": "value",
+        "spellIds": [
+          774
+        ]
+      },
+      "player.155777.value": {
+        "step": 61,
+        "type": "int",
+        "category": "玩家",
+        "displayName": "萌芽",
+        "spellId": 155777,
+        "scope": "player",
+        "metric": "value",
+        "spellIds": [
+          155777
+        ]
+      },
+      "player.8936.value": {
+        "step": 62,
+        "type": "int",
+        "category": "玩家",
+        "displayName": "愈合",
+        "spellId": 8936,
+        "scope": "player",
+        "metric": "value",
+        "spellIds": [
+          8936
+        ]
+      },
+      "player.48438.value": {
+        "step": 63,
+        "type": "int",
+        "category": "玩家",
+        "displayName": "野性成长",
+        "spellId": 48438,
+        "scope": "player",
+        "metric": "value",
+        "spellIds": [
+          48438
+        ]
+      },
+      "player.474754.value": {
+        "step": 64,
+        "type": "int",
+        "category": "玩家",
+        "displayName": "共生关系",
+        "spellId": 474754,
+        "scope": "player",
+        "metric": "value",
+        "spellIds": [
+          474754
+        ]
+      },
+      "player.114108.value": {
+        "step": 65,
+        "type": "int",
+        "category": "玩家",
+        "displayName": "丛林之魂",
+        "spellId": 114108,
+        "scope": "player",
+        "metric": "value",
+        "spellIds": [
+          114108
+        ]
+      },
+      "player.207640.value": {
+        "step": 66,
+        "type": "int",
+        "category": "玩家",
+        "displayName": "丰饶",
+        "spellId": 207640,
+        "scope": "player",
+        "metric": "value",
+        "spellIds": [
+          207640
+        ]
+      },
+      "player.117679.value": {
+        "step": 67,
+        "type": "int",
+        "category": "玩家",
+        "displayName": "化身",
+        "spellId": 117679,
+        "scope": "player",
+        "metric": "value",
+        "spellIds": [
+          117679
+        ]
+      },
+      "player.33891.value": {
+        "step": 68,
+        "type": "int",
+        "category": "玩家",
+        "displayName": "化身：生命之树",
+        "spellId": 33891,
+        "scope": "player",
+        "metric": "value",
+        "spellIds": [
+          33891
+        ]
+      },
+      "player.392360.value": {
+        "step": 69,
+        "type": "int",
+        "category": "玩家",
+        "displayName": "森林再生",
+        "spellId": 392360,
+        "scope": "player",
+        "metric": "value",
+        "spellIds": [
+          392360
+        ]
+      },
+      "player.392360.apps": {
+        "step": 70,
+        "type": "int",
+        "category": "玩家",
+        "displayName": "森林再生层数",
+        "spellId": 392360,
+        "scope": "player",
+        "metric": "apps",
+        "spellIds": [
+          392360
+        ]
+      },
+      "player.1126.value": {
+        "step": 71,
+        "type": "int",
+        "category": "玩家",
+        "displayName": "野性印记",
+        "spellId": 1126,
+        "scope": "player",
+        "metric": "value",
+        "spellIds": [
+          1126
+        ]
+      },
+      "target.harmful.155722.value": {
+        "step": 72,
+        "type": "int",
+        "category": "目标减益",
+        "displayName": "斜掠",
+        "spellId": 155722,
+        "scope": "target.harmful",
+        "metric": "value",
+        "spellIds": [
+          155722
+        ]
+      },
+      "target.harmful.1079.value": {
+        "step": 73,
+        "type": "int",
+        "category": "目标减益",
+        "displayName": "割裂",
+        "spellId": 1079,
+        "scope": "target.harmful",
+        "metric": "value",
+        "spellIds": [
+          1079
+        ]
+      },
+      "target.harmful.164812.value": {
+        "step": 74,
+        "type": "int",
+        "category": "目标减益",
+        "displayName": "月火术",
+        "spellId": 164812,
+        "scope": "target.harmful",
+        "metric": "value",
+        "spellIds": [
+          164812
+        ]
+      }
+    },
     "spells": {
       "22812.cooldown": {
-        "step": 44,
+        "step": 75,
         "type": "int",
         "displayName": "树皮术",
         "spellId": 22812,
@@ -1306,7 +1604,7 @@
         "displayType": "冷却"
       },
       "132469.cooldown": {
-        "step": 45,
+        "step": 76,
         "type": "int",
         "displayName": "台风",
         "spellId": 132469,
@@ -1314,7 +1612,7 @@
         "displayType": "冷却"
       },
       "99.cooldown": {
-        "step": 46,
+        "step": 77,
         "type": "int",
         "displayName": "夺魂咆哮",
         "spellId": 99,
@@ -1322,7 +1620,7 @@
         "displayType": "冷却"
       },
       "29166.cooldown": {
-        "step": 47,
+        "step": 78,
         "type": "int",
         "displayName": "激活",
         "spellId": 29166,
@@ -1330,7 +1628,7 @@
         "displayType": "冷却"
       },
       "102793.cooldown": {
-        "step": 48,
+        "step": 79,
         "type": "int",
         "displayName": "乌索尔旋风",
         "spellId": 102793,
@@ -1338,7 +1636,7 @@
         "displayType": "冷却"
       },
       "18562.cooldown": {
-        "step": 49,
+        "step": 80,
         "type": "int",
         "displayName": "迅捷治愈",
         "spellId": 18562,
@@ -1346,7 +1644,7 @@
         "displayType": "冷却"
       },
       "18562.chargeCooldown": {
-        "step": 50,
+        "step": 81,
         "type": "int",
         "displayName": "迅捷治愈充能",
         "spellId": 18562,
@@ -1354,7 +1652,7 @@
         "displayType": "充能"
       },
       "18562.count": {
-        "step": 51,
+        "step": 82,
         "type": "int",
         "displayName": "迅捷治愈层数",
         "spellId": 18562,
@@ -1362,7 +1660,7 @@
         "displayType": "充能层数"
       },
       "48438.cooldown": {
-        "step": 52,
+        "step": 83,
         "type": "int",
         "displayName": "野性成长",
         "spellId": 48438,
@@ -1370,7 +1668,7 @@
         "displayType": "冷却"
       },
       "391528.cooldown": {
-        "step": 53,
+        "step": 84,
         "type": "int",
         "displayName": "万灵之召",
         "spellId": 391528,
@@ -1378,7 +1676,7 @@
         "displayType": "冷却"
       },
       "88423.cooldown": {
-        "step": 54,
+        "step": 85,
         "type": "int",
         "displayName": "自然之愈",
         "spellId": 88423,
@@ -1386,7 +1684,7 @@
         "displayType": "冷却"
       },
       "102342.cooldown": {
-        "step": 55,
+        "step": 86,
         "type": "int",
         "displayName": "铁木树皮",
         "spellId": 102342,
@@ -1394,7 +1692,7 @@
         "displayType": "冷却"
       },
       "132158.cooldown": {
-        "step": 56,
+        "step": 87,
         "type": "int",
         "displayName": "自然迅捷",
         "spellId": 132158,
@@ -1402,7 +1700,7 @@
         "displayType": "冷却"
       },
       "1261867.cooldown": {
-        "step": 57,
+        "step": 88,
         "type": "int",
         "displayName": "野性之心",
         "spellId": 1261867,
@@ -1411,7 +1709,7 @@
       }
     },
     "group": {
-      "start": 58,
+      "start": 89,
       "生命值": {
         "step": 1,
         "type": "int"
@@ -1419,7 +1717,133 @@
       "职责": {
         "step": 2,
         "type": "int"
+      },
+      "驱散魔法": {
+        "step": 3,
+        "type": "int"
+      },
+      "驱散诅咒": {
+        "step": 4,
+        "type": "int"
+      },
+      "驱散疾病": {
+        "step": 5,
+        "type": "int"
+      },
+      "驱散中毒": {
+        "step": 6,
+        "type": "int"
+      },
+      "驱散流血": {
+        "step": 7,
+        "type": "int"
+      },
+      "职业": {
+        "step": 8,
+        "type": "int"
+      },
+      "auras.33763.value": {
+        "step": 9,
+        "type": "int",
+        "displayName": "生命绽放",
+        "spellId": 33763,
+        "scope": "group",
+        "metric": "value",
+        "spellIds": [
+          33763
+        ]
+      },
+      "auras.774.value": {
+        "step": 10,
+        "type": "int",
+        "displayName": "回春术",
+        "spellId": 774,
+        "scope": "group",
+        "metric": "value",
+        "spellIds": [
+          774
+        ]
+      },
+      "auras.155777.value": {
+        "step": 11,
+        "type": "int",
+        "displayName": "萌芽",
+        "spellId": 155777,
+        "scope": "group",
+        "metric": "value",
+        "spellIds": [
+          155777
+        ]
+      },
+      "auras.8936.value": {
+        "step": 12,
+        "type": "int",
+        "displayName": "愈合",
+        "spellId": 8936,
+        "scope": "group",
+        "metric": "value",
+        "spellIds": [
+          8936
+        ]
+      },
+      "auras.48438.value": {
+        "step": 13,
+        "type": "int",
+        "displayName": "野性成长",
+        "spellId": 48438,
+        "scope": "group",
+        "metric": "value",
+        "spellIds": [
+          48438
+        ]
       }
+    },
+    "姓名板目标": {
+      "step": 610,
+      "type": "int",
+      "category": "姓名板"
+    },
+    "姓名板焦点": {
+      "step": 611,
+      "type": "int",
+      "category": "姓名板"
+    },
+    "姓名板首领1": {
+      "step": 612,
+      "type": "int",
+      "category": "姓名板"
+    },
+    "姓名板首领2": {
+      "step": 613,
+      "type": "int",
+      "category": "姓名板"
+    },
+    "姓名板首领3": {
+      "step": 614,
+      "type": "int",
+      "category": "姓名板"
+    },
+    "姓名板首领4": {
+      "step": 615,
+      "type": "int",
+      "category": "姓名板"
+    },
+    "姓名板首领5": {
+      "step": 616,
+      "type": "int",
+      "category": "姓名板"
+    },
+    "nameplates": {
+      "start": 610,
+      "mappingCount": 7,
+      "healthPercent": 1,
+      "range": 2,
+      "combat": 3,
+      "auraStart": 4,
+      "castSpellOffset": 4,
+      "castSpellPayloadOffset": 5,
+      "castCountdownOffset": 6,
+      "num": 6
     }
   }
 }

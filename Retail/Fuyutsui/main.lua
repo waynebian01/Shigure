@@ -240,18 +240,24 @@ function Fuyutsui:LoadPlayerBlocks(specIndex)
         local stateFields = t.group.state
         if type(stateFields) ~= "table" then
             stateFields = {}
-            for _, field in ipairs({ "healthPercent", "role", "dispel", "class" }) do
+            for _, field in ipairs({ "healthPercent", "role", "dispel", "class", "dispelMagic", "dispelCurse", "dispelDisease", "dispelPoison", "dispelBleed" }) do
                 local configured = tonumber(t.group[field])
                 if configured and configured >= 0 then stateFields[#stateFields + 1] = field end
             end
         end
-        local supported = { healthPercent = true, role = true, dispel = true, class = true }
-        for _, field in ipairs(stateFields) do
-            if type(field) == "string" and supported[field] and not groups[field] then
+        local dispelFields = { "dispelMagic", "dispelCurse", "dispelDisease", "dispelPoison", "dispelBleed" }
+        local supported = { healthPercent = true, role = true, class = true,
+            dispelMagic = true, dispelCurse = true, dispelDisease = true, dispelPoison = true, dispelBleed = true }
+        local function AddGroupStateField(field)
+            -- 旧驱散在原位置展开；与 C# 的布局迁移保持一致。
+            if field == "dispel" then
+                for _, dispelField in ipairs(dispelFields) do AddGroupStateField(dispelField) end
+            elseif type(field) == "string" and supported[field] and not groups[field] then
                 groups.num = groups.num + 1
                 groups[field] = groups.num
             end
         end
+        for _, field in ipairs(stateFields) do AddGroupStateField(field) end
         -- 队伍启用时生命值和职责始终占位；与 config 转换器保持相同的追加顺序。
         for _, field in ipairs({ "healthPercent", "role" }) do
             if not groups[field] then

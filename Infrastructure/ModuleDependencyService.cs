@@ -72,6 +72,9 @@ internal sealed class ModuleDependencyService
             throw new InvalidOperationException($"职业 {classId} 中不存在专精 {specId} 的配置。");
         }
 
+        FuyutsuiConfigConverter.EnsurePixelCapacity(spec, $"{Path.GetFileName(configDocument.FilePath)}[{specId}]",
+            NameplateStateLayout.SupportsImprovedGarrote(_classDirectory, classId, specId));
+
         var macrosDocument = ClassMacrosStore.Load(_classMacrosPath);
         var classKey = ClassMacrosStore.ToClassFileKey(classId.Value);
         if (!macrosDocument.Classes.TryGetValue(classKey, out var macros))
@@ -568,7 +571,7 @@ internal sealed class ModuleDependencyService
         }
 
         // 旧快照使用偏移字段；新快照使用 State，并保留本地字段顺序。
-        var incomingStates = incoming.State ?? GroupStateLayout.SupportedFields.Where(field => field switch
+        var incomingStates = incoming.State ?? GroupStateLayout.LegacyFields.Where(field => field switch
         {
             "healthPercent" => incoming.HealthPercent is >= 0,
             "role" => incoming.Role is >= 0,

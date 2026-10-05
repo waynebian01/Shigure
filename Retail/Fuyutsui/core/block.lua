@@ -875,11 +875,13 @@ local function RebindContainerSpellFilters(container, unit)
             container:SetAuraSlotCandidateFilters(slot.key, filters)
         end
     end
-    if container.fuyutsuiDispelSlot then
-        local dispel = container.fuyutsuiDispelSlot
-        container:SetAuraSlotCandidateFilters(dispel.key, {
-            includeDispelTypes = dispel.includeDispelTypes,
-        })
+    if container.fuyutsuiGroupDispelSlots then
+        for _, slot in ipairs(container.fuyutsuiGroupDispelSlots) do
+            -- 每次重建过滤表，保持各类独立且不受职业驱散能力影响。
+            container:SetAuraSlotCandidateFilters(slot.key, {
+                includeDispelTypes = { [slot.auraType] = true },
+            })
+        end
     end
     if container.fuyutsuiUnitDispelSlots then
         local canAttack = bindUnit and UnitCanAttack("player", bindUnit)
@@ -1128,9 +1130,9 @@ end
     队伍成员 AuraContainer
     配置：
       groups.aura[offset] = { name, spellId/spellIds, maxApps? }  -- 默认 HELPFUL|PLAYER，层数格紧随剩余时间格
-      groups.dispel = offset                            -- HARMFUL，按可驱散类型过滤；固定纹理按类型着色
+      groups.dispelMagic/dispelCurse/dispelDisease/dispelPoison/dispelBleed = offset
     像素：start + (memberIndex-1)*num + offset
-    驱散蓝通道：Magic=1 Curse=2 Disease=3 Poison=4 Bleed=11（/255）
+    驱散蓝通道：同类最长剩余秒数；无光环=0，永久/超过255秒=255，不足1秒=1
 ============================================================================]]
 
 local GROUP_ROLE_ZERO_AURA_ID = 27827
@@ -1165,23 +1167,41 @@ local function GroupAuraPixelIndex(groups, memberIndex, offset)
     return groups.start + (memberIndex - 1) * groups.num + offset
 end
 
-local function CopyIncludeDispelTypes()
-    local src = Fuyutsui.includeDispelTypes
-    if type(src) ~= "table" then
-        return nil
-    end
-    local dst = {}
-    local any = false
-    for name, enabled in pairs(src) do
-        if enabled then
-            dst[name] = true
-            any = true
+local GROUP_DISPEL_FIELDS = {
+    { field = "dispelMagic", auraType = "Magic" },
+    { field = "dispelCurse", auraType = "Curse" },
+    { field = "dispelDisease", auraType = "Disease" },
+    { field = "dispelPoison", auraType = "Poison" },
+    { field = "dispelBleed", auraType = "Bleed" },
+}
+
+local function CollectGroupDispelDefs(groups)
+    local defs = {}
+    for _, def in ipairs(GROUP_DISPEL_FIELDS) do
+        if groups[def.field] then
+            tinsert(defs, { offset = groups[def.field], auraType = def.auraType })
         end
     end
-    if not any then
-        return nil
+    return defs
+end
+
+local function MakeGroupDispelSlotInitializer(index)
+    return function(button)
+        AnchorAuraPixelButton(button, index)
+        -- 原生计时文字在永久光环上停用；保留 255 底色。无候选时整个按钮隐藏，露出 0。
+        local cell = CreateAuraPixelCell(button, index, 0, 1)
+        local duration = cell:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+        duration:SetPoint("CENTER", cell, "CENTER", 0, 0)
+        duration:SetJustifyH("CENTER")
+        duration:SetJustifyV("MIDDLE")
+        button:SetDurationText(duration, {
+            textFormat = { formatString = AURA_DURATION_CHAR, components = {} },
+            textColor = {
+                curve = MakeDurationColorCurve(index),
+                property = Enum.DurationTextBindingProperty.RemainingDuration,
+            },
+        })
     end
-    return dst
 end
 
 function Fuyutsui:ReleaseGroupAuraContainers()
@@ -1224,7 +1244,7 @@ local function CreateGroupMemberRoleOverlayContainer(memberIndex, groups)
     return container
 end
 
-local function CreateGroupMemberAuraContainer(memberIndex, groups, auraDefs, includeDispelTypes)
+local function CreateGroupMemberAuraContainer(memberIndex, groups, auraDefs, dispelDefs)
     EnsureAuraContainerLoaded()
 
     local container = CreateFrame("AuraContainer", "FuyutsuiGroupAuraSlots_" .. memberIndex, UIParent,
@@ -1250,27 +1270,18 @@ local function CreateGroupMemberAuraContainer(memberIndex, groups, auraDefs, inc
         end
     end
 
-    -- 驱散减益：包含全部驱散类型；像素显示类型固定色，非剩余时间
-    if groups.dispel and includeDispelTypes then
-        local pixelIndex = GroupAuraPixelIndex(groups, memberIndex, groups.dispel)
+    container.fuyutsuiGroupDispelSlots = {}
+    for _, def in ipairs(dispelDefs) do
+        local pixelIndex = GroupAuraPixelIndex(groups, memberIndex, def.offset)
         if pixelIndex > 0 and pixelIndex <= BLOCK_FIX_CONFIG.capacity then
-            local dispelKey = "group_" .. memberIndex .. "_dispel"
-            container:AddAuraSlot(
-                dispelKey,
-                "HARMFUL",
-                {
-                    candidateFilters = {
-                        includeDispelTypes = includeDispelTypes,
-                    },
-                    sortMethod = AuraContainerSortMethod.Expiration,
-                    sortDirection = AuraContainerSortDirection.Normal,
-                    initializeFrame = MakeDispelSlotInitializer(pixelIndex),
-                }
-            )
-            container.fuyutsuiDispelSlot = {
-                key = dispelKey,
-                includeDispelTypes = includeDispelTypes,
-            }
+            local key = "group_" .. memberIndex .. "_dispel_" .. def.auraType
+            container:AddAuraSlot(key, "HARMFUL", {
+                candidateFilters = { includeDispelTypes = { [def.auraType] = true } },
+                sortMethod = AuraContainerSortMethod.ExpirationOnly,
+                sortDirection = AuraContainerSortDirection.Reverse,
+                initializeFrame = MakeGroupDispelSlotInitializer(pixelIndex),
+            })
+            tinsert(container.fuyutsuiGroupDispelSlots, { key = key, auraType = def.auraType })
         end
     end
 
@@ -1286,8 +1297,8 @@ function Fuyutsui:RefreshGroupAuraContainers()
     end
 
     local auraDefs = CollectGroupAuraDefs(groups.aura)
-    local includeDispelTypes = groups.dispel and CopyIncludeDispelTypes() or nil
-    local needsAuraContainer = #auraDefs > 0 or includeDispelTypes ~= nil
+    local dispelDefs = CollectGroupDispelDefs(groups)
+    local needsAuraContainer = #auraDefs > 0 or #dispelDefs > 0
     local needsRoleOverlay = groups.role ~= nil
     if not needsAuraContainer and not needsRoleOverlay then
         self:ReleaseGroupAuraContainers()
@@ -1307,11 +1318,11 @@ function Fuyutsui:RefreshGroupAuraContainers()
                 usedAuraContainers[memberIndex] = true
                 local container = groupAuraContainers[memberIndex]
                 if not container then
-                    container = CreateGroupMemberAuraContainer(memberIndex, groups, auraDefs, includeDispelTypes)
+                    container = CreateGroupMemberAuraContainer(memberIndex, groups, auraDefs, dispelDefs)
                     groupAuraContainers[memberIndex] = container
                 end
                 container.fuyutsuiUnit = unit
-                container:SetUnit(unit)
+                RebindContainerSpellFilters(container, unit)
                 container:SetEnabled(true)
                 container:Show()
             end

@@ -1280,12 +1280,28 @@
         "step": 2,
         "type": "int"
       },
-      "驱散": {
+      "驱散魔法": {
         "step": 3,
         "type": "int"
       },
-      "auras.366155.value": {
+      "驱散诅咒": {
         "step": 4,
+        "type": "int"
+      },
+      "驱散疾病": {
+        "step": 5,
+        "type": "int"
+      },
+      "驱散中毒": {
+        "step": 6,
+        "type": "int"
+      },
+      "驱散流血": {
+        "step": 7,
+        "type": "int"
+      },
+      "auras.366155.value": {
+        "step": 8,
         "type": "int",
         "displayName": "逆转",
         "spellId": 366155,
@@ -1296,7 +1312,7 @@
         ]
       },
       "auras.364343.value": {
-        "step": 5,
+        "step": 9,
         "type": "int",
         "displayName": "回响",
         "spellId": 364343,
@@ -1307,7 +1323,7 @@
         ]
       },
       "auras.355941.value": {
-        "step": 6,
+        "step": 10,
         "type": "int",
         "displayName": "梦境吐息",
         "spellId": 355941,

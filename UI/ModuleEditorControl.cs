@@ -88,6 +88,8 @@ public sealed class ModuleEditorControl : UserControl
     private Dictionary<string, string>? _conditionFieldDisplayNames;
     // 载入时程序化写入"类型"单元格会触发 CellValueChanged; 置真以跳过"按类型清空字段"的联动。
     private bool _suppressAdjustmentTypeChange;
+    // 重建匹配选项时先恢复完整选择，再统一刷新依赖字段，避免职业联动清空专精和英雄天赋。
+    private bool _suppressMatchSelectionChanged;
     private bool _moduleCommandInProgress;
     // 规则行拖拽重排: 拖动起始行, 以及拖动中的插入指示位置(显示一条强调线)。
     private int _dragSourceRow = -1;
@@ -154,18 +156,26 @@ public sealed class ModuleEditorControl : UserControl
         var wasDirty = HasUnsavedChanges;
         _fieldCatalog = ConditionFieldCatalog.Load(_resolveProfile().RuntimeDirectory, _resolveProfile().AddonRoot);
         _keymapCatalog = KeymapCatalog.Load(_resolveProfile().RuntimeDirectory, _resolveProfile().AddonRoot);
-        UpdateMatchRowProfile();
-        var selectedClassId = ReadMatchCombo(_classBox);
-        ResetClassOptions(_classBox);
-        if (selectedClassId is not null)
+        _suppressMatchSelectionChanged = true;
+        try
         {
-            var index = FindMatchOption(_classBox, selectedClassId);
-            if (index >= 0) _classBox.SelectedIndex = index;
+            UpdateMatchRowProfile();
+            var selectedClassId = ReadMatchCombo(_classBox);
+            var selectedSpecId = ReadMatchCombo(_specBox);
+            var selectedHeroTalent = ReadMatchCombo(_heroTalentBox);
+            ResetClassOptions(_classBox);
+            SelectClass(selectedClassId);
+            SelectSpec(selectedSpecId);
+            SelectHeroTalent(selectedHeroTalent);
+        }
+        finally
+        {
+            _suppressMatchSelectionChanged = false;
         }
         var filterItems = new List<(int? ClassId, string Tooltip)> { (null, "全部") };
         filterItems.AddRange(GetAvailableClasses().Select(item => ((int?)item.Id, item.Name)));
         _classFilterStrip.SetItems(filterItems);
-        _classFilterStrip.SelectClassId(null);
+        _classFilterStrip.SelectClassId(_filterClassId);
         ReloadCurrentClassSpellIds();
         // “更新配置”可能刚重建了 keymap；立即刷新当前规则的技能/目标/宏条件下拉，
         // 避免必须切换职业或重启应用后才能看到新解析出的宏条件。
@@ -1031,6 +1041,7 @@ public sealed class ModuleEditorControl : UserControl
         ResetHeroTalentOptions(_heroTalentBox, null, null);
         _classBox.SelectedIndexChanged += (_, _) =>
         {
+            if (_suppressMatchSelectionChanged) return;
             ResetSpecOptions(_specBox, ReadMatchCombo(_classBox));
             ResetHeroTalentOptions(_heroTalentBox, ReadMatchCombo(_classBox), ReadMatchCombo(_specBox));
             ReloadCurrentClassSpellIds();
@@ -1042,6 +1053,7 @@ public sealed class ModuleEditorControl : UserControl
         };
         _specBox.SelectedIndexChanged += (_, _) =>
         {
+            if (_suppressMatchSelectionChanged) return;
             ResetHeroTalentOptions(_heroTalentBox, ReadMatchCombo(_classBox), ReadMatchCombo(_specBox));
             ReloadCurrentClassSpellIds();
             RefreshRuleSpellIcons();

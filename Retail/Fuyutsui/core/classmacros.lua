@@ -60,7 +60,7 @@ Fuyutsui.ClassMacros = {
     },
 
     PALADIN = {
-        dynamicSpells = { "清毒术", "荣耀圣令", "圣光术", "圣光闪现", "神圣震击", "圣洁鸣钟", "圣疗术", "圣光道标" },
+        dynamicSpells = { "清毒术", "荣耀圣令", "圣光术", "圣光闪现", "神圣震击", "圣洁鸣钟", "圣疗术", "圣光道标", "永恒之火", "自由祝福", "保护祝福", "牺牲祝福" },
         staticSpells = {
             "圣盾术",
             "盲目之光",
@@ -117,12 +117,33 @@ Fuyutsui.ClassMacros = {
             "[@mouseover]圣洁鸣钟",
             "奥术洪流",
             "[@focus]清毒术",
+            "[@mouseover]复仇者之盾",
+            "美德道标",
+            "愤怒之锤",
+            "自由祝福",
+            "正义之锤",
+            "牺牲祝福",
+            "保护祝福",
+            "代祷",
+            "圣疗术",
+            "圣光之锤",
+            "浓缩银月城生命药水",
+            "荣耀圣令",
+            "[@player]圣佑术",
+            "[@player]永恒之火",
+            "圣殿骑士斩击",
+            "圣殿骑士打击",
+            "破咒祝福",
+            "虔诚光环",
+            "圣洁武器",
+            "戒卫",
         },
         specialSpells = {
             "/stopcasting", -- 停止施法
             "/use 13", -- 饰品1
             "/use 货运者水壶", -- 货运者水壶
             "/use 治疗石", -- 治疗石
+            "/use 复仇之怒 \n/use 13", -- 翅膀
         },
     },
 
@@ -233,7 +254,7 @@ Fuyutsui.ClassMacros = {
     },
 
     PRIEST = {
-        dynamicSpells = { "纯净术", "快速治疗", "真言术：盾", "苦修", "愈合祷言", "圣言术：静" },
+        dynamicSpells = { "纯净术", "快速治疗", "真言术：盾", "苦修", "愈合祷言", "圣言术：静", "真言术：耀", "福音" },
         staticSpells = {
             "心灵震爆",
             "[@target]惩击",
@@ -283,6 +304,8 @@ Fuyutsui.ClassMacros = {
             "[@mouseover]能量灌注",
             "[@focus]能量灌注",
             "飞翼打击",
+            "[@target]纯净术",
+            "[@target]苦修",
         },
         specialSpells = {
             "/castsequence reset=0.4 真言术：耀,x", -- 真言术：耀
@@ -350,6 +373,9 @@ Fuyutsui.ClassMacros = {
             "瘟疫降临",
             "灾殃坟茔",
             "死灵缠绕",
+            "[@player]血魔之握",
+            "[@mouseover]死亡之握",
+            "[@target]死亡之握",
         },
         specialSpells = {
             "/castsequence reset=1 死亡之握,x", -- 死亡之握
@@ -597,10 +623,8 @@ Fuyutsui.ClassMacros = {
     },
 
     DRUID = {
-        dynamicSpells = { "回春术", "愈合", "生命绽放", "迅捷治愈", "自然之愈" },
+        dynamicSpells = { "回春术", "愈合", "生命绽放", "迅捷治愈", "自然之愈", "共生关系", "野性成长" },
         staticSpells = {
-            "[nostance:2]猎豹形态(变形)",
-            "[nostance:1]熊形态(变形)",
             "[nostance:4]枭兽形态",
             "月火术",
             "树皮术",
@@ -612,7 +636,7 @@ Fuyutsui.ClassMacros = {
             "撕碎",
             "斜掠",
             "痛击",
-            "野性印记",
+            "[@player]野性印记",
             "裂伤",
             "野性成长",
             "自然迅捷",
@@ -654,9 +678,13 @@ Fuyutsui.ClassMacros = {
             "万灵之召",
             "[nostance:2]猎豹形态",
             "[nostance:1]熊形态",
+            "[@player]回春术",
+            "[@player]愈合",
+            "[@player]生命绽放",
+            "[@player]迅捷治愈",
         },
         specialSpells = {
-            "/cancelaura [spec:4]猎豹形态\n/cast 万灵之召", -- 万灵之召
+            "/cancelaura [spec:4]猎豹形态\n/cast 万灵之召", -- 人形万灵
             "/castsequence reset=0.5 铁鬃,x", -- 铁鬃
         },
     },

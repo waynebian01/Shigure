@@ -27,6 +27,7 @@ Fuyutsui.ClassBlocks = {
                 "难度",
                 "施法技能",
                 "施法目标",
+                "公共冷却",
             },
             ["能量"] = {
                 "法力值",
@@ -42,9 +43,12 @@ Fuyutsui.ClassBlocks = {
                 "施法(正计时)",
                 "施法可打断",
                 "驱散类型",
+                "距离",
             },
             ["焦点"] = {
                 "施法技能",
+                "驱散类型",
+                "类型",
             },
             ["鼠标"] = {
                 "类型",
@@ -56,6 +60,19 @@ Fuyutsui.ClassBlocks = {
                 "施法可打断",
                 "引导",
                 "引导可打断",
+            },
+            ["首领1"] = {
+                "施法技能",
+                "生命值",
+                "能量值",
+                "引导",
+                "施法(倒计时)",
+            },
+            ["首领2"] = {
+                "施法技能",
+                "生命值",
+                "能量值",
+                "施法(倒计时)",
             },
         },
         auras = {
@@ -69,6 +86,9 @@ Fuyutsui.ClassBlocks = {
                 { name = "强效惩击", spellId = 1253725, maxApps = true, isPlayer = true, },
                 { name = "严酷戒律", spellId = 373183, maxApps = true, isPlayer = true, },
                 { name = "祸福相依", spellId = 390787, maxApps = true, isPlayer = true, },
+                { name = "黑暗转移", spellId = 1307795, isPlayer = true, },
+                { name = "争分夺秒", spellId = 390692, isPlayer = false, },
+                { name = "救赎", spellId = 194384, isPlayer = false, },
             },
             target = {
                 harmful = {
@@ -109,18 +129,31 @@ Fuyutsui.ClassBlocks = {
             { spellId = 586, name = "渐隐术" },
             { spellId = 10060, name = "能量灌注" },
             { spellId = 132157, name = "神圣新星" },
+            { spellId = 390632, name = "强化纯净术" },
+            { spellId = 373446, name = "通透影像" },
         },
         items = {
             [5512] = { name = "治疗石", isEquipped = false },
             [241288] = { name = "鲁莽药水", isEquipped = false },
+            [241300] = { name = "光注法力药水", isEquipped = false },
             [241301] = { name = "魔法药水", isEquipped = false },
             [241304] = { name = "治疗药水", isEquipped = false },
+            [270162] = { name = "盘魂者仪式容器", isEquipped = false },
+            [271884] = { name = "浓缩银月城生命药水", isEquipped = false },
         },
         group = {
             state = { "healthPercent", "role", "dispel", },
             aura = {
                 { name = "救赎", spellId = 194384, },
                 { name = "真言术：盾", spellIds = { 17, 1253593 }, },
+            },
+        },
+        nameplates = {
+            threat = false,
+            castSpell = true,
+            castCountdown = true,
+            auras = {
+                { name = "暗言术：痛", spellId = 589, isPlayer = false, },
             },
         },
     },
@@ -192,12 +225,14 @@ Fuyutsui.ClassBlocks = {
                 "施法(正计时)",
                 "引导",
                 "能量值",
+                "施法技能",
             },
             ["首领2"] = {
                 "施法(倒计时)",
                 "施法(正计时)",
                 "引导",
                 "能量值",
+                "施法技能",
             },
         },
         auras = {
@@ -248,6 +283,7 @@ Fuyutsui.ClassBlocks = {
             { spellId = 10060, name = "能量灌注" },
             { spellId = 357214, name = "飞翼打击" },
             { spellId = 132157, name = "神圣新星" },
+            { spellId = 390632, name = "强化纯净术" },
         },
         items = {
             [5512] = { name = "治疗石", isEquipped = false },
@@ -493,6 +529,9 @@ Fuyutsui.spellsList = {
     [357214]  = { index = 254, name = "飞翼打击" },
     [436344]  = { index = 255, name = "艾泽里特涌动" },
     [586] = { index = 41, name = "渐隐术" },
+    [17] = { index = 42, name = "真言术：盾" },
+    [390632] = { index = 43, name = "强化纯净术" },
+    [373446] = { index = 44, name = "通透影像" },
 }
 
 Fuyutsui.itemsList = {

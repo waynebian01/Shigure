@@ -41,7 +41,6 @@ Fuyutsui.ClassBlocks = {
                 "施法可打断",
                 "引导",
                 "引导可打断",
-
             },
             ["焦点"] = {
                 "施法技能",
@@ -50,7 +49,6 @@ Fuyutsui.ClassBlocks = {
                 "施法可打断",
                 "引导",
                 "引导可打断",
-
             },
             ["鼠标"] = {
                 "类型",
@@ -113,7 +111,6 @@ Fuyutsui.ClassBlocks = {
                 "施法可打断",
                 "引导",
                 "引导可打断",
-
             },
             ["焦点"] = {
                 "施法技能",
@@ -122,7 +119,6 @@ Fuyutsui.ClassBlocks = {
                 "施法可打断",
                 "引导",
                 "引导可打断",
-
             },
             ["鼠标"] = {
                 "类型",
@@ -182,7 +178,6 @@ Fuyutsui.ClassBlocks = {
                 "施法可打断",
                 "引导",
                 "引导可打断",
-
             },
             ["焦点"] = {
                 "施法技能",
@@ -191,7 +186,6 @@ Fuyutsui.ClassBlocks = {
                 "施法可打断",
                 "引导",
                 "引导可打断",
-
             },
             ["鼠标"] = {
                 "类型",
@@ -207,15 +201,15 @@ Fuyutsui.ClassBlocks = {
         },
         auras = {
             player = {
-                { name = "铁鬓", spellId = 192081, maxApps = true, isPlayer = true,},
-                { name = "化身：乌索克的守护者", spellId = 102558, isPlayer = true,},
-                { name = "星河守护者", spellId = 213708, isPlayer = true,},
+                { name = "铁鬓", spellId = 192081, maxApps = true, isPlayer = true, },
+                { name = "化身：乌索克的守护者", spellId = 102558, isPlayer = true, },
+                { name = "星河守护者", spellId = 213708, isPlayer = true, },
             },
             target = {
                 harmful = {
-                    { name = "月火术", spellId = 164812, isPlayer = true,},
-                    { name = "痛击", spellId = 192090, maxApps = true, isPlayer = true,},
-                    { name = "月光普照", spellId = 1270292, isPlayer = true,},
+                    { name = "月火术", spellId = 164812, isPlayer = true, },
+                    { name = "痛击", spellId = 192090, maxApps = true, isPlayer = true, },
+                    { name = "月光普照", spellId = 1270292, isPlayer = true, },
                 },
             },
         },
@@ -260,13 +254,18 @@ Fuyutsui.ClassBlocks = {
                 "首领战",
                 "难度",
                 "施法技能",
+                "施法目标",
             },
             ["特殊"] = {
                 "姿态",
+                "倒数",
             },
             ["能量"] = {
                 "法力值",
                 "连击点",
+            },
+            ["配置开关"] = {
+                "爆发开关",
             },
             ["目标"] = {
                 "施法技能",
@@ -275,6 +274,9 @@ Fuyutsui.ClassBlocks = {
                 "施法(倒计时)",
                 "施法(正计时)",
                 "施法可打断",
+            },
+            ["焦点"] = {
+                "施法技能",
             },
             ["鼠标"] = {
                 "类型",
@@ -287,8 +289,42 @@ Fuyutsui.ClassBlocks = {
                 "引导",
                 "引导可打断",
             },
-
-            ["焦点"] = { "施法技能" },
+            ["首领1"] = {
+                "引导",
+                "能量值",
+                "施法技能",
+                "施法(倒计时)",
+            },
+            ["首领2"] = {
+                "施法技能",
+                "施法(倒计时)",
+            },
+        },
+        auras = {
+            player = {
+                { name = "节能施法", spellId = 16870, isPlayer = true, },
+                { name = "生命绽放", spellId = 33763, maxApps = true, isPlayer = true, },
+                { name = "自然迅捷", spellId = 132158, isPlayer = true, },
+                { name = "过度生长", spellId = 1301989, isPlayer = true, },
+                { name = "回春术", spellId = 774, isPlayer = true, },
+                { name = "萌芽", spellId = 155777, isPlayer = true, },
+                { name = "愈合", spellId = 8936, isPlayer = true, },
+                { name = "野性成长", spellId = 48438, isPlayer = true, },
+                { name = "共生关系", spellId = 474754, isPlayer = false, },
+                { name = "丛林之魂", spellId = 114108, isPlayer = true, },
+                { name = "丰饶", spellId = 207640, isPlayer = true, },
+                { name = "化身", spellId = 117679, isPlayer = true, },
+                { name = "化身：生命之树", spellId = 33891, isPlayer = true, },
+                { name = "森林再生", spellId = 392360, maxApps = true, isPlayer = true, },
+                { name = "野性印记", spellId = 1126, isPlayer = false, },
+            },
+            target = {
+                harmful = {
+                    { name = "斜掠", spellId = 155722, isPlayer = true, },
+                    { name = "割裂", spellId = 1079, isPlayer = true, },
+                    { name = "月火术", spellId = 164812, isPlayer = false, },
+                },
+            },
         },
         spells = {
             { spellId = 22812, name = "树皮术" },
@@ -305,7 +341,19 @@ Fuyutsui.ClassBlocks = {
             { spellId = 1261867, name = "野性之心" },
         },
         group = {
-            state = { "healthPercent", "role" },
+            state = { "healthPercent", "role", "dispel", "class", },
+            aura = {
+                { name = "生命绽放", spellId = 33763, },
+                { name = "回春术", spellId = 774, },
+                { name = "萌芽", spellId = 155777, },
+                { name = "愈合", spellId = 8936, },
+                { name = "野性成长", spellId = 48438, },
+            },
+        },
+        nameplates = {
+            threat = false,
+            castSpell = true,
+            castCountdown = true,
         },
     },
 }
@@ -365,7 +413,6 @@ Fuyutsui.spellsList = {
     [441591]  = { index = 51, name = "毁灭" },
     [1253799] = { index = 52, name = "碎甲咆哮" },
     [6807]    = { index = 53, name = "重殴" },
-    [1261867] = { index = 54, name = "野性之心" },
     [93985]   = { index = 55, name = "迎头痛击" },
     [314330]  = { index = 56, name = "迎头痛击" },
     [192081]  = { index = 57, name = "铁鬃" },
@@ -428,6 +475,14 @@ Fuyutsui.spellsList = {
     [368970]  = { index = 253, name = "扫尾" },
     [357214]  = { index = 254, name = "飞翼打击" },
     [436344]  = { index = 255, name = "艾泽里特涌动" },
+    [474750] = { index = 69, name = "共生关系" },
+    [1261872] = { index = 70, name = "野性之心" },
+    [1261868] = { index = 71, name = "野性之心" },
+    [1261870] = { index = 72, name = "野性之心" },
+    [1261867] = { index = 54, name = "野性之心" },
+    [106898] = { index = 73, name = "狂奔怒吼" },
+    [117679] = { index = 74, name = "化身" },
+    [33891] = { index = 75, name = "化身：生命之树" },
 }
 
 Fuyutsui.itemsList = {

@@ -161,6 +161,8 @@ Fuyutsui.ClassBlocks = {
                 "队伍人数",
                 "首领战",
                 "难度",
+                "公共冷却",
+                "施法目标",
             },
             ["特殊"] = {
                 "自律",
@@ -195,6 +197,7 @@ Fuyutsui.ClassBlocks = {
                 "引导",
                 "引导可打断",
                 "距离",
+                "类型",
             },
             ["鼠标"] = {
                 "类型",
@@ -207,6 +210,11 @@ Fuyutsui.ClassBlocks = {
                 "引导",
                 "引导可打断",
             },
+            ["首领1"] = {
+                "生命值",
+                "施法技能",
+                "施法可打断",
+            },
         },
         auras = {
             player = {
@@ -216,6 +224,12 @@ Fuyutsui.ClassBlocks = {
                 { name = "奉献", spellId = 188370, isPlayer = true, },
                 { name = "圣言祭礼", spellId = 433550, isPlayer = true, },
                 { name = "虔诚光环", spellId = 135893, isPlayer = true, },
+                { name = "复仇之怒", spellId = 31884, isPlayer = true, },
+                { name = "戒卫", spellId = 389539, isPlayer = true, },
+                { name = "大十字军", spellId = 203527, isPlayer = true, },
+                { name = "神恩指引", spellId = 403521, isPlayer = true, },
+                { name = "炽热防御者", spellId = 31850, isPlayer = true, },
+                { name = "远古列王守卫", spellId = 86659, isPlayer = true, },
             },
         },
         spells = {
@@ -239,6 +253,15 @@ Fuyutsui.ClassBlocks = {
             { spellId = 1022, name = "保护祝福" },
             { spellId = 633, name = "圣疗术" },
             { spellId = 24275, name = "愤怒之锤" },
+            { spellId = 31850, name = "炽热防御者" },
+            { spellId = 86659, name = "远古列王守卫", charge = true },
+            { spellId = 1241413, name = "愤怒之锤", charge = true },
+            { spellId = 391054, name = "代祷" },
+            { spellId = 427453, name = "圣光之锤" },
+            { spellId = 31884, name = "复仇之怒" },
+            { spellId = 465, name = "虔诚光环" },
+            { spellId = 204018, name = "破咒祝福" },
+            { spellId = 433568, name = "圣言祭礼" },
         },
         items = {
             [5512] = { name = "治疗石", isEquipped = false },
@@ -248,6 +271,10 @@ Fuyutsui.ClassBlocks = {
         },
         group = {
             state = { "healthPercent", "role", },
+        },
+        nameplates = {
+            threat = true,
+            castSpell = false,
         },
     },
     [3] = {
@@ -435,6 +462,13 @@ Fuyutsui.spellsList = {
     [436344]  = { index = 255, name = "艾泽里特涌动" },
     [53563] = { index = 36, name = "圣光道标" },
     [393024] = { index = 37, name = "强化清洁术" },
+    [213644] = { index = 38, name = "清毒术" },
+    [31884] = { index = 39, name = "复仇之怒" },
+    [85673] = { index = 40, name = "荣耀圣令" },
+    [96231] = { index = 41, name = "责难" },
+    [465] = { index = 42, name = "虔诚光环" },
+    [432496] = { index = 43, name = "神圣壁垒" },
+    [432502] = { index = 44, name = "圣洁武器" },
 }
 
 Fuyutsui.itemsList = {

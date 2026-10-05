@@ -41,6 +41,7 @@ public sealed partial class StatusForm : Form
     private readonly Func<GameProfile> _resolveProfile;
     private const string AboutLogoResourcePath = "Assets.arasaka-icon-transparent.png";
     private const int SettingsContentWidth = 1200;
+    private const string NameplateCastCountdownColumnTitle = "施法";
     private const int AboutLogoSize = 220;
     private const float AboutLogoOpacity = 0.55F;
     private const int AboutScaleIconSize = 18;
@@ -590,29 +591,29 @@ public sealed partial class StatusForm : Form
             new UiTheme.ListColumn("类型", 58, 2000, FixedWidth: true, RemainingWidthWeight: 1),
             new UiTheme.ListColumn("值", 64, 2000, FixedWidth: true, RemainingWidthWeight: 1));
 
-        _partyList = UiTheme.CreateListView(Font, "status-party-v3",
-            new UiTheme.ListColumn("单位", 88, 120, FixedWidth: true),
-            new UiTheme.ListColumn("生命值", 72, 96),
-            new UiTheme.ListColumn("治疗吸收", 88, 112),
-            new UiTheme.ListColumn("职责", 64, 88),
+        _partyList = UiTheme.CreateListView(Font, "status-party-v4",
+            new UiTheme.ListColumn("单位", 64, 72, FixedWidth: true),
+            new UiTheme.ListColumn("生命值", 56, 64),
+            new UiTheme.ListColumn("治疗吸收", 72, 80),
+            new UiTheme.ListColumn("职责", 48, 56),
             new UiTheme.ListColumn("职业", 96, 160),
-            new UiTheme.ListColumn("驱散魔法", 80, 96),
-            new UiTheme.ListColumn("驱散诅咒", 80, 96),
-            new UiTheme.ListColumn("驱散疾病", 80, 96),
-            new UiTheme.ListColumn("驱散中毒", 80, 96),
-            new UiTheme.ListColumn("驱散流血", 80, 96),
+            new UiTheme.ListColumn("魔法", 40, 48),
+            new UiTheme.ListColumn("诅咒", 40, 48),
+            new UiTheme.ListColumn("疾病", 40, 48),
+            new UiTheme.ListColumn("中毒", 40, 48),
+            new UiTheme.ListColumn("流血", 40, 48),
             new UiTheme.ListColumn("光环 / 其他", 160, 1600, FillRemaining: true));
         _nameplateList = UiTheme.CreateListView(Font, "status-nameplates-v2",
-            new UiTheme.ListColumn("单位", 112, 140, FixedWidth: true),
-            new UiTheme.ListColumn("生命值", 72, 96),
-            new UiTheme.ListColumn("距离", 64, 88),
-            new UiTheme.ListColumn("战斗", 64, 88),
-            new UiTheme.ListColumn("TTD", 64, 88),
-            new UiTheme.ListColumn("仇恨值", 72, 96),
+            new UiTheme.ListColumn("单位", 88, 96, FixedWidth: true),
+            new UiTheme.ListColumn("生命值", 56, 64),
+            new UiTheme.ListColumn("距离", 40, 48),
+            new UiTheme.ListColumn("战斗", 40, 48),
+            new UiTheme.ListColumn("TTD", 40, 48),
+            new UiTheme.ListColumn("仇恨值", 48, 56),
             new UiTheme.ListColumn("施法技能", 88, 120),
-            new UiTheme.ListColumn(NameplateStateLayout.CastCountdownField, 120, 160),
-            new UiTheme.ListColumn("强化锁喉", 88, 112),
-            new UiTheme.ListColumn("光环 / 其他", 160, 1600, FillRemaining: true));
+            new UiTheme.ListColumn(NameplateCastCountdownColumnTitle, 44, 48),
+            new UiTheme.ListColumn("强化锁喉", 72, 80),
+            new UiTheme.ListColumn("光环 / 其他", 96, 1600, FillRemaining: true));
         UiTheme.SetListViewColumnVisible(_nameplateList, NameplateStateLayout.ImprovedGarroteField, false);
         _unitInfoList = UiTheme.CreateListView(Font, "status-unit-info",
             new UiTheme.ListColumn("名称", 180, 320),
@@ -3162,7 +3163,8 @@ public sealed partial class StatusForm : Form
         string emptyText = "-")
     {
         var fields = listView.Columns.Cast<ColumnHeader>().Skip(1).SkipLast(1)
-            .Select(column => column.Text).ToArray();
+            .Select(column => isNameplate && column.Text == NameplateCastCountdownColumnTitle
+                ? NameplateStateLayout.CastCountdownField : column.Text).ToArray();
         var cells = new List<string> { unit };
         foreach (var field in fields)
         {
@@ -3175,7 +3177,7 @@ public sealed partial class StatusForm : Form
         // 固定状态逐列显示；同一姓名板光环的别名只保留名称那份。
         var details = data?.Where(pair => !fields.Contains(pair.Key, StringComparer.Ordinal)
             && pair.Key != "存在"
-            && (isNameplate || pair.Key != "驱散")
+            && (isNameplate || pair.Key != "驱散" && !GroupDispelCatalog.IsLegacyFieldName(pair.Key))
             && (!isNameplate || (!pair.Key.StartsWith("光环", StringComparison.Ordinal)
                 && !SpellFieldKey.TryParseAuraMember(pair.Key, out _, out _))))
             .Select(pair => $"{DisplayPartyFieldName(pair.Key)}: {DisplayPartyFieldValue(pair.Key, pair.Value)}")
@@ -3184,8 +3186,8 @@ public sealed partial class StatusForm : Form
         var row = new ListViewItem(cells.ToArray());
         row.ToolTipText = string.Join("  ", listView.Columns.Cast<ColumnHeader>()
             .Where(column => column.Width > 0)
-            .Select(column => column.Text == NameplateStateLayout.CastCountdownField
-                ? $"{column.Text}: {cells[column.Index]}（单位 0.1 秒，10 ≈ 1 秒）"
+            .Select(column => isNameplate && column.Text == NameplateCastCountdownColumnTitle
+                ? $"{NameplateStateLayout.CastCountdownField}: {cells[column.Index]}（单位 0.1 秒，10 ≈ 1 秒）"
                 : $"{column.Text}: {cells[column.Index]}"));
         return row;
     }

@@ -255,9 +255,13 @@ public sealed class StateBuilder : IRuntimeStateBuilder
                 }
 
                 var value = ConvertRawValue(raw, JsonHelpers.GetString(JsonHelpers.Get(field, "type")));
-                sub[fieldName] = value;
+                sub[GroupDispelCatalog.NormalizeFieldName(fieldName)] = value;
                 AddAuraAliases(sub, field, value, includeScope: false);
             }
+
+            foreach (var entry in GroupDispelCatalog.Entries)
+                if (sub.TryGetValue(entry.FieldName, out var duration))
+                    sub[entry.LegacyFieldName] = duration;
 
             if (GroupDispelCatalog.Entries.Any(entry => sub.ContainsKey(entry.FieldName)))
                 sub["驱散"] = GroupDispelCatalog.ReadLegacyType(sub);

@@ -371,12 +371,14 @@ public sealed class ConditionFieldCatalog
                 continue;
             }
 
-            if (node is JsonObject field && field.ContainsKey("step") && seen.Add(key))
+            var fieldName = GroupDispelCatalog.NormalizeFieldName(key);
+            if (node is JsonObject field && field.ContainsKey("step") && seen.Add(fieldName))
             {
-                var displayName = ReadDisplayName(field) ?? key;
+                var displayName = GroupDispelCatalog.Entries.Any(entry => entry.FieldName == fieldName)
+                    ? fieldName : ReadDisplayName(field) ?? key;
                 var spellId = ReadSpellId(field);
                 fields.Add(new ConditionField(
-                    key,
+                    fieldName,
                     spellId is null ? displayName : $"{displayName} / {spellId}",
                     ReadType(field)));
             }
@@ -385,6 +387,10 @@ public sealed class ConditionFieldCatalog
         // 旧驱散类型只由新时间字段推导，不占像素，供旧模块文本继续解析。
         if (includeLegacyDispel && GroupDispelCatalog.Entries.Any(entry => seen.Contains(entry.FieldName)) && seen.Add("驱散"))
             fields.Add(new ConditionField("驱散", "驱散（旧类型编号）", ConditionFieldType.Int));
+
+        if (includeLegacyDispel)
+            foreach (var entry in GroupDispelCatalog.Entries.Where(entry => seen.Contains(entry.FieldName)))
+                fields.Add(new ConditionField(entry.LegacyFieldName, entry.FieldName, ConditionFieldType.Int));
 
         // 治疗吸收由网格扫描注入，不在 config 的 group 字段里声明。
         if (seen.Add("治疗吸收"))

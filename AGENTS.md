@@ -18,7 +18,7 @@ dotnet run --project .\Shigure.csproj -- --toggle XBUTTON2 --mode switch --logic
 
 - 目标框架 `net10.0-windows`，`WinExe`，`Nullable`/`ImplicitUsings` 均 enable。
 - **没有测试项目**：验证 = 能编译 + 实际运行点开「设置」走查。`dotnet build` 干净通过（0 警告 0 错误）是基线要求。
-- 启动参数见 [README.md](README.md#运行)（`--toggle/--mode/--logic-ms/--render-ms`），解析在 [App/AppOptions.cs](App/AppOptions.cs)。目标进程名来自 `game_profiles.json`。
+- 启动参数见 [README.md](README.md#运行)（`--toggle/--mode/--logic-ms/--render-ms`），解析在 [App/AppOptions.cs](App/AppOptions.cs)。`game_profiles.json` 只映射版本与插件；目标游戏以通用页保存的完整 exe 路径识别。
 
 程序直接从当前 EXE 所在目录运行；`AppPaths.BaseDirectory` 即 `AppContext.BaseDirectory`，配置、按键映射和插件源码均从该目录读取；模块与 UI 缓存位于 `AppPaths.UserDataDirectory`（`{MyDocuments}/{程序名}`）下。
 
@@ -57,7 +57,7 @@ Forever/       永久服插件 Shingen 与 config/keymap；构建/发布时完�
 Retail/config/ Retail/keymap/、Forever/config/ Forever/keymap/  运行时 JSON 数据(构建时复制到输出)
 module   运行时模块数据位于我的文档目录 {MyDocuments}/Shigure/module(启动时自动创建, 不随构建复制)
 cache    UI 缓存位于我的文档目录 {MyDocuments}/Shigure/cache(首次写入时自动创建)
-game_profiles.json 游戏进程、版本与插件映射；构建时复制，启动时读取
+game_profiles.json 游戏版本与插件映射；构建时复制，启动时读取（兼容忽略旧 process 字段）
 ```
 
 ## 模块解析（改逻辑前必读）
@@ -76,7 +76,7 @@ game_profiles.json 游戏进程、版本与插件映射；构建时复制，启�
 
 ### 定位与部署
 
-[Infrastructure/WowProcessLocator.cs](Infrastructure/WowProcessLocator.cs) 使用 `game_profiles.json` 的进程名，按 Windows Z 顺序选择最靠前的候选进程可见顶层窗口；部署时另查找映射进程的全部运行路径，不要求目标位于前台。[Infrastructure/WowAddonLocator.cs](Infrastructure/WowAddonLocator.cs) 由进程路径定位预期的 `Interface\AddOns`，即使插件尚未安装也能返回部署位置。[Infrastructure/FuyutsuiAddonSyncService.cs](Infrastructure/FuyutsuiAddonSyncService.cs) 递归使用 SHA-256 比较项目文件与各游戏目录，只复制缺失或不同的文件并保留游戏额外文件；也支持保存后的单文件同步。找不到游戏或启动同步失败不阻止程序运行。
+[Infrastructure/GameExecutableBindings.cs](Infrastructure/GameExecutableBindings.cs) 共享通用页保存的两套 exe 路径，以完整路径规范化后忽略大小写匹配；路径冲突时暂停版本识别和部署。[Infrastructure/WowProcessLocator.cs](Infrastructure/WowProcessLocator.cs) 按 Windows Z 顺序选择最靠前的已匹配可见顶层窗口；文件名仅用于缩小枚举范围，不能决定版本。运行时定位器绑定创建时的版本和路径，路径变更后旧绑定失效，截图与按键发送复用相同匹配。[Infrastructure/WowAddonLocator.cs](Infrastructure/WowAddonLocator.cs) 由所选 exe 路径定位同级的 `Interface\AddOns`，即使插件尚未安装也能返回部署位置；不得向父目录回溯到共享安装根目录。[Infrastructure/FuyutsuiAddonSyncService.cs](Infrastructure/FuyutsuiAddonSyncService.cs) 仅部署到当前版本所选路径，不扩展到其他同名进程；游戏未运行也可部署。递归使用 SHA-256 比较项目与游戏文件，只复制缺失或不同的文件并保留游戏额外文件；也支持保存后的单文件同步。路径不可用或启动同步失败不阻止程序运行。
 
 ### Lua 解析
 

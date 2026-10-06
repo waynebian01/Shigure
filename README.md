@@ -109,7 +109,7 @@ dotnet run --project .\Shigure.csproj
 dotnet run --project .\Shigure.csproj -- --toggle XBUTTON2 --mode switch --logic-ms 100 --render-ms 100
 ```
 
-- `game_profiles.json`：为每个游戏进程指定插件。当前 `Wow`、`WowT` 使用 `Fuyutsui`，`WowClassic` 使用 `Shingen`；进程名可带 `.exe`。程序选择 Windows Z 顺序中最靠前的候选可见窗口，前台游戏改变后会切换运行所用插件、配置、键位和模块。缺少此文件时启动会报错。
+- `game_profiles.json`：为每个游戏版本指定插件。通用页所选游戏程序的完整路径决定运行版本，即使两套客户端都叫 `Wow.exe` 也能区分。程序选择 Windows Z 顺序中最靠前的已匹配可见窗口，游戏窗口改变后会切换运行所用插件、配置、键位和模块。缺少此文件时启动会报错。
 - `--toggle`：触发键，默认 `XBUTTON2`。
 - `--mode`：发送模式，支持 `switch`、`click`、`hold`。
 - `--logic-ms`：初始逻辑计算间隔，默认 `100` ms，最小 `50` ms；通用页保存的性能设置会在后续启动时覆盖它。
@@ -153,19 +153,20 @@ Tools\                  辅助脚本
 
 ## 游戏版本与配置同步
 
-在 `game_profiles.json` 中按进程填写版本目录和插件目录名，例如：
+在 `game_profiles.json` 中按版本填写版本目录和插件目录名，例如（旧文件的 `process` 字段会被忽略，同版本的相同插件映射会合并）：
 
 ```json
 {
   "profiles": [
-    { "process": "Wow", "version": "Retail", "addon": "Fuyutsui" },
-    { "process": "WowT", "version": "Retail", "addon": "Fuyutsui" },
-    { "process": "WowClassic", "version": "Forever", "addon": "Shingen" }
+    { "version": "Retail", "addon": "Fuyutsui" },
+    { "version": "Forever", "addon": "Shingen" }
   ]
 }
 ```
 
-前台游戏为 `WowClassic` 时，运行逻辑使用 `Forever/Shingen/` 的配置、键位和模块。通用页顶部可选择要编辑的版本，选择会保留到下次启动；按“自动”让编辑界面跟随前台游戏。手动切换界面不会改变运行版本，也不会触发部署或重启。切换前如有未保存的配置、宏或模块，先保存或放弃修改；前台游戏变化仍可切换运行版本。修改 `game_profiles.json` 后重启 Shigure。`dotnet run --project .\Shigure.csproj -- --update-config` 与 `--update-keymap` 会分别为两套插件生成 JSON。
+在通用页为“魔兽世界-正式服”和“魔兽世界-无限服”分别选择游戏程序。实际进程路径与无限服所选路径一致时，运行逻辑使用 `Forever/Shingen/` 的配置、键位和模块；正式服对应 `Retail/Fuyutsui/`。完整路径规范化后忽略大小写比较，不按进程名或目录名称猜测版本。未选择、路径失效、进程路径无法读取或没有匹配窗口时等待游戏。两个版本不能选择同一路径；旧缓存中的路径若冲突，会提示并暂停版本识别和插件部署，直到重新选择。
+
+通用页顶部可选择要编辑的版本，选择会保留到下次启动；按“自动”让编辑界面跟随已识别的运行版本。手动切换界面不会改变运行版本，也不会触发部署或重启。切换前如有未保存的配置、宏或模块，先保存或放弃修改；游戏窗口变化仍可切换运行版本。修改 `game_profiles.json` 后重启 Shigure。`dotnet run --project .\Shigure.csproj -- --update-config` 与 `--update-keymap` 会分别为两套插件生成 JSON。
 
 项目中的插件目录是各自版本的权威源。`通用` 页的“更新配置”会读取界面所选版本：
 
@@ -174,7 +175,9 @@ Tools\                  辅助脚本
 - `Forever/Shingen/class/*.lua` → `Forever/config/*.json`
 - `Forever/Shingen/core/classmacros.lua` → `Forever/keymap/*.json`
 
-如果运行版本目录的 `config/` 或 `keymap/` 缺失或文件不完整，启动 Shigure 时会先从对应插件源文件自动补齐；新建 `config/` 时也会生成运行时必需的 `common.json`。手动保存或更新时使用界面所选版本，刷新对应模块编辑器的字段/keymap；仅当它也是运行版本时重启运行循环。通用页“游戏版本”卡片可分别选择对应版本的游戏 `.exe` 文件，只检查扩展名和文件是否存在，不限制文件名；路径会保留到下次启动，只选择路径不会立即同步。游戏运行时的进程识别仍使用 `game_profiles.json` 中的 `process`。插件会同步到所选目录，以及所有正在运行且映射到该版本的游戏目录，重复目录只同步一次；例如 `Wow` 与 `WowT` 同时运行时，Retail/Fuyutsui 会部署到两处不同目录。所选游戏未运行时仍可点击“更新配置”部署。已保存路径失效时会提示并跳过该目录，其他目录继续同步。未选择路径且未找到对应游戏时保留本地保存结果。部署只复制缺失或 SHA-256 不同的文件，保留游戏目录中的额外文件。
+如果运行版本目录的 `config/` 或 `keymap/` 缺失或文件不完整，启动 Shigure 时会先从对应插件源文件自动补齐；新建 `config/` 时也会生成运行时必需的 `common.json`。手动保存或更新时使用界面所选版本，刷新对应模块编辑器的字段/keymap；仅当它也是运行版本时重启运行循环。选择游戏 `.exe` 时检查扩展名和文件是否存在，不限制文件名；现有路径缓存继续使用，重新选择后立即重新检查运行目标。仅选择路径不主动同步；如果因此识别到运行版本变化，则执行正常的版本激活与同步流程。
+
+插件只同步到当前版本所选 exe 同级的 `Interface/AddOns/插件名`，不向父目录回溯，也不会把其他同名进程的目录加入部署目标。所选游戏未运行时仍可点击“更新配置”部署。路径未选择、失效或两个版本路径冲突时提示并跳过游戏部署，本地保存结果保留。部署只复制缺失或 SHA-256 不同的文件，保留游戏目录中的额外文件。
 
 `配置` 页和 `宏` 页保存时先写入项目内 Lua、重新生成 config/keymap，再只把当前修改的 Lua 文件部署到游戏目录。找不到目标目录或目标文件不可写时，本地保存不会回滚；界面和日志会提示游戏同步未完成，可选择游戏程序路径后再次点击“更新配置”。
 

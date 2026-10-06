@@ -1,12 +1,10 @@
 {
   "profiles": [
     {
-      "process": "Wow",
       "version": "Retail",
       "addon": "Fuyutsui"
     },
     {
-      "process": "WowT",
       "version": "Forever",
       "addon": "Shingen"
     }

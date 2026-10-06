@@ -119,6 +119,7 @@ public sealed class MainForm : Form, IMessageFilter
     private readonly ITriggerKeyState _triggerKeyState;
     private readonly WowProcessLocator _processLocator;
     private readonly GameProfiles _profiles;
+    private readonly GameExecutableBindings _executableBindings;
     private readonly IReadOnlyDictionary<string, GameWorkspace> _workspaces;
     private readonly ActiveGameProfile _activeProfile;
     private GameProfile _editorProfile;
@@ -148,7 +149,7 @@ public sealed class MainForm : Form, IMessageFilter
     private bool _exitRequested;
     private bool _shutdownStarted;
     private bool _shutdownCompleted;
-    private string? _lastFrontmostProcessName;
+    private LocatedGameWindow? _lastFrontmostGame;
     private bool _switchingProfile;
     private int _editorSaveInProgress;
     private string? _manualAddonName;
@@ -173,6 +174,8 @@ public sealed class MainForm : Form, IMessageFilter
         WowProcessLocator processLocator,
         GameProfiles profiles,
         ActiveGameProfile activeProfile,
+        GameExecutableBindings executableBindings,
+        UiCacheState uiCache,
         RuntimeSessionCoordinator runtimeSession)
     {
         _initialOptions = initialOptions;
@@ -181,9 +184,10 @@ public sealed class MainForm : Form, IMessageFilter
         _triggerKeyState = triggerKeyState;
         _processLocator = processLocator;
         _profiles = profiles;
+        _executableBindings = executableBindings;
         _activeProfile = activeProfile;
         _runtimeSession = runtimeSession;
-        _uiCache = UiCacheStore.Load();
+        _uiCache = uiCache;
         _manualAddonName = _profiles.FindByAddon(_uiCache.SelectedAddonName)?.AddonName;
         _editorProfile = _profiles.FindByAddon(_manualAddonName) ?? _activeProfile.Current;
         _statusForm = new StatusForm(() => _activeProfile.Current);
@@ -199,7 +203,7 @@ public sealed class MainForm : Form, IMessageFilter
                 UiTheme.ApplyFallbackRoundedCorners(this);
             }
         };
-        _lastFrontmostProcessName = _processLocator.FindFrontmostProcessName();
+        _lastFrontmostGame = _processLocator.FindFrontmostGame();
         _wowProcessMonitorTimer = new System.Windows.Forms.Timer
         {
             Interval = WowProcessMonitorIntervalMs
@@ -268,6 +272,11 @@ public sealed class MainForm : Form, IMessageFilter
     protected override async void OnShown(EventArgs e)
     {
         base.OnShown(e);
+        if (_executableBindings.ConflictError is { } conflict)
+        {
+            AppendLog(conflict);
+            MessageBox.Show(this, conflict, "游戏程序路径冲突", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        }
         if (ReadCaptureMethod() == CaptureMethod.WindowsGraphicsCapture)
         {
             await EnsureBorderlessCaptureAccessAsync();
@@ -561,13 +570,24 @@ public sealed class MainForm : Form, IMessageFilter
     }
 
     private async void HandleWowProcessMonitorTick(object? sender, EventArgs e)
+        => await RefreshRuntimeProfileAsync();
+
+    private async Task RefreshRuntimeProfileAsync()
     {
-        var processName = _processLocator.FindFrontmostProcessName();
         if (_shutdownStarted || _switchingProfile)
         {
             return;
         }
-        if (string.Equals(processName, _lastFrontmostProcessName, StringComparison.OrdinalIgnoreCase))
+        var game = _processLocator.FindFrontmostGame();
+        UpdateGamePathLabels();
+        if (game is null)
+        {
+            _lastFrontmostGame = null;
+            UpdateProfileButtons();
+        }
+        if (game is null || (_lastFrontmostGame is not null
+            && SameAddon(game.Profile, _activeProfile.Current)
+            && GameExecutablePath.Equals(game.ExecutablePath, _activeProfile.ExecutablePath)))
         {
             if (_manualAddonName is null && !SameAddon(_editorProfile, _activeProfile.Current)
                 && !HasUnsavedProfileEdits())
@@ -578,25 +598,16 @@ public sealed class MainForm : Form, IMessageFilter
                 _ = TryResumeDeferredImportAsync(_editorProfile);
             return;
         }
-        if (processName is null)
-        {
-            _lastFrontmostProcessName = null;
-            return;
-        }
-        var profile = _profiles.Find(processName);
-        if (profile is null)
-        {
-            return;
-        }
+        var profile = game.Profile;
         _switchingProfile = true;
         UpdateProfileButtons();
         try
         {
-            AppendLog($"检测到前台游戏 {profile.ProcessName} / {profile.AddonName}");
-            await ActivateRuntimeProfileAsync(profile);
+            AppendLog($"检测到前台游戏 {profile.Version} / {profile.AddonName}: {game.ExecutablePath}");
+            await ActivateRuntimeProfileAsync(profile, game.ExecutablePath);
             if (!_shutdownStarted)
             {
-                _lastFrontmostProcessName = processName;
+                _lastFrontmostGame = game;
                 if (_manualAddonName is null && !HasUnsavedProfileEdits())
                     SwitchEditorProfile(profile);
             }
@@ -609,7 +620,7 @@ public sealed class MainForm : Form, IMessageFilter
         {
             if (!_shutdownStarted)
             {
-                AppendLog($"{processName} 运行版本切换失败: {ex.Message}");
+                AppendLog($"{profile.Version} 运行版本切换失败: {ex.Message}");
             }
         }
         finally
@@ -623,9 +634,10 @@ public sealed class MainForm : Form, IMessageFilter
         => _classConfigEditor.HasUnsavedChanges || _classMacrosEditor.HasUnsavedChanges
             || _moduleEditor.HasUnsavedChanges || _editorSaveInProgress > 0;
 
-    private async Task ActivateRuntimeProfileAsync(GameProfile profile)
+    private async Task ActivateRuntimeProfileAsync(GameProfile profile, string executablePath)
     {
-        var changed = !string.Equals(profile.ProcessName, _activeProfile.Current.ProcessName, StringComparison.OrdinalIgnoreCase);
+        var changed = !SameAddon(profile, _activeProfile.Current)
+            || !GameExecutablePath.Equals(executablePath, _activeProfile.ExecutablePath);
         if (!changed)
         {
             if (!_runtimeSession.IsRunning && !_shutdownStarted) await StartRuntimeAsync();
@@ -636,6 +648,7 @@ public sealed class MainForm : Form, IMessageFilter
         catch { /* 之前的调用方已收到配置更新错误。 */ }
         await _runtimeSession.StopAsync();
         _activeProfile.Current = profile;
+        _activeProfile.ExecutablePath = executablePath;
         _lastSnapshot = null;
         if (addonChanged)
         {
@@ -651,7 +664,7 @@ public sealed class MainForm : Form, IMessageFilter
         await GenerateRuntimeDataAtStartupIfMissingAsync(profile);
         if (addonChanged || !Workspace(profile).HasValidatedModules)
             await ImportModuleDependenciesAsync(profile, reloadStore: true, showFeedback: false);
-        await QueueProjectConfigUpdateAsync(profile, savedAddonFilePath: null);
+        if (addonChanged) await QueueProjectConfigUpdateAsync(profile, savedAddonFilePath: null);
         if (!_shutdownStarted) await StartRuntimeAsync();
         RefreshModuleSelector(_lastSnapshot, forceRefresh: true);
         RefreshDefaultModuleSelector();
@@ -737,7 +750,11 @@ public sealed class MainForm : Form, IMessageFilter
             return;
         }
         var runtime = _activeProfile.Current;
-        _profileStatusLabel.Text = $"运行：{runtime.ProcessName} / {runtime.AddonName}；" +
+        var runtimeText = _lastFrontmostGame is null
+            ? "等待所选游戏程序"
+            : $"{runtime.Version} / {runtime.AddonName}";
+        if (_executableBindings.ConflictError is not null) runtimeText = "等待修正游戏路径冲突";
+        _profileStatusLabel.Text = $"运行：{runtimeText}；" +
             $"界面：{_editorProfile.Version} / {_editorProfile.AddonName}（" +
             (_manualAddonName is null ? "自动跟随" : "手动查看") + "）";
         _automaticProfileButton.Enabled = !_switchingProfile;
@@ -763,9 +780,14 @@ public sealed class MainForm : Form, IMessageFilter
 
     private void UpdateGamePathLabel(Label label, string? selectedPath)
     {
-        if (string.IsNullOrWhiteSpace(selectedPath))
+        if (_executableBindings.ConflictError is not null)
         {
-            label.Text = "未选择；运行中的对应客户端仍会自动同步";
+            label.Text = $"{selectedPath}（两个版本路径相同，请重新选择）";
+            label.ForeColor = UiTheme.Warning;
+        }
+        else if (string.IsNullOrWhiteSpace(selectedPath))
+        {
+            label.Text = "未选择；请选择游戏程序以识别版本并部署插件";
             label.ForeColor = UiTheme.Muted;
         }
         else if (GameExecutablePath.TryValidate(selectedPath,
@@ -783,8 +805,9 @@ public sealed class MainForm : Form, IMessageFilter
         _settingsToolTip.SetToolTip(label, label.Text);
     }
 
-    private void SelectGameExecutablePath(string version)
+    private async Task SelectGameExecutablePathAsync(string version)
     {
+        if (_shutdownStarted || _switchingProfile) return;
         var selectedPath = SelectedGameExecutablePath(version);
         using var dialog = new OpenFileDialog
         {
@@ -811,19 +834,54 @@ public sealed class MainForm : Form, IMessageFilter
             return;
         }
 
+        var otherVersion = version.Equals("Retail", StringComparison.OrdinalIgnoreCase) ? "Forever" : "Retail";
+        if (GameExecutablePath.Equals(fullPath, SelectedGameExecutablePath(otherVersion)))
+        {
+            MessageBox.Show(_statusForm, "此游戏程序已分配给另一个版本，请选择不同路径。", "游戏程序路径冲突",
+                MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return;
+        }
+
         if (version.Equals("Retail", StringComparison.OrdinalIgnoreCase))
             _uiCache.RetailGameExecutablePath = fullPath;
         else
             _uiCache.ForeverGameExecutablePath = fullPath;
+        _executableBindings.Update(_uiCache.RetailGameExecutablePath, _uiCache.ForeverGameExecutablePath);
         SaveUiCache();
         UpdateGamePathLabels();
+        await RefreshRuntimeProfileAsync();
+        // 新路径尚未运行时也替换当前版本的绑定，旧会话通过协调器完整收尾。
+        if (!_shutdownStarted && !_switchingProfile
+            && version.Equals(_activeProfile.Current.Version, StringComparison.OrdinalIgnoreCase)
+            && !GameExecutablePath.Equals(fullPath, _activeProfile.ExecutablePath))
+        {
+            _switchingProfile = true;
+            UpdateProfileButtons();
+            try
+            {
+                try { await WaitForPendingConfigUpdatesAsync(); }
+                catch { /* 之前的调用方已收到配置更新错误。 */ }
+                await _runtimeSession.StopAsync();
+                _activeProfile.ExecutablePath = fullPath;
+                _lastSnapshot = null;
+                if (!_shutdownStarted) await StartRuntimeAsync();
+            }
+            catch (Exception ex)
+            {
+                if (!_shutdownStarted) AppendLog($"游戏路径切换失败: {ex.Message}");
+            }
+            finally
+            {
+                _switchingProfile = false;
+                UpdateProfileButtons();
+            }
+        }
     }
 
     private FuyutsuiAddonSyncService CreateAddonSyncService(GameProfile profile)
-        => new(profile.AddonRoot, _processLocator,
-            _profiles.FindAllByAddon(profile.AddonName).Select(item => item.ProcessName).ToArray(),
-            SelectedGameExecutablePath(profile.Version),
-            deployInterfaceIcons: profile.Version.Equals("Retail", StringComparison.OrdinalIgnoreCase));
+        => new(profile.AddonRoot, _executableBindings.GetSelectedPath(profile),
+            deployInterfaceIcons: profile.Version.Equals("Retail", StringComparison.OrdinalIgnoreCase),
+            selectionError: _executableBindings.ConflictError);
 
     private GameWorkspace Workspace(GameProfile profile) => _workspaces[profile.AddonName];
 
@@ -1471,7 +1529,7 @@ public sealed class MainForm : Form, IMessageFilter
                 ? "Retail × Fuyutsui"
                 : profile.AddonName.Equals("Shingen", StringComparison.OrdinalIgnoreCase)
                     ? "Forever × Shingen"
-                    : $"{profile.ProcessName} · {profile.AddonName}";
+                    : $"{profile.Version} · {profile.AddonName}";
             var button = UiTheme.CreateButton(
                 buttonText,
                 UiTheme.ButtonKind.Secondary);
@@ -1485,7 +1543,7 @@ public sealed class MainForm : Form, IMessageFilter
             var actions = CreateActionsHost();
             var button = UiTheme.CreateButton("选择程序", UiTheme.ButtonKind.Secondary);
             SizeActionControl(button, primaryControlWidth);
-            button.Click += (_, _) => SelectGameExecutablePath(version);
+            button.Click += async (_, _) => await SelectGameExecutablePathAsync(version);
             actions.Controls.Add(button);
             return actions;
         }
@@ -2674,7 +2732,7 @@ public sealed class MainForm : Form, IMessageFilter
         SetRuntimeControls(running: true);
         AppendLog(
             $"运行已{(restart ? "重启" : "启动")}: " +
-            $"{_processLocator.DescribeConfiguredProcesses()} / {options.ToggleKey} / {ModeLabel(options.Mode)} / " +
+            $"{_processLocator.DescribeConfiguredPaths()} / {options.ToggleKey} / {ModeLabel(options.Mode)} / " +
             $"{CaptureMethodLabel(options.CaptureMethod)} / " +
             $"扫描 {options.ScanInterval.TotalMilliseconds:0} ms / " +
             $"计算 {options.LogicInterval.TotalMilliseconds:0} ms");

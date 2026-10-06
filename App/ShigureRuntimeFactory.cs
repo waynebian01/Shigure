@@ -34,7 +34,7 @@ internal sealed class ShigureRuntimeFactory : IShigureRuntimeFactory
         var profile = _activeProfile.Current;
         var config = ConfigService.LoadFromBaseDirectory(profile.RuntimeDirectory);
         var keymap = new KeymapService(profile.RuntimeDirectory, config, profile.AddonRoot);
-        var processLocator = _processLocator.ForProcess(profile.ProcessName);
+        var processLocator = _processLocator.ForProfile(profile, _activeProfile.ExecutablePath);
 
         return new ShigureRuntime(
             options,

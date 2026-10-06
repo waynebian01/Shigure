@@ -3,7 +3,7 @@ using System.Security.Cryptography;
 namespace Shigure;
 
 /// <summary>
-/// 将项目插件部署到用户选择的目录及映射的所有正在运行的游戏目录。项目目录始终是权威源。
+/// 将项目插件部署到当前版本所选游戏路径。项目目录始终是权威源。
 /// </summary>
 internal sealed class FuyutsuiAddonSyncService
 {
@@ -13,22 +13,20 @@ internal sealed class FuyutsuiAddonSyncService
         "INV12_Ability_Rogue_Garrote_Empowered.tga",
     ];
     private readonly string _sourceRoot;
-    private readonly WowProcessLocator _processLocator;
-    private readonly IReadOnlyList<string> _processNames;
     private readonly string _addonName;
     private readonly string? _selectedExecutablePath;
     private readonly bool _deployInterfaceIcons;
+    private readonly string? _selectionError;
 
     public FuyutsuiAddonSyncService(
-        string sourceRoot, WowProcessLocator processLocator, IReadOnlyList<string> processNames,
-        string? selectedExecutablePath, bool deployInterfaceIcons)
+        string sourceRoot, string? selectedExecutablePath, bool deployInterfaceIcons,
+        string? selectionError = null)
     {
         _sourceRoot = Path.GetFullPath(sourceRoot);
-        _processLocator = processLocator;
-        _processNames = processNames;
         _addonName = Path.GetFileName(_sourceRoot);
         _selectedExecutablePath = selectedExecutablePath;
         _deployInterfaceIcons = deployInterfaceIcons;
+        _selectionError = selectionError;
     }
 
     public string SourceRoot => _sourceRoot;
@@ -106,37 +104,14 @@ internal sealed class FuyutsuiAddonSyncService
 
     private (IReadOnlyList<string> Targets, IReadOnlyList<string> Warnings) ResolveTargetRoots()
     {
-        var roots = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        var warnings = new List<string>();
-        if (!string.IsNullOrWhiteSpace(_selectedExecutablePath))
-        {
-            if (GameExecutablePath.TryValidate(_selectedExecutablePath,
-                    out var selectedPath, out var error))
-            {
-                var selectedAddOnsDirectory = WowAddonLocator.FindAddOnsDirectoryFromProcessPath(selectedPath);
-                if (!string.IsNullOrWhiteSpace(selectedAddOnsDirectory))
-                {
-                    roots.Add(Path.Combine(selectedAddOnsDirectory, _addonName));
-                }
-            }
-            else
-            {
-                warnings.Add($"已保存的游戏程序路径不可用：{error}");
-            }
-        }
+        if (_selectionError is not null) return ([], [_selectionError]);
+        if (!GameExecutablePath.TryValidate(_selectedExecutablePath, out var selectedPath, out var error))
+            return ([], [$"游戏插件同步已跳过：{error}"]);
 
-        foreach (var processName in _processNames)
-        {
-            foreach (var processPath in _processLocator.FindRunningProcessPaths(processName))
-            {
-                var addOnsDirectory = WowAddonLocator.FindAddOnsDirectoryFromProcessPath(processPath);
-                if (!string.IsNullOrWhiteSpace(addOnsDirectory))
-                {
-                    roots.Add(Path.Combine(addOnsDirectory, _addonName));
-                }
-            }
-        }
-        return (roots.ToArray(), warnings);
+        var addOnsDirectory = WowAddonLocator.FindAddOnsDirectoryFromProcessPath(selectedPath);
+        return string.IsNullOrWhiteSpace(addOnsDirectory)
+            ? ([], ["无法从所选游戏程序定位插件目录。"])
+            : ([Path.Combine(addOnsDirectory, _addonName)], []);
     }
 
     private static void SynchronizeCore(

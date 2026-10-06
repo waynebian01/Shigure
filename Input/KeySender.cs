@@ -40,7 +40,7 @@ public sealed class KeySender : IRuntimeKeyOutput
         var hwnd = _processLocator.FindFrontmostWindow();
         if (hwnd == 0)
         {
-            return Fail($"未找到目标进程的可见窗口（game_profiles.json: {_processLocator.DescribeConfiguredProcesses()}）");
+            return Fail($"等待所选游戏程序的可见窗口（{_processLocator.DescribeConfiguredPaths()}）");
         }
 
         if (expectedWindow != 0 && hwnd != expectedWindow)

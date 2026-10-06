@@ -344,7 +344,10 @@ for powerType, powerName in pairs(Shingen.powerNameMap) do
     if powerName ~= "符文" then
         local pt = powerType
         local getter = function()
-            return (state.power and state.power[pt]) or 0
+            if not state.power then return 0 end
+            local value = state.power[pt]
+            if issecretvalue(value) then return value end
+            return value or 0
         end
         if not stateBlockGetters["状态"][powerName] then
             stateBlockGetters["状态"][powerName] = getter

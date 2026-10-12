@@ -113,6 +113,7 @@ function Shingen:OnEnable()
     self:RegisterEvent("UNIT_SPELLCAST_START")
     self:RegisterEvent("UNIT_SPELLCAST_STOP")
     self:RegisterEvent("UNIT_SPELLCAST_INTERRUPTED")
+    self:RegisterEvent("UNIT_SPELLCAST_FAILED")
     self:RegisterEvent("UNIT_SPELLCAST_CHANNEL_START")
     self:RegisterEvent("UNIT_SPELLCAST_CHANNEL_STOP")
     self:RegisterEvent("UNIT_SPELLCAST_EMPOWER_START")
@@ -192,7 +193,6 @@ Shingen.boss = {}
 for index = 1, 5 do
     Shingen.boss["boss" .. index] = CreateUnitState()
 end
-Shingen.nameplate = {}
 Shingen.group = {}
 Shingen.groupList = {}
 Shingen.defaults = {

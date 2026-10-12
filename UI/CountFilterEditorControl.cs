@@ -1,4 +1,5 @@
 using System.Drawing;
+using System.Globalization;
 
 namespace Shigure;
 
@@ -23,6 +24,12 @@ internal sealed class CountFilterEditorControl : UserControl
     ];
 
     private static readonly ComparisonOption[] EqualityComparisons = AllComparisons[..2];
+    private static readonly ComparisonOption[] CastSpellComparisons =
+    [
+        .. EqualityComparisons,
+        new("in", CountConditionComparisonKind.In),
+        new("not in", CountConditionComparisonKind.NotIn)
+    ];
     private static readonly ValueOption[] RoleValues =
     [
         new("坦克 (1)", 1),
@@ -65,6 +72,16 @@ internal sealed class CountFilterEditorControl : UserControl
     private bool _loading;
     private readonly bool _hasNameplateImprovedGarrote;
     private bool _retainedImprovedGarrote;
+    private readonly bool _hasNameplateThreat;
+    private bool _retainedThreat;
+    private readonly bool _hasNameplateCastSpell;
+    private bool _retainedCastSpell;
+    private readonly bool _hasNameplateCastCountdown;
+    private bool _retainedCastCountdown;
+    private readonly IReadOnlyList<string> _numberArrayNames;
+    private readonly HashSet<string> _groupDispelFields;
+    private readonly HashSet<CountConditionFieldKind> _retainedDispelFields = [];
+    private bool _retainedLegacyDispel;
 
     public event EventHandler? Changed;
 
@@ -73,11 +90,21 @@ internal sealed class CountFilterEditorControl : UserControl
         IReadOnlyList<ConditionField> enemyAuras,
         IReadOnlyList<string> thresholdFields,
         IReadOnlyList<string> formulaValueNames,
-        bool hasNameplateImprovedGarrote = false)
+        bool hasNameplateImprovedGarrote = false,
+        bool hasNameplateThreat = false,
+        bool hasNameplateCastSpell = false,
+        IReadOnlyList<string>? numberArrayNames = null,
+        bool hasNameplateCastCountdown = false,
+        IReadOnlyList<string>? groupDispelFields = null)
     {
         _allyAuras = allyAuras;
         _enemyAuras = enemyAuras;
         _hasNameplateImprovedGarrote = hasNameplateImprovedGarrote;
+        _hasNameplateThreat = hasNameplateThreat;
+        _hasNameplateCastSpell = hasNameplateCastSpell;
+        _hasNameplateCastCountdown = hasNameplateCastCountdown;
+        _numberArrayNames = (numberArrayNames ?? []).ToArray();
+        _groupDispelFields = new HashSet<string>(groupDispelFields ?? [], StringComparer.Ordinal);
         _thresholdFields = new HashSet<string>(thresholdFields, StringComparer.Ordinal);
         _formulaValueNames = formulaValueNames
             .Where(name => !string.IsNullOrWhiteSpace(name))
@@ -200,9 +227,20 @@ internal sealed class CountFilterEditorControl : UserControl
         _loading = true;
         try
         {
+            _retainedDispelFields.Clear();
+            var conditions = (groups ?? []).SelectMany(group => group.Conditions ?? []).ToArray();
+            foreach (var condition in conditions.Where(condition => GroupDispelCatalog.Find(condition.Field) is not null))
+                _retainedDispelFields.Add(condition.Field);
+            _retainedLegacyDispel = conditions.Any(condition => condition.Field == CountConditionFieldKind.Dispel);
             // 功能关闭后仍保留已保存的筛选，避免编辑时静默改成生命值条件。
             _retainedImprovedGarrote = (groups ?? []).SelectMany(group => group.Conditions ?? [])
                 .Any(condition => condition.Field == CountConditionFieldKind.ImprovedGarrote);
+            _retainedThreat = (groups ?? []).SelectMany(group => group.Conditions ?? [])
+                .Any(condition => condition.Field == CountConditionFieldKind.Threat);
+            _retainedCastSpell = (groups ?? []).SelectMany(group => group.Conditions ?? [])
+                .Any(condition => condition.Field == CountConditionFieldKind.CastSpell);
+            _retainedCastCountdown = (groups ?? []).SelectMany(group => group.Conditions ?? [])
+                .Any(condition => condition.Field == CountConditionFieldKind.CastCountdown);
             foreach (var editor in _groups)
             {
                 _groupsPanel.Controls.Remove(editor.Root);
@@ -309,12 +347,34 @@ internal sealed class CountFilterEditorControl : UserControl
                 new("生命值", CountConditionFieldKind.Health),
                 new("治疗吸收", CountConditionFieldKind.HealingAbsorb),
                 new("职责", CountConditionFieldKind.Role),
-                new("驱散", CountConditionFieldKind.Dispel),
                 new("职业", CountConditionFieldKind.Class)
             };
+        if (!_enemy)
+        {
+            foreach (var entry in GroupDispelCatalog.Entries)
+            {
+                var available = _groupDispelFields.Contains(entry.FieldName);
+                if (available || _retainedDispelFields.Contains(entry.ConditionField))
+                    options.Add(new FieldOption(entry.FieldName + (available ? "" : "（未配置）"), entry.ConditionField));
+            }
+            if (_retainedLegacyDispel)
+                options.Add(new FieldOption("驱散（旧类型编号）", CountConditionFieldKind.Dispel));
+        }
         if (_enemy && (_hasNameplateImprovedGarrote || _retainedImprovedGarrote))
         {
             options.Add(new FieldOption("强化锁喉", CountConditionFieldKind.ImprovedGarrote));
+        }
+        if (_enemy && (_hasNameplateThreat || _retainedThreat))
+        {
+            options.Add(new FieldOption("仇恨值", CountConditionFieldKind.Threat));
+        }
+        if (_enemy && (_hasNameplateCastSpell || _retainedCastSpell))
+        {
+            options.Add(new FieldOption("施法技能", CountConditionFieldKind.CastSpell));
+        }
+        if (_enemy && (_hasNameplateCastCountdown || _retainedCastCountdown))
+        {
+            options.Add(new FieldOption(NameplateStateLayout.CastCountdownField, CountConditionFieldKind.CastCountdown));
         }
         foreach (var aura in (_enemy ? _enemyAuras : _allyAuras))
         {
@@ -662,9 +722,14 @@ internal sealed class CountFilterEditorControl : UserControl
                     return;
                 }
 
-                if (_grid.Columns[e.ColumnIndex].Name == FieldColumn)
+                if (_grid.Columns[e.ColumnIndex].Name is FieldColumn or ComparisonColumn)
                 {
-                    ConfigureRow(_grid.Rows[e.RowIndex], null);
+                    var row = _grid.Rows[e.RowIndex];
+                    // 只切换判断时保留已填写的阈值；切换字段仍按新字段重建默认值。
+                    var seed = _grid.Columns[e.ColumnIndex].Name == ComparisonColumn
+                        ? TryReadCondition(row)
+                        : null;
+                    ConfigureRow(row, seed);
                 }
                 _owner.OnChanged();
             };
@@ -709,8 +774,12 @@ internal sealed class CountFilterEditorControl : UserControl
                     textBox.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
                     textBox.AutoCompleteSource = AutoCompleteSource.CustomSource;
                     var source = new AutoCompleteStringCollection();
-                    source.AddRange(_owner._thresholdFields
-                        .Concat(_owner._formulaValueNames)
+                    var arrayComparison = ReadComparison(_grid.Rows[_grid.CurrentCell.RowIndex]
+                        .Cells[ComparisonColumn].Value) is CountConditionComparisonKind.In
+                            or CountConditionComparisonKind.NotIn;
+                    source.AddRange((arrayComparison
+                            ? _owner._numberArrayNames
+                            : _owner._thresholdFields.Concat(_owner._formulaValueNames))
                         .Distinct(StringComparer.Ordinal)
                         .ToArray());
                     textBox.AutoCompleteCustomSource = source;
@@ -844,9 +913,19 @@ internal sealed class CountFilterEditorControl : UserControl
                 }
 
                 var text = cell.Value?.ToString()?.Trim() ?? string.Empty;
-                cell.ToolTipText = _owner.IsFormulaValueName(text)
-                    ? $"公式动态数值: {text}"
-                    : string.Empty;
+                cell.ToolTipText = ReadComparison(_grid.Rows[e.RowIndex].Cells[ComparisonColumn].Value)
+                    is CountConditionComparisonKind.In or CountConditionComparisonKind.NotIn
+                    ? $"数组: {text}"
+                    : _owner.IsFormulaValueName(text) ? $"公式动态数值: {text}" : string.Empty;
+                if (ParseFieldKey(_grid.Rows[e.RowIndex].Cells[FieldColumn].Value?.ToString()).Kind
+                    == CountConditionFieldKind.CastCountdown)
+                {
+                    var timeHint = int.TryParse(text, out var ticks)
+                        ? $"约 {(ticks / 10m).ToString("0.#", CultureInfo.InvariantCulture)} 秒"
+                        : "整数单位为 0.1 秒，10 ≈ 1 秒";
+                    cell.ToolTipText = string.IsNullOrEmpty(cell.ToolTipText)
+                        ? timeHint : $"{cell.ToolTipText}；{timeHint}";
+                }
             };
             _grid.Disposed += (_, _) =>
             {
@@ -870,9 +949,12 @@ internal sealed class CountFilterEditorControl : UserControl
                 var previousComparison = seed?.Comparison
                     ?? ReadComparison(row.Cells[ComparisonColumn].Value)
                     ?? CountConditionComparisonKind.Equal;
+                var castSpell = option.Kind == CountConditionFieldKind.CastSpell;
+                var comparisons = castSpell ? CastSpellComparisons
+                    : restricted ? EqualityComparisons : AllComparisons;
                 var comparisonCell = new DataGridViewComboBoxCell
                 {
-                    DataSource = (restricted ? EqualityComparisons : AllComparisons).ToList(),
+                    DataSource = comparisons.ToList(),
                     DisplayMember = nameof(ComparisonOption.Text),
                     ValueMember = nameof(ComparisonOption.Kind),
                     ValueType = typeof(CountConditionComparisonKind),
@@ -880,10 +962,13 @@ internal sealed class CountFilterEditorControl : UserControl
                     FlatStyle = FlatStyle.Flat
                 };
                 row.Cells[ComparisonColumn] = comparisonCell;
-                comparisonCell.Value = restricted && previousComparison is not (CountConditionComparisonKind.Equal
-                    or CountConditionComparisonKind.NotEqual)
+                comparisonCell.Value = !comparisons.Any(candidate => candidate.Kind == previousComparison)
                         ? CountConditionComparisonKind.Equal
                         : previousComparison;
+
+                var selectedComparison = (CountConditionComparisonKind)comparisonCell.Value;
+                var selectingArray = castSpell && selectedComparison is (CountConditionComparisonKind.In
+                    or CountConditionComparisonKind.NotIn);
 
                 object? previousValue = seed is null
                     ? null
@@ -905,7 +990,17 @@ internal sealed class CountFilterEditorControl : UserControl
                     valueCell.ReadOnly = true;
                 }
 
-                valueCell.Value = previousValue ?? DefaultValue(option.Kind);
+                valueCell.Value = previousValue
+                    ?? (selectingArray ? _owner._numberArrayNames.FirstOrDefault() ?? string.Empty
+                        : DefaultValue(option.Kind));
+                if (option.Kind == CountConditionFieldKind.Threat)
+                {
+                    valueCell.ToolTipText = "0 未坦克 / 1 仇恨高但未坦克 / 2 坦克但仇恨不稳 / 3 稳定坦克；无仇恨记录按 0 处理。";
+                }
+                if (option.Kind == CountConditionFieldKind.CastCountdown)
+                {
+                    valueCell.ToolTipText = "普通施法或引导的剩余时间，整数单位为 0.1 秒，10 ≈ 1 秒；无施法时为 0。";
+                }
             }
             finally
             {
@@ -923,6 +1018,20 @@ internal sealed class CountFilterEditorControl : UserControl
             }
 
             var rawValue = row.Cells[ValueColumn].Value?.ToString()?.Trim() ?? string.Empty;
+            if (comparison is CountConditionComparisonKind.In or CountConditionComparisonKind.NotIn)
+            {
+                if (option.Kind != CountConditionFieldKind.CastSpell
+                    || !_owner._numberArrayNames.Contains(rawValue, StringComparer.Ordinal))
+                    return null;
+                return new ModuleCountCondition
+                {
+                    Enabled = row.Cells[EnabledColumn].Value is bool arrayEnabled && arrayEnabled,
+                    Field = option.Kind,
+                    Comparison = comparison,
+                    ValueKind = CountConditionValueKind.NumberArray,
+                    ValueField = rawValue
+                };
+            }
             var isFormulaValue = _owner.IsFormulaValueName(rawValue);
             var constant = 0;
             var typedValue = !isFormulaValue && TryReadInt(row.Cells[ValueColumn].Value, out constant);
@@ -960,14 +1069,20 @@ internal sealed class CountFilterEditorControl : UserControl
             CloseValueDropDown();
             _grid.CurrentCell = cell;
             var currentValue = cell.Value?.ToString()?.Trim() ?? string.Empty;
+            var arrayComparison = ReadComparison(_grid.Rows[rowIndex].Cells[ComparisonColumn].Value)
+                is CountConditionComparisonKind.In or CountConditionComparisonKind.NotIn;
             var manualValue = currentValue.Length > 0 && int.TryParse(currentValue, out var number)
                 ? number.ToString()
                 : "0";
-            var options = new List<UiDropDownOption>
-            {
-                new(manualValue, "手动输入数字", LeadingText: manualValue)
-            };
-            options.AddRange(_owner._formulaValueNames.Select(name => new UiDropDownOption(name, name)));
+            var options = arrayComparison
+                ? _owner._numberArrayNames.Select(name => new UiDropDownOption(name, name)).ToList()
+                : new List<UiDropDownOption>
+                {
+                    new(manualValue, "手动输入数字", LeadingText: manualValue)
+                };
+            if (!arrayComparison)
+                options.AddRange(_owner._formulaValueNames.Select(name => new UiDropDownOption(name, name)));
+            if (options.Count == 0) return;
 
             var cellBounds = _grid.GetCellDisplayRectangle(columnIndex, rowIndex, cutOverflow: true);
             ToolStripDropDown? dropDown = null;
@@ -975,14 +1090,14 @@ internal sealed class CountFilterEditorControl : UserControl
                 _grid,
                 cellBounds,
                 options,
-                _owner.IsFormulaValueName(currentValue) ? currentValue : manualValue,
+                arrayComparison || _owner.IsFormulaValueName(currentValue) ? currentValue : manualValue,
                 selected =>
                 {
                     var value = selected.Value?.ToString() ?? string.Empty;
                     cell.Value = value;
                     _grid.InvalidateCell(cell);
                     _owner.OnChanged();
-                    if (string.Equals(selected.Display, "手动输入数字", StringComparison.Ordinal))
+                    if (!arrayComparison && string.Equals(selected.Display, "手动输入数字", StringComparison.Ordinal))
                     {
                         _grid.BeginInvoke(() =>
                         {
@@ -1041,8 +1156,14 @@ internal sealed class CountFilterEditorControl : UserControl
                 cell.Value,
                 selected =>
                 {
+                    if (_grid.IsDisposed || cell.DataGridView != _grid)
+                    {
+                        return;
+                    }
+
                     cell.Value = selected.Value;
-                    _grid.InvalidateCell(cell);
+                    // ValueChanged 会同步重建判断和值单元格，按位置刷新当前单元格。
+                    _grid.InvalidateCell(columnIndex, rowIndex);
                 },
                 closed: () =>
                 {
@@ -1175,7 +1296,7 @@ internal sealed class CountFilterEditorControl : UserControl
             };
 
         private static string FormatValue(ModuleCountCondition condition)
-            => condition.ValueKind == CountConditionValueKind.StateField
+            => condition.ValueKind is CountConditionValueKind.StateField or CountConditionValueKind.NumberArray
                 ? condition.ValueField ?? string.Empty
                 : condition.Value.ToString();
 

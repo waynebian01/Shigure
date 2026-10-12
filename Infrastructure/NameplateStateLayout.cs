@@ -1,7 +1,8 @@
 namespace Shigure;
 
 /// <summary>
-/// 姓名板像素布局：先 7 个单位映射格，再按槽位排列生命值/距离/战斗/光环；层数紧跟光环，锁喉类型可选地追加在末尾。
+/// 姓名板像素布局：先 7 个单位映射格，再按槽位排列生命值/距离/战斗/光环；
+/// 可选施法技能占定位格及紧邻的 RGB 数据格，施法倒计时在其后占一格。
 /// 插件 (Fuyutsui/main.lua、nameplates.lua)、config 转换与运行时状态构建共用这套常量。
 /// </summary>
 internal static class NameplateStateLayout
@@ -19,6 +20,9 @@ internal static class NameplateStateLayout
     public const int FixedFieldCount = AuraStartOffset - 1;
 
     public const string ImprovedGarroteField = "强化锁喉";
+    public const string ThreatField = "仇恨值";
+    public const string CastSpellField = "施法技能";
+    public const string CastCountdownField = "施法(倒计时)";
 
     // 专精配置使用职业内的一基序号，奇袭为潜行者的第 1 专精。
     public static bool SupportsImprovedGarrote(string? classDirectory, int? classId, int? specIndex)
@@ -93,5 +97,16 @@ internal static class NameplateStateLayout
         return key.StartsWith("state.", StringComparison.OrdinalIgnoreCase)
             ? key["state.".Length..]
             : key;
+    }
+
+    public static bool IsCastCountdownField(string? fieldName)
+    {
+        var key = StripStatePrefix(fieldName);
+        if (!key.StartsWith("nameplates.", StringComparison.OrdinalIgnoreCase)) return false;
+        var parts = key.Split('.', 3);
+        return parts.Length == 3
+            && int.TryParse(parts[1], out var slot)
+            && slot is >= 1 and <= SlotCount
+            && string.Equals(parts[2], CastCountdownField, StringComparison.Ordinal);
     }
 }

@@ -52,6 +52,7 @@ public sealed class ModuleSpecSnapshot
     public List<ModuleAuraSnapshot> Boss4HarmfulAuras { get; set; } = new();
     public List<ModuleAuraSnapshot> Boss5HarmfulAuras { get; set; } = new();
     public List<ModuleSpellSnapshot> Spells { get; set; } = new();
+    public List<ModuleOverrideSnapshot> Overrides { get; set; } = new();
     public ModuleGroupSnapshot? Group { get; set; }
     public ModuleNameplateSnapshot? Nameplates { get; set; }
 
@@ -75,6 +76,7 @@ public sealed class ModuleSpecSnapshot
         Boss4HarmfulAuras = CloneEntries(Boss4HarmfulAuras),
         Boss5HarmfulAuras = CloneEntries(Boss5HarmfulAuras),
         Spells = (Spells ?? []).Where(entry => entry is not null).Select(entry => entry.Clone()).ToList(),
+        Overrides = (Overrides ?? []).Where(entry => entry is not null).Select(entry => entry.Clone()).ToList(),
         Group = Group?.Clone(),
         Nameplates = Nameplates?.Clone()
     };
@@ -86,11 +88,17 @@ public sealed class ModuleSpecSnapshot
 public sealed class ModuleNameplateSnapshot
 {
     public bool? ImprovedGarrote { get; set; }
+    public bool? Threat { get; set; }
+    public bool? CastSpell { get; set; }
+    public bool? CastCountdown { get; set; }
     public List<ModuleAuraSnapshot> Auras { get; set; } = new();
 
     public ModuleNameplateSnapshot Clone() => new()
     {
         ImprovedGarrote = ImprovedGarrote,
+        Threat = Threat,
+        CastSpell = CastSpell,
+        CastCountdown = CastCountdown,
         Auras = (Auras ?? []).Where(entry => entry is not null).Select(entry => entry.Clone()).ToList()
     };
 }
@@ -106,10 +114,11 @@ public sealed class ModuleItemSnapshot
 
 public sealed class ModuleAuraSnapshot
 {
+    private int? _maxApps;
     public string Name { get; set; } = string.Empty;
     public long? SpellId { get; set; }
     public List<long> SpellIds { get; set; } = new();
-    public int? MaxApps { get; set; }
+    public int? MaxApps { get => _maxApps; set => _maxApps = value is > 0 ? 1 : null; }
     // null 表示旧模块未保存该字段；旧版固定使用 PLAYER，导入时按 true 兼容。
     public bool? IsPlayer { get; set; }
 
@@ -123,13 +132,27 @@ public sealed class ModuleAuraSnapshot
     };
 }
 
+public sealed class ModuleOverrideSnapshot
+{
+    public string Name { get; set; } = string.Empty;
+    public long OriginalId { get; set; }
+    public long?[] TargetIds { get; set; } = new long?[5];
+
+    public ModuleOverrideSnapshot Clone() => new()
+    {
+        Name = Name,
+        OriginalId = OriginalId,
+        TargetIds = (long?[])(TargetIds ?? []).Clone()
+    };
+}
+
 public sealed class ModuleSpellSnapshot
 {
+    private int? _castCount;
     public string Name { get; set; } = string.Empty;
     public long SpellId { get; set; }
     public bool Charge { get; set; }
-    public int? MaxCharge { get; set; }
-    public int? CastCount { get; set; }
+    public int? CastCount { get => _castCount; set => _castCount = value is > 0 ? 1 : null; }
     public bool ForcedKnown { get; set; }
     public bool InSpellBook { get; set; }
 
@@ -139,6 +162,8 @@ public sealed class ModuleSpellSnapshot
 public sealed class ModuleSpellListEntrySnapshot
 {
     public long SpellId { get; set; }
+    public int Index { get; set; }
+    public int? Rank { get; set; }
     public string Name { get; set; } = string.Empty;
 
     public ModuleSpellListEntrySnapshot Clone() => (ModuleSpellListEntrySnapshot)MemberwiseClone();
@@ -174,15 +199,18 @@ public sealed class ModuleGroupSnapshot
 
 public sealed class ModuleGroupAuraSnapshot
 {
+    private int? _maxApps;
     public string Name { get; set; } = string.Empty;
     public long? SpellId { get; set; }
     public List<long> SpellIds { get; set; } = new();
+    public int? MaxApps { get => _maxApps; set => _maxApps = value is > 0 ? 1 : null; }
 
     public ModuleGroupAuraSnapshot Clone() => new()
     {
         Name = Name,
         SpellId = SpellId,
-        SpellIds = new List<long>(SpellIds ?? [])
+        SpellIds = new List<long>(SpellIds ?? []),
+        MaxApps = MaxApps
     };
 }
 

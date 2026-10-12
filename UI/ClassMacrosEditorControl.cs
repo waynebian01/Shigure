@@ -9,6 +9,8 @@ namespace Shigure;
 /// </summary>
 public sealed class ClassMacrosEditorControl : UserControl
 {
+    private VersionedSpellIconCatalog Catalog => SpellIconCatalog.ForVersion(_resolveDataVersion());
+    private readonly Func<string> _resolveDataVersion;
     private readonly Func<string?> _resolveClassMacrosPath;
     private readonly Func<string, int, Task<ClassConfigPostSaveResult>> _updateConfigAsync;
 
@@ -42,10 +44,12 @@ public sealed class ClassMacrosEditorControl : UserControl
 
     public ClassMacrosEditorControl(
         Func<string?> resolveClassMacrosPath,
-        Func<string, int, Task<ClassConfigPostSaveResult>> updateConfigAsync)
+        Func<string, int, Task<ClassConfigPostSaveResult>> updateConfigAsync,
+        Func<string>? resolveDataVersion = null)
     {
         _resolveClassMacrosPath = resolveClassMacrosPath;
         _updateConfigAsync = updateConfigAsync;
+        _resolveDataVersion = resolveDataVersion ?? (() => "Retail");
         _reloadButton = UiTheme.CreateButton("刷新", UiTheme.ButtonKind.Secondary);
         _saveButton = UiTheme.CreateButton("保存", UiTheme.ButtonKind.Primary);
         InitializeComponent();
@@ -1176,7 +1180,7 @@ public sealed class ClassMacrosEditorControl : UserControl
 
     private void OnSpellIconCatalogChanged()
     {
-        if (IsDisposed || Disposing || !IsHandleCreated)
+        if (IsDisposed || Disposing)
         {
             return;
         }
@@ -1241,7 +1245,7 @@ public sealed class ClassMacrosEditorControl : UserControl
 
                 var name = spell.Name.Trim();
                 AddNamedId(_classSpellIdsByName, name, spell.SpellId);
-                SpellIconCatalog.Register(spell.SpellId, name, overwriteIdName: true);
+                Catalog.Register(spell.SpellId, name, overwriteIdName: true);
             }
 
             foreach (var spec in OrderedSpecsForIcons(document))
@@ -1255,7 +1259,7 @@ public sealed class ClassMacrosEditorControl : UserControl
 
                     var name = item.Name.Trim();
                     AddNamedId(_classItemIdsByName, name, itemId);
-                    SpellIconCatalog.RegisterItem(itemId, name);
+                    Catalog.RegisterItem(itemId, name);
                 }
             }
         }
@@ -1344,7 +1348,7 @@ public sealed class ClassMacrosEditorControl : UserControl
         {
             foreach (var spellId in spellIds)
             {
-                var icon = SpellIconCatalog.Get(spellId);
+                var icon = Catalog.Get(spellId);
                 if (icon is not null)
                 {
                     return icon;
@@ -1356,7 +1360,7 @@ public sealed class ClassMacrosEditorControl : UserControl
         {
             foreach (var itemId in itemIds)
             {
-                var icon = SpellIconCatalog.GetItem(itemId);
+                var icon = Catalog.GetItem(itemId);
                 if (icon is not null)
                 {
                     return icon;
@@ -1364,7 +1368,7 @@ public sealed class ClassMacrosEditorControl : UserControl
             }
         }
 
-        return SpellIconCatalog.Get(normalized) ?? SpellIconCatalog.GetItem(normalized);
+        return Catalog.Get(normalized) ?? Catalog.GetItem(normalized);
     }
 
     private Image? ResolveItemReferenceIcon(string? text)
@@ -1375,15 +1379,15 @@ public sealed class ClassMacrosEditorControl : UserControl
             return null;
         }
 
-        if (SpellIconCatalog.TryParseItemReference(normalized, out var itemId))
+        if (Catalog.TryParseItemReference(normalized, out var itemId))
         {
-            return SpellIconCatalog.GetItem(itemId);
+            return Catalog.GetItem(itemId);
         }
 
         if (_macroBodies.TryGetValue(normalized, out var body)
-            && SpellIconCatalog.TryParseItemReference(body, out itemId))
+            && Catalog.TryParseItemReference(body, out itemId))
         {
-            return SpellIconCatalog.GetItem(itemId);
+            return Catalog.GetItem(itemId);
         }
 
         return null;

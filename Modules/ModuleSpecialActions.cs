@@ -5,6 +5,9 @@ namespace Shigure;
 internal static class ModuleSpecialActions
 {
     public const string PauseSpell = "暂停";
+    public const string KeyPress = "按键";
+
+    public static bool IsKeyPress(string? spell) => spell?.Trim() == KeyPress;
     public const string InsertSpellState = "插入法术";
     public const string InsertItemState = "插入物品";
     public const string FailedSpell = "自动插入法术";

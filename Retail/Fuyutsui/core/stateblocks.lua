@@ -29,6 +29,13 @@ end
 local ColorValue0 = CreateColor(0, 0, 0, 1)
 local ColorValue1 = CreateColor(0, 0, 1 / 255, 1)
 
+-- 布尔结果直接交给原生颜色求值，蓝通道用 1/0 编码。
+local function GetBooleanPixel(value)
+    local color = EvaluateColorFromBoolean(value, ColorValue1, ColorValue0)
+    local _, _, b = color:GetRGB()
+    return b
+end
+
 Fuyutsui.powerNameMap = {
     ["MANA"] = "法力值",
     ["RAGE"] = "怒气值",
@@ -74,6 +81,16 @@ function Fuyutsui:GetUnitCastPixel(unit, mode)
     ---@diagnostic disable-next-line: param-type-mismatch
     local _, _, b = castingDurationColor:GetRGB()
     return b
+end
+
+-- 姓名板倒计时同时支持普通施法和引导，秘密颜色通道原样交给像素。
+function Fuyutsui:GetUnitCastCountdownPixel(unit)
+    local duration = UnitCastingDuration(unit) or UnitChannelDuration(unit)
+    if not duration then return 0 end
+    local color = duration:EvaluateRemainingDuration(self.castCurve)
+    ---@diagnostic disable-next-line: param-type-mismatch
+    local _, _, value = color:GetRGB()
+    return value
 end
 
 --- mode: "cast" | "channel"
@@ -144,11 +161,10 @@ local stateBlockGetters = {
         ["英雄天赋"] = function(self) return (self.state.heroTalent or 0) / 255 end,
         ["施法目标"] = function() return state.castTargetIndex or 0 end,
         ["施法技能"] = function() return state.castingSpell or 0 end,
-        ["敌人数量"] = function() return state.enemyCount or 0 end,
-        ["敌人数-无仇恨"] = function() return state.noThreatEnemyCount or 0 end,
-        ["敌人数-有仇恨"] = function() return state.threatEnemyCount or 0 end,
         ["上个技能"] = function() return state.PreviousSkill or 0 end,
         ["公共冷却"] = function(self) return GetSpellCooldownPixel(61304, self.curveMs) end,
+        ["自动射击"] = function() return GetBooleanPixel(C_Spell.IsAutoRepeatSpell(5019)) end,
+        ["自动攻击"] = function() return GetBooleanPixel(C_Spell.IsCurrentSpell(6603)) end,
 
         -- 配置开关
         ["爆发开关"] = function(self) return GetConfigPixel(self, "cooldowns") end,
@@ -230,8 +246,6 @@ local stateBlockGetters = {
         ["战斗计时(秒)"] = function() return state.combatTimerSec or 0 end,
         ["战斗计时(分)"] = function() return state.combatTimerMin or 0 end,
         ["酒池"] = function() return state.staggerPercent or 0 end,
-        ["神圣军备"] = function() return state.holyArmaments or 0 end,
-        ["吸血鬼打击"] = function() return state.VampiricStrike or 0 end,
         ["收割者战刃"] = function() return state.reaverGlaive or 0 end,
         ["英勇打击"] = function() return state.heroicStrike or 0 end,
         ["符文"] = function() return GetRunePixel() end,
@@ -239,9 +253,8 @@ local stateBlockGetters = {
         ["天启骑士数量"] = function() return state.knightCount or 0 end,
         ["自律"] = function() return state.forbearance or 0 end,
         ["沸点"] = function() return state.boilingPoint or 0 end,
-        ["强化锁喉"] = function() return state.improvedGarrote or 0 end,
         -- 原生图标槽覆盖数值通道；此处始终绘制无光环时的底色。
-        ["目标强化锁喉"] = function() return 0 end,
+        ["强化锁喉"] = function() return 0 end,
         ["风暴涌流图腾"] = function() return state.stormSurgeTotem or 0 end,
         ["风暴涌流图腾数量"] = function() return state.stormSurgeTotemCount or 0 end,
         ["治疗之泉图腾"] = function() return state.healingStreamTotem or 0 end,
@@ -353,7 +366,28 @@ for powerType, powerName in pairs(Fuyutsui.powerNameMap) do
 end
 
 -- UpdateStateBlock("状态", "职业") / UpdateStateBlock("能量", "符文") / UpdateStateBlock("目标", "生命值")
+local rgbSpellUnits = {
+    ["目标"] = "target", ["焦点"] = "focus",
+    ["首领1"] = "boss1", ["首领2"] = "boss2", ["首领3"] = "boss3",
+    ["首领4"] = "boss4", ["首领5"] = "boss5",
+}
+
 function Fuyutsui:UpdateStateBlock(category, name)
+    if category == "状态" and name == "等级" then
+        self:RefreshPlayerLevelPixel()
+        return
+    end
+    if category == "状态" and name == "生物类型" then
+        self:RefreshCreatureTypePixel()
+        return
+    end
+    if name == "施法技能" and rgbSpellUnits[category] then
+        local key = category .. name
+        local blocks = self.blocks
+        local index = blocks and blocks.state and blocks.state[key]
+        if index then self:RefreshRgbSpellPixel(index, rgbSpellUnits[category]) end
+        return
+    end
     local cat = stateBlockGetters[category]
     if not cat then return end
     local getter = cat[name]

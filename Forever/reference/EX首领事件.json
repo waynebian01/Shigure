@@ -1,0 +1,44 @@
+{
+  "schema": "exboss_skill_catalog_v1",
+  "source": {
+    "file": "",
+    "generatedAt": "",
+    "sourceDeclaredTotal": 0
+  },
+  "summary": {
+    "mapCount": 0,
+    "bossCount": 0,
+    "eventCount": 0,
+    "uniqueEventIdCount": 0,
+    "uniqueSpellIdCount": 0,
+    "mechanicTypeCounts": {
+      "点名": 0,
+      "坦克": 0,
+      "治疗": 0,
+      "机制": 0,
+      "特殊": 0,
+      "其他": 0
+    },
+    "instanceCategoryCounts": {
+      "大秘境": 0,
+      "团本": 0
+    },
+    "eventKeyCount": 0
+  },
+  "maps": [],
+  "skillsByMechanicType": {
+    "点名": [],
+    "坦克": [],
+    "治疗": [],
+    "机制": [],
+    "特殊": [],
+    "其他": []
+  },
+  "pixelEncoding": {
+    "type": "0=无/未知, 1=其他, 2=坦克, 3=治疗, 4=点名, 5=机制, 6=特殊",
+    "event": "全部唯一 eventId 按数值升序排列的一基键（从 1 开始，待填写数据）",
+    "countdown": "距离最近事件预计施放的向上取整秒数（0..255）"
+  },
+  "eventKeyTable": [],
+  "mechanicTypes": []
+}

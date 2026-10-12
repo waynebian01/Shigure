@@ -110,7 +110,6 @@ function Fuyutsui:OnEnable()
     self:RegisterEvent("PLAYER_REGEN_ENABLED")
     self:RegisterEvent("PLAYER_STARTED_MOVING")
     self:RegisterEvent("PLAYER_STOPPED_MOVING")
-    self:RegisterEvent("UPDATE_STEALTH")
     self:RegisterEvent("UNIT_SPELLCAST_SENT")
     self:RegisterEvent("UNIT_SPELLCAST_START")
     self:RegisterEvent("UNIT_SPELLCAST_STOP")
@@ -193,7 +192,6 @@ Fuyutsui.boss = {}
 for index = 1, 5 do
     Fuyutsui.boss["boss" .. index] = CreateUnitState()
 end
-Fuyutsui.nameplate = {}
 Fuyutsui.group = {}
 Fuyutsui.groupList = {}
 Fuyutsui.defaults = {

@@ -25,12 +25,10 @@ Fuyutsui.ClassBlocks = {
                 "队伍人数",
                 "首领战",
                 "难度",
-                "敌人数量",
                 "施法技能",
             },
             ["特殊"] = {
                 "强化锁喉",
-                "目标强化锁喉",
                 "战斗计时(秒)",
                 "战斗计时(分)",
                 "倒数",
@@ -49,6 +47,7 @@ Fuyutsui.ClassBlocks = {
                 "爆发药水开关",
             },
             ["目标"] = {
+                "施法技能",
                 "类型",
                 "施法(倒计时)",
                 "施法(正计时)",
@@ -59,6 +58,7 @@ Fuyutsui.ClassBlocks = {
                 "距离",
             },
             ["焦点"] = {
+                "施法技能",
                 "施法(倒计时)",
                 "施法(正计时)",
                 "施法可打断",
@@ -137,7 +137,7 @@ Fuyutsui.ClassBlocks = {
             { spellId = 36554, name = "暗影步" },
             { spellId = 280719, name = "影分身" },
             { spellId = 121471, name = "暗影之刃" },
-            { spellId = 185313, name = "暗影之舞", charge = true, maxCharge = 2 },
+            { spellId = 185313, name = "暗影之舞", charge = true },
             { spellId = 196819, name = "刺骨" },
             { spellId = 315496, name = "切割" },
             { spellId = 53, name = "背刺" },
@@ -147,7 +147,7 @@ Fuyutsui.ClassBlocks = {
             { spellId = 185565, name = "剧毒之刃" },
             { spellId = 1943, name = "割裂" },
             { spellId = 32645, name = "毒伤" },
-            { spellId = 1298826, name = "蓟叶茶", charge = true, maxCharge = 3 },
+            { spellId = 1298826, name = "蓟叶茶", charge = true },
             { spellId = 1329, name = "毁伤", forcedKnown = true },
             { spellId = 8676, name = "伏击" },
             { spellId = 25046, name = "奥术洪流" },
@@ -187,7 +187,6 @@ Fuyutsui.ClassBlocks = {
                 "队伍人数",
                 "首领战",
                 "难度",
-                "敌人数量",
             },
             ["能量"] = {
                 "能量值",
@@ -200,6 +199,7 @@ Fuyutsui.ClassBlocks = {
                 "爆发药水开关",
             },
             ["目标"] = {
+                "施法技能",
                 "类型",
                 "施法(倒计时)",
                 "施法(正计时)",
@@ -208,6 +208,7 @@ Fuyutsui.ClassBlocks = {
                 "引导可打断",
             },
             ["焦点"] = {
+                "施法技能",
                 "施法(倒计时)",
                 "施法(正计时)",
                 "施法可打断",
@@ -232,7 +233,7 @@ Fuyutsui.ClassBlocks = {
                 { name = "剑刃乱舞", spellId = 13877, isPlayer = true, },
                 { name = "冲动", spellId = 13750, isPlayer = true, },
                 { name = "灌铅骰子", spellId = 256171, isPlayer = true, },
-                { name = "可乘之机", spellId = 195627, maxApps = 6, isPlayer = true, },
+                { name = "可乘之机", spellId = 195627, maxApps = true, isPlayer = true, },
                 { name = "独一无二", spellId = 1214933, isPlayer = true, },
                 { name = "双重麻烦", spellId = 1214934, isPlayer = true, },
                 { name = "三重威胁", spellId = 1214935, isPlayer = true, },
@@ -290,7 +291,6 @@ Fuyutsui.ClassBlocks = {
                 "队伍人数",
                 "首领战",
                 "难度",
-                "敌人数量",
             },
             ["能量"] = {
                 "能量值",
@@ -303,6 +303,7 @@ Fuyutsui.ClassBlocks = {
                 "爆发药水开关",
             },
             ["目标"] = {
+                "施法技能",
                 "类型",
                 "施法(倒计时)",
                 "施法(正计时)",
@@ -311,6 +312,7 @@ Fuyutsui.ClassBlocks = {
                 "引导可打断",
             },
             ["焦点"] = {
+                "施法技能",
                 "施法(倒计时)",
                 "施法(正计时)",
                 "施法可打断",
@@ -337,7 +339,7 @@ Fuyutsui.ClassBlocks = {
                 { name = "至黑之夜", spellId = 457280, isPlayer = true, },
                 { name = "暗影之刃", spellId = 121471, isPlayer = true, },
                 { name = "切割", spellId = 315496, isPlayer = true, },
-                { name = "暗影技巧", spellId = 196911, maxApps = 14, isPlayer = true, },
+                { name = "暗影技巧", spellId = 196911, maxApps = true, isPlayer = true, },
                 { name = "诡谋承袭", spellId = 1269163, isPlayer = true, },
                 { name = "冷血", spellId = 1264297, isPlayer = true, },
                 { name = "静默风暴", spellId = 385727, isPlayer = true, },
@@ -345,7 +347,7 @@ Fuyutsui.ClassBlocks = {
             },
             target = {
                 harmful = {
-                    { name = "死亡标记", spellId = 457129, maxApps = 3, isPlayer = true, },
+                    { name = "死亡标记", spellId = 457129, maxApps = true, isPlayer = true, },
                 },
             },
         },
@@ -368,7 +370,7 @@ Fuyutsui.ClassBlocks = {
             { spellId = 36554, name = "暗影步" },
             { spellId = 280719, name = "影分身" },
             { spellId = 121471, name = "暗影之刃" },
-            { spellId = 185313, name = "暗影之舞", charge = true, maxCharge = 2 },
+            { spellId = 185313, name = "暗影之舞", charge = true },
             { spellId = 196819, name = "刺骨" },
             { spellId = 315496, name = "切割" },
             { spellId = 53, name = "背刺" },

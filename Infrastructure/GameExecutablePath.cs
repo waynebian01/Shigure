@@ -2,8 +2,27 @@ namespace Shigure;
 
 internal static class GameExecutablePath
 {
+    public static bool TryNormalize(string? path, out string fullPath)
+    {
+        fullPath = string.Empty;
+        if (string.IsNullOrWhiteSpace(path)) return false;
+        try
+        {
+            fullPath = Path.GetFullPath(path);
+            return true;
+        }
+        catch (Exception ex) when (ex is ArgumentException or NotSupportedException or PathTooLongException)
+        {
+            return false;
+        }
+    }
+
+    public static bool Equals(string? first, string? second)
+        => TryNormalize(first, out var firstPath) && TryNormalize(second, out var secondPath)
+            && string.Equals(firstPath, secondPath, StringComparison.OrdinalIgnoreCase);
+
     public static bool TryValidate(
-        string? path, string expectedFileName, out string fullPath, out string error)
+        string? path, out string fullPath, out string error)
     {
         fullPath = string.Empty;
         error = string.Empty;
@@ -13,20 +32,16 @@ internal static class GameExecutablePath
             return false;
         }
 
-        try
-        {
-            fullPath = Path.GetFullPath(path);
-        }
-        catch (Exception ex) when (ex is ArgumentException or NotSupportedException or PathTooLongException)
+        if (!TryNormalize(path, out fullPath))
         {
             error = "游戏程序路径无效。";
             return false;
         }
 
-        if (!string.Equals(Path.GetFileName(fullPath), expectedFileName,
+        if (!string.Equals(Path.GetExtension(fullPath), ".exe",
                 StringComparison.OrdinalIgnoreCase))
         {
-            error = $"请选择 {expectedFileName}。";
+            error = "请选择游戏的 .exe 可执行文件。";
             return false;
         }
 

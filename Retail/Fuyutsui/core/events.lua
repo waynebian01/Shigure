@@ -3,7 +3,6 @@ local addon, ns = ...
 local isSec = issecretvalue
 
 local state = Fuyutsui.state
-local nameplate = Fuyutsui.nameplate
 local playerCountdownTicker = nil
 local playerCountdownRemaining = 0
 local COMBAT_UNIT_REFRESH_ORDER = {
@@ -88,10 +87,9 @@ function Fuyutsui:ZONE_CHANGED_NEW_AREA()
 end
 
 function Fuyutsui:PLAYER_ENTERING_WORLD()
+    self:RefreshOverrideSpells()
     state.mapID = C_Map.GetBestMapForUnit("player") or 0
     self:RefreshPlayerMapState()
-    self:UpdateHolyArmaments(375576)
-    self:UpdateVampiricStrike(206930)
     self:UpdateReaverGlaive(204157)
     self:UpdateHeroTalent()
     self:CacheCollectedMountSpells()
@@ -154,7 +152,6 @@ function Fuyutsui:RefreshCombatUnitPixels()
     if self.RefreshNameplatePixels then
         self:RefreshNameplatePixels()
     end
-    self:RefreshEnemyCounts()
 end
 
 function Fuyutsui:PLAYER_REGEN_DISABLED()
@@ -178,10 +175,6 @@ function Fuyutsui:PLAYER_STOPPED_MOVING()
     self:SetPlayerMoving(false)
 end
 
-function Fuyutsui:UPDATE_STEALTH()
-    self:RefreshPlayerStealthState()
-end
-
 function Fuyutsui:UNIT_SPELLCAST_SENT(_, unitTarget, targetName, castGUID, spellID)
     if unitTarget ~= "player" then return end
     if not isSec(targetName) then
@@ -197,8 +190,15 @@ function Fuyutsui:UNIT_SPELLCAST_SENT(_, unitTarget, targetName, castGUID, spell
 end
 
 local function SetUnitCastState(self, unit, stateField, isActive)
+    if type(unit) == "string" and unit:match("^nameplate%d+$") then
+        self:RefreshNameplateCastPixel(unit)
+        return true
+    end
     if not self:SetTrackedUnitCastState(unit, stateField, isActive) then return false end
-    if isActive then return true end
+    if isActive then
+        if unit ~= "player" then self:RefreshUnitCastStateBlocks(unit) end
+        return true
+    end
 
     if unit == "player" then
         if stateField == "casting" then
@@ -286,7 +286,6 @@ function Fuyutsui:UNIT_SPELLCAST_SUCCEEDED(_, unitTarget, castGUID, spellID, cas
     self:UpdateInsertSpellBySuccess(spellID)
     self:UpdateInsertItemBySuccess(spellID)
     self:PreviousSkill(spellID)
-    self:UpdateImprovedGarrote(spellID)
     self:UpdateActiveTotemRemainingTime(spellID)
     if spellID == 384255 then
         self:ClearAllFuyutsuiBars()
@@ -436,9 +435,8 @@ function Fuyutsui:SPELL_UPDATE_USES(_, spellID, baseSpellID)
 end
 
 function Fuyutsui:SPELL_UPDATE_ICON(_, spellID)
+    self:RefreshOverrideSpells()
     if issecretvalue(spellID) then return end
-    self:UpdateHolyArmaments(spellID)
-    self:UpdateVampiricStrike(spellID)
     self:UpdateReaverGlaive(spellID)
     self:UpdateHeroicStrike(spellID)
 end
@@ -480,6 +478,7 @@ function Fuyutsui:UPDATE_BINDINGS()
 end
 
 function Fuyutsui:SPELLS_CHANGED()
+    self:RefreshOverrideSpells()
     self:ReadKeybindings()
 end
 
@@ -493,6 +492,7 @@ end
 
 function Fuyutsui:PLAYER_TARGET_CHANGED()
     self:RefreshTargetState()
+    self:UpdateStateBlock("状态", "生物类型")
     self:UpdateUnitAuraContainer("target")
     if self.RefreshNameplateUnitMappings then
         self:RefreshNameplateUnitMappings()
@@ -525,7 +525,6 @@ function Fuyutsui:STOP_MOVIE()
 end
 
 function Fuyutsui:NAME_PLATE_UNIT_ADDED(_, unit)
-    self:CacheNameplateUnit(unit)
     if self.RefreshNameplatePixels then
         self:RefreshNameplatePixels()
     end
@@ -534,7 +533,6 @@ function Fuyutsui:NAME_PLATE_UNIT_ADDED(_, unit)
 end
 
 function Fuyutsui:NAME_PLATE_UNIT_REMOVED(_, unit)
-    nameplate[unit] = nil
     if self.ClearNameplatePixelSlot then
         self:ClearNameplatePixelSlot(unit)
     end
@@ -545,16 +543,10 @@ function Fuyutsui:NAME_PLATE_UNIT_REMOVED(_, unit)
 end
 
 function Fuyutsui:UNIT_THREAT_SITUATION_UPDATE(_, unitTarget)
-    if nameplate[unitTarget] then
-        self:RefreshNameplateThreat(unitTarget)
-        self:RefreshThreatEnemyCounts()
-        return
+    -- 玩家或姓名板仇恨变化时立即更新；常规轮询继续负责刷新全部槽位。
+    if unitTarget == "player" or (type(unitTarget) == "string" and unitTarget:match("^nameplate%d+$")) then
+        self:RefreshNameplatePixels()
     end
-    if unitTarget ~= "player" then return end
-    for unit in pairs(nameplate) do
-        self:RefreshNameplateThreat(unit)
-    end
-    self:RefreshThreatEnemyCounts()
 end
 
 function Fuyutsui:RefreshShapeshiftAndMountStates()
@@ -646,16 +638,18 @@ function Fuyutsui:OnUpdate(elapsed)
 
     self.timeElapsed = self.timeElapsed + elapsed
     if self.timeElapsed > 0.2 then
-        RunUpdateSafely(self, "RefreshPlayerStealthState")
-        RunUpdateSafely(self, "RefreshImprovedGarroteState")
         RunUpdateSafely(self, "UpdateSpellCooldown")
+        RunUpdateSafely(self, "RefreshOverrideSpells")
+        RunUpdateSafely(self, "UpdateStateBlock", "状态", "生物类型")
+        RunUpdateSafely(self, "UpdateStateBlock", "状态", "等级")
+        RunUpdateSafely(self, "UpdateStateBlock", "状态", "自动射击")
+        RunUpdateSafely(self, "UpdateStateBlock", "状态", "自动攻击")
         RunUpdateSafely(self, "RefreshAssistedCombatSuggestion")
         RunUpdateSafely(self, "UpdateRune")
         RunUpdateSafely(self, "RefreshTargetRangeState")
         RunUpdateSafely(self, "RefreshFocusRangeState")
         RunUpdateSafely(self, "RefreshMouseoverRangeState")
 
-        RunUpdateSafely(self, "RefreshEnemyCounts")
         RunUpdateSafely(self, "RefreshNameplatePixels")
         RunUpdateSafely(self, "UpdateItemCooldown")
         RunUpdateSafely(self, "RefreshExBossTimelinePixels")

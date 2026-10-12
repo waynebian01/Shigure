@@ -27,7 +27,7 @@ Fuyutsui.ClassBlocks = {
                 "难度",
                 "施法技能",
                 "施法目标",
-                "敌人数量",
+                "公共冷却",
             },
             ["能量"] = {
                 "法力值",
@@ -36,12 +36,19 @@ Fuyutsui.ClassBlocks = {
                 "延迟",
             },
             ["目标"] = {
+                "施法技能",
                 "类型",
                 "生命值",
                 "施法(倒计时)",
                 "施法(正计时)",
                 "施法可打断",
                 "驱散类型",
+                "距离",
+            },
+            ["焦点"] = {
+                "施法技能",
+                "驱散类型",
+                "类型",
             },
             ["鼠标"] = {
                 "类型",
@@ -54,18 +61,34 @@ Fuyutsui.ClassBlocks = {
                 "引导",
                 "引导可打断",
             },
+            ["首领1"] = {
+                "施法技能",
+                "生命值",
+                "能量值",
+                "引导",
+                "施法(倒计时)",
+            },
+            ["首领2"] = {
+                "施法技能",
+                "生命值",
+                "能量值",
+                "施法(倒计时)",
+            },
         },
         auras = {
             player = {
                 { name = "熵能裂隙", spellId = 450193, isPlayer = true, },
                 { name = "天使长", spellId = 81700, isPlayer = true, },
                 { name = "阴暗面之力", spellId = 198069, isPlayer = true, },
-                { name = "黑暗主宰", spellId = 1253591, maxApps = 2, isPlayer = true, },
-                { name = "圣光涌动", spellId = 114255, maxApps = 2, isPlayer = true, },
-                { name = "福音", spellId = 472433, maxApps = 2, isPlayer = true, },
-                { name = "强效惩击", spellId = 1253725, maxApps = 2, isPlayer = true, },
-                { name = "严酷戒律", spellId = 373183, maxApps = 2, isPlayer = true, },
-                { name = "祸福相依", spellId = 390787, maxApps = 10, isPlayer = true, },
+                { name = "黑暗主宰", spellId = 1253591, maxApps = true, isPlayer = true, },
+                { name = "圣光涌动", spellId = 114255, maxApps = true, isPlayer = true, },
+                { name = "福音", spellId = 472433, maxApps = true, isPlayer = true, },
+                { name = "强效惩击", spellId = 1253725, maxApps = true, isPlayer = true, },
+                { name = "严酷戒律", spellId = 373183, maxApps = true, isPlayer = true, },
+                { name = "祸福相依", spellId = 390787, maxApps = true, isPlayer = true, },
+                { name = "黑暗转移", spellId = 1307795, isPlayer = true, },
+                { name = "争分夺秒", spellId = 390692, isPlayer = false, },
+                { name = "救赎", spellId = 194384, isPlayer = false, },
             },
             target = {
                 harmful = {
@@ -93,8 +116,8 @@ Fuyutsui.ClassBlocks = {
             { spellId = 527, name = "纯净术" },
             { spellId = 19236, name = "绝望祷言" },
             { spellId = 232633, name = "奥术洪流" },
-            { spellId = 47540, name = "苦修", charge = true, maxCharge = 2 },
-            { spellId = 194509, name = "真言术：耀", charge = true, maxCharge = 2 },
+            { spellId = 47540, name = "苦修", charge = true },
+            { spellId = 194509, name = "真言术：耀", charge = true },
             { spellId = 17, name = "真言术：盾" },
             { spellId = 62618, name = "真言术：障" },
             { spellId = 421453, name = "终极苦修" },
@@ -105,18 +128,32 @@ Fuyutsui.ClassBlocks = {
             { spellId = 1235211, name = "暗影分流" },
             { spellId = 586, name = "渐隐术" },
             { spellId = 10060, name = "能量灌注" },
+            { spellId = 132157, name = "神圣新星" },
+            { spellId = 390632, name = "强化纯净术" },
+            { spellId = 373446, name = "通透影像" },
         },
         items = {
             [5512] = { name = "治疗石", isEquipped = false },
             [241288] = { name = "鲁莽药水", isEquipped = false },
+            [241300] = { name = "光注法力药水", isEquipped = false },
             [241301] = { name = "魔法药水", isEquipped = false },
             [241304] = { name = "治疗药水", isEquipped = false },
+            [270162] = { name = "盘魂者仪式容器", isEquipped = false },
+            [271884] = { name = "浓缩银月城生命药水", isEquipped = false },
         },
         group = {
             state = { "healthPercent", "role", "dispel", },
             aura = {
                 { name = "救赎", spellId = 194384, },
                 { name = "真言术：盾", spellIds = { 17, 1253593 }, },
+            },
+        },
+        nameplates = {
+            threat = false,
+            castSpell = true,
+            castCountdown = true,
+            auras = {
+                { name = "暗言术：痛", spellId = 589, isPlayer = false, },
             },
         },
     },
@@ -160,6 +197,7 @@ Fuyutsui.ClassBlocks = {
                 "爆发开关",
             },
             ["目标"] = {
+                "施法技能",
                 "类型",
                 "施法(倒计时)",
                 "施法(正计时)",
@@ -167,6 +205,7 @@ Fuyutsui.ClassBlocks = {
                 "驱散类型",
             },
             ["焦点"] = {
+                "施法技能",
                 "类型",
                 "生命值",
             },
@@ -186,20 +225,22 @@ Fuyutsui.ClassBlocks = {
                 "施法(正计时)",
                 "引导",
                 "能量值",
+                "施法技能",
             },
             ["首领2"] = {
                 "施法(倒计时)",
                 "施法(正计时)",
                 "引导",
                 "能量值",
+                "施法技能",
             },
         },
         auras = {
             player = {
                 { name = "神圣化身", spellId = 200183, isPlayer = true, },
-                { name = "神圣镜像", spellId = 405963, maxApps = 5, isPlayer = true, },
-                { name = "圣光涌动", spellId = 114255, maxApps = 2, isPlayer = true, },
-                { name = "祈福", spellId = 1262766, maxApps = 2, isPlayer = true, },
+                { name = "神圣镜像", spellId = 405963, maxApps = true, isPlayer = true, },
+                { name = "圣光涌动", spellId = 114255, maxApps = true, isPlayer = true, },
+                { name = "祈福", spellId = 1262766, maxApps = true, isPlayer = true, },
                 { name = "救赎之魂", spellId = 27827, isPlayer = true, },
             },
             target = {
@@ -230,8 +271,8 @@ Fuyutsui.ClassBlocks = {
             { spellId = 527, name = "纯净术" },
             { spellId = 19236, name = "绝望祷言" },
             { spellId = 232633, name = "奥术洪流" },
-            { spellId = 33076, name = "愈合祷言", charge = true, maxCharge = 2 },
-            { spellId = 2050, name = "圣言术：静", charge = true, maxCharge = 2 },
+            { spellId = 33076, name = "愈合祷言", charge = true },
+            { spellId = 2050, name = "圣言术：静", charge = true },
             { spellId = 88625, name = "圣言术：罚" },
             { spellId = 200183, name = "神圣化身" },
             { spellId = 14914, name = "神圣之火" },
@@ -241,6 +282,8 @@ Fuyutsui.ClassBlocks = {
             { spellId = 528, name = "驱散魔法" },
             { spellId = 10060, name = "能量灌注" },
             { spellId = 357214, name = "飞翼打击" },
+            { spellId = 132157, name = "神圣新星" },
+            { spellId = 390632, name = "强化纯净术" },
         },
         items = {
             [5512] = { name = "治疗石", isEquipped = false },
@@ -256,6 +299,10 @@ Fuyutsui.ClassBlocks = {
                 { name = "恢复", spellId = 139, },
                 { name = "愈合祷言", spellId = 41635, },
             },
+        },
+        nameplates = {
+            threat = false,
+            castSpell = true,
         },
     },
     [3] = {
@@ -282,8 +329,8 @@ Fuyutsui.ClassBlocks = {
                 "队伍人数",
                 "首领战",
                 "难度",
-                "敌人数量",
                 "施法技能",
+                "公共冷却",
             },
             ["特殊"] = {
                 "姿态",
@@ -298,6 +345,7 @@ Fuyutsui.ClassBlocks = {
                 "AOE开关",
             },
             ["目标"] = {
+                "施法技能",
                 "类型",
                 "距离",
                 "生命值",
@@ -308,11 +356,13 @@ Fuyutsui.ClassBlocks = {
                 "引导可打断",
             },
             ["焦点"] = {
+                "施法技能",
                 "施法(倒计时)",
                 "施法(正计时)",
                 "施法可打断",
                 "引导",
                 "引导可打断",
+                "类型",
             },
             ["鼠标"] = {
                 "类型",
@@ -325,14 +375,19 @@ Fuyutsui.ClassBlocks = {
                 "引导",
                 "引导可打断",
             },
+            ["首领1"] = {
+                "生命值",
+                "能量值",
+                "引导",
+            },
         },
         auras = {
             player = {
-                { name = "虚空齐射", spellId = 1242171, maxApps = 5, isPlayer = true, },
+                { name = "虚空齐射", spellId = 1242171, maxApps = true, isPlayer = true, },
                 { name = "命运多舛", spellId = 390978, isPlayer = true, },
                 { name = "熵能裂隙", spellId = 450193, isPlayer = true, },
                 { name = "暗影洞察", spellId = 375981, isPlayer = true, },
-                { name = "尤格-萨隆的神像", spellId = 373276, maxApps = 20, isPlayer = true, },
+                { name = "尤格-萨隆的神像", spellId = 373276, maxApps = true, isPlayer = true, },
             },
             target = {
                 harmful = {
@@ -340,7 +395,7 @@ Fuyutsui.ClassBlocks = {
                     { name = "吸血鬼之触", spellId = 34914, isPlayer = true, },
                     { name = "暗言术：癫", spellId = 335467, isPlayer = true, },
                     { name = "精神鞭笞", spellId = 15407, isPlayer = true, },
-                    { name = "惊魂幻象", spellId = 1243069, maxApps = 100, isPlayer = true, },
+                    { name = "惊魂幻象", spellId = 1243069, maxApps = true, isPlayer = true, },
                 },
             },
             focus = {
@@ -349,7 +404,10 @@ Fuyutsui.ClassBlocks = {
                     { name = "吸血鬼之触", spellId = 34914, isPlayer = true, },
                     { name = "暗言术：癫", spellId = 335467, isPlayer = true, },
                     { name = "精神鞭笞", spellId = 15407, isPlayer = true, },
-                    { name = "惊魂幻象", spellId = 1243069, maxApps = 100, isPlayer = true, },
+                    { name = "惊魂幻象", spellId = 1243069, maxApps = true, isPlayer = true, },
+                },
+                helpful = {
+                    { name = "爆发已开", spellIds = { 1276767, 389539 }, isPlayer = false, },
                 },
             },
         },
@@ -368,10 +426,15 @@ Fuyutsui.ClassBlocks = {
             { spellId = 120644, name = "光晕" },
             { spellId = 1242173, name = "虚空齐射" },
             { spellId = 10060, name = "能量灌注" },
+            { spellId = 586, name = "渐隐术" },
+        },
+        items = {
+            [250144] = { name = "烬翼羽毛", isEquipped = false },
         },
         nameplates = {
             auras = {
                 { name = "暗言术：痛", spellId = 589, isPlayer = true, },
+                { name = "吸血鬼之触", spellId = 34914, isPlayer = true, },
             },
         },
     },
@@ -465,6 +528,10 @@ Fuyutsui.spellsList = {
     [368970]  = { index = 253, name = "扫尾" },
     [357214]  = { index = 254, name = "飞翼打击" },
     [436344]  = { index = 255, name = "艾泽里特涌动" },
+    [586] = { index = 41, name = "渐隐术" },
+    [17] = { index = 42, name = "真言术：盾" },
+    [390632] = { index = 43, name = "强化纯净术" },
+    [373446] = { index = 44, name = "通透影像" },
 }
 
 Fuyutsui.itemsList = {
@@ -487,4 +554,5 @@ Fuyutsui.itemsList = {
     [271883] = { index = 17, name = "浓缩银月城生命药水" },
     [271884] = { index = 18, name = "浓缩银月城生命药水" },
     [270162] = { index = 19, name = "盘魂者仪式容器" },
+    [250144] = { index = 20, name = "烬翼羽毛" },
 }

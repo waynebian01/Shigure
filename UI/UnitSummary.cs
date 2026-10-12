@@ -29,7 +29,7 @@ internal static class UnitSummary
             UnitTargetFieldKind.Role => "职责",
             UnitTargetFieldKind.Dispel => "驱散",
             UnitTargetFieldKind.Aura => "光环",
-            _ => "?"
+            _ => GroupDispelCatalog.Find(field)?.FieldName ?? "?"
         };
 
     public static string DescribeSelectionMode(UnitTargetFieldKind field, UnitSelectionMode mode)
@@ -43,6 +43,8 @@ internal static class UnitSummary
             (UnitTargetFieldKind.Aura, UnitSelectionMode.Shortest) => "最短",
             (UnitTargetFieldKind.Aura, UnitSelectionMode.Ascending) => "正序",
             (UnitTargetFieldKind.Aura, UnitSelectionMode.Descending) => "倒序",
+            (_, UnitSelectionMode.Longest) when GroupDispelCatalog.Find(field) is not null => "最长",
+            (_, UnitSelectionMode.Shortest) when GroupDispelCatalog.Find(field) is not null => "最短",
             _ => mode.ToString()
         };
 
@@ -112,11 +114,16 @@ internal static class UnitSummary
             CountConditionFieldKind.Range => "距离",
             CountConditionFieldKind.Combat => "战斗",
             CountConditionFieldKind.ImprovedGarrote => "强化锁喉",
+            CountConditionFieldKind.Threat => "仇恨值",
+            CountConditionFieldKind.CastSpell => "施法技能",
+            CountConditionFieldKind.CastCountdown => NameplateStateLayout.CastCountdownField,
             CountConditionFieldKind.Aura => $"[{FormatAura(condition.AuraSpellId.GetValueOrDefault(), resolveAuraName)}]",
-            _ => "?"
+            _ => GroupDispelCatalog.Find(condition.Field)?.FieldName ?? "?"
         };
-        var value = condition.ValueKind == CountConditionValueKind.StateField
-            ? $"[{condition.ValueField}]"
+        var value = condition.ValueKind == CountConditionValueKind.NumberArray
+            ? condition.ValueField ?? "?"
+            : condition.ValueKind == CountConditionValueKind.StateField
+                ? $"[{condition.ValueField}]"
             : DescribeCountValue(condition);
         return $"{field}{CountComparisonOperator(condition.Comparison)}{value}";
     }
@@ -155,6 +162,8 @@ internal static class UnitSummary
             CountConditionComparisonKind.LessThan => "<",
             CountConditionComparisonKind.GreaterThanOrEqual => ">=",
             CountConditionComparisonKind.LessThanOrEqual => "<=",
+            CountConditionComparisonKind.In => " in ",
+            CountConditionComparisonKind.NotIn => " not in ",
             _ => "?"
         };
 

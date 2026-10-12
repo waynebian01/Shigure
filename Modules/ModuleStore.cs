@@ -26,6 +26,7 @@ public sealed class ModuleDefinition
     public List<ModuleEnemyCountField> EnemyCounts { get; set; } = new();
     public List<ModuleAverageHealthField> AverageHealthFields { get; set; } = new();
     public List<ModuleValueAdjustment> ValueAdjustments { get; set; } = new();
+    public List<ModuleNumberArray> NumberArrays { get; set; } = new();
     public List<ModuleRule> Rules { get; set; } = new();
     public ModuleDependencySnapshot? Dependencies { get; set; }
 
@@ -50,6 +51,7 @@ public sealed class ModuleDefinition
             EnemyCounts = EnemyCounts.Select(count => count.Clone()).ToList(),
             AverageHealthFields = AverageHealthFields.Select(field => field.Clone()).ToList(),
             ValueAdjustments = ValueAdjustments.Select(adjustment => adjustment.Clone()).ToList(),
+            NumberArrays = NumberArrays.Select(array => array.Clone()).ToList(),
             Rules = Rules.Select(rule => rule.Clone()).ToList(),
             Dependencies = Dependencies?.Clone()
         };
@@ -67,6 +69,34 @@ public sealed class ModuleDefinition
             Rules = []
         };
     }
+}
+
+public enum ModuleNumberArrayKind
+{
+    [JsonStringEnumMemberName("spell")]
+    Spell = 0,
+    [JsonStringEnumMemberName("boss")]
+    Boss,
+    [JsonStringEnumMemberName("map")]
+    Map,
+    [JsonStringEnumMemberName("other")]
+    Other
+}
+
+public sealed class ModuleNumberArray
+{
+    public string Name { get; set; } = string.Empty;
+    public List<long> Numbers { get; set; } = new();
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public ModuleNumberArrayKind Kind { get; set; }
+
+    public ModuleNumberArray Clone() => new()
+    {
+        Name = Name,
+        Numbers = Numbers.ToList(),
+        Kind = Kind
+    };
 }
 
 public sealed class ModuleMatch
@@ -193,6 +223,8 @@ public sealed class ModuleRule
     public int? DelayMs { get; set; }
     // 此规则实际发送按键后，暂停整个逻辑循环的时长（毫秒）；null/0 表示不暂停。
     public int? LogicDelayMs { get; set; }
+    // 条件由命中变为不命中后，继续保持命中的时长（毫秒）。
+    public int? MatchDelayMs { get; set; }
     // 命中并发送后是否继续判断后续规则；null/false 表示命中后结束扫描。
     public bool? ContinueLogic { get; set; }
     public int? Unit { get; set; }
@@ -217,6 +249,7 @@ public sealed class ModuleRule
             Comment = Comment,
             DelayMs = DelayMs,
             LogicDelayMs = LogicDelayMs,
+            MatchDelayMs = MatchDelayMs,
             ContinueLogic = ContinueLogic,
             Unit = Unit,
             UnitName = UnitName,
@@ -245,11 +278,55 @@ public sealed class ModuleRule
 
 public sealed class ModuleValueAdjustment
 {
+    internal const string ConditionBooleanValue = "布尔值";
     public bool Enabled { get; set; } = true;
     public string Condition { get; set; } = string.Empty;
     public string Field { get; set; } = string.Empty;
     public int Delta { get; set; }
+    public string Operation { get; set; } = "+";
+    public string? Value { get; set; }
+    public bool IsCustom { get; set; }
     public string Formula { get; set; } = string.Empty;
+
+    internal string EffectiveOperation => IsCustom ? "=" : Operation;
+    internal bool IsConditionBoolean => string.IsNullOrWhiteSpace(Formula)
+        && string.Equals(Value?.Trim(), ConditionBooleanValue, StringComparison.Ordinal);
+
+    // 旧模块只保存 Delta；新模块的调整值保留文本，以区分整数与布尔值。
+    internal bool TryGetOperand(out object? value)
+    {
+        value = null;
+        if (EffectiveOperation is not ("+" or "-" or "="))
+        {
+            return false;
+        }
+
+        if (Value is null)
+        {
+            value = Delta;
+            return true;
+        }
+
+        if (int.TryParse(Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var number))
+        {
+            value = number;
+            return true;
+        }
+
+        if (EffectiveOperation == "=" && IsConditionBoolean)
+        {
+            value = false;
+            return true;
+        }
+
+        if (EffectiveOperation == "=" && bool.TryParse(Value, out var boolean))
+        {
+            value = boolean;
+            return true;
+        }
+
+        return false;
+    }
 
     public ModuleValueAdjustment Clone()
     {
@@ -259,6 +336,9 @@ public sealed class ModuleValueAdjustment
             Condition = Condition,
             Field = Field,
             Delta = Delta,
+            Operation = Operation,
+            Value = Value,
+            IsCustom = IsCustom,
             Formula = Formula
         };
     }
@@ -688,11 +768,18 @@ public sealed class ModuleStore
         module.EnemyCounts ??= new List<ModuleEnemyCountField>();
         module.AverageHealthFields ??= new List<ModuleAverageHealthField>();
         module.ValueAdjustments ??= new List<ModuleValueAdjustment>();
+        module.NumberArrays ??= new List<ModuleNumberArray>();
         module.Units.RemoveAll(unit => string.IsNullOrWhiteSpace(unit.Name));
         module.Counts.RemoveAll(count => string.IsNullOrWhiteSpace(count.Name));
         module.EnemyCounts.RemoveAll(count => string.IsNullOrWhiteSpace(count.Name));
         module.AverageHealthFields.RemoveAll(field => string.IsNullOrWhiteSpace(field.Name));
         module.ValueAdjustments.RemoveAll(adjustment => string.IsNullOrWhiteSpace(adjustment.Field));
+        module.NumberArrays.RemoveAll(array => string.IsNullOrWhiteSpace(array.Name));
+        foreach (var array in module.NumberArrays)
+        {
+            array.Name = array.Name.Trim();
+            array.Numbers = (array.Numbers ?? []).Distinct().ToList();
+        }
         foreach (var unit in module.Units)
         {
             unit.Name = unit.Name.Trim();
@@ -735,6 +822,8 @@ public sealed class ModuleStore
             adjustment.Field = adjustment.Field.Trim();
             adjustment.Condition = adjustment.Condition?.Trim() ?? string.Empty;
             adjustment.Formula = adjustment.Formula?.Trim() ?? string.Empty;
+            adjustment.Operation = adjustment.IsCustom ? "=" : adjustment.Operation?.Trim() ?? "+";
+            adjustment.Value = adjustment.Value?.Trim();
         }
 
         module.Rules ??= new List<ModuleRule>();
@@ -794,6 +883,7 @@ public sealed class ModuleStore
             }
             rule.DelayMs = rule.DelayMs is > 0 ? rule.DelayMs : null;
             rule.LogicDelayMs = rule.LogicDelayMs is > 0 ? rule.LogicDelayMs : null;
+            rule.MatchDelayMs = rule.MatchDelayMs is > 0 ? rule.MatchDelayMs : null;
             rule.ContinueLogic = rule.ContinueLogic is true ? true : null;
             if (rule.SubConditions is null)
             {
@@ -819,7 +909,9 @@ public sealed class ModuleStore
             group.Conditions ??= new List<ModuleCountCondition>();
             foreach (var condition in group.Conditions)
             {
-                condition.ValueField = condition.ValueKind == CountConditionValueKind.StateField
+                GroupDispelCatalog.MigrateCondition(condition);
+                condition.ValueField = condition.ValueKind is CountConditionValueKind.StateField
+                    or CountConditionValueKind.NumberArray
                     && !string.IsNullOrWhiteSpace(condition.ValueField)
                         ? condition.ValueField.Trim()
                         : null;
@@ -894,7 +986,10 @@ public sealed class ModuleStore
 
 public static class ModuleLogic
 {
-    public static IReadOnlyList<LogicDecision> Run(ModuleDefinition module, GameState state, IKeymapResolver keymap)
+    public static IReadOnlyList<LogicDecision> Run(ModuleDefinition module, GameState state, IKeymapResolver keymap,
+        IReadOnlyDictionary<string, long>? sentKeyRules = null,
+        IReadOnlyDictionary<int, bool>? ruleMatches = null,
+        IReadOnlyDictionary<int, long>? ruleSoundEvents = null)
     {
         var info = CreateInfo(module, state);
         var spellIndices = keymap.GetCurrentSpellIndices();
@@ -932,10 +1027,23 @@ public static class ModuleLogic
                 return [new LogicDecision(null, $"{module.Name}: 条件错误", SnapshotInfo(info), module.Name)];
             }
 
+            if (ruleMatches is not null && ruleMatches.TryGetValue(ruleIndex, out var trackedMatch))
+                conditionMatched = trackedMatch;
             if (!conditionMatched)
             {
                 continue;
             }
+
+            var soundEventId = SoundConditions.UsesSound(rule)
+                && state.Values.TryGetValue("$soundEventId", out var eventValue) && eventValue is long eventId
+                    ? eventId : 0L;
+            if (ruleSoundEvents is not null && ruleSoundEvents.TryGetValue(ruleIndex, out var trackedEventId))
+                soundEventId = trackedEventId;
+            var sendOnce = ModuleSpecialActions.IsKeyPress(rule.Spell) || soundEventId > 0;
+            if (sendOnce && sentKeyRules is not null
+                && sentKeyRules.TryGetValue(rateLimitKey, out var sentEventId) && sentEventId == soundEventId)
+                continue;
+            if (ModuleSpecialActions.IsKeyPress(rule.Spell) && string.IsNullOrWhiteSpace(rule.Hotkey)) continue;
 
             if (ModuleSpecialActions.IsPauseSpell(rule.Spell))
             {
@@ -1052,7 +1160,9 @@ public static class ModuleLogic
                 module.Name,
                 rule.DelayMs.GetValueOrDefault(),
                 rateLimitKey,
-                rule.LogicDelayMs.GetValueOrDefault()));
+                rule.LogicDelayMs.GetValueOrDefault(),
+                sendOnce,
+                soundEventId));
             if (rule.ContinueLogic is not true)
             {
                 return decisions;
@@ -1065,6 +1175,16 @@ public static class ModuleLogic
         }
 
         info["命中条件"] = "-";
+        if (state.Values.TryGetValue("音量识别错误", out var volumeError))
+        {
+            info["音量识别错误"] = volumeError;
+            return [new LogicDecision(null, $"{module.Name}: {volumeError}", SnapshotInfo(info), module.Name)];
+        }
+        if (state.Values.TryGetValue("声音识别错误", out var soundError))
+        {
+            info["声音识别错误"] = soundError;
+            return [new LogicDecision(null, $"{module.Name}: {soundError}", SnapshotInfo(info), module.Name)];
+        }
         return [new LogicDecision(null, $"{module.Name}: 无匹配规则", SnapshotInfo(info), module.Name)];
     }
 
@@ -1078,6 +1198,7 @@ public static class ModuleLogic
         info["动作按键"] = string.IsNullOrWhiteSpace(hotkey) ? "-" : hotkey;
         info["动作延迟"] = rule.DelayMs is > 0 ? $"{rule.DelayMs.Value} ms" : "-";
         info["逻辑延迟"] = rule.LogicDelayMs is > 0 ? $"{rule.LogicDelayMs.Value} ms" : "-";
+        info["命中延迟"] = rule.MatchDelayMs is > 0 ? $"{rule.MatchDelayMs.Value} ms" : "-";
         info["继续逻辑"] = rule.ContinueLogic is true ? "是" : "-";
         info["规则编号"] = ruleIndex + 1;
         info["限流键"] = rateLimitKey;
@@ -1100,6 +1221,18 @@ public static class ModuleLogic
             return existingUnits;
         }
 
+        state.Values["$numberArrays"] = module.NumberArrays
+            .Where(array => !string.IsNullOrWhiteSpace(array.Name))
+            .GroupBy(array => array.Name, StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => (IReadOnlySet<long>)group.First().Numbers.ToHashSet(), StringComparer.Ordinal);
+        // 自建字段每帧从默认值开始，条件未命中时也能参与后续条件求值。
+        foreach (var adjustment in module.ValueAdjustments.Where(adjustment => adjustment.IsCustom))
+        {
+            if (adjustment.TryGetOperand(out var operand))
+            {
+                SetDynamicValue(state, adjustment.Field, operand is bool ? false : 0);
+            }
+        }
         var earlyAppliedAdjustments = ApplyValueAdjustments(
             module,
             state,
@@ -1190,8 +1323,7 @@ public static class ModuleLogic
         var applied = new HashSet<ModuleValueAdjustment>();
         foreach (var adjustment in module.ValueAdjustments.Where(adjustment => adjustment.Enabled))
         {
-            if (string.IsNullOrWhiteSpace(adjustment.Field)
-                || (adjustment.Delta == 0 && string.IsNullOrWhiteSpace(adjustment.Formula)))
+            if (string.IsNullOrWhiteSpace(adjustment.Field))
             {
                 continue;
             }
@@ -1208,12 +1340,12 @@ public static class ModuleLogic
                     out _,
                     spellIndices: spellIndices,
                     itemIndices: itemIndices)
-                || !matched)
+                || (!matched && !adjustment.IsConditionBoolean))
             {
                 continue;
             }
 
-            if (!ApplyValueAdjustment(state, adjustment))
+            if (!ApplyValueAdjustment(state, adjustment, matched))
             {
                 continue;
             }
@@ -1276,7 +1408,7 @@ public static class ModuleLogic
         }
     }
 
-    private static bool ApplyValueAdjustment(GameState state, ModuleValueAdjustment adjustment)
+    private static bool ApplyValueAdjustment(GameState state, ModuleValueAdjustment adjustment, bool conditionMatched)
     {
         if (!string.IsNullOrWhiteSpace(adjustment.Formula))
         {
@@ -1289,7 +1421,81 @@ public static class ModuleLogic
             return true;
         }
 
-        ApplyValueDelta(state, adjustment.Field, adjustment.Delta);
+        if (!adjustment.TryGetOperand(out var operand))
+        {
+            return false;
+        }
+
+        if (adjustment.EffectiveOperation == "=")
+        {
+            // “布尔值”直接保存本行条件的结果，未命中也必须覆盖为 false。
+            return SetAdjustedValue(state, adjustment.Field,
+                adjustment.IsConditionBoolean ? conditionMatched : operand, adjustment.IsCustom);
+        }
+
+        if (operand is not int number)
+        {
+            return false;
+        }
+
+        // 加零不创建新的旧式目标字段，保留历史模块的行为。
+        if (number != 0)
+        {
+            var current = ModuleConditionEvaluator.ResolveValue(state, adjustment.Field);
+            var result = TryToInt(current, out var existing) ? existing : 0;
+            result = adjustment.EffectiveOperation == "-" ? result - number : result + number;
+            return SetAdjustedValue(state, adjustment.Field, result, adjustment.IsCustom);
+        }
+        return true;
+    }
+
+    private static bool SetAdjustedValue(GameState state, string field, object? value, bool isCustom)
+    {
+        var key = field.Trim();
+        if (key.StartsWith("state.", StringComparison.OrdinalIgnoreCase))
+        {
+            key = key["state.".Length..];
+        }
+        if (isCustom)
+        {
+            GetOrCreateDynamicValues(state)[key] = value;
+        }
+        else if (key.StartsWith("auras.", StringComparison.OrdinalIgnoreCase)
+                 || key.StartsWith("aura.", StringComparison.OrdinalIgnoreCase))
+        {
+            GetOrCreateMutableDict(state, "auras")[key[(key.IndexOf('.') + 1)..]] = value;
+        }
+        else if (key.StartsWith("spells.", StringComparison.OrdinalIgnoreCase)
+                 || key.StartsWith("spell.", StringComparison.OrdinalIgnoreCase))
+        {
+            GetOrCreateMutableDict(state, "spells")[key[(key.IndexOf('.') + 1)..]] = value;
+        }
+        else if (state.Values.TryGetValue("$counts", out var countsObj)
+                 && countsObj is Dictionary<string, int> counts && counts.ContainsKey(key))
+        {
+            if (value is int count)
+            {
+                counts[key] = count;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        else if (state.Values.TryGetValue("$unithealth", out var healthObj)
+                 && healthObj is Dictionary<string, object?> health && health.ContainsKey(key))
+        {
+            health[key] = value;
+        }
+        else if (state.Values.TryGetValue("$dynamicvalues", out var dynamicObj)
+                 && dynamicObj is Dictionary<string, object?> dynamicValues && dynamicValues.ContainsKey(key))
+        {
+            dynamicValues[key] = value;
+        }
+        else
+        {
+            state.Values[key] = value;
+        }
         return true;
     }
 
@@ -1360,56 +1566,6 @@ public static class ModuleLogic
         return dict;
     }
 
-    private static void ApplyValueDelta(GameState state, string field, int delta)
-    {
-        var key = field.Trim();
-        if (key.Length == 0)
-        {
-            return;
-        }
-
-        if (key.StartsWith("auras.", StringComparison.OrdinalIgnoreCase))
-        {
-            var auraKey = key["auras.".Length..];
-            var dict = GetOrCreateMutableDict(state, "auras");
-            var current = dict.TryGetValue(auraKey, out var v) ? v : null;
-            dict[auraKey] = AddDelta(current, delta);
-            return;
-        }
-
-        if (key.StartsWith("spells.", StringComparison.OrdinalIgnoreCase))
-        {
-            var spellKey = key["spells.".Length..];
-            var dict = GetOrCreateMutableDict(state, "spells");
-            var current = dict.TryGetValue(spellKey, out var v) ? v : null;
-            dict[spellKey] = AddDelta(current, delta);
-            return;
-        }
-
-        if (state.Values.TryGetValue("$counts", out var countsObj)
-            && countsObj is Dictionary<string, int> counts
-            && counts.TryGetValue(key, out var countValue))
-        {
-            counts[key] = countValue + delta;
-            return;
-        }
-
-        if (state.Values.TryGetValue("$unithealth", out var healthObj)
-            && healthObj is Dictionary<string, object?> unitHealth
-            && unitHealth.ContainsKey(key))
-        {
-            unitHealth[key] = AddDelta(unitHealth[key], delta);
-            return;
-        }
-
-        state.Values[key] = AddDelta(state.Values.TryGetValue(key, out var value) ? value : null, delta);
-    }
-
-    private static int AddDelta(object? value, int delta)
-    {
-        return TryToInt(value, out var number) ? number + delta : delta;
-    }
-
     private static Dictionary<string, object?> CreateInfo(ModuleDefinition module, GameState state)
     {
         return new Dictionary<string, object?>
@@ -1476,7 +1632,7 @@ public static class ModuleLogic
 public static class ModuleConditionEvaluator
 {
     private static readonly Regex InRegex = new(
-        @"^\s*(?<field>.+?)\s+(?<op>not\s+in|in)\s*\((?<value>.*?)\)\s*$",
+        @"^\s*(?<field>.+?)\s+(?<op>not\s+in|in)(?:\s*\((?<value>.*?)\)|\s+(?<array>[^\s(),&|]+))\s*$",
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     private static readonly Regex ComparisonRegex = new(
@@ -1622,20 +1778,60 @@ public static class ModuleConditionEvaluator
         if (inMatch.Success)
         {
             var inField = inMatch.Groups["field"].Value.Trim();
-            if (SpellIdConditionFields.Contains(inField) || ItemIdConditionFields.Contains(inField))
+            if (ItemIdConditionFields.Contains(inField))
             {
                 error = $"{inField} 仅支持 == 或 != 判断。";
                 return false;
             }
 
             var inLeft = ResolveValue(state, inField, failedSpells, insertItems);
-            if (inLeft is null && (IsStructuredSpellReference(inField) || NameplateStateLayout.IsComputedTtdField(inField)))
+            if (inLeft is null && (inField is ShigureConditionFields.VolumeRecognition or "state.音量识别"
+                || IsStructuredSpellReference(inField)
+                || NameplateStateLayout.IsComputedTtdField(inField)
+                || NameplateStateLayout.IsCastCountdownField(inField)))
             {
                 matched = false;
                 return true;
             }
             var inOp = NormalizeOperator(inMatch.Groups["op"].Value);
-            var values = ParseListLiterals(inMatch.Groups["value"].Value);
+            IReadOnlyList<object?> values;
+            if (inMatch.Groups["array"].Success)
+            {
+                var arrayName = inMatch.Groups["array"].Value;
+                if (!state.Values.TryGetValue("$numberArrays", out var arraysValue)
+                    || arraysValue is not IReadOnlyDictionary<string, IReadOnlySet<long>> arrays
+                    || !arrays.TryGetValue(arrayName, out var numbers))
+                {
+                    error = $"数组“{arrayName}”不存在。";
+                    return false;
+                }
+
+                values = numbers.Select(number => (object?)number).ToArray();
+            }
+            else
+            {
+                values = ParseListLiterals(inMatch.Groups["value"].Value);
+            }
+
+            if (SpellIdConditionFields.Contains(inField))
+            {
+                // 玩家施法技能等字段保留本地索引协议；数组里存的仍是原始 spellID。
+                if (spellIndices is null)
+                {
+                    matched = false;
+                    return true;
+                }
+                var localIndices = new List<object?>();
+                foreach (var value in values)
+                {
+                    if (TryToInt64(value, out var spellId)
+                        && spellIndices.TryGetValue(spellId, out var localIndex))
+                    {
+                        localIndices.Add(localIndex);
+                    }
+                }
+                values = localIndices;
+            }
             return TryCompareIn(inLeft, inOp, values, out matched, out error);
         }
 
@@ -1645,7 +1841,10 @@ public static class ModuleConditionEvaluator
             var invert = trimmed.StartsWith('!');
             var fieldName = invert ? trimmed[1..].Trim() : trimmed;
             var value = ResolveValue(state, fieldName, failedSpells, insertItems);
-            if (value is null && (IsStructuredSpellReference(fieldName) || NameplateStateLayout.IsComputedTtdField(fieldName)))
+            if (value is null && (fieldName is ShigureConditionFields.VolumeRecognition or "state.音量识别"
+                || IsStructuredSpellReference(fieldName)
+                || NameplateStateLayout.IsComputedTtdField(fieldName)
+                || NameplateStateLayout.IsCastCountdownField(fieldName)))
             {
                 matched = false;
                 return true;
@@ -1656,7 +1855,10 @@ public static class ModuleConditionEvaluator
 
         var comparisonField = comparison.Groups["field"].Value.Trim();
         var left = ResolveValue(state, comparisonField, failedSpells, insertItems);
-        if (left is null && (IsStructuredSpellReference(comparisonField) || NameplateStateLayout.IsComputedTtdField(comparisonField)))
+        if (left is null && (comparisonField is ShigureConditionFields.VolumeRecognition or "state.音量识别"
+            || IsStructuredSpellReference(comparisonField)
+            || NameplateStateLayout.IsComputedTtdField(comparisonField)
+            || NameplateStateLayout.IsCastCountdownField(comparisonField)))
         {
             matched = false;
             return true;
@@ -1664,6 +1866,17 @@ public static class ModuleConditionEvaluator
         var op = comparison.Groups["op"].Value;
         var rawRight = comparison.Groups["value"].Value.Trim();
         var right = ParseLiteral(rawRight);
+        if (comparisonField is ShigureConditionFields.SoundRecognition or "state.声音识别")
+        {
+            if (op != "==")
+            {
+                error = "声音识别仅支持 == 音效名称。";
+                return false;
+            }
+            matched = left is string detected && detected.Length > 0
+                && string.Equals(detected, right?.ToString(), StringComparison.Ordinal);
+            return true;
+        }
         if (SpellIdConditionFields.Contains(comparisonField))
         {
             if (op is not ("==" or "!="))
@@ -1778,7 +1991,7 @@ public static class ModuleConditionEvaluator
         }
     }
 
-    private static object? ResolveValue(
+    internal static object? ResolveValue(
         GameState state,
         string fieldName,
         IReadOnlyDictionary<int, long>? failedSpells = null,

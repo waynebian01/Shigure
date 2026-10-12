@@ -10,6 +10,8 @@ function Shingen:RefreshPlayerState()
     self:RefreshPlayerPetState()
     self:RefreshPlayerCombatState()
     self:SetPlayerMoving(IsPlayerMoving())
+    self:UpdateStateBlock("状态", "自动射击")
+    self:UpdateStateBlock("状态", "自动攻击")
     self:RefreshPlayerCastStateBlocks()
     self:UpdatePlayerHealth()
     self:RefreshAssistedCombatSuggestion()
@@ -28,7 +30,6 @@ function Shingen:RefreshPlayerState()
     self:RefreshTargetPowerState()
     self:RefreshFocusPowerState()
     self:RefreshBossUnitStates()
-    self:RefreshEnemyCounts()
     self:RebuildGroupRoster()
     self:RefreshAllPlayerPowers()
     C_Timer.After(1, function()
@@ -49,6 +50,7 @@ function Shingen:LoadPlayerBlocks(specIndex)
         items = {},
         auras = {},
         spells = {},
+        overrides = {},
         counts = {},
         nameplates = nil,
     }
@@ -81,7 +83,11 @@ function Shingen:LoadPlayerBlocks(specIndex)
                         if name then
                             local key = bareKeyCategories[category] and name or (category .. name)
                             blocks.state[key] = index
-                            index = index + 1
+                            local rgbState = (name == "NPCID" and category == "目标")
+                                or name == "施法技能" and (category == "目标" or category == "焦点"
+                                or category == "首领1" or category == "首领2" or category == "首领3"
+                                or category == "首领4" or category == "首领5")
+                            index = index + (rgbState and 2 or 1)
                         end
                     end
                 end
@@ -90,7 +96,7 @@ function Shingen:LoadPlayerBlocks(specIndex)
             for _, name in ipairs(t.states) do
                 if name then
                     blocks.state[name] = index
-                    index = index + 1
+                    index = index + (name == "目标NPCID" and 2 or 1)
                 end
             end
         end
@@ -108,7 +114,7 @@ function Shingen:LoadPlayerBlocks(specIndex)
                     if aura.isPlayer == true then
                         auraFilter = auraFilter .. "|PLAYER"
                     end
-                    local hasApplications = type(aura.maxApps) == "number" and aura.maxApps > 0
+                    local hasApplications = aura.maxApps == true
                     blocks.auras[index] = {
                         name = aura.name,
                         spellId = aura.spellId,
@@ -180,9 +186,9 @@ function Shingen:LoadPlayerBlocks(specIndex)
                     blocks.spells[spellId].inSpellBook = spell.inSpellBook
                 end
                 local countType
-                if spell.charge and type(spell.maxCharge) == "number" then
+                if spell.charge == true then
                     countType = "charge"
-                elseif type(spell.castCount) == "number" and spell.castCount > 0 then
+                elseif spell.castCount == true then
                     countType = "castCount"
                 end
                 if countType and not countSpellIds[spellId] then
@@ -192,6 +198,23 @@ function Shingen:LoadPlayerBlocks(specIndex)
                     index = index + 1
                 end
             end
+        end
+    end
+
+    -- 替换技与 Shigure 转换器一致，按原始 ID 升序，每行占一个像素。
+    if type(t.override) == "table" then
+        local originalIDs = {}
+        for originalID, info in pairs(t.override) do
+            if type(originalID) == "number" and originalID > 0 and originalID % 1 == 0
+                and type(info) == "table" and type(info.overrideSpellID) == "table" then
+                originalIDs[#originalIDs + 1] = originalID
+            end
+        end
+        table.sort(originalIDs)
+        for _, originalID in ipairs(originalIDs) do
+            local info = t.override[originalID]
+            blocks.overrides[originalID] = { index = index, targets = info.overrideSpellID }
+            index = index + 1
         end
     end
 
@@ -236,18 +259,24 @@ function Shingen:LoadPlayerBlocks(specIndex)
         local stateFields = t.group.state
         if type(stateFields) ~= "table" then
             stateFields = {}
-            for _, field in ipairs({ "healthPercent", "role", "dispel", "class" }) do
+            for _, field in ipairs({ "healthPercent", "role", "dispel", "class", "dispelMagic", "dispelCurse", "dispelDisease", "dispelPoison", "dispelBleed" }) do
                 local configured = tonumber(t.group[field])
                 if configured and configured >= 0 then stateFields[#stateFields + 1] = field end
             end
         end
-        local supported = { healthPercent = true, role = true, dispel = true, class = true }
-        for _, field in ipairs(stateFields) do
-            if type(field) == "string" and supported[field] and not groups[field] then
+        local dispelFields = { "dispelMagic", "dispelCurse", "dispelDisease", "dispelPoison", "dispelBleed" }
+        local supported = { healthPercent = true, role = true, class = true,
+            dispelMagic = true, dispelCurse = true, dispelDisease = true, dispelPoison = true, dispelBleed = true }
+        local function AddGroupStateField(field)
+            -- 旧驱散在原位置展开；与 C# 的布局迁移保持一致。
+            if field == "dispel" then
+                for _, dispelField in ipairs(dispelFields) do AddGroupStateField(dispelField) end
+            elseif type(field) == "string" and supported[field] and not groups[field] then
                 groups.num = groups.num + 1
                 groups[field] = groups.num
             end
         end
+        for _, field in ipairs(stateFields) do AddGroupStateField(field) end
         -- 队伍启用时生命值和职责始终占位；与 config 转换器保持相同的追加顺序。
         for _, field in ipairs({ "healthPercent", "role" }) do
             if not groups[field] then
@@ -274,7 +303,7 @@ function Shingen:LoadPlayerBlocks(specIndex)
             if hasSpell then
                 groups.num = groups.num + 1
                 groups.aura[groups.num] = aura
-                if type(aura.maxApps) == "number" and aura.maxApps > 0 then
+                if aura.maxApps == true then
                     groups.num = groups.num + 1
                 end
             end
@@ -316,7 +345,7 @@ function Shingen:LoadPlayerBlocks(specIndex)
                 if hasSpell then
                     local valueOffset = blocks.nameplates.num + 1
                     blocks.nameplates.num = valueOffset
-                    local maxApps = type(aura.maxApps) == "number" and aura.maxApps > 0 and aura.maxApps or nil
+                    local maxApps = aura.maxApps == true and true or nil
                     tinsert(blocks.nameplates.auras, {
                         name = aura.name,
                         spellId = aura.spellId,
@@ -329,6 +358,19 @@ function Shingen:LoadPlayerBlocks(specIndex)
                 end
             end
         end
+        if t.nameplates.threat == true then
+            blocks.nameplates.num = blocks.nameplates.num + 1
+            blocks.nameplates.threatOffset = blocks.nameplates.num
+        end
+        if t.nameplates.castSpell == true then
+            blocks.nameplates.num = blocks.nameplates.num + 1
+            blocks.nameplates.castSpellOffset = blocks.nameplates.num
+            blocks.nameplates.num = blocks.nameplates.num + 1
+        end
+        if t.nameplates.castCountdown == true then
+            blocks.nameplates.num = blocks.nameplates.num + 1
+            blocks.nameplates.castCountdownOffset = blocks.nameplates.num
+        end
         local maxPixels = self.MainPixelMaxCount or self.MainPixelCount
         local nameplateEnd = index + mappingCount + self.NameplateSlotCount * blocks.nameplates.num
         if nameplateEnd - 1 > maxPixels then
@@ -340,11 +382,23 @@ function Shingen:LoadPlayerBlocks(specIndex)
     end
 
     -- 先按实际占用选定容量档位（可能改变格宽），再重建光环容器，避免容器按旧格宽定位。
+    self:ClearNpcIdPixel()
     if self.ApplyMainPixelCapacity then
         self:ApplyMainPixelCapacity(index - 1)
     end
 
     self.blocks = blocks
+    self:RefreshOverrideSpells()
+    self:UpdateStateBlock("目标", "NPCID")
+    -- 容量和索引确定后重建；字段关闭时释放旧像素。
+    self:ClearCreatureTypePixel()
+    if blocks.state["生物类型"] then
+        self:CreateCreatureTypePixel(blocks.state["生物类型"])
+    end
+    self:ClearPlayerLevelPixel()
+    if blocks.state["等级"] then
+        self:CreatePlayerLevelPixel(blocks.state["等级"])
+    end
     if self.ReleaseUnitAuraContainers then
         self:ReleaseUnitAuraContainers()
     elseif self.ReleasePlayerAuraContainers then

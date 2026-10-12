@@ -72,6 +72,9 @@ internal sealed class ModuleDependencyService
             throw new InvalidOperationException($"职业 {classId} 中不存在专精 {specId} 的配置。");
         }
 
+        FuyutsuiConfigConverter.EnsurePixelCapacity(spec, $"{Path.GetFileName(configDocument.FilePath)}[{specId}]",
+            NameplateStateLayout.SupportsImprovedGarrote(_classDirectory, classId, specId));
+
         var macrosDocument = ClassMacrosStore.Load(_classMacrosPath);
         var classKey = ClassMacrosStore.ToClassFileKey(classId.Value);
         if (!macrosDocument.Classes.TryGetValue(classKey, out var macros))
@@ -90,6 +93,8 @@ internal sealed class ModuleDependencyService
                 SpellsList = configDocument.SpellsList.Select(entry => new ModuleSpellListEntrySnapshot
                 {
                     SpellId = entry.SpellId,
+                    Index = entry.Index,
+                    Rank = entry.Rank,
                     Name = entry.Name
                 }).ToList(),
                 ItemsList = configDocument.ItemsList.Select(entry => new ModuleItemListEntrySnapshot
@@ -147,7 +152,8 @@ internal sealed class ModuleDependencyService
             }
             catch (Exception ex)
             {
-                result.Rejected.Add(new RejectedModuleDependency(module.Id, module.Name, ex.Message));
+                result.Rejected.Add(new RejectedModuleDependency(module.Id, module.Name, ex.Message,
+                    ex is FuyutsuiConfigConverter.PixelCapacityExceededException));
             }
         }
 
@@ -185,6 +191,13 @@ internal sealed class ModuleDependencyService
         MergeMacros(localMacros, snapshot.ClassId, snapshot.Macros, counters);
         EnsureMacroCapacity(snapshot.ClassId, localMacros);
 
+        if (counters.HasConfigChanges)
+        {
+            FuyutsuiConfigConverter.EnsurePixelCapacity(localSpec,
+                $"{Path.GetFileName(classPath)}[{snapshot.SpecId}]",
+                NameplateStateLayout.SupportsImprovedGarrote(_classDirectory, snapshot.ClassId, snapshot.SpecId));
+        }
+
         if (!counters.HasConfigChanges && counters.MacrosAdded == 0)
         {
             result.Conflicts.AddRange(counters.Conflicts.Select(message => $"{module.Name}: {message}"));
@@ -215,6 +228,14 @@ internal sealed class ModuleDependencyService
         }
 
         UpgradeLegacyItems(snapshot);
+
+        OverrideSpellLayout.Validate((snapshot.Config.Spec.Overrides ?? []).Select(entry =>
+            new ClassBlocksStore.OverrideEntry
+            {
+                Name = entry.Name,
+                OriginalId = entry.OriginalId,
+                TargetIds = entry.TargetIds ?? []
+            }));
 
         if (module.Match.ClassId != snapshot.ClassId
             || (_classOnly ? 1 : module.Match.SpecId) != snapshot.SpecId)
@@ -249,6 +270,12 @@ internal sealed class ModuleDependencyService
             .Any(aura => !GetAuraSpellIds(aura.SpellId, aura.SpellIds).Any()))
         {
             throw new InvalidDataException("依赖快照包含缺少有效 spellId 的光环。");
+        }
+
+        if ((snapshot.Config.Spec.Group?.Auras ?? [])
+            .Any(aura => !GetAuraSpellIds(aura.SpellId, aura.SpellIds).Any()))
+        {
+            throw new InvalidDataException("依赖快照包含缺少有效 spellId 的队伍光环。");
         }
 
         if ((snapshot.Config.Spec.Spells ?? []).Any(spell => !IsValidSpellId(spell.SpellId)))
@@ -287,6 +314,11 @@ internal sealed class ModuleDependencyService
         if ((snapshot.Config.SpellsList ?? []).Any(spell => !IsValidSpellId(spell.SpellId)))
         {
             throw new InvalidDataException("依赖快照包含缺少有效 spellId 的技能列表条目。");
+        }
+        if ((snapshot.Config.SpellsList ?? []).Any(spell => spell.Index < 0
+                || spell.Rank is { } rank && rank is < 1 or > 255))
+        {
+            throw new InvalidDataException("依赖快照中的技能等级必须为 1–255，技能组索引不能为负数。");
         }
 
         if ((snapshot.Config.ItemsList ?? []).Any(item => !IsValidItemId(item.ItemId)))
@@ -426,10 +458,15 @@ internal sealed class ModuleDependencyService
             Name = entry.Name,
             SpellId = entry.SpellId,
             Charge = entry.Charge,
-            MaxCharge = entry.MaxCharge,
             CastCount = entry.CastCount,
             ForcedKnown = entry.ForcedKnown,
             InSpellBook = entry.InSpellBook
+        }).ToList(),
+        Overrides = spec.Overrides.Select(entry => new ModuleOverrideSnapshot
+        {
+            Name = entry.Name,
+            OriginalId = entry.OriginalId,
+            TargetIds = (long?[])entry.TargetIds.Clone()
         }).ToList(),
         Group = spec.Group is null ? null : new ModuleGroupSnapshot
         {
@@ -438,12 +475,16 @@ internal sealed class ModuleDependencyService
             {
                 Name = entry.Name,
                 SpellId = entry.SpellId,
-                SpellIds = new List<long>(entry.SpellIds)
+                SpellIds = new List<long>(entry.SpellIds),
+                MaxApps = entry.MaxApps
             }).ToList()
         },
         Nameplates = spec.Nameplates is null ? null : new ModuleNameplateSnapshot
         {
             ImprovedGarrote = spec.Nameplates.ImprovedGarrote,
+            Threat = spec.Nameplates.Threat,
+            CastSpell = spec.Nameplates.CastSpell,
+            CastCountdown = spec.Nameplates.CastCountdown,
             Auras = spec.Nameplates.Auras.Select(CaptureAura).ToList()
         }
     };
@@ -531,7 +572,79 @@ internal sealed class ModuleDependencyService
         MergeAuras(local.Boss5HarmfulAuras, incoming.Boss5HarmfulAuras ?? [], "首领5减益", counters);
         MergeNameplates(local, incoming.Nameplates, counters);
         MergeSpells(local.Spells, incoming.Spells, counters);
-        // 队伍配置属于本地扫描布局；模块快照只为文件兼容保留，导入时不得比较或修改。
+        MergeOverrides(local.Overrides, incoming.Overrides ?? [], counters);
+        MergeGroup(local, incoming.Group, counters);
+    }
+
+    private static void MergeGroup(
+        ClassBlocksStore.SpecBlocks local,
+        ModuleGroupSnapshot? incoming,
+        MergeCounters counters)
+    {
+        if (incoming is null)
+        {
+            return;
+        }
+
+        if (local.Group is null)
+        {
+            local.Group = new ClassBlocksStore.GroupBlocks();
+            counters.ConfigAdded++;
+        }
+
+        // 旧快照使用偏移字段；新快照使用 State，并保留本地字段顺序。
+        var incomingStates = incoming.State ?? GroupStateLayout.LegacyFields.Where(field => field switch
+        {
+            "healthPercent" => incoming.HealthPercent is >= 0,
+            "role" => incoming.Role is >= 0,
+            "dispel" => incoming.Dispel is >= 0,
+            _ => false
+        }).ToList();
+        MergeStrings(local.Group.State, GroupStateLayout.EnsureRequired(incomingStates), counters);
+
+        foreach (var aura in incoming.Auras ?? [])
+        {
+            var existing = local.Group.Auras.FirstOrDefault(item => SpellIdentityMatches(
+                GetAuraSpellIds(item.SpellId, item.SpellIds), item.Name,
+                GetAuraSpellIds(aura.SpellId, aura.SpellIds), aura.Name));
+            if (existing is null)
+            {
+                var added = new ClassBlocksStore.GroupAuraEntry
+                {
+                    Name = aura.Name,
+                    SpellId = aura.SpellId,
+                    MaxApps = aura.MaxApps
+                };
+                if (aura.SpellIds is { Count: > 0 })
+                {
+                    added.SpellIds.AddRange(GetAuraSpellIds(aura.SpellId, aura.SpellIds));
+                }
+                local.Group.Auras.Add(added);
+                counters.ConfigAdded++;
+                continue;
+            }
+
+            // 复用光环元数据合并规则；队伍光环不携带玩家施放筛选。
+            var merged = new ClassBlocksStore.AuraEntry
+            {
+                Name = existing.Name,
+                SpellId = existing.SpellId ?? existing.SpellIds.Cast<long?>().FirstOrDefault(),
+                MaxApps = existing.MaxApps,
+                IsPlayer = true
+            };
+            merged.SpellIds.AddRange(existing.SpellIds);
+            MergeAuraMetadataCore(merged, aura.Name, aura.SpellId, aura.SpellIds, aura.MaxApps,
+                incomingIsPlayer: true, "队伍光环", counters);
+            existing.Name = merged.Name;
+            existing.SpellId = merged.SpellId;
+            existing.MaxApps = merged.MaxApps;
+            existing.SpellIds.Clear();
+            // Lua 序列化在有 spellIds 时只写列表，因此列表必须包含原来的主 ID。
+            if (merged.SpellIds.Count > 0)
+            {
+                existing.SpellIds.AddRange(GetAuraSpellIds(merged.SpellId, merged.SpellIds));
+            }
+        }
     }
 
     private static void MergeNameplates(
@@ -548,7 +661,10 @@ internal sealed class ModuleDependencyService
         {
             local.Nameplates = new ClassBlocksStore.NameplateBlocks
             {
-                ImprovedGarrote = incoming.ImprovedGarrote
+                ImprovedGarrote = incoming.ImprovedGarrote,
+                Threat = incoming.Threat,
+                CastSpell = incoming.CastSpell,
+                CastCountdown = incoming.CastCountdown
             };
             counters.ConfigAdded++;
         }
@@ -734,6 +850,51 @@ internal sealed class ModuleDependencyService
         }
     }
 
+    private static void MergeOverrides(
+        List<ClassBlocksStore.OverrideEntry> local,
+        IEnumerable<ModuleOverrideSnapshot> incoming,
+        MergeCounters counters)
+    {
+        foreach (var entry in incoming.OrderBy(entry => entry.OriginalId))
+        {
+            var existing = local.FirstOrDefault(item => item.OriginalId == entry.OriginalId);
+            if (existing is null)
+            {
+                var sameName = local.FirstOrDefault(item =>
+                    string.Equals(item.Name.Trim(), entry.Name.Trim(), StringComparison.Ordinal));
+                if (sameName is not null)
+                {
+                    counters.Conflicts.Add($"替换技名称“{entry.Name}”已被本地原始 ID {sameName.OriginalId} 使用，已跳过原始 ID {entry.OriginalId}。");
+                    continue;
+                }
+                local.Add(new ClassBlocksStore.OverrideEntry
+                {
+                    Name = entry.Name,
+                    OriginalId = entry.OriginalId,
+                    TargetIds = (long?[])entry.TargetIds.Clone()
+                });
+                counters.ConfigAdded++;
+                continue;
+            }
+            if (!string.Equals(existing.Name, entry.Name, StringComparison.Ordinal))
+                counters.Conflicts.Add($"替换技 {entry.OriginalId} 名称不同，已保留本地“{existing.Name}”。");
+            for (var slot = 0; slot < OverrideSpellLayout.TargetCount; slot++)
+            {
+                if (entry.TargetIds[slot] is not { } target) continue;
+                if (existing.TargetIds[slot] == target) continue;
+                // 同一目标出现在其它槽位时不能补齐，否则会改变模块的返回值含义。
+                if (existing.TargetIds[slot] is not null || existing.TargetIds.Contains(target))
+                {
+                    counters.Conflicts.Add($"替换技 {entry.OriginalId} 目标ID({slot + 1}) 冲突，已保留本地槽位。");
+                    continue;
+                }
+                existing.TargetIds[slot] = target;
+                counters.ConfigUpdated++;
+            }
+        }
+        OverrideSpellLayout.Validate(local);
+    }
+
     private static void MergeSpells(
         List<ClassBlocksStore.SpellEntry> local,
         IEnumerable<ModuleSpellSnapshot> incoming,
@@ -756,7 +917,6 @@ internal sealed class ModuleDependencyService
                 Name = entry.Name,
                 SpellId = entry.SpellId,
                 Charge = entry.Charge,
-                MaxCharge = entry.MaxCharge,
                 CastCount = entry.CastCount,
                 ForcedKnown = entry.ForcedKnown,
                 InSpellBook = entry.InSpellBook
@@ -910,7 +1070,6 @@ internal sealed class ModuleDependencyService
             target,
             incoming.Name,
             incoming.Charge,
-            incoming.MaxCharge,
             incoming.CastCount,
             incoming.ForcedKnown,
             incoming.InSpellBook,
@@ -926,7 +1085,6 @@ internal sealed class ModuleDependencyService
             target,
             incoming.Name,
             incoming.Charge,
-            incoming.MaxCharge,
             incoming.CastCount,
             incoming.ForcedKnown,
             incoming.InSpellBook,
@@ -937,7 +1095,6 @@ internal sealed class ModuleDependencyService
         ClassBlocksStore.SpellEntry target,
         string? incomingName,
         bool incomingCharge,
-        int? incomingMaxCharge,
         int? incomingCastCount,
         bool incomingForcedKnown,
         bool incomingInSpellBook,
@@ -961,11 +1118,6 @@ internal sealed class ModuleDependencyService
             changed = true;
         }
 
-        MergeNullable(
-            target.MaxCharge,
-            incomingMaxCharge,
-            value => target.MaxCharge = value,
-            "最大充能");
         MergeNullable(
             target.CastCount,
             incomingCastCount,
@@ -1065,33 +1217,54 @@ internal sealed class ModuleDependencyService
             .Select(item => item.Index)
             .ToHashSet();
 
-        foreach (var entry in incoming)
+        // 新快照的来源索引描述技能组，不能直接当成本地索引使用。
+        var incomingGroups = incoming.GroupBy(entry => entry.Index > 0
+            ? "index:" + entry.Index : "spell:" + entry.SpellId);
+        foreach (var group in incomingGroups)
         {
-            var byId = local.FirstOrDefault(item => item.SpellId == entry.SpellId);
-            if (byId is not null)
+            var entries = group.ToArray();
+            var anchors = entries.Select(entry => local.FirstOrDefault(item => item.SpellId == entry.SpellId))
+                .Where(item => item is not null).Cast<ClassBlocksStore.SpellsListEntry>()
+                .OrderBy(item => item.Rank ?? int.MaxValue).ThenBy(item => item.SpellId).ToArray();
+            var index = anchors.FirstOrDefault()?.Index ?? 0;
+            if (index == 0)
             {
-                // spellId 是跨模块稳定标识；索引是当前职业文件的本地编码。
-                // 同一 spellId 已存在时保留本地索引/名称，不因来源索引不同产生冲突。
-                continue;
+                var names = entries.Select(entry => entry.Name).Distinct(StringComparer.Ordinal).ToArray();
+                var namedIndices = entries[0].Index == 0 && names.Length == 1
+                    ? local.Where(item => string.Equals(item.Name, names[0], StringComparison.Ordinal))
+                        .Select(item => item.Index).Distinct().ToArray() : [];
+                index = namedIndices.Length == 1 ? namedIndices[0]
+                    : Enumerable.Range(1, MaxSpellsListIndex).FirstOrDefault(candidate => !usedIndices.Contains(candidate));
             }
-
-            var index = Enumerable.Range(1, MaxSpellsListIndex)
-                .FirstOrDefault(candidate => !usedIndices.Contains(candidate));
             if (index == 0)
             {
                 throw new InvalidOperationException(
-                    $"技能列表索引 1–{MaxSpellsListIndex} 已全部使用，无法导入 spellId {entry.SpellId}。");
+                    $"技能列表索引 1–{MaxSpellsListIndex} 已全部使用，无法导入 spellId {entries[0].SpellId}。");
             }
-
-            local.Add(new ClassBlocksStore.SpellsListEntry
+            foreach (var entry in entries)
             {
-                SpellId = entry.SpellId,
-                Index = index,
-                Name = entry.Name,
-                OriginalSpellId = 0
-            });
+                var byId = local.FirstOrDefault(item => item.SpellId == entry.SpellId);
+                if (byId is not null)
+                {
+                    // 保留本地索引、名称与等级，只补齐缺失的等级。
+                    if (byId.Rank is null && entry.Rank is >= 1 and <= 255)
+                    {
+                        byId.Rank = entry.Rank;
+                        counters.ConfigUpdated++;
+                    }
+                    continue;
+                }
+                local.Add(new ClassBlocksStore.SpellsListEntry
+                {
+                    SpellId = entry.SpellId,
+                    Index = index,
+                    Name = anchors.FirstOrDefault()?.Name ?? entry.Name,
+                    Rank = entry.Rank,
+                    OriginalSpellId = 0
+                });
+                counters.ConfigAdded++;
+            }
             usedIndices.Add(index);
-            counters.ConfigAdded++;
         }
     }
 
@@ -1407,7 +1580,6 @@ internal sealed class ModuleDependencyService
     private static bool SpellEquals(ClassBlocksStore.SpellEntry left, ModuleSpellSnapshot right)
         => left.SpellId == right.SpellId
            && left.Charge == right.Charge
-           && left.MaxCharge == right.MaxCharge
            && left.CastCount == right.CastCount
            && left.ForcedKnown == right.ForcedKnown
            && left.InSpellBook == right.InSpellBook;
@@ -1440,6 +1612,7 @@ internal sealed class ModuleDependencyImportResult
     public bool HasChanges => ConfigAdded > 0 || ConfigUpdated > 0 || MacrosAdded > 0;
 }
 
-internal sealed record RejectedModuleDependency(string ModuleId, string ModuleName, string Reason);
+internal sealed record RejectedModuleDependency(
+    string ModuleId, string ModuleName, string Reason, bool PixelCapacityExceeded = false);
 internal sealed record RemovedModuleStateField(string ModuleName, string Category, string Name);
 internal sealed record RemovedStateField(string Category, string Name);

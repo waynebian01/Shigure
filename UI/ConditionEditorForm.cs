@@ -8,7 +8,7 @@ namespace Shigure;
 /// <summary>
 /// 单个比较项: 与上一项的连接方式(且/或)、字段、判断符号、值。
 /// </summary>
-public sealed record ConditionTerm(bool OrWithPrevious, string Field, string Op, string Value);
+public sealed record ConditionTerm(bool OrWithPrevious, string Field, string Op, string Value, bool NamedArray = false);
 
 /// <summary>
 /// 条件表达式文本与比较项列表之间的双向转换。
@@ -17,7 +17,7 @@ public sealed record ConditionTerm(bool OrWithPrevious, string Field, string Op,
 public static class ConditionExpression
 {
     private static readonly Regex InRegex = new(
-        @"^\s*(?<field>.+?)\s+(?<op>not\s+in|in)\s*\((?<value>.*?)\)\s*$",
+        @"^\s*(?<field>.+?)\s+(?<op>not\s+in|in)(?:\s*\((?<value>.*?)\)|\s+(?<array>[^\s(),&|]+))\s*$",
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     private static readonly Regex ComparisonRegex = new(
@@ -71,7 +71,8 @@ public static class ConditionExpression
             builder.Append(term.Field).Append(' ').Append(op).Append(' ');
             if (IsInOperator(op))
             {
-                builder.Append('(').Append(value).Append(')');
+                if (term.NamedArray) builder.Append(value);
+                else builder.Append('(').Append(value).Append(')');
             }
             else
             {
@@ -91,7 +92,10 @@ public static class ConditionExpression
                 orWithPrevious,
                 inMatch.Groups["field"].Value.Trim(),
                 NormalizeOperator(inMatch.Groups["op"].Value),
-                NormalizeInValue(inMatch.Groups["value"].Value));
+                inMatch.Groups["array"].Success
+                    ? inMatch.Groups["array"].Value
+                    : NormalizeInValue(inMatch.Groups["value"].Value),
+                NamedArray: inMatch.Groups["array"].Success);
         }
 
         var comparison = ComparisonRegex.Match(term);
@@ -130,6 +134,14 @@ public static class ConditionExpression
 
         return text;
     }
+
+    public static bool IsArrayName(string? value)
+    {
+        var text = value?.Trim();
+        return !string.IsNullOrEmpty(text)
+            && Regex.IsMatch(text, @"^[^\s(),&|]+$")
+            && !long.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out _);
+    }
 }
 
 /// <summary>
@@ -138,6 +150,8 @@ public static class ConditionExpression
 /// </summary>
 public sealed class ConditionEditorForm : Form
 {
+    private VersionedSpellIconCatalog Catalog => SpellIconCatalog.ForVersion(_dataVersion);
+    private readonly string _dataVersion;
     private const string ConnectorColumn = "Connector";
     private const string TypeColumn = "Type";
     private const string ClassificationColumn = "Classification";
@@ -157,7 +171,7 @@ public sealed class ConditionEditorForm : Form
     private static readonly string[] AllOperators = ["==", "!=", ">", ">=", "<", "<=", "in", "not in"];
     private static readonly string[] TextOperators = ["==", "!=", "in", "not in"];
     private static readonly string[] BoolOperators = ["==", "!="];
-    private static readonly string[] SpellOperators = ["==", "!="];
+    private static readonly string[] SpellOperators = ["==", "!=", "in", "not in"];
     private static readonly string[] DelayOperators = ["=="];
     private static readonly CategoryItem[] CategoryItems =
     [
@@ -174,6 +188,7 @@ public sealed class ConditionEditorForm : Form
     private readonly IReadOnlyList<ConditionField> _valueReferenceFields;
     private readonly IReadOnlyList<ConditionSpell> _spells;
     private readonly IReadOnlyList<ConditionItem> _items;
+    private readonly IReadOnlyList<string> _numberArrayNames;
     private readonly Func<IReadOnlyList<ConditionField>>? _conditionFieldsProvider;
     private readonly Func<IReadOnlyList<ConditionSpell>>? _conditionSpellsProvider;
     private readonly Func<IReadOnlyList<ConditionItem>>? _conditionItemsProvider;
@@ -193,6 +208,7 @@ public sealed class ConditionEditorForm : Form
     public string ConditionText { get; private set; } = string.Empty;
     public int? DelayMs { get; private set; }
     public int? LogicDelayMs { get; private set; }
+    public int? MatchDelayMs { get; private set; }
     public bool? ContinueLogic { get; private set; }
 
     // 子条件: 与主条件是「且」、子条件彼此是「或」。allowSubConditions=false(默认)时不显示该区,
@@ -212,17 +228,23 @@ public sealed class ConditionEditorForm : Form
         IReadOnlyList<ConditionSpell>? spells = null,
         Func<IReadOnlyList<ConditionSpell>>? conditionSpellsProvider = null,
         IReadOnlyList<ConditionItem>? items = null,
-        Func<IReadOnlyList<ConditionItem>>? conditionItemsProvider = null)
+        Func<IReadOnlyList<ConditionItem>>? conditionItemsProvider = null,
+        IReadOnlyList<string>? numberArrayNames = null,
+        string dataVersion = "Retail",
+        int? matchDelayMs = null)
     {
+        _dataVersion = dataVersion;
         // 保存独立快照，避免父级字段集合后续刷新时影响当前弹窗；子弹窗则通过 provider 取得最新目录。
         _fields = fields.ToArray();
         _valueReferenceFields = _fields
-            .Where(field => field.Type == ConditionFieldType.Int
-                && field.Category is ConditionFieldCategory.DynamicValue
-                    or ConditionFieldCategory.DynamicUnit)
+            .Where(field => field.Type is ConditionFieldType.Int or ConditionFieldType.Number
+                && (field.Category is ConditionFieldCategory.DynamicValue or ConditionFieldCategory.DynamicUnit
+                    || (field.Category == ConditionFieldCategory.Shigure
+                        && !ShigureConditionFields.IsRuleSetting(field.Name))))
             .ToArray();
         _spells = (spells ?? []).ToArray();
         _items = (items ?? []).ToArray();
+        _numberArrayNames = (numberArrayNames ?? []).ToArray();
         _conditionFieldsProvider = conditionFieldsProvider;
         _conditionSpellsProvider = conditionSpellsProvider;
         _conditionItemsProvider = conditionItemsProvider;
@@ -260,6 +282,12 @@ public sealed class ConditionEditorForm : Form
                 ShigureConditionFields.LogicDelay,
                 "==",
                 logicDelayMs.Value.ToString(CultureInfo.InvariantCulture)));
+        }
+
+        if (_allowRuleSettings && matchDelayMs is > 0)
+        {
+            AddRow(new ConditionTerm(false, ShigureConditionFields.MatchDelay, "==",
+                matchDelayMs.Value.ToString(CultureInfo.InvariantCulture)));
         }
 
         if (_allowRuleSettings && continueLogic is true)
@@ -319,7 +347,7 @@ public sealed class ConditionEditorForm : Form
 
     private void OnSpellIconCatalogChanged()
     {
-        if (IsDisposed || Disposing || !IsHandleCreated)
+        if (IsDisposed || Disposing)
         {
             return;
         }
@@ -340,9 +368,9 @@ public sealed class ConditionEditorForm : Form
         AutoScaleMode = AutoScaleMode.Dpi;
         BackColor = UiTheme.Surface;
         ForeColor = UiTheme.Text;
-        // 默认高度相对原 650/460 翻倍；宽度固定，高度可调并缓存。
+        // 默认高度相对原 650/460 翻倍；宽高均可调并缓存。
         var baseHeight = _allowSubConditions ? 650 : 460;
-        UiTheme.ConfigureFixedWidthResizableHeight(this, 1080, baseHeight * 2, baseHeight);
+        UiTheme.ConfigureResizableDialog(this, 1080, baseHeight * 2, 980, baseHeight);
         ShowInTaskbar = false;
         StartPosition = FormStartPosition.CenterParent;
 
@@ -554,7 +582,9 @@ public sealed class ConditionEditorForm : Form
             spells: spells,
             conditionSpellsProvider: _conditionSpellsProvider,
             items: items,
-            conditionItemsProvider: _conditionItemsProvider);
+            conditionItemsProvider: _conditionItemsProvider,
+            numberArrayNames: _numberArrayNames,
+            dataVersion: _dataVersion);
         return editor.ShowDialog(this) == DialogResult.OK ? editor.ConditionText : null;
     }
 
@@ -608,6 +638,8 @@ public sealed class ConditionEditorForm : Form
             HeaderText = "值",
             Width = 140,
             MinimumWidth = 100,
+            // 值列只占剩余空间，避免缓存的较大列宽把右侧删除按钮挤出可视区。
+            AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill,
             SortMode = DataGridViewColumnSortMode.NotSortable
         });
         _conditionsGrid.Columns.Add(new DataGridViewButtonColumn
@@ -700,6 +732,7 @@ public sealed class ConditionEditorForm : Form
                 "插入物品" => "插入物品，条件保存物品列表中的 itemId",
                 "施法技能" => "施法技能，条件保存技能列表中的 spellId",
                 "上个技能" => "上个技能，条件保存技能列表中的 spellId",
+                ShigureConditionFields.MatchDelay => "条件从命中变为不命中后，继续保持命中的时间；恢复命中会取消倒计时。",
                 _ => e.Value?.ToString() ?? string.Empty
             };
             return;
@@ -938,12 +971,12 @@ public sealed class ConditionEditorForm : Form
                 SpellValueItem spell => new UiDropDownOption(
                     spell.Value,
                     spell.Display,
-                    spell.Missing ? null : SpellIconCatalog.Get(spell.SpellId),
+                    spell.Missing ? null : Catalog.Get(spell.SpellId),
                     spell.Index?.ToString(CultureInfo.InvariantCulture)),
                 ItemValueItem itemEntry => new UiDropDownOption(
                     itemEntry.Value,
                     itemEntry.Display,
-                    itemEntry.Missing ? null : SpellIconCatalog.GetItem(itemEntry.ItemId),
+                    itemEntry.Missing ? null : Catalog.GetItem(itemEntry.ItemId),
                     itemEntry.Index?.ToString(CultureInfo.InvariantCulture)),
                 _ => new UiDropDownOption(item.ToString() ?? string.Empty, item.ToString() ?? string.Empty)
             })
@@ -974,6 +1007,28 @@ public sealed class ConditionEditorForm : Form
             selected =>
             {
                 cell.Value = selected.Value?.ToString() ?? string.Empty;
+                if (SelectedField(_conditionsGrid.Rows[rowIndex])?.Name == ShigureConditionFields.SoundRecognition
+                    && selected.Value?.ToString() == SoundCatalog.ImportOption)
+                {
+                    cell.Value = currentValue;
+                    using var picker = new OpenFileDialog
+                    {
+                        Title = "导入声音识别音效", Filter = "音效文件 (*.wav;*.ogg)|*.wav;*.ogg",
+                        CheckFileExists = true
+                    };
+                    if (picker.ShowDialog(this) != DialogResult.OK) return;
+                    try
+                    {
+                        var name = SoundCatalog.Import(picker.FileName);
+                        cell.Items.Insert(cell.Items.Count - 1, name);
+                        cell.Value = name;
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(this, ex.Message, "导入音效", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    }
+                    return;
+                }
                 _conditionsGrid.InvalidateCell(cell);
             },
             closed: () =>
@@ -1127,11 +1182,11 @@ public sealed class ConditionEditorForm : Form
         _conditionComboDropDown = dropDown;
     }
 
-    private static Image? ResolveFieldIcon(FieldItem field)
+    private Image? ResolveFieldIcon(FieldItem field)
     {
         if (field.ItemId is > 0)
         {
-            return SpellIconCatalog.GetItem(field.ItemId.Value);
+            return Catalog.GetItem(field.ItemId.Value);
         }
 
         if (field.IsCustom
@@ -1144,7 +1199,7 @@ public sealed class ConditionEditorForm : Form
             || SpellFieldKey.TryParseAura(field.Name, out _, out spellId, out _)
             || SpellFieldKey.TryParseAuraMember(field.Name, out spellId, out _))
         {
-            return SpellIconCatalog.Get(spellId);
+            return Catalog.Get(spellId);
         }
 
         return null;
@@ -1370,6 +1425,11 @@ public sealed class ConditionEditorForm : Form
             return;
         }
 
+        if (!TryReadMatchDelay(out var matchDelayMs))
+        {
+            return;
+        }
+
         if (!TryReadContinueLogic(out var continueLogic))
         {
             return;
@@ -1391,6 +1451,7 @@ public sealed class ConditionEditorForm : Form
         ConditionText = text;
         DelayMs = delayMs;
         LogicDelayMs = logicDelayMs;
+        MatchDelayMs = matchDelayMs;
         ContinueLogic = continueLogic;
         DialogResult = DialogResult.OK;
     }
@@ -1712,7 +1773,7 @@ public sealed class ConditionEditorForm : Form
     {
         var field = SelectedField(row);
         var isRuleSetting = IsRuleSettingField(field);
-        var ops = isRuleSetting
+        var ops = isRuleSetting || field?.Name == ShigureConditionFields.SoundRecognition
             ? DelayOperators
             : SpellIdConditionFields.Contains(field?.Name) || ItemIdConditionFields.Contains(field?.Name)
                 ? SpellOperators
@@ -1737,7 +1798,34 @@ public sealed class ConditionEditorForm : Form
     private void ConfigureValueCell(DataGridViewRow row, string? rawValue, bool preserveRaw)
     {
         var field = SelectedField(row);
-        if (SpellIdConditionFields.Contains(field?.Name))
+        if (field?.Name == ShigureConditionFields.SoundRecognition)
+        {
+            // 音效直接显示文件名，留出下拉按钮和扩展名的空间。
+            var valueColumn = _conditionsGrid.Columns[ValueColumn]!;
+            valueColumn.Width = Math.Max(valueColumn.Width,
+                Math.Min(TextRenderer.MeasureText(SoundCatalog.DefaultFileName, _conditionsGrid.Font).Width
+                    + UiTheme.Scale(_conditionsGrid, 80), UiTheme.Scale(_conditionsGrid, 360)));
+            var typeColumn = _conditionsGrid.Columns[TypeColumn]!;
+            typeColumn.Width = Math.Max(typeColumn.Width,
+                TextRenderer.MeasureText("Shigure", _conditionsGrid.Font).Width
+                    + UiTheme.Scale(_conditionsGrid, 70));
+            var combo = new DataGridViewComboBoxCell
+            {
+                FlatStyle = FlatStyle.Flat, DisplayStyle = DataGridViewComboBoxDisplayStyle.DropDownButton
+            };
+            var names = SoundCatalog.GetNames();
+            foreach (var name in names) combo.Items.Add(name);
+            var selected = rawValue?.Trim().Trim('"', '\'') ?? string.Empty;
+            if (selected.Length == 0) selected = names.FirstOrDefault() ?? string.Empty;
+            if (!combo.Items.Contains(selected)) combo.Items.Add(selected);
+            combo.Items.Add(SoundCatalog.ImportOption);
+            combo.Value = selected;
+            combo.ToolTipText = $"从 {SoundCatalog.UserDirectory} 读取音效，按完整文件名判断；支持不超过 5 秒的 WAV / OGG 文件。";
+            row.Cells[ValueColumn] = combo;
+            return;
+        }
+        if (SpellIdConditionFields.Contains(field?.Name)
+            && !ConditionExpression.IsInOperator(row.Cells[OperatorColumn].Value?.ToString()))
         {
             ConfigureSpellValueCell(row, rawValue, preserveRaw);
             return;
@@ -1805,7 +1893,12 @@ public sealed class ConditionEditorForm : Form
                 ? number.ToString("0", CultureInfo.InvariantCulture)
                 : "0";
         }
-        else if (text.Length == 0 && field is { IsCustom: false, Type: ConditionFieldType.Int })
+        else if (!preserveRaw && field is { IsCustom: false, Type: ConditionFieldType.Number })
+        {
+            text = decimal.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var number)
+                ? number.ToString(CultureInfo.InvariantCulture) : "0";
+        }
+        else if (text.Length == 0 && field is { IsCustom: false, Type: ConditionFieldType.Int or ConditionFieldType.Number })
         {
             text = "0";
         }
@@ -1813,14 +1906,23 @@ public sealed class ConditionEditorForm : Form
         row.Cells[ValueColumn] = SupportsValueReference(row, field)
             ? new ReferenceValueCell { Value = text }
             : new DataGridViewTextBoxCell { Value = text };
+        if (field?.Name == ShigureConditionFields.VolumeRecognition)
+            row.Cells[ValueColumn].ToolTipText = "目标程序当前的音频峰值：0–100，支持小数；无声音时为 0。";
+        if (ConditionExpression.IsInOperator(row.Cells[OperatorColumn].Value?.ToString())
+            && _numberArrayNames.Count > 0)
+        {
+            row.Cells[ValueColumn].ToolTipText = "可输入数组名：" + string.Join("、", _numberArrayNames) + "；或输入逗号分隔的数字";
+        }
     }
 
-    // 数值字段的值既可手填数字, 也可引用动态数值字段; in/not in 是字面量列表, 不参与。
+    // in/fut in 可以从下拉选择模块数组，也可手填原有字面量列表。
     private bool SupportsValueReference(DataGridViewRow row, FieldItem? field)
     {
+        if (ConditionExpression.IsInOperator(row.Cells[OperatorColumn].Value?.ToString()))
+            return _numberArrayNames.Count > 0;
         return _valueReferenceFields.Count > 0
             && field is not null
-            && (field.IsCustom || field.Type == ConditionFieldType.Int)
+            && (field.IsCustom || field.Type is ConditionFieldType.Int or ConditionFieldType.Number)
             && !IsRuleSettingField(field)
             && !ConditionExpression.IsInOperator(row.Cells[OperatorColumn].Value?.ToString());
     }
@@ -1837,6 +1939,38 @@ public sealed class ConditionEditorForm : Form
 
         _conditionsGrid.CurrentCell = cell;
         var currentValue = cell.Value?.ToString()?.Trim() ?? string.Empty;
+        if (ConditionExpression.IsInOperator(_conditionsGrid.Rows[rowIndex].Cells[OperatorColumn].Value?.ToString()))
+        {
+            var arrayOptions = new List<UiDropDownOption>
+            {
+                new(currentValue, "手动输入列表", LeadingText: currentValue)
+            };
+            arrayOptions.AddRange(_numberArrayNames.Select(name => new UiDropDownOption(name, name)));
+            var bounds = _conditionsGrid.GetCellDisplayRectangle(columnIndex, rowIndex, cutOverflow: true);
+            ToolStripDropDown? arrayDropDown = null;
+            arrayDropDown = UiDropDownPopup.Show(
+                _conditionsGrid,
+                bounds,
+                arrayOptions,
+                currentValue,
+                selected =>
+                {
+                    var value = selected.Value?.ToString() ?? string.Empty;
+                    cell.Value = value;
+                    _conditionsGrid.InvalidateCell(cell);
+                    UpdatePreview();
+                    if (ReferenceEquals(selected, arrayOptions[0]))
+                        BeginInvoke(() => BeginEditValueCell(cell));
+                },
+                preferredWidth: 300,
+                closed: () =>
+                {
+                    if (ReferenceEquals(_conditionComboDropDown, arrayDropDown))
+                        _conditionComboDropDown = null;
+                });
+            _conditionComboDropDown = arrayDropDown;
+            return;
+        }
         // 首项回到手动数字: 当前填的是数字就保留, 填的是引用名则回落到 0。
         var manualValue = currentValue.Length > 0 && TryParseIntegerText(currentValue, out var number)
             ? number.ToString("0", CultureInfo.InvariantCulture)
@@ -1890,6 +2024,7 @@ public sealed class ConditionEditorForm : Form
 
     private void ConfigureSpellValueCell(DataGridViewRow row, string? rawValue, bool preserveRaw)
     {
+        var value = preserveRaw ? rawValue?.Trim() ?? string.Empty : string.Empty;
         var combo = new DataGridViewComboBoxCell
         {
             DisplayStyle = DataGridViewComboBoxDisplayStyle.DropDownButton,
@@ -1902,6 +2037,13 @@ public sealed class ConditionEditorForm : Form
                      .Where(spell => spell.SpellId > 0)
                      .DistinctBy(spell => spell.SpellId)
                      .OrderBy(spell => spell.Index)
+                     .ThenBy(spell => spell.SpellId)
+                     .GroupBy(spell => spell.Name, StringComparer.Ordinal)
+                     // 已保存的其他等级 ID 继续作为该同名选项的值，避免改写条件或误报缺失。
+                     .Select(group => group.FirstOrDefault(spell =>
+                         string.Equals(spell.SpellId.ToString(CultureInfo.InvariantCulture), value, StringComparison.Ordinal))
+                         ?? group.First())
+                     .OrderBy(spell => spell.Index)
                      .ThenBy(spell => spell.SpellId))
         {
             combo.Items.Add(new SpellValueItem(
@@ -1911,7 +2053,6 @@ public sealed class ConditionEditorForm : Form
                 spell.Index));
         }
 
-        var value = preserveRaw ? rawValue?.Trim() ?? string.Empty : string.Empty;
         if (value.Length == 0 && combo.Items.Count > 0)
         {
             value = ((SpellValueItem)combo.Items[0]!).Value;
@@ -1985,7 +2126,8 @@ public sealed class ConditionEditorForm : Form
     private string? GetMissingSpellMessage(DataGridViewRow row)
     {
         var field = SelectedField(row)?.Name;
-        if (!SpellIdConditionFields.Contains(field))
+        if (!SpellIdConditionFields.Contains(field)
+            || ConditionExpression.IsInOperator(row.Cells[OperatorColumn].Value?.ToString()))
         {
             return null;
         }
@@ -2044,7 +2186,9 @@ public sealed class ConditionEditorForm : Form
                 OrWithPrevious: i > 0 && row.Cells[ConnectorColumn].Value?.ToString() == "或",
                 field,
                 op,
-                value));
+                value,
+                NamedArray: ConditionExpression.IsInOperator(op)
+                    && _numberArrayNames.Contains(value, StringComparer.Ordinal)));
         }
 
         return terms;
@@ -2053,6 +2197,8 @@ public sealed class ConditionEditorForm : Form
     private static string ReadRowValue(DataGridViewRow row)
     {
         var value = row.Cells[ValueColumn].Value?.ToString() ?? string.Empty;
+        if (SelectedField(row)?.Name == ShigureConditionFields.SoundRecognition)
+            return "\"" + value.Trim().Trim('"', '\'') + "\"";
         return SelectedField(row) is { IsCustom: false, Type: ConditionFieldType.Bool }
             ? value.StartsWith("否", StringComparison.Ordinal) ? "false" : "true"
             : ConditionExpression.IsInOperator(row.Cells[OperatorColumn].Value?.ToString())
@@ -2116,14 +2262,15 @@ public sealed class ConditionEditorForm : Form
         _ = TryReadDelay(out var delayMs, showWarning: false);
         _ = TryReadLogicDelay(out var logicDelayMs, showWarning: false);
         _ = TryReadContinueLogic(out var continueLogic, showWarning: false);
-        var full = ComposePreview(CurrentConditionText(), delayMs, logicDelayMs, continueLogic);
+        _ = TryReadMatchDelay(out var matchDelayMs, showWarning: false);
+        var full = ComposePreview(CurrentConditionText(), delayMs, logicDelayMs, continueLogic, matchDelayMs);
         _previewLabel.Text = full.Length == 0 ? "预览: (无条件, 始终命中)" : $"预览: {full}";
         // 单行预览会被省略号截断, 悬停看完整表达式。
         _previewToolTip.SetToolTip(_previewLabel, full.Length == 0 ? string.Empty : full);
     }
 
     // 把主条件文本与子条件合成为可读的整体表达式(与 ModuleRule.DescribeCondition 同形)。
-    private string ComposePreview(string mainText, int? delayMs, int? logicDelayMs, bool? continueLogic)
+    private string ComposePreview(string mainText, int? delayMs, int? logicDelayMs, bool? continueLogic, int? matchDelayMs)
     {
         var conditionText = mainText;
         if (_subConditions.Count > 0)
@@ -2144,6 +2291,13 @@ public sealed class ConditionEditorForm : Form
             conditionText = conditionText.Length == 0
                 ? $"逻辑延迟 {logicDelayMs.Value} ms"
                 : $"{conditionText}；逻辑延迟 {logicDelayMs.Value} ms";
+        }
+
+        if (matchDelayMs is > 0)
+        {
+            conditionText = conditionText.Length == 0
+                ? $"命中延迟 {matchDelayMs.Value} ms"
+                : $"{conditionText}；命中延迟 {matchDelayMs.Value} ms";
         }
 
         if (continueLogic is true)
@@ -2173,6 +2327,9 @@ public sealed class ConditionEditorForm : Form
             out delayMs,
             showWarning);
     }
+
+    private bool TryReadMatchDelay(out int? delayMs, bool showWarning = true)
+        => TryReadRuleSettingDelay(ShigureConditionFields.MatchDelay, "命中延迟", out delayMs, showWarning);
 
     private bool TryReadContinueLogic(out bool? continueLogic, bool showWarning = true)
     {

@@ -6,7 +6,8 @@ public enum ConditionFieldType
 {
     Int,
     Bool,
-    String
+    String,
+    Number
 }
 
 public enum ConditionFieldCategory
@@ -22,14 +23,17 @@ public enum ConditionFieldCategory
 public static class ShigureConditionFields
 {
     public const string TotalCombatTimeSeconds = "总战斗时间(秒)";
+    public const string SoundRecognition = "声音识别";
+    public const string VolumeRecognition = "音量识别";
 
     // 仅供条件编辑器承载规则级配置，不会写入条件表达式参与状态求值。
     public const string Delay = "$shigure.delay";
     public const string LogicDelay = "$shigure.logicDelay";
+    public const string MatchDelay = "$shigure.matchDelay";
     public const string ContinueLogic = "$shigure.continueLogic";
 
     public static bool IsRuleSetting(string? fieldName)
-        => fieldName is Delay or LogicDelay or ContinueLogic;
+        => fieldName is Delay or LogicDelay or MatchDelay or ContinueLogic;
 }
 
 public sealed record ConditionField(
@@ -154,6 +158,10 @@ public sealed class ConditionFieldCatalog
     public IReadOnlyList<ConditionField> GetFields(int? classId, int? specId)
     {
         var fields = new List<ConditionField>();
+        fields.Add(new ConditionField(ShigureConditionFields.SoundRecognition, "声音识别",
+            ConditionFieldType.String, ConditionFieldCategory.Shigure));
+        fields.Add(new ConditionField(ShigureConditionFields.VolumeRecognition, "音量识别",
+            ConditionFieldType.Number, ConditionFieldCategory.Shigure));
         if (_config is null)
         {
             return fields;
@@ -197,7 +205,8 @@ public sealed class ConditionFieldCatalog
                     fields,
                     seen,
                     key,
-                    key,
+                    key.StartsWith(OverrideSpellLayout.Prefix, StringComparison.Ordinal)
+                        ? $"{ReadDisplayName(field) ?? key} / {ReadSpellId(field)}" : key,
                     ReadType(field),
                     ConditionFieldCategory.State,
                     classification,
@@ -274,6 +283,21 @@ public sealed class ConditionFieldCatalog
                     AddField(fields, seen, prefix + NameplateStateLayout.ImprovedGarroteField,
                         $"姓名板{slot} / 强化锁喉", ConditionFieldType.Int, ConditionFieldCategory.State, "姓名板");
                 }
+                if (JsonHelpers.GetInt(JsonHelpers.Get(nameplates, "threatOffset")) is > 0)
+                {
+                    AddField(fields, seen, prefix + NameplateStateLayout.ThreatField,
+                        $"姓名板{slot} / 仇恨值", ConditionFieldType.Int, ConditionFieldCategory.State, "姓名板");
+                }
+                if (JsonHelpers.GetInt(JsonHelpers.Get(nameplates, "castSpellOffset")) is > 0)
+                {
+                    AddField(fields, seen, prefix + NameplateStateLayout.CastSpellField,
+                        $"姓名板{slot} / 施法技能", ConditionFieldType.Int, ConditionFieldCategory.State, "姓名板");
+                }
+                if (JsonHelpers.GetInt(JsonHelpers.Get(nameplates, "castCountdownOffset")) is > 0)
+                {
+                    AddField(fields, seen, prefix + NameplateStateLayout.CastCountdownField,
+                        $"姓名板{slot} / 施法(倒计时)", ConditionFieldType.Int, ConditionFieldCategory.State, "姓名板");
+                }
                 for (var auraIndex = 1; auraIndex <= auraCount; auraIndex++)
                 {
                     var name = $"光环{auraIndex}";
@@ -334,7 +358,7 @@ public sealed class ConditionFieldCatalog
     /// 返回指定职业/专精下 group 队伍成员的字段(生命值/职责/驱散 + 该专精光环字段), 带类型。
     /// 供动态单位编辑器选择光环、以及条件编辑器构造 单位.字段 选项使用。
     /// </summary>
-    public IReadOnlyList<ConditionField> GetGroupFields(int? classId, int? specId)
+    public IReadOnlyList<ConditionField> GetGroupFields(int? classId, int? specId, bool includeLegacyDispel = false)
     {
         var fields = new List<ConditionField>();
         if (_config is null)
@@ -356,16 +380,26 @@ public sealed class ConditionFieldCatalog
                 continue;
             }
 
-            if (node is JsonObject field && field.ContainsKey("step") && seen.Add(key))
+            var fieldName = GroupDispelCatalog.NormalizeFieldName(key);
+            if (node is JsonObject field && field.ContainsKey("step") && seen.Add(fieldName))
             {
-                var displayName = ReadDisplayName(field) ?? key;
+                var displayName = GroupDispelCatalog.Entries.Any(entry => entry.FieldName == fieldName)
+                    ? fieldName : ReadDisplayName(field) ?? key;
                 var spellId = ReadSpellId(field);
                 fields.Add(new ConditionField(
-                    key,
+                    fieldName,
                     spellId is null ? displayName : $"{displayName} / {spellId}",
                     ReadType(field)));
             }
         }
+
+        // 旧驱散类型只由新时间字段推导，不占像素，供旧模块文本继续解析。
+        if (includeLegacyDispel && GroupDispelCatalog.Entries.Any(entry => seen.Contains(entry.FieldName)) && seen.Add("驱散"))
+            fields.Add(new ConditionField("驱散", "驱散（旧类型编号）", ConditionFieldType.Int));
+
+        if (includeLegacyDispel)
+            foreach (var entry in GroupDispelCatalog.Entries.Where(entry => seen.Contains(entry.FieldName)))
+                fields.Add(new ConditionField(entry.LegacyFieldName, entry.FieldName, ConditionFieldType.Int));
 
         // 治疗吸收由网格扫描注入，不在 config 的 group 字段里声明。
         if (seen.Add("治疗吸收"))
@@ -383,6 +417,24 @@ public sealed class ConditionFieldCatalog
         => _config is not null
             && JsonHelpers.Get(_config.BuildStateConfig(classId, specId), "nameplates") is JsonObject nameplates
             && JsonHelpers.GetInt(JsonHelpers.Get(nameplates, "improvedGarroteOffset")) is > 0;
+
+    /// <summary>姓名板是否配置了可选仇恨像素。</summary>
+    public bool HasNameplateThreat(int? classId, int? specId)
+        => _config is not null
+            && JsonHelpers.Get(_config.BuildStateConfig(classId, specId), "nameplates") is JsonObject nameplates
+            && JsonHelpers.GetInt(JsonHelpers.Get(nameplates, "threatOffset")) is > 0;
+
+    /// <summary>姓名板是否配置了原始施法 spellID 像素。</summary>
+    public bool HasNameplateCastSpell(int? classId, int? specId)
+        => _config is not null
+            && JsonHelpers.Get(_config.BuildStateConfig(classId, specId), "nameplates") is JsonObject nameplates
+            && JsonHelpers.GetInt(JsonHelpers.Get(nameplates, "castSpellOffset")) is > 0;
+
+    /// <summary>姓名板是否配置了施法及引导剩余时间像素。</summary>
+    public bool HasNameplateCastCountdown(int? classId, int? specId)
+        => _config is not null
+            && JsonHelpers.Get(_config.BuildStateConfig(classId, specId), "nameplates") is JsonObject nameplates
+            && JsonHelpers.GetInt(JsonHelpers.Get(nameplates, "castCountdownOffset")) is > 0;
 
     /// <summary>返回姓名板光环，字段名统一为 auras.{spellId}.value。</summary>
     public IReadOnlyList<ConditionField> GetNameplateAuraFields(int? classId, int? specId)

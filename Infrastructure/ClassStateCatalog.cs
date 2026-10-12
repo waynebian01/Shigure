@@ -53,12 +53,12 @@ internal static class ClassStateCatalog
     [
         (CategoryState,
         [
-            "职业", "专精", "有效性", "地图", "战斗时间", "移动",
+            "职业", "专精", "等级", "有效性", "地图", "战斗时间", "移动",
             "生命值", "一键辅助", "插入法术", "插入物品", "队伍类型", "队伍人数",
-            "首领战", "难度", "英雄天赋", "施法目标", "施法技能",
-            "敌人数量", "敌人数-无仇恨", "敌人数-有仇恨",
+            "首领战", "难度", "英雄天赋", "施法目标", "施法技能", "技能等级", "生物类型",
             "施法(正计时)", "施法(倒计时)", "引导", "蓄力", "蓄力层数",
-            "上个技能", "公共冷却",
+            "上个技能", "公共冷却", "自动射击", "自动攻击",
+            "魔法", "诅咒", "疾病", "中毒", "流血",
         ]),
         (CategorySpecial,
         [
@@ -66,8 +66,8 @@ internal static class ClassStateCatalog
             "倒数", "EX首领技能类型", "EX首领技能事件", "EX首领技能倒计时",
             "EX小怪技能类型", "EX小怪技能事件", "EX小怪技能倒计时",
             "BigWigs首领技能类型", "BigWigs首领技能事件", "BigWigs首领技能倒计时",
-            "酒池", "符文", "姿态", "神圣军备", "自律", "天启骑士数量",
-            "英勇打击", "吸血鬼打击", "收割者战刃", "沸点", "强化锁喉", "目标强化锁喉",
+            "酒池", "符文", "姿态", "自律", "天启骑士数量",
+            "英勇打击", "收割者战刃", "沸点", "强化锁喉",
             "风暴涌流图腾", "风暴涌流图腾数量", "治疗之泉图腾", "治疗之泉图腾数量",
         ]),
         (CategoryConfig,
@@ -82,11 +82,11 @@ internal static class ClassStateCatalog
         ]),
         (CategoryTarget,
         [
-            "类型", "驱散类型", "生命值", "能量值", "距离", "施法(倒计时)", "施法(正计时)", "施法可打断", "引导", "引导可打断"
+            "类型", "驱散类型", "生命值", "能量值", "距离", "施法技能", "NPCID", "施法(倒计时)", "施法(正计时)", "施法可打断", "引导", "引导可打断"
         ]),
         (CategoryFocus,
         [
-            "类型", "驱散类型", "生命值", "能量值", "距离", "施法(倒计时)", "施法(正计时)", "施法可打断", "引导", "引导可打断"
+            "类型", "驱散类型", "生命值", "能量值", "距离", "施法技能", "施法(倒计时)", "施法(正计时)", "施法可打断", "引导", "引导可打断"
         ]),
         (CategoryMouseover,
         [
@@ -98,37 +98,40 @@ internal static class ClassStateCatalog
         ]),
         (CategoryBoss1,
         [
-            "类型", "驱散类型", "生命值", "能量值", "距离", "施法(倒计时)", "施法(正计时)", "施法可打断", "引导", "引导可打断"
+            "类型", "驱散类型", "生命值", "能量值", "距离", "施法技能", "施法(倒计时)", "施法(正计时)", "施法可打断", "引导", "引导可打断"
         ]),
         (CategoryBoss2,
         [
-            "类型", "驱散类型", "生命值", "能量值", "距离", "施法(倒计时)", "施法(正计时)", "施法可打断", "引导", "引导可打断"
+            "类型", "驱散类型", "生命值", "能量值", "距离", "施法技能", "施法(倒计时)", "施法(正计时)", "施法可打断", "引导", "引导可打断"
         ]),
         (CategoryBoss3,
         [
-            "类型", "驱散类型", "生命值", "能量值", "距离", "施法(倒计时)", "施法(正计时)", "施法可打断", "引导", "引导可打断"
+            "类型", "驱散类型", "生命值", "能量值", "距离", "施法技能", "施法(倒计时)", "施法(正计时)", "施法可打断", "引导", "引导可打断"
         ]),
         (CategoryBoss4,
         [
-            "类型", "驱散类型", "生命值", "能量值", "距离", "施法(倒计时)", "施法(正计时)", "施法可打断", "引导", "引导可打断"
+            "类型", "驱散类型", "生命值", "能量值", "距离", "施法技能", "施法(倒计时)", "施法(正计时)", "施法可打断", "引导", "引导可打断"
         ]),
         (CategoryBoss5,
         [
-            "类型", "驱散类型", "生命值", "能量值", "距离", "施法(倒计时)", "施法(正计时)", "施法可打断", "引导", "引导可打断"
+            "类型", "驱散类型", "生命值", "能量值", "距离", "施法技能", "施法(倒计时)", "施法(正计时)", "施法可打断", "引导", "引导可打断"
         ])
     ];
 
-    public static IReadOnlyList<StateOption> GetOptions(string category)
+    public static IReadOnlyList<StateOption> GetOptions(string category, string? version = null)
     {
         var definition = Categories.FirstOrDefault(item =>
             string.Equals(item.Category, category, StringComparison.Ordinal));
         return definition.Names is null
             ? []
-            : definition.Names.Select(name => new StateOption(category, name)).ToList();
+            : definition.Names
+                .Where(name => category != CategoryTarget || name != "NPCID"
+                    || version is null || string.Equals(version, "Forever", StringComparison.OrdinalIgnoreCase))
+                .Select(name => new StateOption(category, name)).ToList();
     }
 
-    public static IReadOnlyList<StateOption> GetAllOptions(string category)
-        => GetOptions(category);
+    public static IReadOnlyList<StateOption> GetAllOptions(string category, string? version = null)
+        => GetOptions(category, version);
 
     public static string GetCategoryDisplayName(string category)
         => string.Equals(category, CategoryState, StringComparison.Ordinal)

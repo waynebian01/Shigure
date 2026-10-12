@@ -35,12 +35,39 @@ internal static class PixelScanDecoder
             return rowData;
         }
 
-        for (var x = startX; x < pixels.Length; x++)
+        var rowWidth = 0;
+        for (var x = startX; x < pixels.Length;)
         {
             var color = Color.FromArgb(pixels[x]);
             if (IsTopRowEndMarker(color))
             {
                 break;
+            }
+
+            if (TryDecodeRgbSpellMarker(color, out var rgbStep, out var capacity))
+            {
+                // UI 缩放后色条不一定铺满捕获窗口，必须从实际终止格校准宽度。
+                if (rowWidth == 0)
+                {
+                    rowWidth = FindTopRowWidth(pixels, startX, x, rgbStep, capacity);
+                }
+                if (rowWidth == 0)
+                {
+                    // 色条不完整时不猜测 RGB 数据，防止把普通索引颜色当成 spellID。
+                    return rowData;
+                }
+                var divisor = capacity + 1;
+                var payloadX = startX + (int)(((long)(2 * rgbStep + 1) * rowWidth) / (2L * divisor));
+                if (payloadX < pixels.Length)
+                {
+                    rowData[rgbStep] = pixels[payloadX] & 0xFFFFFF;
+                }
+
+                // 截屏像素按中心点归属纹理；从下一格的第一个像素继续扫描。
+                var nextCellNumerator = 2L * (rgbStep + 1) * rowWidth - divisor;
+                var payloadEnd = startX + (int)((nextCellNumerator + 2L * divisor - 1) / (2L * divisor));
+                x = Math.Max(x + 1, payloadEnd);
+                continue;
             }
 
             if (TryDecodeTopRowBlock(color, out var step, out var value))
@@ -51,9 +78,50 @@ internal static class PixelScanDecoder
                     break;
                 }
             }
+
+            x++;
         }
 
         return rowData;
+    }
+
+    private static int FindTopRowWidth(ReadOnlySpan<int> pixels, int startX, int markerX, int markerStep, int capacity)
+    {
+        var divisor = capacity + 1;
+        for (var x = markerX + 1; x < pixels.Length; x++)
+        {
+            if (!IsTopRowEndMarker(Color.FromArgb(pixels[x])))
+            {
+                continue;
+            }
+
+            // RGB 数据也可能恰好为纯红；候选终止格必须与已观察到的标记和末格同时吻合。
+            while (x + 1 < pixels.Length && IsTopRowEndMarker(Color.FromArgb(pixels[x + 1])))
+            {
+                x++;
+            }
+            var width = x + 1 - startX;
+            var markerCenter = startX + (int)((long)(2 * markerStep - 1) * width / (2L * divisor));
+            if (pixels[markerCenter] != pixels[markerX])
+            {
+                continue;
+            }
+
+            var lastCenter = startX + (int)((long)(2 * capacity - 1) * width / (2L * divisor));
+            if (TryDecodeTopRowBlock(Color.FromArgb(pixels[lastCenter]), out var lastStep, out _) && lastStep == capacity)
+            {
+                return width;
+            }
+
+            // 最后两格也允许是一组 RGB 施法格，此时末格没有普通索引。
+            var lastMarkerCenter = startX + (int)((long)(2 * capacity - 3) * width / (2L * divisor));
+            if (TryDecodeRgbSpellMarker(Color.FromArgb(pixels[lastMarkerCenter]), out lastStep, out var lastCapacity)
+                && lastStep == capacity - 1 && lastCapacity == capacity)
+            {
+                return width;
+            }
+        }
+        return 0;
     }
 
     public static int? FindHealAbsorbGridY(ReadOnlySpan<int> pixels, int width, int height)
@@ -270,6 +338,20 @@ internal static class PixelScanDecoder
     private static bool IsGrayEndMarker(Color color) => color.R == 200 && color.G == 200 && color.B == 200;
     private static bool IsTopRowEndMarker(Color color)
         => color.R == MainPixelLayout.EndMarkerRed && color.G == 0 && color.B == 0;
+
+    private static bool TryDecodeRgbSpellMarker(Color color, out int step, out int capacity)
+    {
+        step = 0;
+        capacity = 0;
+        if (color.R is < 4 or > 7 || color.G == 0 || color.B is < 2 or > 4)
+        {
+            return false;
+        }
+
+        step = (color.R - 4) * TopRowSchemeSpan + color.G;
+        capacity = color.B * TopRowSchemeSpan;
+        return step >= 1 && step < capacity && capacity <= TopRowBlockCount;
+    }
 
     private static bool TryDecodeTopRowBlock(Color color, out int step, out int value)
     {

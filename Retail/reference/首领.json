@@ -1,0 +1,527 @@
+[
+  {
+    "title": "当前赛季",
+    "dungeons": [
+      {
+        "name": "烈毒之渊",
+        "bosses": [
+          {
+            "sequence": 1,
+            "name": "盘魂者内克扎莉",
+            "number": 16
+          },
+          {
+            "sequence": 2,
+            "name": "陵寝哨兵",
+            "number": 17
+          },
+          {
+            "sequence": 3,
+            "name": "迷失的探险者",
+            "number": 18
+          },
+          {
+            "sequence": 4,
+            "name": "万毒邪祟者瓦什尼克",
+            "number": 19
+          },
+          {
+            "sequence": 5,
+            "name": "斯索拉克",
+            "number": 20
+          },
+          {
+            "sequence": 6,
+            "name": "双子毒牙",
+            "number": 21
+          },
+          {
+            "sequence": 7,
+            "name": "盘卷祭坛",
+            "number": 22
+          },
+          {
+            "sequence": 8,
+            "name": "乌拉特克",
+            "number": 23
+          }
+        ]
+      },
+      {
+        "name": "潮缚石窟",
+        "bosses": [
+          {
+            "sequence": 1,
+            "name": "尼姆瑞莎·唤波者",
+            "number": 15
+          }
+        ]
+      },
+      {
+        "name": "毒牙祭坛",
+        "bosses": [
+          {
+            "sequence": 1,
+            "name": "拉维",
+            "number": 80
+          },
+          {
+            "sequence": 2,
+            "name": "扭缠盘蛇",
+            "number": 81
+          },
+          {
+            "sequence": 3,
+            "name": "祖尔加",
+            "number": 82
+          }
+        ]
+      },
+      {
+        "name": "纳洛拉克的洞穴",
+        "bosses": [
+          {
+            "sequence": 1,
+            "name": "囤宝狂人",
+            "number": 83
+          },
+          {
+            "sequence": 2,
+            "name": "寒冬哨兵",
+            "number": 84
+          },
+          {
+            "sequence": 3,
+            "name": "纳洛拉克",
+            "number": 85
+          }
+        ]
+      },
+      {
+        "name": "密谋小径",
+        "bosses": [
+          {
+            "sequence": 1,
+            "name": "凯斯媞亚·魔力之心",
+            "number": 86
+          },
+          {
+            "sequence": 2,
+            "name": "赞恩·刃悲",
+            "number": 87
+          },
+          {
+            "sequence": 3,
+            "name": "歼灭者萨祖克斯",
+            "number": 88
+          },
+          {
+            "sequence": 4,
+            "name": "利希尔·烬怒",
+            "number": 89
+          }
+        ]
+      },
+      {
+        "name": "夺目谷",
+        "bosses": [
+          {
+            "sequence": 1,
+            "name": "光明众花",
+            "number": 90
+          },
+          {
+            "sequence": 2,
+            "name": "圣光猎手伊库兹",
+            "number": 91
+          },
+          {
+            "sequence": 3,
+            "name": "护光者鲁伊亚",
+            "number": 92
+          },
+          {
+            "sequence": 4,
+            "name": "兹欧凯特",
+            "number": 93
+          }
+        ]
+      },
+      {
+        "name": "诸王之眠",
+        "bosses": [
+          {
+            "sequence": 1,
+            "name": "黄金风蛇",
+            "number": 94
+          },
+          {
+            "sequence": 2,
+            "name": "部族议会",
+            "number": 95
+          },
+          {
+            "sequence": 3,
+            "name": "殓尸者姆沁巴",
+            "number": 96
+          },
+          {
+            "sequence": 4,
+            "name": "达萨大王",
+            "number": 97
+          }
+        ]
+      },
+      {
+        "name": "红玉新生法池",
+        "bosses": [
+          {
+            "sequence": 1,
+            "name": "梅莉杜莎·寒妆",
+            "number": 98
+          },
+          {
+            "sequence": 2,
+            "name": "柯姬雅·焰蹄",
+            "number": 99
+          },
+          {
+            "sequence": 3,
+            "name": "基拉卡与厄克哈特·风脉",
+            "number": 100
+          }
+        ]
+      },
+      {
+        "name": "虚空之痕竞技场",
+        "bosses": [
+          {
+            "sequence": 1,
+            "name": "塔兹拉尔",
+            "number": 101
+          },
+          {
+            "sequence": 2,
+            "name": "阿特洛苏斯",
+            "number": 102
+          },
+          {
+            "sequence": 3,
+            "name": "煞戎努斯",
+            "number": 103
+          }
+        ]
+      },
+      {
+        "name": "塞塔里斯神庙",
+        "bosses": [
+          {
+            "sequence": 1,
+            "name": "阿德里斯和阿斯匹克斯",
+            "number": 104
+          },
+          {
+            "sequence": 2,
+            "name": "米利克萨",
+            "number": 105
+          },
+          {
+            "sequence": 3,
+            "name": "加瓦兹特",
+            "number": 106
+          },
+          {
+            "sequence": 4,
+            "name": "塞塔里斯的化身",
+            "number": 107
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "第一赛季",
+    "dungeons": [
+      {
+        "name": "虚影尖塔",
+        "bosses": [
+          {
+            "sequence": 1,
+            "name": "元首阿福扎恩",
+            "number": 1
+          },
+          {
+            "sequence": 2,
+            "name": "弗拉希乌斯",
+            "number": 2
+          },
+          {
+            "sequence": 3,
+            "name": "陨落之王萨哈达尔",
+            "number": 3
+          },
+          {
+            "sequence": 4,
+            "name": "威厄高尔和艾佐拉克",
+            "number": 4
+          },
+          {
+            "sequence": 5,
+            "name": "光盲先锋军",
+            "number": 5
+          },
+          {
+            "sequence": 6,
+            "name": "宇宙之冕",
+            "number": 6
+          }
+        ]
+      },
+      {
+        "name": "梦境裂隙",
+        "bosses": [
+          {
+            "sequence": 1,
+            "name": "奇美鲁斯，未梦之神",
+            "number": 7
+          }
+        ]
+      },
+      {
+        "name": "奎尔丹纳斯岛",
+        "bosses": [
+          {
+            "sequence": 1,
+            "name": "贝洛朗，奥的子嗣",
+            "number": 8
+          },
+          {
+            "sequence": 2,
+            "name": "至暗之夜降临",
+            "number": 9
+          }
+        ]
+      },
+      {
+        "name": "世界",
+        "bosses": [
+          {
+            "sequence": 1,
+            "name": "鲁阿夏尔",
+            "number": 10
+          },
+          {
+            "sequence": 2,
+            "name": "索姆贝兰",
+            "number": 11
+          },
+          {
+            "sequence": 3,
+            "name": "普雷达萨斯",
+            "number": 12
+          },
+          {
+            "sequence": 4,
+            "name": "克拉格平",
+            "number": 13
+          }
+        ]
+      },
+      {
+        "name": "孢陨幽境",
+        "bosses": [
+          {
+            "sequence": 1,
+            "name": "腐沼",
+            "number": 14
+          }
+        ]
+      },
+      {
+        "name": "节点希纳斯",
+        "bosses": [
+          {
+            "sequence": 1,
+            "name": "核技工程长卡斯雷瑟",
+            "number": 51
+          },
+          {
+            "sequence": 2,
+            "name": "核心守卫奈萨拉",
+            "number": 52
+          },
+          {
+            "sequence": 3,
+            "name": "洛萨克森",
+            "number": 53
+          }
+        ]
+      },
+      {
+        "name": "迈萨拉洞窟",
+        "bosses": [
+          {
+            "sequence": 1,
+            "name": "姆罗金和内克拉克斯",
+            "number": 54
+          },
+          {
+            "sequence": 2,
+            "name": "沃达扎",
+            "number": 55
+          },
+          {
+            "sequence": 3,
+            "name": "拉克图尔，聚魂之器",
+            "number": 56
+          }
+        ]
+      },
+      {
+        "name": "风行者之塔",
+        "bosses": [
+          {
+            "sequence": 1,
+            "name": "烬晓",
+            "number": 57
+          },
+          {
+            "sequence": 2,
+            "name": "被遗弃的二人组",
+            "number": 58
+          },
+          {
+            "sequence": 3,
+            "name": "指挥官克罗鲁科",
+            "number": 59
+          },
+          {
+            "sequence": 4,
+            "name": "无眠之心",
+            "number": 60
+          }
+        ]
+      },
+      {
+        "name": "魔导师平台",
+        "bosses": [
+          {
+            "sequence": 1,
+            "name": "奥能金刚库斯托斯",
+            "number": 61
+          },
+          {
+            "sequence": 2,
+            "name": "瑟拉奈尔·日鞭",
+            "number": 62
+          },
+          {
+            "sequence": 3,
+            "name": "吉美尔鲁斯",
+            "number": 63
+          },
+          {
+            "sequence": 4,
+            "name": "迪詹崔乌斯",
+            "number": 64
+          }
+        ]
+      },
+      {
+        "name": "执政团之座",
+        "bosses": [
+          {
+            "sequence": 1,
+            "name": "晋升者祖拉尔",
+            "number": 65
+          },
+          {
+            "sequence": 2,
+            "name": "萨普瑞什",
+            "number": 66
+          },
+          {
+            "sequence": 3,
+            "name": "总督奈扎尔",
+            "number": 67
+          },
+          {
+            "sequence": 4,
+            "name": "鲁拉",
+            "number": 68
+          }
+        ]
+      },
+      {
+        "name": "艾杰斯亚学院",
+        "bosses": [
+          {
+            "sequence": 1,
+            "name": "维克萨姆斯",
+            "number": 69
+          },
+          {
+            "sequence": 2,
+            "name": "茂林古树",
+            "number": 70
+          },
+          {
+            "sequence": 3,
+            "name": "克罗兹",
+            "number": 71
+          },
+          {
+            "sequence": 4,
+            "name": "多拉苟萨的回响",
+            "number": 72
+          }
+        ]
+      },
+      {
+        "name": "萨隆矿坑",
+        "bosses": [
+          {
+            "sequence": 1,
+            "name": "熔炉之主加弗斯特",
+            "number": 73
+          },
+          {
+            "sequence": 2,
+            "name": "伊克和科瑞克",
+            "number": 74
+          },
+          {
+            "sequence": 3,
+            "name": "天灾领主泰兰努斯",
+            "number": 75
+          }
+        ]
+      },
+      {
+        "name": "通天峰",
+        "bosses": [
+          {
+            "sequence": 1,
+            "name": "兰吉特",
+            "number": 76
+          },
+          {
+            "sequence": 2,
+            "name": "阿拉卡纳斯",
+            "number": 77
+          },
+          {
+            "sequence": 3,
+            "name": "鲁克兰",
+            "number": 78
+          },
+          {
+            "sequence": 4,
+            "name": "高阶贤者维里克斯",
+            "number": 79
+          }
+        ]
+      }
+    ]
+  }
+]

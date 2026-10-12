@@ -16,24 +16,25 @@ internal sealed record SpellIconDownloadResult(
 internal sealed class SpellIconPackageDownloadService : IDisposable
 {
     internal const string LatestReleaseApiUrl =
-        "https://api.github.com/repos/waynebian01/Shigure/releases/latest";
+        "https://api.github.com/repos/waynebian01/funkoh/releases/latest";
     internal const string LatestBrowserDownloadUrl =
-        "https://github.com/waynebian01/Shigure/releases/latest/download/SpellIcons.shgpack";
+        "https://github.com/waynebian01/funkoh/releases/latest/download/SpellIcons.shgpack";
     internal const string ReleasesPageUrl =
-        "https://github.com/waynebian01/Shigure/releases";
+        "https://github.com/waynebian01/funkoh/releases";
     private const string ReleasesApiUrl =
-        "https://api.github.com/repos/waynebian01/Shigure/releases?per_page=20";
+        "https://api.github.com/repos/waynebian01/funkoh/releases?per_page=20";
     private const string AssetName = "SpellIcons.shgpack";
     private static readonly TimeSpan ApiRequestTimeout = TimeSpan.FromSeconds(15);
 
     private readonly HttpClient _httpClient;
 
-    public SpellIconPackageDownloadService()
+    public SpellIconPackageDownloadService() : this(new HttpClient { Timeout = Timeout.InfiniteTimeSpan })
     {
-        _httpClient = new HttpClient
-        {
-            Timeout = Timeout.InfiniteTimeSpan
-        };
+    }
+
+    internal SpellIconPackageDownloadService(HttpClient httpClient)
+    {
+        _httpClient = httpClient;
         _httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("Shigure", "1.0"));
     }
 
@@ -95,8 +96,9 @@ internal sealed class SpellIconPackageDownloadService : IDisposable
             }
 
             progress?.Report(new SpellIconDownloadProgress("正在验证并安装数据包……", 100));
-            SpellIconCatalog.ValidatePackage(temporaryPath);
-            SpellIconCatalog.InstallPackage(temporaryPath);
+            await Task.Run(() => SpellIconCatalog.ValidatePackage(temporaryPath), cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
+            SpellIconCatalog.InstallPackage(temporaryPath, cancellationToken);
             return new SpellIconDownloadResult(
                 Changed: true,
                 UpToDate: false,
@@ -474,7 +476,7 @@ internal sealed class SpellIconPackageDownloadService : IDisposable
             var version = typeof(SpellIconPackageDownloadService).Assembly.GetName().Version;
             if (version is null || version.Build < 0 || version.Revision < 0)
             {
-                return "1.2.1.31";
+                return "1.2.1.33";
             }
 
             return $"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
@@ -482,7 +484,7 @@ internal sealed class SpellIconPackageDownloadService : IDisposable
     }
 
     internal static Uri GetCurrentVersionDownloadUri() =>
-        new($"https://github.com/waynebian01/Shigure/releases/download/{CurrentReleaseTag}/{AssetName}");
+        new($"https://github.com/waynebian01/funkoh/releases/download/{CurrentReleaseTag}/{AssetName}");
 
     private static async Task<string> ComputeSha256Async(
         string path,

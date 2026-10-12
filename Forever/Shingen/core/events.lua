@@ -3,7 +3,6 @@ local addon, ns = ...
 local isSec = issecretvalue
 
 local state = Shingen.state
-local nameplate = Shingen.nameplate
 local playerCountdownTicker = nil
 local playerCountdownRemaining = 0
 local COMBAT_UNIT_REFRESH_ORDER = {
@@ -83,6 +82,7 @@ function Shingen:ZONE_CHANGED_INDOORS()
 end
 
 function Shingen:PLAYER_ENTERING_WORLD()
+    self:RefreshOverrideSpells()
     state.mapID = C_Map.GetBestMapForUnit("player") or 0
     self:CacheCollectedMountSpells()
     self:RefreshChargedComboPoints()
@@ -144,7 +144,6 @@ function Shingen:RefreshCombatUnitPixels()
     if self.RefreshNameplatePixels then
         self:RefreshNameplatePixels()
     end
-    self:RefreshEnemyCounts()
 end
 
 function Shingen:PLAYER_REGEN_DISABLED()
@@ -183,8 +182,15 @@ function Shingen:UNIT_SPELLCAST_SENT(_, unitTarget, targetName, castGUID, spellI
 end
 
 local function SetUnitCastState(self, unit, stateField, isActive)
+    if type(unit) == "string" and unit:match("^nameplate%d+$") then
+        self:RefreshNameplateCastPixel(unit)
+        return true
+    end
     if not self:SetTrackedUnitCastState(unit, stateField, isActive) then return false end
-    if isActive then return true end
+    if isActive then
+        if unit ~= "player" then self:RefreshUnitCastStateBlocks(unit) end
+        return true
+    end
 
     if unit == "player" then
         if stateField == "casting" then
@@ -239,6 +245,15 @@ function Shingen:UNIT_SPELLCAST_CHANNEL_START(_, unitTarget, castGUID, spellID, 
     if unitTarget == "player" then
         state.channelingSpellID = spellID
         self:SetPlayerCastingSpell(spellID)
+    end
+end
+
+function Shingen:UNIT_SPELLCAST_FAILED(_, unitTarget, castGUID, spellID, castBarID)
+    if unitTarget ~= "player" then return end
+    -- 失败的瞬发请求不能清除另一条仍在进行的读条或引导。
+    if not UnitCastingInfo("player") and not UnitChannelInfo("player") then
+        SetUnitCastState(self, unitTarget, "casting", false)
+        ClearPlayerCastTarget(self)
     end
 end
 
@@ -388,6 +403,7 @@ function Shingen:SPELL_UPDATE_USES(_, spellID, baseSpellID)
 end
 
 function Shingen:SPELL_UPDATE_ICON(_, spellID)
+    self:RefreshOverrideSpells()
     if issecretvalue(spellID) then return end
 end
 
@@ -428,6 +444,7 @@ function Shingen:UPDATE_BINDINGS()
 end
 
 function Shingen:SPELLS_CHANGED()
+    self:RefreshOverrideSpells()
     self:ReadKeybindings()
 end
 
@@ -441,6 +458,8 @@ end
 
 function Shingen:PLAYER_TARGET_CHANGED()
     self:RefreshTargetState()
+    self:UpdateStateBlock("目标", "NPCID")
+    self:UpdateStateBlock("状态", "生物类型")
     self:UpdateUnitAuraContainer("target")
     if self.RefreshNameplateUnitMappings then
         self:RefreshNameplateUnitMappings()
@@ -473,7 +492,6 @@ function Shingen:STOP_MOVIE()
 end
 
 function Shingen:NAME_PLATE_UNIT_ADDED(_, unit)
-    self:CacheNameplateUnit(unit)
     if self.RefreshNameplatePixels then
         self:RefreshNameplatePixels()
     end
@@ -482,7 +500,6 @@ function Shingen:NAME_PLATE_UNIT_ADDED(_, unit)
 end
 
 function Shingen:NAME_PLATE_UNIT_REMOVED(_, unit)
-    nameplate[unit] = nil
     if self.ClearNameplatePixelSlot then
         self:ClearNameplatePixelSlot(unit)
     end
@@ -493,16 +510,10 @@ function Shingen:NAME_PLATE_UNIT_REMOVED(_, unit)
 end
 
 function Shingen:UNIT_THREAT_SITUATION_UPDATE(_, unitTarget)
-    if nameplate[unitTarget] then
-        self:RefreshNameplateThreat(unitTarget)
-        self:RefreshThreatEnemyCounts()
-        return
+    -- 玩家或姓名板仇恨变化时立即更新；常规轮询继续负责刷新全部槽位。
+    if unitTarget == "player" or (type(unitTarget) == "string" and unitTarget:match("^nameplate%d+$")) then
+        self:RefreshNameplatePixels()
     end
-    if unitTarget ~= "player" then return end
-    for unit in pairs(nameplate) do
-        self:RefreshNameplateThreat(unit)
-    end
-    self:RefreshThreatEnemyCounts()
 end
 
 function Shingen:RefreshShapeshiftAndMountStates()
@@ -595,13 +606,18 @@ function Shingen:OnUpdate(elapsed)
     self.timeElapsed = self.timeElapsed + elapsed
     if self.timeElapsed > 0.2 then
         RunUpdateSafely(self, "UpdateSpellCooldown")
+        RunUpdateSafely(self, "RefreshOverrideSpells")
+        RunUpdateSafely(self, "UpdateStateBlock", "状态", "生物类型")
+        RunUpdateSafely(self, "UpdateStateBlock", "状态", "等级")
+        RunUpdateSafely(self, "UpdateStateBlock", "状态", "自动射击")
+        RunUpdateSafely(self, "UpdateStateBlock", "状态", "自动攻击")
+        RunUpdateSafely(self, "UpdateStateBlock", "目标", "NPCID")
         RunUpdateSafely(self, "RefreshAssistedCombatSuggestion")
         RunUpdateSafely(self, "UpdateRune")
         RunUpdateSafely(self, "RefreshTargetRangeState")
         RunUpdateSafely(self, "RefreshFocusRangeState")
         RunUpdateSafely(self, "RefreshMouseoverRangeState")
 
-        RunUpdateSafely(self, "RefreshEnemyCounts")
         RunUpdateSafely(self, "RefreshNameplatePixels")
         RunUpdateSafely(self, "UpdateItemCooldown")
         RunUpdateSafely(self, "RefreshExBossTimelinePixels")

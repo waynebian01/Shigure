@@ -295,3 +295,27 @@ function Shingen:UpdateItemCooldown()
         self:CreateTexture(info.index, self:GetItemRemainingTime(itemID, info.isEquipped) / 255)
     end
 end
+
+-- 返回固定目标槽位 1–5；原始技能、未知替换和无法读取的结果均清零。
+function Shingen:RefreshOverrideSpells()
+    local overrides = self.blocks and self.blocks.overrides
+    if not overrides then return end
+    local getOverride = C_Spell and C_Spell.GetOverrideSpell
+    for originalID, info in pairs(overrides) do
+        local value = 0
+        if type(getOverride) == "function" then
+            local ok, spellID = pcall(getOverride, originalID)
+            if ok and not (issecretvalue and issecretvalue(spellID)) and type(spellID) == "number"
+                and spellID ~= originalID then
+                -- 不用 ipairs：中间空位不能截断后面的固定序号。
+                for slot = 1, 5 do
+                    if info.targets[slot] == spellID then
+                        value = slot
+                        break
+                    end
+                end
+            end
+        end
+        self:CreateTexture(info.index, value / 255)
+    end
+end

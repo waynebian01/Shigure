@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <assembly manifestVersion="1.0" xmlns="urn:schemas-microsoft-com:asm.v1">
-  <assemblyIdentity version="1.0.0.0" name="Shigure.app"/>
+  <assemblyIdentity version="1.2.1.33.0" name="Shigure.app"/>
 
   <!-- 与 Packaging/AppxManifest.xml 保持一致，为外部位置（稀疏）MSIX 提供运行时包身份。 -->
   <msix xmlns="urn:schemas-microsoft-com:msix.v1"

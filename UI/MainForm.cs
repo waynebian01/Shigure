@@ -30,8 +30,8 @@ public sealed class MainForm : Form, IMessageFilter
     /// <summary>圆形程序图标相对容器略偏左，向右微调以利水平居中（展开/折叠共用）。</summary>
     private const int HeaderIconNudgeX = 2;
     private const string HeaderIconResourcePath = "Assets.arasaka-icon-transparent.png";
-    private const string RetailGameIconResourcePath = "Assets.GameLogos.retail.png";
-    private const string ForeverGameIconResourcePath = "Assets.GameLogos.forever.png";
+    private const string ForeverWordmarkResourcePath = "Assets.GameLogos.forever-wordmark.png";
+    private const string MidnightWordmarkResourcePath = "Assets.GameLogos.midnight-wordmark.png";
     private const string ModuleWebsiteUrl = "https://www.shigure.club";
     private static readonly Color DefaultHeaderIconColor = Color.White;
     private static readonly IReadOnlyDictionary<int, Color> ClassIconColors = new Dictionary<int, Color>
@@ -95,8 +95,10 @@ public sealed class MainForm : Form, IMessageFilter
 
     private readonly List<TopBarIconButton> _enableButtons = [];
     private readonly List<PictureBox> _headerIcons = [];
-    private readonly List<PictureBox> _gameIcons = [];
     private readonly List<Label> _titleLabels = [];
+    private PictureBox? _foreverWordmark;
+    private Bitmap? _foreverWordmarkImage;
+    private Bitmap? _midnightWordmarkImage;
     private readonly List<Label> _runtimeStatusLabels = [];
     private Control _horizontalTopBar = null!;
     private Control _verticalTopBar = null!;
@@ -117,6 +119,7 @@ public sealed class MainForm : Form, IMessageFilter
     private readonly ITriggerKeyState _triggerKeyState;
     private readonly WowProcessLocator _processLocator;
     private readonly GameProfiles _profiles;
+    private readonly GameExecutableBindings _executableBindings;
     private readonly IReadOnlyDictionary<string, GameWorkspace> _workspaces;
     private readonly ActiveGameProfile _activeProfile;
     private GameProfile _editorProfile;
@@ -146,7 +149,7 @@ public sealed class MainForm : Form, IMessageFilter
     private bool _exitRequested;
     private bool _shutdownStarted;
     private bool _shutdownCompleted;
-    private string? _lastFrontmostProcessName;
+    private LocatedGameWindow? _lastFrontmostGame;
     private bool _switchingProfile;
     private int _editorSaveInProgress;
     private string? _manualAddonName;
@@ -171,6 +174,8 @@ public sealed class MainForm : Form, IMessageFilter
         WowProcessLocator processLocator,
         GameProfiles profiles,
         ActiveGameProfile activeProfile,
+        GameExecutableBindings executableBindings,
+        UiCacheState uiCache,
         RuntimeSessionCoordinator runtimeSession)
     {
         _initialOptions = initialOptions;
@@ -179,19 +184,13 @@ public sealed class MainForm : Form, IMessageFilter
         _triggerKeyState = triggerKeyState;
         _processLocator = processLocator;
         _profiles = profiles;
+        _executableBindings = executableBindings;
         _activeProfile = activeProfile;
         _runtimeSession = runtimeSession;
-        _uiCache = UiCacheStore.Load();
+        _uiCache = uiCache;
         _manualAddonName = _profiles.FindByAddon(_uiCache.SelectedAddonName)?.AddonName;
         _editorProfile = _profiles.FindByAddon(_manualAddonName) ?? _activeProfile.Current;
         _statusForm = new StatusForm(() => _activeProfile.Current);
-        _statusForm.VisibleChanged += (_, _) =>
-        {
-            if (!IsDisposed && !Disposing)
-            {
-                TopMost = !_statusForm.Visible;
-            }
-        };
         _roundedCornerResizeTimer = new System.Windows.Forms.Timer
         {
             Interval = RoundedCornerResizeDebounceMs
@@ -204,7 +203,7 @@ public sealed class MainForm : Form, IMessageFilter
                 UiTheme.ApplyFallbackRoundedCorners(this);
             }
         };
-        _lastFrontmostProcessName = _processLocator.FindFrontmostProcessName();
+        _lastFrontmostGame = _processLocator.FindFrontmostGame();
         _wowProcessMonitorTimer = new System.Windows.Forms.Timer
         {
             Interval = WowProcessMonitorIntervalMs
@@ -229,7 +228,8 @@ public sealed class MainForm : Form, IMessageFilter
         _statusForm.AttachModuleEditor(_moduleEditor);
         _classConfigEditor = new ClassConfigEditorControl(
             () => Path.Combine(_editorProfile.AddonRoot, "class"),
-            UpdateClassConfigAfterSaveAsync);
+            UpdateClassConfigAfterSaveAsync,
+            () => _editorProfile.Version);
         _statusForm.AttachConfigEditor(_classConfigEditor);
         _classConfigEditor.DirtyStateChanged += dirty =>
         {
@@ -238,7 +238,8 @@ public sealed class MainForm : Form, IMessageFilter
         };
         _classMacrosEditor = new ClassMacrosEditorControl(
             () => Path.Combine(_editorProfile.AddonRoot, "core", "classmacros.lua"),
-            UpdateClassConfigAfterSaveAsync);
+            UpdateClassConfigAfterSaveAsync,
+            () => _editorProfile.Version);
         _statusForm.AttachMacrosEditor(_classMacrosEditor);
         _classMacrosEditor.DirtyStateChanged += dirty =>
         {
@@ -273,6 +274,11 @@ public sealed class MainForm : Form, IMessageFilter
     protected override async void OnShown(EventArgs e)
     {
         base.OnShown(e);
+        if (_executableBindings.ConflictError is { } conflict)
+        {
+            AppendLog(conflict);
+            MessageBox.Show(this, conflict, "游戏程序路径冲突", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        }
         if (ReadCaptureMethod() == CaptureMethod.WindowsGraphicsCapture)
         {
             await EnsureBorderlessCaptureAccessAsync();
@@ -468,7 +474,8 @@ public sealed class MainForm : Form, IMessageFilter
             }
         }
 
-        if (showFeedback && (result.HasChanges
+        var pixelCapacityExceeded = result.Rejected.Any(item => item.PixelCapacityExceeded);
+        if ((showFeedback || pixelCapacityExceeded) && (result.HasChanges
                              || result.Rejected.Count > 0
                              || result.Conflicts.Count > 0
                              || result.RemovedStateFields.Count > 0))
@@ -480,7 +487,7 @@ public sealed class MainForm : Form, IMessageFilter
             }
             if (result.Rejected.Count > 0)
             {
-                lines.Add("未导入模块：");
+                lines.Add("合并失败的模块：");
                 lines.AddRange(result.Rejected.Select(item => $"- {item.ModuleName}: {item.Reason}"));
             }
             if (result.Conflicts.Count > 0)
@@ -502,7 +509,8 @@ public sealed class MainForm : Form, IMessageFilter
             var hasWarning = result.Rejected.Count > 0 || cleanupErrors.Count > 0 || postUpdateError is not null;
             MessageBox.Show(
                 string.Join(Environment.NewLine, lines),
-                hasWarning ? "模块导入完成（有警告）" : "模块导入完成",
+                pixelCapacityExceeded && !result.HasChanges ? "模块合并失败"
+                    : hasWarning ? "模块导入完成（有警告）" : "模块导入完成",
                 MessageBoxButtons.OK,
                 hasWarning ? MessageBoxIcon.Warning : MessageBoxIcon.Information);
         }
@@ -553,21 +561,35 @@ public sealed class MainForm : Form, IMessageFilter
         _trayEnabledIcon?.Dispose();
         _roundedCornerResizeTimer.Dispose();
         _wowProcessMonitorTimer.Dispose();
-        foreach (var gameIcon in _gameIcons)
+        if (_foreverWordmark is not null)
         {
-            gameIcon.Image?.Dispose();
+            _foreverWordmark.Image = null;
         }
+
+        _foreverWordmarkImage?.Dispose();
+        _midnightWordmarkImage?.Dispose();
         base.OnFormClosed(e);
     }
 
     private async void HandleWowProcessMonitorTick(object? sender, EventArgs e)
+        => await RefreshRuntimeProfileAsync();
+
+    private async Task RefreshRuntimeProfileAsync()
     {
-        var processName = _processLocator.FindFrontmostProcessName();
         if (_shutdownStarted || _switchingProfile)
         {
             return;
         }
-        if (string.Equals(processName, _lastFrontmostProcessName, StringComparison.OrdinalIgnoreCase))
+        var game = _processLocator.FindFrontmostGame();
+        UpdateGamePathLabels();
+        if (game is null)
+        {
+            _lastFrontmostGame = null;
+            UpdateProfileButtons();
+        }
+        if (game is null || (_lastFrontmostGame is not null
+            && SameAddon(game.Profile, _activeProfile.Current)
+            && GameExecutablePath.Equals(game.ExecutablePath, _activeProfile.ExecutablePath)))
         {
             if (_manualAddonName is null && !SameAddon(_editorProfile, _activeProfile.Current)
                 && !HasUnsavedProfileEdits())
@@ -578,25 +600,16 @@ public sealed class MainForm : Form, IMessageFilter
                 _ = TryResumeDeferredImportAsync(_editorProfile);
             return;
         }
-        if (processName is null)
-        {
-            _lastFrontmostProcessName = null;
-            return;
-        }
-        var profile = _profiles.Find(processName);
-        if (profile is null)
-        {
-            return;
-        }
+        var profile = game.Profile;
         _switchingProfile = true;
         UpdateProfileButtons();
         try
         {
-            AppendLog($"检测到前台游戏 {profile.ProcessName} / {profile.AddonName}");
-            await ActivateRuntimeProfileAsync(profile);
+            AppendLog($"检测到前台游戏 {profile.Version} / {profile.AddonName}: {game.ExecutablePath}");
+            await ActivateRuntimeProfileAsync(profile, game.ExecutablePath);
             if (!_shutdownStarted)
             {
-                _lastFrontmostProcessName = processName;
+                _lastFrontmostGame = game;
                 if (_manualAddonName is null && !HasUnsavedProfileEdits())
                     SwitchEditorProfile(profile);
             }
@@ -609,7 +622,7 @@ public sealed class MainForm : Form, IMessageFilter
         {
             if (!_shutdownStarted)
             {
-                AppendLog($"{processName} 运行版本切换失败: {ex.Message}");
+                AppendLog($"{profile.Version} 运行版本切换失败: {ex.Message}");
             }
         }
         finally
@@ -623,9 +636,10 @@ public sealed class MainForm : Form, IMessageFilter
         => _classConfigEditor.HasUnsavedChanges || _classMacrosEditor.HasUnsavedChanges
             || _moduleEditor.HasUnsavedChanges || _editorSaveInProgress > 0;
 
-    private async Task ActivateRuntimeProfileAsync(GameProfile profile)
+    private async Task ActivateRuntimeProfileAsync(GameProfile profile, string executablePath)
     {
-        var changed = !string.Equals(profile.ProcessName, _activeProfile.Current.ProcessName, StringComparison.OrdinalIgnoreCase);
+        var changed = !SameAddon(profile, _activeProfile.Current)
+            || !GameExecutablePath.Equals(executablePath, _activeProfile.ExecutablePath);
         if (!changed)
         {
             if (!_runtimeSession.IsRunning && !_shutdownStarted) await StartRuntimeAsync();
@@ -636,6 +650,7 @@ public sealed class MainForm : Form, IMessageFilter
         catch { /* 之前的调用方已收到配置更新错误。 */ }
         await _runtimeSession.StopAsync();
         _activeProfile.Current = profile;
+        _activeProfile.ExecutablePath = executablePath;
         _lastSnapshot = null;
         if (addonChanged)
         {
@@ -643,7 +658,7 @@ public sealed class MainForm : Form, IMessageFilter
             _uiCache.SelectedModuleId = null;
             SaveUiCache();
         }
-        UpdateGameIcon();
+        UpdateForeverWordmark();
         ResetDefaultClassOptions();
         ResetDefaultSpecOptions(null);
         ResetDefaultHeroTalentOptions(null, null);
@@ -651,7 +666,7 @@ public sealed class MainForm : Form, IMessageFilter
         await GenerateRuntimeDataAtStartupIfMissingAsync(profile);
         if (addonChanged || !Workspace(profile).HasValidatedModules)
             await ImportModuleDependenciesAsync(profile, reloadStore: true, showFeedback: false);
-        await QueueProjectConfigUpdateAsync(profile, savedAddonFilePath: null);
+        if (addonChanged) await QueueProjectConfigUpdateAsync(profile, savedAddonFilePath: null);
         if (!_shutdownStarted) await StartRuntimeAsync();
         RefreshModuleSelector(_lastSnapshot, forceRefresh: true);
         RefreshDefaultModuleSelector();
@@ -700,6 +715,7 @@ public sealed class MainForm : Form, IMessageFilter
             _classMacrosEditor.ReloadFromAddon();
         }
         UpdateProfileButtons();
+        UpdateForeverWordmark();
     }
 
     private async Task TryResumeDeferredImportAsync(GameProfile profile)
@@ -736,7 +752,11 @@ public sealed class MainForm : Form, IMessageFilter
             return;
         }
         var runtime = _activeProfile.Current;
-        _profileStatusLabel.Text = $"运行：{runtime.ProcessName} / {runtime.AddonName}；" +
+        var runtimeText = _lastFrontmostGame is null
+            ? "等待所选游戏程序"
+            : $"{runtime.Version} / {runtime.AddonName}";
+        if (_executableBindings.ConflictError is not null) runtimeText = "等待修正游戏路径冲突";
+        _profileStatusLabel.Text = $"运行：{runtimeText}；" +
             $"界面：{_editorProfile.Version} / {_editorProfile.AddonName}（" +
             (_manualAddonName is null ? "自动跟随" : "手动查看") + "）";
         _automaticProfileButton.Enabled = !_switchingProfile;
@@ -756,18 +776,23 @@ public sealed class MainForm : Form, IMessageFilter
 
     private void UpdateGamePathLabels()
     {
-        UpdateGamePathLabel(_retailGamePathLabel, _uiCache.RetailGameExecutablePath, "Wow.exe");
-        UpdateGamePathLabel(_foreverGamePathLabel, _uiCache.ForeverGameExecutablePath, "WowClassic.exe");
+        UpdateGamePathLabel(_retailGamePathLabel, _uiCache.RetailGameExecutablePath);
+        UpdateGamePathLabel(_foreverGamePathLabel, _uiCache.ForeverGameExecutablePath);
     }
 
-    private void UpdateGamePathLabel(Label label, string? selectedPath, string executableName)
+    private void UpdateGamePathLabel(Label label, string? selectedPath)
     {
-        if (string.IsNullOrWhiteSpace(selectedPath))
+        if (_executableBindings.ConflictError is not null)
         {
-            label.Text = "未选择；运行中的对应客户端仍会自动同步";
+            label.Text = $"{selectedPath}（两个版本路径相同，请重新选择）";
+            label.ForeColor = UiTheme.Warning;
+        }
+        else if (string.IsNullOrWhiteSpace(selectedPath))
+        {
+            label.Text = "未选择；请选择游戏程序以识别版本并部署插件";
             label.ForeColor = UiTheme.Muted;
         }
-        else if (GameExecutablePath.TryValidate(selectedPath, executableName,
+        else if (GameExecutablePath.TryValidate(selectedPath,
                      out var fullPath, out var error))
         {
             label.Text = fullPath;
@@ -782,30 +807,39 @@ public sealed class MainForm : Form, IMessageFilter
         _settingsToolTip.SetToolTip(label, label.Text);
     }
 
-    private void SelectGameExecutablePath(string version, string executableName)
+    private async Task SelectGameExecutablePathAsync(string version)
     {
+        if (_shutdownStarted || _switchingProfile) return;
         var selectedPath = SelectedGameExecutablePath(version);
         using var dialog = new OpenFileDialog
         {
-            Title = $"选择 {executableName}",
-            Filter = $"{executableName} ({executableName})|{executableName}|可执行文件 (*.exe)|*.exe",
+            Title = $"选择 {version} 游戏程序",
+            Filter = "可执行文件 (*.exe)|*.exe",
             FilterIndex = 1,
-            FileName = executableName,
             CheckFileExists = true,
             Multiselect = false,
             RestoreDirectory = true
         };
-        if (GameExecutablePath.TryValidate(selectedPath, executableName,
+        if (GameExecutablePath.TryValidate(selectedPath,
                 out var existingPath, out _))
         {
             dialog.InitialDirectory = Path.GetDirectoryName(existingPath);
+            dialog.FileName = Path.GetFileName(existingPath);
         }
 
         if (dialog.ShowDialog(_statusForm) != DialogResult.OK) return;
-        if (!GameExecutablePath.TryValidate(dialog.FileName, executableName,
+        if (!GameExecutablePath.TryValidate(dialog.FileName,
                 out var fullPath, out var error))
         {
             MessageBox.Show(_statusForm, error, "无法选择游戏程序",
+                MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return;
+        }
+
+        var otherVersion = version.Equals("Retail", StringComparison.OrdinalIgnoreCase) ? "Forever" : "Retail";
+        if (GameExecutablePath.Equals(fullPath, SelectedGameExecutablePath(otherVersion)))
+        {
+            MessageBox.Show(_statusForm, "此游戏程序已分配给另一个版本，请选择不同路径。", "游戏程序路径冲突",
                 MessageBoxButtons.OK, MessageBoxIcon.Warning);
             return;
         }
@@ -814,16 +848,42 @@ public sealed class MainForm : Form, IMessageFilter
             _uiCache.RetailGameExecutablePath = fullPath;
         else
             _uiCache.ForeverGameExecutablePath = fullPath;
+        _executableBindings.Update(_uiCache.RetailGameExecutablePath, _uiCache.ForeverGameExecutablePath);
         SaveUiCache();
         UpdateGamePathLabels();
+        await RefreshRuntimeProfileAsync();
+        // 新路径尚未运行时也替换当前版本的绑定，旧会话通过协调器完整收尾。
+        if (!_shutdownStarted && !_switchingProfile
+            && version.Equals(_activeProfile.Current.Version, StringComparison.OrdinalIgnoreCase)
+            && !GameExecutablePath.Equals(fullPath, _activeProfile.ExecutablePath))
+        {
+            _switchingProfile = true;
+            UpdateProfileButtons();
+            try
+            {
+                try { await WaitForPendingConfigUpdatesAsync(); }
+                catch { /* 之前的调用方已收到配置更新错误。 */ }
+                await _runtimeSession.StopAsync();
+                _activeProfile.ExecutablePath = fullPath;
+                _lastSnapshot = null;
+                if (!_shutdownStarted) await StartRuntimeAsync();
+            }
+            catch (Exception ex)
+            {
+                if (!_shutdownStarted) AppendLog($"游戏路径切换失败: {ex.Message}");
+            }
+            finally
+            {
+                _switchingProfile = false;
+                UpdateProfileButtons();
+            }
+        }
     }
 
     private FuyutsuiAddonSyncService CreateAddonSyncService(GameProfile profile)
-        => new(profile.AddonRoot, _processLocator,
-            _profiles.FindAllByAddon(profile.AddonName).Select(item => item.ProcessName).ToArray(),
-            SelectedGameExecutablePath(profile.Version),
-            profile.Version.Equals("Retail", StringComparison.OrdinalIgnoreCase)
-                ? "Wow.exe" : "WowClassic.exe");
+        => new(profile.AddonRoot, _executableBindings.GetSelectedPath(profile),
+            deployInterfaceIcons: profile.Version.Equals("Retail", StringComparison.OrdinalIgnoreCase),
+            selectionError: _executableBindings.ConflictError);
 
     private GameWorkspace Workspace(GameProfile profile) => _workspaces[profile.AddonName];
 
@@ -951,7 +1011,7 @@ public sealed class MainForm : Form, IMessageFilter
 
         _currentHeaderIconColor = null;
         UpdateHeaderIconColor(null);
-        UpdateGameIcon();
+        UpdateForeverWordmark();
         return host;
     }
 
@@ -1001,18 +1061,17 @@ public sealed class MainForm : Form, IMessageFilter
         };
 
         brand.Controls.Add(headerIcon);
-        var gameIcon = CreateGameIcon(vertical: false);
-        brand.Controls.Add(gameIcon);
         brand.Controls.Add(titleLabel);
+        _foreverWordmark = CreateForeverWordmark();
+        brand.Controls.Add(_foreverWordmark);
         _horizontalButtons = BuildTopBarButtons(vertical: false);
 
         RegisterTopBarPresentation(headerIcon, titleLabel, runtimeStatusLabel);
-        _gameIcons.Add(gameIcon);
         EnableDrag(bar);
         EnableDrag(brand);
         EnableHeaderIconCollapseToggle(headerIcon);
-        EnableDrag(gameIcon);
         EnableDrag(titleLabel);
+        EnableDrag(_foreverWordmark);
         EnableDrag(runtimeStatusLabel);
 
         bar.Controls.Add(brand, 0, 0);
@@ -1074,17 +1133,13 @@ public sealed class MainForm : Form, IMessageFilter
         runtimeStatusLabel.Rotated = true;
 
         brand.Controls.Add(headerIcon);
-        var gameIcon = CreateGameIcon(vertical: true);
-        brand.Controls.Add(gameIcon);
         brand.Controls.Add(titleLabel);
         _verticalButtons = BuildTopBarButtons(vertical: true);
 
         RegisterTopBarPresentation(headerIcon, titleLabel, runtimeStatusLabel);
-        _gameIcons.Add(gameIcon);
         EnableDrag(bar);
         EnableDrag(brand);
         EnableHeaderIconCollapseToggle(headerIcon);
-        EnableDrag(gameIcon);
         EnableDrag(titleLabel);
         EnableDrag(runtimeStatusLabel);
 
@@ -1130,32 +1185,43 @@ public sealed class MainForm : Form, IMessageFilter
         _runtimeStatusLabels.Add(status);
     }
 
-    private static PictureBox CreateGameIcon(bool vertical)
+    private PictureBox CreateForeverWordmark()
     {
-        return new PictureBox
+        var box = new PictureBox
         {
-            Size = new Size(44, 36),
+            Size = new Size(116, 28),
             SizeMode = PictureBoxSizeMode.Zoom,
             BackColor = Color.Transparent,
-            Anchor = vertical ? AnchorStyles.Top : AnchorStyles.Left,
-            Margin = vertical ? new Padding(0, 6, 0, 0) : new Padding(8, 0, 0, 0)
+            Margin = new Padding(12, 14, 0, 0),
+            Anchor = AnchorStyles.Left,
+            Visible = false,
+            AccessibleName = "Midnight"
         };
+        _foreverWordmarkImage = LoadEmbeddedBitmap(ForeverWordmarkResourcePath);
+        _midnightWordmarkImage = LoadEmbeddedBitmap(MidnightWordmarkResourcePath);
+        return box;
     }
 
-    private void UpdateGameIcon()
+    private bool IsForeverEditor()
+        => _editorProfile.AddonName.Equals("Shingen", StringComparison.OrdinalIgnoreCase);
+
+    private void UpdateForeverWordmark()
     {
-        var forever = string.Equals(_activeProfile.Current.AddonName, "Shingen", StringComparison.OrdinalIgnoreCase);
-        var resourcePath = forever ? ForeverGameIconResourcePath : RetailGameIconResourcePath;
-        foreach (var gameIcon in _gameIcons)
+        if (_foreverWordmark is null)
         {
-            var previous = gameIcon.Image;
-            gameIcon.Image = LoadGameIcon(resourcePath);
-            gameIcon.AccessibleName = forever ? "Forever 游戏图标" : "Retail 游戏图标";
-            previous?.Dispose();
+            return;
         }
+
+        var forever = IsForeverEditor();
+        _foreverWordmark.Image = forever ? _foreverWordmarkImage : _midnightWordmarkImage;
+        _foreverWordmark.Size = forever ? new Size(116, 28) : new Size(126, 20);
+        _foreverWordmark.Margin = forever ? new Padding(12, 14, 0, 0) : new Padding(12, 6, 0, 0);
+        _foreverWordmark.AccessibleName = forever ? "Forever" : "Midnight";
+        _settingsToolTip.SetToolTip(_foreverWordmark, forever ? "无限服" : "正式服");
+        _foreverWordmark.Visible = !_mainBarCollapsed;
     }
 
-    private static Bitmap? LoadGameIcon(string resourcePath)
+    private static Bitmap? LoadEmbeddedBitmap(string resourcePath)
     {
         using var stream = typeof(MainForm).Assembly.GetManifestResourceStream($"{typeof(MainForm).Namespace}.{resourcePath}");
         if (stream is null)
@@ -1465,7 +1531,7 @@ public sealed class MainForm : Form, IMessageFilter
                 ? "Retail × Fuyutsui"
                 : profile.AddonName.Equals("Shingen", StringComparison.OrdinalIgnoreCase)
                     ? "Forever × Shingen"
-                    : $"{profile.ProcessName} · {profile.AddonName}";
+                    : $"{profile.Version} · {profile.AddonName}";
             var button = UiTheme.CreateButton(
                 buttonText,
                 UiTheme.ButtonKind.Secondary);
@@ -1474,12 +1540,12 @@ public sealed class MainForm : Form, IMessageFilter
             profileActions.Controls.Add(button);
             _profileButtons.Add((profile.AddonName, button));
         }
-        FlowLayoutPanel CreateGamePathActions(string version, string executableName)
+        FlowLayoutPanel CreateGamePathActions(string version)
         {
             var actions = CreateActionsHost();
             var button = UiTheme.CreateButton("选择程序", UiTheme.ButtonKind.Secondary);
             SizeActionControl(button, primaryControlWidth);
-            button.Click += (_, _) => SelectGameExecutablePath(version, executableName);
+            button.Click += async (_, _) => await SelectGameExecutablePathAsync(version);
             actions.Controls.Add(button);
             return actions;
         }
@@ -1494,11 +1560,11 @@ public sealed class MainForm : Form, IMessageFilter
             CreateSettingRow(
                 "魔兽世界-正式服",
                 _retailGamePathLabel = CreateRowDescription("未选择"),
-                CreateGamePathActions("Retail", "Wow.exe")),
+                CreateGamePathActions("Retail")),
             CreateSettingRow(
                 "魔兽世界-无限服",
                 _foreverGamePathLabel = CreateRowDescription("未选择"),
-                CreateGamePathActions("Forever", "WowClassic.exe")));
+                CreateGamePathActions("Forever")));
         _retailGamePathLabel.UseMnemonic = false;
         _foreverGamePathLabel.UseMnemonic = false;
         UpdateGamePathLabels();
@@ -1745,19 +1811,11 @@ public sealed class MainForm : Form, IMessageFilter
         _settingsToolTip.SetToolTip(moduleWebsiteLabel, $"在默认浏览器中打开 {ModuleWebsiteUrl}");
 
         var moduleWebsiteButtonColor = Color.FromArgb(252, 238, 10);
-        var openModuleWebsiteButton = UiTheme.CreateButton("获取模块", moduleWebsiteButtonColor, Color.Black);
+        var openModuleWebsiteButton = UiTheme.CreateExternalLinkButton("获取模块", moduleWebsiteButtonColor, Color.Black);
         SizeActionControl(openModuleWebsiteButton, primaryControlWidth, rightGap: 10);
-        openModuleWebsiteButton.Padding = new Padding(0, 2, 24, 2);
         openModuleWebsiteButton.FlatAppearance.BorderColor = moduleWebsiteButtonColor;
         openModuleWebsiteButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(255, 244, 64);
         openModuleWebsiteButton.FlatAppearance.MouseDownBackColor = Color.FromArgb(220, 207, 8);
-        openModuleWebsiteButton.Paint += (_, e) => UiTheme.DrawExternalLinkIcon(
-            e.Graphics,
-            openModuleWebsiteButton.ClientRectangle,
-            openModuleWebsiteButton.Text,
-            openModuleWebsiteButton.Font,
-            openModuleWebsiteButton.ForeColor,
-            openModuleWebsiteButton.DeviceDpi / 96F);
         openModuleWebsiteButton.Click += (_, _) => OpenModuleWebsite();
 
         var openModuleDirectoryButton = UiTheme.CreateButton("打开模块目录", UiTheme.ButtonKind.Secondary);
@@ -1959,7 +2017,7 @@ public sealed class MainForm : Form, IMessageFilter
 
             var sizeText = $"{result.Size / 1024d / 1024d:F2} MiB";
             var hashText = result.Sha256[..Math.Min(12, result.Sha256.Length)];
-            var kind = SpellIconCatalog.IsItemDatabaseAvailable ? "完整包" : "仅技能旧包";
+            var kind = SpellIconCatalog.HasForever ? "两版数据包" : "Retail 旧包";
             if (result.UpToDate)
             {
                 _spellIconPackageStatusLabel.Text = $"已是最新（{kind}）：{sizeText}，SHA-256 {hashText}…";
@@ -1970,6 +2028,8 @@ public sealed class MainForm : Form, IMessageFilter
                 _spellIconPackageStatusLabel.Text = $"安装完成（{kind}）：{sizeText}，SHA-256 {hashText}…";
                 AppendLog("技能/物品图标数据包已下载、校验并热加载");
             }
+            _spellIconPackageStatusLabel.Text += Environment.NewLine + DescribeDataCatalog("Retail")
+                + Environment.NewLine + DescribeDataCatalog("Forever");
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -2033,9 +2093,9 @@ public sealed class MainForm : Form, IMessageFilter
         {
             var length = new FileInfo(packagePath).Length;
             var sizeText = $"{length / 1024d / 1024d:F2} MiB";
-            _spellIconPackageStatusLabel.Text = SpellIconCatalog.IsItemDatabaseAvailable
-                ? $"已安装完整包：{sizeText}。点击检查 GitHub 更新。"
-                : $"已安装仅技能旧包：{sizeText}。物品搜索库不可用，可检查更新以获取完整包。";
+            _spellIconPackageStatusLabel.Text = $"已安装：{sizeText}。点击检查 GitHub 更新。"
+                + Environment.NewLine + DescribeDataCatalog("Retail")
+                + Environment.NewLine + DescribeDataCatalog("Forever");
             _downloadSpellIconPackageButton.Text = "检查更新";
         }
         else if (File.Exists(packagePath))
@@ -2053,6 +2113,14 @@ public sealed class MainForm : Form, IMessageFilter
         _settingsToolTip.SetToolTip(
             _spellIconPackageStatusLabel,
             _spellIconPackageStatusLabel.Text);
+    }
+
+    private static string DescribeDataCatalog(string version)
+    {
+        var info = SpellIconCatalog.ForVersion(version).Info;
+        return info is null
+            ? $"{version}：未包含，请更新数据包。"
+            : $"{version}：构建 {info.Build ?? "未知（原包导入）"}，技能 {info.SpellCount:N0}，物品 {info.ItemCount:N0}";
     }
 
     private void OpenModuleWebsite()
@@ -2676,7 +2744,7 @@ public sealed class MainForm : Form, IMessageFilter
         SetRuntimeControls(running: true);
         AppendLog(
             $"运行已{(restart ? "重启" : "启动")}: " +
-            $"{_processLocator.DescribeConfiguredProcesses()} / {options.ToggleKey} / {ModeLabel(options.Mode)} / " +
+            $"{_processLocator.DescribeConfiguredPaths()} / {options.ToggleKey} / {ModeLabel(options.Mode)} / " +
             $"{CaptureMethodLabel(options.CaptureMethod)} / " +
             $"扫描 {options.ScanInterval.TotalMilliseconds:0} ms / " +
             $"计算 {options.LogicInterval.TotalMilliseconds:0} ms");
@@ -4020,9 +4088,9 @@ public sealed class MainForm : Form, IMessageFilter
             title.Visible = visible;
         }
 
-        foreach (var gameIcon in _gameIcons)
+        if (_foreverWordmark is not null)
         {
-            gameIcon.Visible = visible;
+            _foreverWordmark.Visible = visible;
         }
 
         foreach (var status in _runtimeStatusLabels)

@@ -61,6 +61,9 @@ public static class UnitSelector
             return null;
         }
 
+        if (GroupDispelCatalog.Find(unit.TargetField) is { } dispelField)
+            return TryInt(GetField(data, dispelField.FieldName), out var duration) ? duration : null;
+
         return unit.TargetField switch
         {
             UnitTargetFieldKind.Health => TryInt(GetField(data, "生命值"), out var health) ? health : null,
@@ -76,6 +79,9 @@ public static class UnitSelector
 
     private static bool IsValidUnitSelection(ModuleUnit unit)
     {
+        if (GroupDispelCatalog.Find(unit.TargetField) is not null)
+            return unit.SelectionMode is UnitSelectionMode.Longest or UnitSelectionMode.Shortest;
+
         return unit.TargetField switch
         {
             UnitTargetFieldKind.Health or UnitTargetFieldKind.HealingAbsorb
@@ -98,6 +104,10 @@ public static class UnitSelector
         {
             return null;
         }
+
+        if (GroupDispelCatalog.Find(unit.TargetField) is { } dispelField)
+            return SelectByField(candidates, dispelField.FieldName,
+                smallest: unit.SelectionMode == UnitSelectionMode.Shortest, positiveOnly: true);
 
         return unit.TargetField switch
         {
@@ -129,13 +139,14 @@ public static class UnitSelector
     private static string? SelectByField(
         IReadOnlyList<(string Key, IReadOnlyDictionary<string, object?> Data)> candidates,
         string field,
-        bool smallest)
+        bool smallest,
+        bool positiveOnly = false)
     {
         string? bestKey = null;
         var bestValue = smallest ? int.MaxValue : int.MinValue;
         foreach (var candidate in candidates)
         {
-            if (!TryInt(GetField(candidate.Data, field), out var value))
+            if (!TryInt(GetField(candidate.Data, field), out var value) || positiveOnly && value <= 0)
             {
                 continue;
             }
@@ -214,7 +225,7 @@ public static class UnitSelector
     }
 
     /// <summary>
-    /// 解析敌人数量字段为整数: 统计姓名板中距离 &gt; 0 且满足全部已启用筛选(生命值 / 光环 / 距离 / 战斗)的敌人。
+    /// 解析敌人数量字段为整数: 统计姓名板中距离 &gt; 0 且满足全部已启用筛选的敌人。
     /// 姓名板未配置距离时该字段恒为 0, 结果也恒为 0。
     /// </summary>
     public static int Resolve(ModuleEnemyCountField count, GameState state)
@@ -357,18 +368,35 @@ public static class UnitSelector
             var allowed = enemy
                 ? condition.Field is CountConditionFieldKind.Health
                     or CountConditionFieldKind.Range
+                    or CountConditionFieldKind.Threat
                     or CountConditionFieldKind.Combat
                     or CountConditionFieldKind.ImprovedGarrote
+                    or CountConditionFieldKind.CastSpell
+                    or CountConditionFieldKind.CastCountdown
                     or CountConditionFieldKind.Aura
                 : condition.Field is CountConditionFieldKind.Health
                     or CountConditionFieldKind.HealingAbsorb
                     or CountConditionFieldKind.Role
                     or CountConditionFieldKind.Dispel
                     or CountConditionFieldKind.Class
-                    or CountConditionFieldKind.Aura;
+                    or CountConditionFieldKind.Aura
+                    || GroupDispelCatalog.Find(condition.Field) is not null;
             if (!allowed
                 || condition.Field == CountConditionFieldKind.Aura && condition.AuraSpellId is not > 0
                 || condition.Field != CountConditionFieldKind.Aura && condition.AuraSpellId is not null
+                || (condition.Comparison is CountConditionComparisonKind.In or CountConditionComparisonKind.NotIn)
+                    && (condition.Field != CountConditionFieldKind.CastSpell
+                        || condition.ValueKind != CountConditionValueKind.NumberArray
+                        || string.IsNullOrWhiteSpace(condition.ValueField))
+                || condition.ValueKind == CountConditionValueKind.NumberArray
+                    && (condition.Field != CountConditionFieldKind.CastSpell
+                        || condition.Comparison is not (CountConditionComparisonKind.In or CountConditionComparisonKind.NotIn)
+                        || string.IsNullOrWhiteSpace(condition.ValueField))
+                || condition.Field == CountConditionFieldKind.CastSpell
+                    && condition.Comparison is not (CountConditionComparisonKind.Equal
+                        or CountConditionComparisonKind.NotEqual
+                        or CountConditionComparisonKind.In
+                        or CountConditionComparisonKind.NotIn)
                 || (condition.Field is CountConditionFieldKind.Role
                         or CountConditionFieldKind.Dispel
                         or CountConditionFieldKind.Class
@@ -383,6 +411,11 @@ public static class UnitSelector
                             or CountConditionFieldKind.ImprovedGarrote
                             or CountConditionFieldKind.Combat
                         || string.IsNullOrWhiteSpace(condition.ValueField)))
+            {
+                return false;
+            }
+            if (condition.Field == CountConditionFieldKind.Threat
+                && condition.ValueKind == CountConditionValueKind.Constant && condition.Value is < 0 or > 3)
             {
                 return false;
             }
@@ -428,6 +461,16 @@ public static class UnitSelector
         if (!TryReadCountConditionValue(data, condition, out var actual))
         {
             return false;
+        }
+
+        if (condition.Comparison is CountConditionComparisonKind.In or CountConditionComparisonKind.NotIn)
+        {
+            if (!state.Values.TryGetValue("$numberArrays", out var arraysValue)
+                || arraysValue is not IReadOnlyDictionary<string, IReadOnlySet<long>> arrays
+                || !arrays.TryGetValue(condition.ValueField ?? string.Empty, out var numbers))
+                return false;
+            var contains = numbers.Contains(actual);
+            return condition.Comparison == CountConditionComparisonKind.In ? contains : !contains;
         }
 
         var expected = condition.ValueKind == CountConditionValueKind.StateField
@@ -487,6 +530,9 @@ public static class UnitSelector
         ModuleCountCondition condition,
         out int value)
     {
+        if (GroupDispelCatalog.Find(condition.Field) is { } dispelField)
+            return TryInt(GetField(data, dispelField.FieldName), out value);
+
         if (condition.Field == CountConditionFieldKind.Aura)
         {
             value = condition.AuraSpellId is { } spellId ? GetAuraDuration(data, spellId) : 0;
@@ -508,6 +554,9 @@ public static class UnitSelector
             CountConditionFieldKind.Class => "职业",
             CountConditionFieldKind.Range => "距离",
             CountConditionFieldKind.ImprovedGarrote => NameplateStateLayout.ImprovedGarroteField,
+            CountConditionFieldKind.Threat => NameplateStateLayout.ThreatField,
+            CountConditionFieldKind.CastSpell => NameplateStateLayout.CastSpellField,
+            CountConditionFieldKind.CastCountdown => NameplateStateLayout.CastCountdownField,
             _ => string.Empty
         };
         if (field.Length == 0)
@@ -522,6 +571,7 @@ public static class UnitSelector
             {
                 CountConditionFieldKind.Class => value is >= 1 and <= 13,
                 CountConditionFieldKind.ImprovedGarrote => value is >= 0 and <= 2,
+                CountConditionFieldKind.Threat => value is >= 0 and <= 3,
                 _ => true
             };
         }

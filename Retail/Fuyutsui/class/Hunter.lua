@@ -25,7 +25,6 @@ Fuyutsui.ClassBlocks = {
                 "队伍人数",
                 "首领战",
                 "难度",
-                "敌人数量",
             },
             ["能量"] = {
                 "集中值",
@@ -36,6 +35,7 @@ Fuyutsui.ClassBlocks = {
                 "AOE开关",
             },
             ["目标"] = {
+                "施法技能",
                 "类型",
                 "施法(倒计时)",
                 "施法(正计时)",
@@ -45,6 +45,7 @@ Fuyutsui.ClassBlocks = {
                 "驱散类型",
             },
             ["焦点"] = {
+                "施法技能",
                 "施法(倒计时)",
                 "施法(正计时)",
                 "施法可打断",
@@ -70,7 +71,7 @@ Fuyutsui.ClassBlocks = {
         auras = {
             player = {
                 { name = "猎群领袖之嚎", spellId = 471877, isPlayer = true,},
-                { name = "眼镜蛇利牙", spellId = 1299389, maxApps = 4, isPlayer = true,},
+                { name = "眼镜蛇利牙", spellId = 1299389, maxApps = true, isPlayer = true,},
                 { name = "自然之友", spellId = 1276720, isPlayer = true,},
                 { name = "野兽顺劈", spellId = 268877, isPlayer = true,},
                 { name = "龙", spellId = 471878, isPlayer = true,},
@@ -129,6 +130,7 @@ Fuyutsui.ClassBlocks = {
                 "集中值",
             },
             ["目标"] = {
+                "施法技能",
                 "类型",
                 "施法(倒计时)",
                 "施法(正计时)",
@@ -137,6 +139,7 @@ Fuyutsui.ClassBlocks = {
                 "引导可打断",
             },
             ["焦点"] = {
+                "施法技能",
                 "施法(倒计时)",
                 "施法(正计时)",
                 "施法可打断",
@@ -200,6 +203,7 @@ Fuyutsui.ClassBlocks = {
                 "集中值",
             },
             ["目标"] = {
+                "施法技能",
                 "类型",
                 "施法(倒计时)",
                 "施法(正计时)",
@@ -208,6 +212,7 @@ Fuyutsui.ClassBlocks = {
                 "引导可打断",
             },
             ["焦点"] = {
+                "施法技能",
                 "施法(倒计时)",
                 "施法(正计时)",
                 "施法可打断",

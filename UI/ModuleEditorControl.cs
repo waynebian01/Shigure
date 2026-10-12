@@ -7,6 +7,7 @@ namespace Shigure;
 
 public sealed class ModuleEditorControl : UserControl
 {
+    private VersionedSpellIconCatalog Catalog => SpellIconCatalog.ForVersion(_resolveProfile().Version);
     private const string ModuleWebsiteUrl = "https://www.shigure.club";
     // 使用独立列名避开旧版“注释”文字列缓存的较大宽度；新图标列从紧凑宽度重新开始缓存。
     private const string RuleCommentColumnName = "RuleComment";
@@ -40,14 +41,22 @@ public sealed class ModuleEditorControl : UserControl
     private readonly DataGridViewTextBoxColumn _adjustmentFieldColumn = new();
     private readonly DataGridViewComboBoxColumn _adjustmentTypeColumn = new();
     private readonly ListView _unitsList = new UiThemedListView();
+    private readonly ListView _numberArraysList = new UiThemedListView();
     private readonly Label _pathLabel = new();
     private readonly Label _unitsEmptyHint = new();
     private readonly Label _editorEmptyHint = new();
     private readonly ToolTip _pathToolTip = new();
     private Button _saveButton = null!;
+    private Button _saveAllButton = null!;
     private Button _deleteButton = null!;
     private Button _addButton = null!;
     private Button _reloadButton = null!;
+    private Button _ruleViewButton = null!;
+    private bool _relaxedRuleView;
+    private bool _suppressNextRulesCellClick;
+    private bool _relaxedCommentSyncing;
+    private bool _relaxedCommentSyncQueued;
+    private readonly List<TextBox> _relaxedCommentBoxes = new();
     private readonly ToolTip _rulesGridToolTip = new()
     {
         InitialDelay = 300,
@@ -68,6 +77,7 @@ public sealed class ModuleEditorControl : UserControl
     private readonly List<ModuleEnemyCountField> _enemyCounts = new();
     private readonly List<ModuleAverageHealthField> _averageHealthFields = new();
     private readonly List<ModuleValueAdjustment> _valueAdjustments = new();
+    private readonly List<ModuleNumberArray> _numberArrays = new();
     private readonly Dictionary<string, List<long>> _currentClassSpellIdsByName =
         new(StringComparer.Ordinal);
     private readonly Dictionary<string, List<long>> _currentSpecItemIdsByName =
@@ -77,8 +87,10 @@ public sealed class ModuleEditorControl : UserControl
     private HashSet<string>? _availableConditionFields;
     private HashSet<string>? _availableGroupConditionFields;
     private Dictionary<string, string>? _conditionFieldDisplayNames;
-    // 载入时程序化写入"类型"单元格会触发 CellValueChanged; 置真以跳过"按类型清空数值"的联动。
+    // 载入时程序化写入"类型"单元格会触发 CellValueChanged; 置真以跳过"按类型清空字段"的联动。
     private bool _suppressAdjustmentTypeChange;
+    // 重建匹配选项时先恢复完整选择，再统一刷新依赖字段，避免职业联动清空专精和英雄天赋。
+    private bool _suppressMatchSelectionChanged;
     private bool _moduleCommandInProgress;
     // 规则行拖拽重排: 拖动起始行, 以及拖动中的插入指示位置(显示一条强调线)。
     private int _dragSourceRow = -1;
@@ -90,22 +102,15 @@ public sealed class ModuleEditorControl : UserControl
         new("团队 (1-40)", "1-40"),
         new("队伍 (46)", "46")
     ];
-    private static readonly HashSet<string> NonAuraGroupFields = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "生命值",
-        "职责",
-        "驱散",
-        "职业",
-        "治疗吸收"
-    };
-    // 条件动态数值"类型"下拉: 决定"数值"可选项的过滤类别, 顺序与界面一致。
+    // 条件动态数值"类型"下拉: 决定"字段"可选项的过滤类别, 顺序与界面一致。
     private static readonly (string Text, ConditionFieldCategory Category)[] AdjustmentTypeOptions =
     [
         ("状态", ConditionFieldCategory.State),
         ("技能", ConditionFieldCategory.Spell),
         ("光环", ConditionFieldCategory.Aura),
         ("动态单位", ConditionFieldCategory.DynamicUnit),
-        ("动态数值", ConditionFieldCategory.DynamicValue)
+        ("动态数值", ConditionFieldCategory.DynamicValue),
+        ("自建", ConditionFieldCategory.Shigure)
     ];
 
     internal ModuleEditorControl(
@@ -144,18 +149,26 @@ public sealed class ModuleEditorControl : UserControl
         var wasDirty = HasUnsavedChanges;
         _fieldCatalog = ConditionFieldCatalog.Load(_resolveProfile().RuntimeDirectory, _resolveProfile().AddonRoot);
         _keymapCatalog = KeymapCatalog.Load(_resolveProfile().RuntimeDirectory, _resolveProfile().AddonRoot);
-        UpdateMatchRowProfile();
-        var selectedClassId = ReadMatchCombo(_classBox);
-        ResetClassOptions(_classBox);
-        if (selectedClassId is not null)
+        _suppressMatchSelectionChanged = true;
+        try
         {
-            var index = FindMatchOption(_classBox, selectedClassId);
-            if (index >= 0) _classBox.SelectedIndex = index;
+            UpdateMatchRowProfile();
+            var selectedClassId = ReadMatchCombo(_classBox);
+            var selectedSpecId = ReadMatchCombo(_specBox);
+            var selectedHeroTalent = ReadMatchCombo(_heroTalentBox);
+            ResetClassOptions(_classBox);
+            SelectClass(selectedClassId);
+            SelectSpec(selectedSpecId);
+            SelectHeroTalent(selectedHeroTalent);
+        }
+        finally
+        {
+            _suppressMatchSelectionChanged = false;
         }
         var filterItems = new List<(int? ClassId, string Tooltip)> { (null, "全部") };
         filterItems.AddRange(GetAvailableClasses().Select(item => ((int?)item.Id, item.Name)));
         _classFilterStrip.SetItems(filterItems);
-        _classFilterStrip.SelectClassId(null);
+        _classFilterStrip.SelectClassId(_filterClassId);
         ReloadCurrentClassSpellIds();
         // “更新配置”可能刚重建了 keymap；立即刷新当前规则的技能/目标/宏条件下拉，
         // 避免必须切换职业或重启应用后才能看到新解析出的宏条件。
@@ -195,6 +208,7 @@ public sealed class ModuleEditorControl : UserControl
                         metadata.SubConditions,
                         metadata.DelayMs,
                         metadata.LogicDelayMs,
+                        metadata.MatchDelayMs,
                         metadata.ContinueLogic
                     }
                     : row.Tag
@@ -214,6 +228,7 @@ public sealed class ModuleEditorControl : UserControl
             EnemyCounts = _enemyCounts,
             AverageHealthFields = _averageHealthFields,
             ValueAdjustments = _valueAdjustments,
+            NumberArrays = _numberArrays,
             Rules = GridRows(_rulesGrid),
             Adjustments = GridRows(_adjustmentsGrid),
             FormulaAdjustments = GridRows(_formulaAdjustmentsGrid)
@@ -276,8 +291,9 @@ public sealed class ModuleEditorControl : UserControl
         body.RowStyles.Add(new RowStyle(SizeType.Absolute, ModuleFooterBarHeight));
         body.Controls.Add(BuildSidebar(), 0, 0);
         body.Controls.Add(BuildEditor(), 1, 0);
-        body.Controls.Add(BuildSidebarFooter(), 0, 1);
-        body.Controls.Add(BuildActionRow(), 1, 1);
+        var footer = BuildActionRow();
+        body.Controls.Add(footer, 0, 1);
+        body.SetColumnSpan(footer, 2);
         body.Resize += (_, _) =>
         {
             var desired = body.ClientSize.Width < UiTheme.Scale(this, 1000)
@@ -528,14 +544,14 @@ public sealed class ModuleEditorControl : UserControl
         return sidebar;
     }
 
-    private Control BuildSidebarFooter()
+    private Control BuildSidebarFooter(Color backgroundColor)
     {
-        var footer = new UiCardPanel
+        var footer = new TableLayoutPanel
         {
             Dock = DockStyle.Fill,
-            BackColor = UiTheme.Surface,
-            Padding = new Padding(UiTheme.CardPadding, 12, UiTheme.CardPadding, 12),
-            Margin = new Padding(0, 0, UiTheme.PageGap, 0),
+            BackColor = backgroundColor,
+            Padding = Padding.Empty,
+            Margin = new Padding(0, 0, 8, 0),
             ColumnCount = 3,
             RowCount = 1
         };
@@ -550,23 +566,15 @@ public sealed class ModuleEditorControl : UserControl
         _reloadButton.Click += async (_, _) => await RunModuleCommandAsync(_modulesReloadRequested);
         _pathToolTip.SetToolTip(_reloadButton, "重新加载模块列表 (F5)");
 
-        var getModulesButton = UiTheme.CreateButton(
+        var getModulesButton = UiTheme.CreateExternalLinkButton(
             "获取模块",
             Color.FromArgb(252, 238, 10),
             Color.Black);
         StyleModuleFooterButton(getModulesButton);
         getModulesButton.Dock = DockStyle.Fill;
-        getModulesButton.Padding = new Padding(0, 2, 24, 2);
         getModulesButton.FlatAppearance.BorderColor = Color.FromArgb(252, 238, 10);
         getModulesButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(255, 244, 64);
         getModulesButton.FlatAppearance.MouseDownBackColor = Color.FromArgb(220, 207, 8);
-        getModulesButton.Paint += (_, e) => UiTheme.DrawExternalLinkIcon(
-            e.Graphics,
-            getModulesButton.ClientRectangle,
-            getModulesButton.Text,
-            getModulesButton.Font,
-            getModulesButton.ForeColor,
-            getModulesButton.DeviceDpi / 96F);
         getModulesButton.Click += (_, _) => OpenModuleWebsite();
 
         footer.Controls.Add(_reloadButton, 0, 0);
@@ -645,6 +653,7 @@ public sealed class ModuleEditorControl : UserControl
         {
             Dock = DockStyle.Fill,
             BackColor = UiTheme.Surface,
+            FillColor = UiTheme.Surface,
             ColumnCount = 1,
             RowCount = 1,
             Margin = new Padding(0),
@@ -656,7 +665,7 @@ public sealed class ModuleEditorControl : UserControl
         var contentHost = new Panel
         {
             Dock = DockStyle.Fill,
-            BackColor = UiTheme.SurfaceRaised,
+            BackColor = UiTheme.Surface,
             Margin = new Padding(0)
         };
         contentCard.Controls.Add(contentHost, 0, 0);
@@ -671,7 +680,6 @@ public sealed class ModuleEditorControl : UserControl
         {
             page.Dock = DockStyle.Fill;
             page.Visible = false;
-            page.BackColor = UiTheme.SurfaceRaised;
             contentHost.Controls.Add(page);
         }
 
@@ -679,7 +687,7 @@ public sealed class ModuleEditorControl : UserControl
         _editorEmptyHint.Dock = DockStyle.Fill;
         _editorEmptyHint.TextAlign = ContentAlignment.MiddleCenter;
         _editorEmptyHint.ForeColor = UiTheme.Muted;
-        _editorEmptyHint.BackColor = UiTheme.SurfaceRaised;
+        _editorEmptyHint.BackColor = UiTheme.Surface;
         _editorEmptyHint.Visible = false;
         contentHost.Controls.Add(_editorEmptyHint);
         _editorEmptyHint.BringToFront();
@@ -725,45 +733,166 @@ public sealed class ModuleEditorControl : UserControl
 
     private Control BuildAdjustmentsPanel()
     {
+        var gap = UiTheme.PageGap;
         var panel = new TableLayoutPanel
         {
             Dock = DockStyle.Fill,
-            BackColor = UiTheme.SurfaceRaised,
-            ColumnCount = 1,
-            RowCount = 4,
-            Padding = new Padding(UiTheme.CardPadding),
+            BackColor = UiTheme.Surface,
+            ColumnCount = 3,
+            RowCount = 3,
+            Padding = Padding.Empty,
             Margin = new Padding(0)
         };
 
-        panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 28));
-        panel.RowStyles.Add(new RowStyle(SizeType.Percent, 50));
-        panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
-        panel.RowStyles.Add(new RowStyle(SizeType.Percent, 50));
+        panel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
+        panel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, gap));
+        panel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
+        panel.RowStyles.Add(new RowStyle(SizeType.Percent, 55));
+        panel.RowStyles.Add(new RowStyle(SizeType.Absolute, gap));
+        panel.RowStyles.Add(new RowStyle(SizeType.Percent, 45));
 
-        panel.Controls.Add(CreateSectionLabel("条件动态数值"), 0, 0);
-        panel.Controls.Add(BuildAdjustmentsGrid(), 0, 1);
-        panel.Controls.Add(CreateSectionLabel("公式动态数值"), 0, 2);
-        panel.Controls.Add(BuildFormulaAdjustmentsGrid(), 0, 3);
-
+        var conditionCard = CreateEditorSectionCard("条件动态数值", BuildAdjustmentsGrid());
+        panel.Controls.Add(conditionCard, 0, 0);
+        panel.SetColumnSpan(conditionCard, 3);
+        panel.Controls.Add(CreateEditorSectionCard("公式动态数值", BuildFormulaAdjustmentsGrid()), 0, 2);
+        panel.Controls.Add(CreateEditorSectionCard("数组", BuildNumberArraysPanel()), 2, 2);
         return panel;
     }
 
-    private Control BuildRulesPanel()
+    private Control CreateEditorCardPage(string title, Control body)
+    {
+        var panel = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            BackColor = UiTheme.Surface,
+            ColumnCount = 1,
+            RowCount = 1,
+            Padding = Padding.Empty,
+            Margin = new Padding(0)
+        };
+        panel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        panel.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        panel.Controls.Add(CreateEditorSectionCard(title, body), 0, 0);
+        return panel;
+    }
+
+    private Control CreateEditorSectionCard(string title, Control body)
+    {
+        var card = new UiCardPanel
+        {
+            Dock = DockStyle.Fill,
+            FillColor = UiTheme.SurfaceRaised,
+            ColumnCount = 1,
+            RowCount = 2,
+            Padding = new Padding(UiTheme.CardPadding, 10, UiTheme.CardPadding, UiTheme.CardPadding),
+            Margin = new Padding(0)
+        };
+        card.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        card.RowStyles.Add(new RowStyle(SizeType.Absolute, 36));
+        card.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        card.Controls.Add(UiTheme.CreateSectionTitle(Font, title), 0, 0);
+        body.Margin = new Padding(0, 4, 0, 0);
+        card.Controls.Add(body, 0, 1);
+        return card;
+    }
+
+    private Control BuildNumberArraysPanel()
     {
         var panel = new TableLayoutPanel
         {
             Dock = DockStyle.Fill,
             BackColor = UiTheme.SurfaceRaised,
-            ColumnCount = 1,
+            ColumnCount = 2,
             RowCount = 1,
-            Padding = new Padding(UiTheme.CardPadding),
             Margin = new Padding(0)
         };
-
+        panel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        panel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120));
         panel.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-        panel.Controls.Add(BuildRulesGrid(), 0, 0);
-        _rulesGrid.ScrollBars = ScrollBars.Both;
+        UiTheme.ConfigureListViewColumns(
+            _numberArraysList,
+            Font,
+            "module-number-arrays",
+            new UiTheme.ListColumn("名称", 140, 420),
+            new UiTheme.ListColumn("数组", 240, 2000, FillRemaining: true));
+        _numberArraysList.MultiSelect = false;
+        _numberArraysList.DoubleClick += (_, _) => EditSelectedNumberArray();
+        panel.Controls.Add(_numberArraysList, 0, 0);
+
+        var buttons = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            FlowDirection = FlowDirection.TopDown,
+            WrapContents = false,
+            BackColor = UiTheme.SurfaceRaised,
+            Margin = new Padding(8, 0, 0, 0)
+        };
+        buttons.Resize += (_, _) => LayoutUnitActionButtons(buttons);
+        var add = CreateUnitActionButton("添加", UiTheme.Field, UiTheme.Text, bottomGap: true);
+        add.Click += (_, _) => AddNumberArray();
+        var edit = CreateUnitActionButton("编辑", UiTheme.Field, UiTheme.Text, bottomGap: true);
+        edit.Click += (_, _) => EditSelectedNumberArray();
+        var delete = CreateUnitActionButton("删除", UiTheme.Field, UiTheme.Danger, bottomGap: false);
+        delete.Click += (_, _) => DeleteSelectedNumberArray();
+        buttons.Controls.Add(add);
+        buttons.Controls.Add(edit);
+        buttons.Controls.Add(delete);
+        panel.Controls.Add(buttons, 1, 0);
         return panel;
+    }
+
+    private void RefreshNumberArraysList(int selectIndex = -1)
+    {
+        _numberArraysList.BeginUpdate();
+        _numberArraysList.Items.Clear();
+        foreach (var array in _numberArrays)
+        {
+            var values = string.Join(", ", array.Numbers);
+            _numberArraysList.Items.Add(new ListViewItem([array.Name, values])
+            {
+                ToolTipText = values
+            });
+        }
+        _numberArraysList.EndUpdate();
+        if (selectIndex >= 0 && selectIndex < _numberArraysList.Items.Count)
+        {
+            _numberArraysList.Items[selectIndex].Selected = true;
+        }
+    }
+
+    private void AddNumberArray()
+    {
+        if (_selectedModule is null) return;
+        using var editor = new ModuleNumberArrayEditorForm(null, _numberArrays.Select(array => array.Name), _resolveProfile().Version);
+        if (editor.ShowDialog(FindForm()) != DialogResult.OK || editor.Result is null) return;
+        _numberArrays.Add(editor.Result);
+        RefreshNumberArraysList(_numberArrays.Count - 1);
+    }
+
+    private void EditSelectedNumberArray()
+    {
+        if (_selectedModule is null || _numberArraysList.SelectedIndices.Count == 0) return;
+        var index = _numberArraysList.SelectedIndices[0];
+        using var editor = new ModuleNumberArrayEditorForm(
+            _numberArrays[index],
+            _numberArrays.Where((_, i) => i != index).Select(array => array.Name), _resolveProfile().Version);
+        if (editor.ShowDialog(FindForm()) != DialogResult.OK || editor.Result is null) return;
+        _numberArrays[index] = editor.Result;
+        RefreshNumberArraysList(index);
+    }
+
+    private void DeleteSelectedNumberArray()
+    {
+        if (_selectedModule is null || _numberArraysList.SelectedIndices.Count == 0) return;
+        _numberArrays.RemoveAt(_numberArraysList.SelectedIndices[0]);
+        RefreshNumberArraysList();
+    }
+
+    private Control BuildRulesPanel()
+    {
+        var page = CreateEditorCardPage("逻辑规则", BuildRulesGrid());
+        _rulesGrid.ScrollBars = ScrollBars.Both;
+        return page;
     }
 
     private Control BuildUnitsPanel()
@@ -774,7 +903,7 @@ public sealed class ModuleEditorControl : UserControl
             BackColor = UiTheme.SurfaceRaised,
             ColumnCount = 2,
             RowCount = 1,
-            Padding = new Padding(UiTheme.CardPadding),
+            Padding = new Padding(0),
             Margin = new Padding(0)
         };
         panel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
@@ -831,7 +960,7 @@ public sealed class ModuleEditorControl : UserControl
         buttons.Controls.Add(deleteButton);
         panel.Controls.Add(buttons, 1, 0);
 
-        return panel;
+        return CreateEditorCardPage("动态单位", panel);
     }
 
     private Control BuildNameRow()
@@ -906,6 +1035,7 @@ public sealed class ModuleEditorControl : UserControl
         ResetHeroTalentOptions(_heroTalentBox, null, null);
         _classBox.SelectedIndexChanged += (_, _) =>
         {
+            if (_suppressMatchSelectionChanged) return;
             ResetSpecOptions(_specBox, ReadMatchCombo(_classBox));
             ResetHeroTalentOptions(_heroTalentBox, ReadMatchCombo(_classBox), ReadMatchCombo(_specBox));
             ReloadCurrentClassSpellIds();
@@ -917,6 +1047,7 @@ public sealed class ModuleEditorControl : UserControl
         };
         _specBox.SelectedIndexChanged += (_, _) =>
         {
+            if (_suppressMatchSelectionChanged) return;
             ResetHeroTalentOptions(_heroTalentBox, ReadMatchCombo(_classBox), ReadMatchCombo(_specBox));
             ReloadCurrentClassSpellIds();
             RefreshRuleSpellIcons();
@@ -983,7 +1114,8 @@ public sealed class ModuleEditorControl : UserControl
         });
 
         _adjustmentFieldColumn.Name = "Field";
-        _adjustmentFieldColumn.HeaderText = "数值";
+        _adjustmentFieldColumn.HeaderText = "字段";
+        _adjustmentFieldColumn.ReadOnly = true;
         _adjustmentFieldColumn.Width = 260;
         _adjustmentFieldColumn.MinimumWidth = 200;
         _adjustmentFieldColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
@@ -993,7 +1125,8 @@ public sealed class ModuleEditorControl : UserControl
         {
             Name = "Delta",
             HeaderText = "调整",
-            Width = 70,
+            CellTemplate = new AdjustmentValueCell(),
+            Width = 110,
             AutoSizeMode = DataGridViewAutoSizeColumnMode.None
         });
         _adjustmentsGrid.Columns.Add(new DataGridViewTextBoxColumn
@@ -1005,7 +1138,7 @@ public sealed class ModuleEditorControl : UserControl
         });
         AddDeleteColumn(_adjustmentsGrid);
 
-        // "类型"列加在集合末尾以保留 Rows.Add 的位置参数(启用/数值/调整/条件), 再用 DisplayIndex 显示到"数值"前。
+        // 新列加在集合末尾以保留 Rows.Add 的位置参数(启用/字段/调整/条件), 再用 DisplayIndex 排序。
         _adjustmentTypeColumn.Name = "Type";
         _adjustmentTypeColumn.HeaderText = "类型";
         _adjustmentTypeColumn.Width = 140;
@@ -1020,11 +1153,28 @@ public sealed class ModuleEditorControl : UserControl
         }
         _adjustmentsGrid.Columns.Add(_adjustmentTypeColumn);
         _adjustmentTypeColumn.DisplayIndex = 1;
+        _adjustmentsGrid.Columns.Add(new DataGridViewTextBoxColumn
+        {
+            Name = "Operation",
+            HeaderText = "调整方式",
+            Width = 110,
+            ReadOnly = true,
+            DefaultCellStyle = new DataGridViewCellStyle { NullValue = "+" },
+            AutoSizeMode = DataGridViewAutoSizeColumnMode.None
+        });
+        _adjustmentsGrid.Columns["Operation"]!.DisplayIndex = 3;
 
         _adjustmentsGrid.CellClick += OnAdjustmentsGridCellClick;
         _adjustmentsGrid.CellFormatting += OnAdjustmentsGridCellFormatting;
         _adjustmentsGrid.CellPainting += OnAdjustmentsGridCellPainting;
         _adjustmentsGrid.CellValueChanged += OnAdjustmentsGridCellValueChanged;
+        _adjustmentsGrid.CellEndEdit += (_, _) => RefreshAdjustmentFieldColumn();
+        _adjustmentsGrid.DefaultValuesNeeded += (_, e) =>
+        {
+            e.Row.Cells["Enabled"].Value = true;
+            e.Row.Cells["Operation"].Value = "+";
+            e.Row.Cells["Delta"].Value = "0";
+        };
         _adjustmentsGrid.DataError += (_, e) => e.ThrowException = false;
         _adjustmentsGrid.EditingControlShowing += OnAdjustmentsGridEditingControlShowing;
         _adjustmentsGrid.KeyDown += OnAdjustmentsGridKeyDown;
@@ -1196,9 +1346,19 @@ public sealed class ModuleEditorControl : UserControl
         _rulesGrid.CellClick += OnRulesGridCellClick;
         _rulesGrid.CellFormatting += OnRulesGridCellFormatting;
         _rulesGrid.CellPainting += OnRulesGridCellPainting;
+        _rulesGrid.RowPrePaint += OnRulesGridRowPrePaint;
+        _rulesGrid.RowsAdded += OnRulesGridRowsAdded;
+        _rulesGrid.Scroll += (_, _) => QueueRelaxedCommentSync();
         _rulesGrid.CellMouseEnter += OnRulesGridCellMouseEnter;
         _rulesGrid.CellMouseLeave += OnRulesGridCellMouseLeave;
-        _rulesGrid.MouseLeave += (_, _) => _rulesGridToolTip.Hide(_rulesGrid);
+        _rulesGrid.MouseLeave += (_, _) =>
+        {
+            _rulesGridToolTip.Hide(_rulesGrid);
+            if (_relaxedRuleView)
+            {
+                _rulesGrid.Cursor = Cursors.Default;
+            }
+        };
         _rulesGrid.MouseDown += OnRulesGridMouseDown;
         _rulesGrid.MouseMove += OnRulesGridMouseMove;
         _rulesGrid.DragOver += OnRulesGridDragOver;
@@ -1306,6 +1466,7 @@ public sealed class ModuleEditorControl : UserControl
         _spellColumn.Items.Clear();
         _spellColumn.Items.Add(string.Empty);
         _spellColumn.Items.Add(ModuleSpecialActions.PauseSpell);
+        _spellColumn.Items.Add(ModuleSpecialActions.KeyPress);
         _spellColumn.Items.Add(ModuleSpecialActions.FailedSpell);
         _spellColumn.Items.Add(ModuleSpecialActions.FailedItem);
         _spellColumn.Items.Add(ModuleSpecialActions.OneKeySpell);
@@ -1369,6 +1530,16 @@ public sealed class ModuleEditorControl : UserControl
         var spell = row.Cells["Spell"].Value?.ToString();
         cell.Items.Clear();
         cell.Items.Add(string.Empty);
+
+        if (ModuleSpecialActions.IsKeyPress(spell))
+        {
+            var recorded = KeySender.IsValidHotkey(desiredValue) ? desiredValue! : "录制按键…";
+            cell.Items.Add(recorded);
+            cell.Value = recorded;
+            cell.ToolTipText = "点击录制一个键盘按键、组合键或鼠标键；条件每次命中只发送一次。";
+            return;
+        }
+        cell.ToolTipText = string.Empty;
 
         if (ModuleSpecialActions.IsPauseSpell(spell))
         {
@@ -1451,6 +1622,14 @@ public sealed class ModuleEditorControl : UserControl
         var desired = MacroConditionText.ToDisplayText(desiredValue);
         var spell = row.Cells["Spell"].Value?.ToString();
         var unitText = row.Cells["Unit"].Value?.ToString();
+        cell.ReadOnly = ModuleSpecialActions.IsKeyPress(spell);
+        if (cell.ReadOnly)
+        {
+            cell.Items.Clear();
+            cell.Items.Add(string.Empty);
+            cell.Value = string.Empty;
+            return;
+        }
         var unit = ReservedUnit.ParseDisplayText(unitText);
         var allowed = unit is null || string.IsNullOrWhiteSpace(spell)
             ? (IReadOnlyList<string>)[]
@@ -1501,6 +1680,8 @@ public sealed class ModuleEditorControl : UserControl
         {
             _rulesGrid.Rows[e.RowIndex].Cells["SpellIcon"].Value =
                 GetRuleSpellIcon(CellText(_rulesGrid.Rows[e.RowIndex], "Spell"));
+            if (ModuleSpecialActions.IsKeyPress(CellText(_rulesGrid.Rows[e.RowIndex], "Spell")))
+                RebuildUnitCell(_rulesGrid.Rows[e.RowIndex], null);
             UpdateUnitCellItems(_rulesGrid.Rows[e.RowIndex]);
             UpdateMacroConditionCellItems(_rulesGrid.Rows[e.RowIndex]);
         }
@@ -1512,7 +1693,7 @@ public sealed class ModuleEditorControl : UserControl
 
     private void OnSpellIconCatalogChanged()
     {
-        if (IsDisposed || Disposing || !IsHandleCreated)
+        if (IsDisposed || Disposing)
         {
             return;
         }
@@ -1572,7 +1753,7 @@ public sealed class ModuleEditorControl : UserControl
                          .ThenBy(item => item.ItemId))
             {
                 var name = item.Name.Trim();
-                SpellIconCatalog.RegisterItem(item.ItemId, name);
+                Catalog.RegisterItem(item.ItemId, name);
                 if (_currentClassConditionItems.All(entry => entry.ItemId != item.ItemId))
                 {
                     _currentClassConditionItems.Add(new ConditionItem(item.ItemId, item.Index, name));
@@ -1601,7 +1782,7 @@ public sealed class ModuleEditorControl : UserControl
                     }
 
                     var name = item.Name.Trim();
-                    SpellIconCatalog.RegisterItem(itemId, name);
+                    Catalog.RegisterItem(itemId, name);
                     if (!_currentSpecItemIdsByName.TryGetValue(name, out var itemIds))
                     {
                         itemIds = [];
@@ -1635,7 +1816,7 @@ public sealed class ModuleEditorControl : UserControl
         {
             foreach (var spellId in spellIds)
             {
-                var icon = SpellIconCatalog.Get(spellId);
+                var icon = Catalog.Get(spellId);
                 if (icon is not null)
                 {
                     return icon;
@@ -1647,7 +1828,7 @@ public sealed class ModuleEditorControl : UserControl
         {
             foreach (var itemId in itemIds)
             {
-                var icon = SpellIconCatalog.GetItem(itemId);
+                var icon = Catalog.GetItem(itemId);
                 if (icon is not null)
                 {
                     return icon;
@@ -1655,22 +1836,22 @@ public sealed class ModuleEditorControl : UserControl
             }
         }
 
-        if (SpellIconCatalog.TryParseItemReference(normalized, out var explicitItemId))
+        if (Catalog.TryParseItemReference(normalized, out var explicitItemId))
         {
-            var icon = SpellIconCatalog.GetItem(explicitItemId);
+            var icon = Catalog.GetItem(explicitItemId);
             if (icon is not null)
             {
                 return icon;
             }
         }
 
-        var officialItemIcon = SpellIconCatalog.GetItem(normalized);
+        var officialItemIcon = Catalog.GetItem(normalized);
         if (officialItemIcon is not null)
         {
             return officialItemIcon;
         }
 
-        return SpellIconCatalog.Get(normalized);
+        return Catalog.Get(normalized);
     }
 
     private void RefreshRuleSpellIcons()
@@ -1775,8 +1956,14 @@ public sealed class ModuleEditorControl : UserControl
         var availableSpellIds = _currentClassConditionSpells.Select(spell => spell.SpellId).ToHashSet();
         foreach (var term in ConditionExpression.Parse(expression))
         {
+            if (term.NamedArray && !_numberArrays.Any(array => string.Equals(array.Name, term.Value, StringComparison.Ordinal)))
+            {
+                AddUnique(messages, $"数组“{term.Value}”不存在");
+                continue;
+            }
             if (SpellIdConditionFields.Contains(term.Field))
             {
+                if (ConditionExpression.IsInOperator(term.Op)) continue;
                 if (!long.TryParse(term.Value.Trim(), out var spellId)
                     || spellId <= 0
                     || !availableSpellIds.Contains(spellId))
@@ -1845,7 +2032,7 @@ public sealed class ModuleEditorControl : UserControl
         }
     }
 
-    // 按该行选中的"类型"重建"数值"单元格的可选项 = 该类别下的字段。
+    // 按该行选中的"类型"重建字段选项；自建行使用可编辑文本单元格。
     // desiredValue 为 null 时取单元格现值; 命中过滤后选项则保留, 否则: keepCustom 时补录为自定义项(载入旧数据), 反之清空(用户切换类型)。
     private void RebuildAdjustmentFieldCell(DataGridViewRow row, string? desiredValue, bool keepCustom)
     {
@@ -1855,6 +2042,11 @@ public sealed class ModuleEditorControl : UserControl
         }
 
         var cell = row.Cells["Field"];
+        cell.ReadOnly = !IsCustomAdjustmentRow(row);
+        if (IsCustomAdjustmentRow(row))
+        {
+            row.Cells["Operation"].Value = "=";
+        }
         desiredValue ??= cell.Value?.ToString();
         var category = ReadAdjustmentType(row);
         var isAvailable = !string.IsNullOrEmpty(desiredValue)
@@ -1871,7 +2063,33 @@ public sealed class ModuleEditorControl : UserControl
         }
     }
 
-    // 载入旧数据时: 由字段名推断类别, 写入"类型"单元格并重建"数值"选项(保留原值, 含自定义)。
+    private static bool IsCustomAdjustmentRow(DataGridViewRow? row)
+        => row is not null && CellText(row, "Type") == "自建";
+
+    private static string ReadAdjustmentOperation(DataGridViewRow row)
+        => IsCustomAdjustmentRow(row) ? "="
+            : string.IsNullOrWhiteSpace(CellText(row, "Operation")) ? "+" : CellText(row, "Operation");
+
+    private static bool CanSelectAdjustmentBoolean(DataGridViewRow? row)
+        => row is not null && ReadAdjustmentOperation(row) == "=";
+
+    private IEnumerable<ConditionField> GetCustomAdjustmentFields()
+    {
+        foreach (DataGridViewRow row in _adjustmentsGrid.Rows)
+        {
+            if (!row.IsNewRow && IsCustomAdjustmentRow(row)
+                && !string.IsNullOrWhiteSpace(CellText(row, "Field")))
+            {
+                var name = CellText(row, "Field");
+                yield return new ConditionField(name, name,
+                    CellText(row, "Delta") == ModuleValueAdjustment.ConditionBooleanValue
+                        || bool.TryParse(CellText(row, "Delta"), out _) ? ConditionFieldType.Bool : ConditionFieldType.Int,
+                    ConditionFieldCategory.Shigure);
+            }
+        }
+    }
+
+    // 载入旧数据时: 由字段名推断类别, 写入"类型"单元格并重建字段选项(保留原值)。
     private void ApplyAdjustmentRowType(DataGridViewRow row, string field)
     {
         _suppressAdjustmentTypeChange = true;
@@ -1953,13 +2171,25 @@ public sealed class ModuleEditorControl : UserControl
             return;
         }
 
-        // 用户切换"类型": 重建"数值"选项, 仅保留仍属于该类型的现值, 否则清空让其重选。
+        // 用户切换"类型": 重建字段选项, 仅保留仍属于该类型的现值, 否则清空让其重选。
         if (_adjustmentsGrid.Columns[e.ColumnIndex].Name == "Type")
         {
             RebuildAdjustmentFieldCell(_adjustmentsGrid.Rows[e.RowIndex], null, keepCustom: false);
         }
 
-        if (_adjustmentsGrid.Columns[e.ColumnIndex].Name == "Field")
+        if (_adjustmentsGrid.Columns[e.ColumnIndex].Name == "Operation")
+        {
+            var row = _adjustmentsGrid.Rows[e.RowIndex];
+            var value = CellText(row, "Delta");
+            if (!CanSelectAdjustmentBoolean(row)
+                && (value == ModuleValueAdjustment.ConditionBooleanValue || bool.TryParse(value, out _)))
+            {
+                row.Cells["Delta"].Value = "0";
+            }
+            _adjustmentsGrid.InvalidateCell(row.Cells["Delta"]);
+        }
+
+        if (_adjustmentsGrid.Columns[e.ColumnIndex].Name is "Field" or "Delta" or "Type")
         {
             InvalidateConditionFieldValidation();
         }
@@ -2015,10 +2245,10 @@ public sealed class ModuleEditorControl : UserControl
         var seen = new HashSet<string>(StringComparer.Ordinal);
         foreach (var field in _fieldCatalog.GetFields(ReadMatchCombo(_classBox), ReadMatchCombo(_specBox)))
         {
-            // 状态仅取可加减的整数字段; 技能/光环原样收录, 供"类型"筛选。
-            if (field.Category == ConditionFieldCategory.State && field.Type == ConditionFieldType.Int)
+            // 状态支持整数运算与布尔赋值；技能/光环保留其原有类型。
+            if (field.Category == ConditionFieldCategory.State && field.Type is ConditionFieldType.Int or ConditionFieldType.Bool)
             {
-                AddAdjustmentField(fields, seen, field.Name, field.DisplayName, ConditionFieldCategory.State);
+                AddAdjustmentField(fields, seen, field.Name, field.DisplayName, ConditionFieldCategory.State, field.Type);
             }
             else if (field.Category == ConditionFieldCategory.Spell
                      && string.Equals(
@@ -2031,7 +2261,7 @@ public sealed class ModuleEditorControl : UserControl
             }
             else if (field.Category is ConditionFieldCategory.Spell or ConditionFieldCategory.Aura)
             {
-                AddAdjustmentField(fields, seen, field.Name, field.DisplayName, field.Category);
+                AddAdjustmentField(fields, seen, field.Name, field.DisplayName, field.Category, field.Type);
             }
         }
 
@@ -2073,6 +2303,11 @@ public sealed class ModuleEditorControl : UserControl
             {
                 AddAdjustmentField(fields, seen, field.Name, $"平均血量: {field.Name}", ConditionFieldCategory.DynamicValue);
             }
+        }
+
+        foreach (var custom in GetCustomAdjustmentFields())
+        {
+            AddAdjustmentField(fields, seen, custom.Name, custom.DisplayName, custom.Category, custom.Type);
         }
 
         // 公式结果和其它不属于状态/技能/光环/动态单位的命名目标都是动态数值。
@@ -2130,14 +2365,15 @@ public sealed class ModuleEditorControl : UserControl
         HashSet<string> seen,
         string name,
         string displayName,
-        ConditionFieldCategory category)
+        ConditionFieldCategory category,
+        ConditionFieldType type = ConditionFieldType.Int)
     {
         if (string.IsNullOrWhiteSpace(name) || !seen.Add(name))
         {
             return;
         }
 
-        fields.Add(new ConditionField(name, displayName, ConditionFieldType.Int, category));
+        fields.Add(new ConditionField(name, displayName, type, category));
     }
 
     private void AddUnit()
@@ -2152,7 +2388,15 @@ public sealed class ModuleEditorControl : UserControl
             null,
             null,
             hasNameplateImprovedGarrote: _fieldCatalog.HasNameplateImprovedGarrote(
-                ReadMatchCombo(_classBox), ReadMatchCombo(_specBox)));
+                ReadMatchCombo(_classBox), ReadMatchCombo(_specBox)),
+            hasNameplateThreat: _fieldCatalog.HasNameplateThreat(
+                ReadMatchCombo(_classBox), ReadMatchCombo(_specBox)),
+            hasNameplateCastSpell: _fieldCatalog.HasNameplateCastSpell(
+                ReadMatchCombo(_classBox), ReadMatchCombo(_specBox)),
+            numberArrayNames: _numberArrays.Select(array => array.Name).ToArray(),
+            hasNameplateCastCountdown: _fieldCatalog.HasNameplateCastCountdown(
+                ReadMatchCombo(_classBox), ReadMatchCombo(_specBox)),
+            groupDispelFields: GetGroupDispelFields());
         if (editor.ShowDialog(FindForm()) != DialogResult.OK)
         {
             return;
@@ -2205,7 +2449,12 @@ public sealed class ModuleEditorControl : UserControl
             existingCount,
             existingEnemyCount,
             existingAverageHealth,
-            _fieldCatalog.HasNameplateImprovedGarrote(ReadMatchCombo(_classBox), ReadMatchCombo(_specBox)));
+            _fieldCatalog.HasNameplateImprovedGarrote(ReadMatchCombo(_classBox), ReadMatchCombo(_specBox)),
+            _fieldCatalog.HasNameplateThreat(ReadMatchCombo(_classBox), ReadMatchCombo(_specBox)),
+            _fieldCatalog.HasNameplateCastSpell(ReadMatchCombo(_classBox), ReadMatchCombo(_specBox)),
+            _numberArrays.Select(array => array.Name).ToArray(),
+            _fieldCatalog.HasNameplateCastCountdown(ReadMatchCombo(_classBox), ReadMatchCombo(_specBox)),
+            GetGroupDispelFields());
         if (editor.ShowDialog(FindForm()) != DialogResult.OK)
         {
             return;
@@ -2426,11 +2675,16 @@ public sealed class ModuleEditorControl : UserControl
         InvalidateConditionFieldValidation();
     }
 
+    private IReadOnlyList<string> GetGroupDispelFields()
+        => _fieldCatalog.GetGroupFields(ReadMatchCombo(_classBox), ReadMatchCombo(_specBox))
+            .Where(field => GroupDispelCatalog.Entries.Any(entry => entry.FieldName == field.Name))
+            .Select(field => field.Name).ToArray();
+
     private IReadOnlyList<ConditionField> GetAuraFields()
     {
         return _fieldCatalog
             .GetGroupFields(ReadMatchCombo(_classBox), ReadMatchCombo(_specBox))
-            .Where(field => !NonAuraGroupFields.Contains(field.Name))
+            .Where(field => SpellFieldKey.TryParseAuraMember(field.Name, out _, out _))
             .ToList();
     }
 
@@ -2467,11 +2721,12 @@ public sealed class ModuleEditorControl : UserControl
 
     private IReadOnlyList<string> GetThresholdFields()
     {
-        // 阈值字段仅取状态/动态单位/动态数值(可加减数值), 排除技能/光环字段。
+        // 阈值字段取状态/动态单位/动态数值/自建中的整数，排除技能/光环字段。
         return BuildAdjustmentFields()
-            .Where(field => field.Category is ConditionFieldCategory.State
+            .Where(field => field.Type == ConditionFieldType.Int && field.Category is ConditionFieldCategory.State
                 or ConditionFieldCategory.DynamicUnit
-                or ConditionFieldCategory.DynamicValue)
+                or ConditionFieldCategory.DynamicValue
+                or ConditionFieldCategory.Shigure)
             .Select(field => field.Name)
             .Where(name => !string.IsNullOrWhiteSpace(name))
             .ToList();
@@ -2539,6 +2794,8 @@ public sealed class ModuleEditorControl : UserControl
             taken.Add(field.Name);
         }
 
+        taken.UnionWith(GetAdjustmentTargetFields());
+
         foreach (var ownName in ownNames)
         {
             if (!string.IsNullOrEmpty(ownName))
@@ -2584,22 +2841,31 @@ public sealed class ModuleEditorControl : UserControl
         IReadOnlyList<string> SubConditions,
         int? DelayMs,
         int? LogicDelayMs,
-        bool? ContinueLogic);
+        bool? ContinueLogic,
+        int? MatchDelayMs = null);
 
     private sealed class RuleRowMetadata(
         IEnumerable<string>? subConditions = null,
         int? delayMs = null,
         int? logicDelayMs = null,
-        bool? continueLogic = null)
+        bool? continueLogic = null,
+        int? matchDelayMs = null)
     {
         public List<string> SubConditions { get; } = subConditions?.ToList() ?? new List<string>();
         public int? DelayMs { get; set; } = delayMs;
         public int? LogicDelayMs { get; set; } = logicDelayMs;
+        public int? MatchDelayMs { get; set; } = matchDelayMs;
         public bool? ContinueLogic { get; set; } = continueLogic;
     }
 
     private void OnRulesGridCellClick(object? sender, DataGridViewCellEventArgs e)
     {
+        if (_suppressNextRulesCellClick)
+        {
+            _suppressNextRulesCellClick = false;
+            return;
+        }
+
         if (e.RowIndex < 0 || e.ColumnIndex < 0)
         {
             return;
@@ -2672,6 +2938,25 @@ public sealed class ModuleEditorControl : UserControl
         }
 
         _rulesGrid.CurrentCell = cell;
+        if (ModuleSpecialActions.IsKeyPress(CellText(row, "Spell")))
+        {
+            if (_rulesGrid.Columns[columnIndex].Name == "Unit")
+            {
+                using var recorder = new KeyRecordingForm(CellText(row, "Unit"));
+                if (recorder.ShowDialog(FindForm()) == DialogResult.OK)
+                {
+                    RebuildUnitCell(row, recorder.Hotkey);
+                    _rulesGrid.InvalidateRow(rowIndex);
+                }
+                return;
+            }
+            if (_rulesGrid.Columns[columnIndex].Name == "MacroCondition") return;
+        }
+        if (_relaxedRuleView)
+        {
+            _rulesGrid.HorizontalScrollingOffset = 0;
+        }
+
         var values = cell.Items.Cast<object>()
             .Select(item => item?.ToString() ?? string.Empty)
             .Distinct(StringComparer.Ordinal)
@@ -2689,9 +2974,10 @@ public sealed class ModuleEditorControl : UserControl
             values.Insert(0, currentValue);
         }
 
-        var cellBounds = _rulesGrid.GetCellDisplayRectangle(columnIndex, rowIndex, cutOverflow: true);
+        var cellBounds = GetRuleDropDownAnchor(rowIndex, _rulesGrid.Columns[columnIndex].Name);
         var options = values
-            .Select(value => new UiDropDownOption(value, value))
+            .Select(value => new UiDropDownOption(value, value,
+                cell.OwningColumn?.Name == "Spell" ? GetRuleSpellIcon(value) : null))
             .ToList();
         ToolStripDropDown? dropDown = null;
         dropDown = UiDropDownPopup.Show(
@@ -2732,7 +3018,7 @@ public sealed class ModuleEditorControl : UserControl
         var row = _rulesGrid.Rows[e.RowIndex];
         if (columnName == "SpellIcon" && row.IsNewRow)
         {
-            e.Value = SpellIconCatalog.GetLastRuleRowIcon();
+            e.Value = Catalog.GetLastRuleRowIcon();
             e.FormattingApplied = true;
             return;
         }
@@ -2765,7 +3051,8 @@ public sealed class ModuleEditorControl : UserControl
                 metadata.SubConditions,
                 metadata.DelayMs,
                 metadata.LogicDelayMs,
-                metadata.ContinueLogic);
+                metadata.ContinueLogic,
+                metadata.MatchDelayMs);
             e.FormattingApplied = true;
         }
     }
@@ -2826,6 +3113,8 @@ public sealed class ModuleEditorControl : UserControl
                 {
                     continue;
                 }
+
+                if (ConditionExpression.IsInOperator(term.Op)) continue;
 
                 var value = term.Value.Trim();
                 if (long.TryParse(value, out var spellId)
@@ -2904,7 +3193,7 @@ public sealed class ModuleEditorControl : UserControl
         var classId = ReadMatchCombo(_classBox);
         var specId = ReadMatchCombo(_specBox);
         _availableGroupConditionFields = new HashSet<string>(
-            _fieldCatalog.GetGroupFields(classId, specId).Select(field => field.Name),
+            _fieldCatalog.GetGroupFields(classId, specId, includeLegacyDispel: true).Select(field => field.Name),
             StringComparer.Ordinal);
         _availableConditionFields.UnionWith(
             _fieldCatalog.GetAuraAliasFieldNames(classId, specId, groupOnly: false));
@@ -2967,7 +3256,8 @@ public sealed class ModuleEditorControl : UserControl
         IReadOnlyList<string>? subs,
         int? delayMs,
         int? logicDelayMs,
-        bool? continueLogic)
+        bool? continueLogic,
+        int? matchDelayMs = null)
     {
         var conditionText = FormatConditionExpressionForDisplay(main);
         if (subs is { Count: > 0 })
@@ -2990,6 +3280,13 @@ public sealed class ModuleEditorControl : UserControl
             conditionText = conditionText.Length == 0
                 ? $"逻辑延迟 {logicDelayMs.Value} ms"
                 : $"{conditionText}；逻辑延迟 {logicDelayMs.Value} ms";
+        }
+
+        if (matchDelayMs is > 0)
+        {
+            conditionText = conditionText.Length == 0
+                ? $"命中延迟 {matchDelayMs.Value} ms"
+                : $"{conditionText}；命中延迟 {matchDelayMs.Value} ms";
         }
 
         if (continueLogic is true)
@@ -3020,6 +3317,7 @@ public sealed class ModuleEditorControl : UserControl
         {
             var field = FormatConditionFieldForDisplay(term.Field);
             var value = SpellIdConditionFields.Contains(term.Field)
+                && !ConditionExpression.IsInOperator(term.Op)
                 ? FormatConditionSpellValueForDisplay(term.Value)
                 : ItemIdConditionFields.Contains(term.Field)
                     ? FormatConditionItemValueForDisplay(term.Value)
@@ -3110,7 +3408,7 @@ public sealed class ModuleEditorControl : UserControl
             return localName;
         }
 
-        var catalogName = SpellIconCatalog.ResolveSuggestionName(spellId, null);
+        var catalogName = Catalog.ResolveSuggestionName(spellId, null);
         if (!string.IsNullOrWhiteSpace(catalogName))
         {
             return catalogName;
@@ -3145,6 +3443,903 @@ public sealed class ModuleEditorControl : UserControl
         }
 
         return value.Trim();
+    }
+
+    private enum RelaxedRulePart
+    {
+        None,
+        Enabled,
+        Spell,
+        Unit,
+        Macro,
+        Condition,
+        MoveUp,
+        MoveDown,
+        Copy,
+        InsertBlank,
+        Delete
+    }
+
+    private readonly record struct RelaxedRuleRegions(
+        Rectangle Enabled,
+        Rectangle Icon,
+        Rectangle Spell,
+        Rectangle Unit,
+        Rectangle Macro,
+        Rectangle Comment,
+        Rectangle Condition,
+        Rectangle MoveUp,
+        Rectangle MoveDown,
+        Rectangle Copy,
+        Rectangle InsertBlank,
+        Rectangle Delete);
+
+    private void ToggleRuleView()
+    {
+        HideRelaxedCommentEditors();
+        CloseRulesComboDropDown();
+        _rulesGrid.EndEdit();
+        _relaxedRuleView = !_relaxedRuleView;
+        ApplyRuleViewMode();
+    }
+
+    private void ApplyRuleViewMode()
+    {
+        var relaxed = _relaxedRuleView;
+        _ruleViewButton.Text = relaxed ? "紧缩视图" : "宽松视图";
+        _pathToolTip.SetToolTip(
+            _ruleViewButton,
+            relaxed ? "当前为宽松视图，点击切换为紧缩视图" : "当前为紧缩视图，点击切换为宽松视图");
+
+        var height = relaxed ? RelaxedRuleRowHeight() : CompactRuleRowHeight();
+        _rulesGrid.SuspendLayout();
+        try
+        {
+            _rulesGrid.ColumnHeadersVisible = !relaxed;
+            if (_rulesGrid.Columns["Enabled"] is DataGridViewColumn enabledColumn)
+            {
+                enabledColumn.ReadOnly = relaxed;
+            }
+
+            _rulesGrid.HorizontalScrollingOffset = 0;
+            _rulesGrid.ScrollBars = relaxed ? ScrollBars.Vertical : ScrollBars.Both;
+            _rulesGrid.RowTemplate.Height = height;
+            foreach (DataGridViewRow row in _rulesGrid.Rows)
+            {
+                if (!row.IsNewRow)
+                {
+                    row.Height = height;
+                }
+            }
+        }
+        finally
+        {
+            _rulesGrid.ResumeLayout();
+        }
+
+        _rulesGrid.Invalidate();
+        SyncRelaxedCommentBoxes();
+    }
+
+    private int CompactRuleRowHeight()
+    {
+        var verticalPadding = UiTheme.Scale(_rulesGrid, 12);
+        return Math.Max(UiTheme.Scale(_rulesGrid, UiTheme.GridRowHeight), _rulesGrid.Font.Height + verticalPadding);
+    }
+
+    private int RelaxedRuleRowHeight()
+    {
+        var metrics = RelaxedRuleMetrics();
+        return metrics.CardGap
+            + metrics.Pad
+            + metrics.Control
+            + metrics.LineGap
+            + metrics.Control
+            + metrics.LineGap
+            + metrics.Control
+            + metrics.Pad;
+    }
+
+    private (int CardGap, int Side, int Pad, int LineGap, int Control, int DropDown) RelaxedRuleMetrics()
+    {
+        var control = Math.Max(1, (int)Math.Round(UiTheme.Scale(_rulesGrid, 36) * 0.8));
+        return (
+            UiTheme.Scale(_rulesGrid, 8),
+            UiTheme.Scale(_rulesGrid, 8),
+            UiTheme.Scale(_rulesGrid, 12),
+            UiTheme.Scale(_rulesGrid, 8),
+            control,
+            UiTheme.Scale(_rulesGrid, 168));
+    }
+
+    private void OnRulesGridRowsAdded(object? sender, DataGridViewRowsAddedEventArgs e)
+    {
+        if (!_relaxedRuleView)
+        {
+            return;
+        }
+
+        var height = RelaxedRuleRowHeight();
+        for (var i = 0; i < e.RowCount; i++)
+        {
+            var index = e.RowIndex + i;
+            if (index < _rulesGrid.Rows.Count && !_rulesGrid.Rows[index].IsNewRow)
+            {
+                _rulesGrid.Rows[index].Height = height;
+            }
+        }
+    }
+
+    private void OnRulesGridRowPrePaint(object? sender, DataGridViewRowPrePaintEventArgs e)
+    {
+        if (!_relaxedRuleView || e.RowIndex < 0 || e.Graphics is null)
+        {
+            return;
+        }
+
+        var display = _rulesGrid.DisplayRectangle;
+        var bounds = new Rectangle(display.Left, e.RowBounds.Top, display.Width, e.RowBounds.Height);
+        PaintRelaxedRuleRow(e.Graphics, e.RowIndex, e.RowBounds, bounds);
+        e.Handled = true;
+    }
+
+    private void PaintRelaxedRuleRow(Graphics graphics, int rowIndex, Rectangle fullBounds, Rectangle bounds)
+    {
+        var row = _rulesGrid.Rows[rowIndex];
+        var missing = !row.IsNewRow && RuleRowHasMissingReferences(row);
+        var selected = row.Selected;
+        using (var brush = new SolidBrush(_rulesGrid.BackgroundColor))
+        {
+            graphics.FillRectangle(brush, fullBounds);
+        }
+
+        var card = GetRelaxedCardBounds(bounds);
+        var previousMode = graphics.SmoothingMode;
+        graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+        using (var path = UiTheme.CreateRoundedRectanglePath(card, UiTheme.Scale(_rulesGrid, UiTheme.CardCornerRadius)))
+        using (var fill = new SolidBrush(missing ? UiTheme.DangerSoft : UiTheme.SurfaceRaised))
+        {
+            graphics.FillPath(fill, path);
+            if (selected)
+            {
+                using var border = new Pen(UiTheme.Accent);
+                graphics.DrawPath(border, path);
+            }
+        }
+
+        graphics.SmoothingMode = previousMode;
+
+        var regions = BuildRelaxedRuleRegions(card);
+        var enabled = !row.IsNewRow && CellBool(row, "Enabled", defaultValue: true);
+        PaintRelaxedCheckBox(graphics, regions.Enabled, enabled);
+
+        var icon = row.IsNewRow
+            ? Catalog.GetLastRuleRowIcon()
+            : GetRuleSpellIcon(CellText(row, "Spell"));
+        if (icon is not null && regions.Icon.Width > 4 && regions.Icon.Height > 4)
+        {
+            var size = Math.Min(regions.Icon.Width, regions.Icon.Height) - UiTheme.Scale(_rulesGrid, 2);
+            var dest = new Rectangle(
+                regions.Icon.X + (regions.Icon.Width - size) / 2,
+                regions.Icon.Y + (regions.Icon.Height - size) / 2,
+                size,
+                size);
+            graphics.DrawImage(icon, dest);
+        }
+
+        var fore = missing ? UiTheme.Danger : UiTheme.Text;
+        PaintRelaxedValueField(graphics, regions.Spell, CellText(row, "Spell"), "技能", fore, withArrow: true);
+        PaintRelaxedValueField(graphics, regions.Unit, CellText(row, "Unit"), "目标", fore, withArrow: true);
+        PaintRelaxedValueField(graphics, regions.Macro, CellText(row, "MacroCondition"), "宏条件", fore, withArrow: true);
+        PaintRelaxedChrome(graphics, regions.Comment, UiTheme.Field, UiTheme.Border);
+
+        var metadata = GetRuleMetadata(row);
+        var condition = row.IsNewRow
+            ? string.Empty
+            : DecorateCondition(
+                CellText(row, "Condition"),
+                metadata.SubConditions,
+                metadata.DelayMs,
+                metadata.LogicDelayMs,
+                metadata.ContinueLogic,
+                metadata.MatchDelayMs);
+        PaintRelaxedValueField(
+            graphics,
+            regions.Condition,
+            condition,
+            "点击编辑条件",
+            missing ? fore : UiTheme.Text,
+            withArrow: false);
+
+        PaintRelaxedActionButton(graphics, regions.MoveUp, "上移一行", IsRuleIconEnabled("MoveUp", rowIndex), danger: false);
+        PaintRelaxedActionButton(graphics, regions.MoveDown, "下移一行", IsRuleIconEnabled("MoveDown", rowIndex), danger: false);
+        PaintRelaxedActionButton(graphics, regions.Copy, "复制到下一行", IsRuleIconEnabled("Copy", rowIndex), danger: false);
+        PaintRelaxedActionButton(graphics, regions.InsertBlank, "在下一行添加空白行", IsRuleIconEnabled("InsertBlank", rowIndex), danger: false);
+        PaintRelaxedActionButton(graphics, regions.Delete, "删除", IsRuleIconEnabled("Delete", rowIndex), danger: true);
+    }
+
+    private bool RuleRowHasMissingReferences(DataGridViewRow row)
+        => GetMissingConditionFields(row).Count > 0
+           || GetMissingConditionSpells(row).Count > 0
+           || GetMissingConditionItems(row).Count > 0;
+
+    private int RelaxedControlRadius()
+        => UiTheme.Scale(_rulesGrid, UiTheme.ControlCornerRadius);
+
+    private void PaintRelaxedChrome(Graphics graphics, Rectangle bounds, Color fill, Color border)
+    {
+        if (bounds.Width <= 1 || bounds.Height <= 1)
+        {
+            return;
+        }
+
+        var rect = new Rectangle(bounds.X, bounds.Y, bounds.Width - 1, bounds.Height - 1);
+        var previous = graphics.SmoothingMode;
+        graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+        using var path = UiTheme.CreateRoundedRectanglePath(rect, RelaxedControlRadius());
+        using var brush = new SolidBrush(fill);
+        using var pen = new Pen(border);
+        graphics.FillPath(brush, path);
+        graphics.DrawPath(pen, path);
+        graphics.SmoothingMode = previous;
+    }
+
+    private void PaintRelaxedCheckBox(Graphics graphics, Rectangle bounds, bool isChecked)
+    {
+        var boxSize = Math.Min(UiTheme.Scale(_rulesGrid, 16), Math.Max(1, bounds.Height - 2));
+        var box = new Rectangle(
+            bounds.X,
+            bounds.Y + Math.Max(0, (bounds.Height - boxSize) / 2),
+            boxSize,
+            boxSize);
+        var rect = new Rectangle(box.X, box.Y, Math.Max(1, box.Width - 1), Math.Max(1, box.Height - 1));
+        var previous = graphics.SmoothingMode;
+        graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+        using (var path = UiTheme.CreateRoundedRectanglePath(rect, UiTheme.Scale(_rulesGrid, 4)))
+        using (var fill = new SolidBrush(isChecked ? UiTheme.AccentSoft : UiTheme.Field))
+        using (var border = new Pen(isChecked ? UiTheme.Accent : UiTheme.Border))
+        {
+            graphics.FillPath(fill, path);
+            graphics.DrawPath(border, path);
+        }
+
+        if (isChecked)
+        {
+            var inset = UiTheme.Scale(_rulesGrid, 3);
+            using var pen = new Pen(UiTheme.Accent, 2);
+            graphics.DrawLines(
+                pen,
+                new[]
+                {
+                    new Point(box.Left + inset, box.Top + box.Height / 2),
+                    new Point(box.Left + box.Width / 2 - 1, box.Bottom - inset),
+                    new Point(box.Right - inset, box.Top + inset)
+                });
+        }
+
+        graphics.SmoothingMode = previous;
+    }
+
+    private void PaintRelaxedValueField(
+        Graphics graphics,
+        Rectangle bounds,
+        string value,
+        string placeholder,
+        Color valueColor,
+        bool withArrow)
+    {
+        PaintRelaxedChrome(graphics, bounds, UiTheme.Field, UiTheme.Border);
+        if (bounds.Width <= 1 || bounds.Height <= 1)
+        {
+            return;
+        }
+
+        var arrowWidth = withArrow ? UiTheme.Scale(_rulesGrid, 18) : UiTheme.Scale(_rulesGrid, 8);
+        var text = string.IsNullOrWhiteSpace(value) ? placeholder : value;
+        var color = string.IsNullOrWhiteSpace(value) ? UiTheme.Muted : valueColor;
+        var textBounds = new Rectangle(
+            bounds.X + UiTheme.Scale(_rulesGrid, 8),
+            bounds.Y,
+            Math.Max(0, bounds.Width - arrowWidth - UiTheme.Scale(_rulesGrid, 8)),
+            bounds.Height);
+        TextRenderer.DrawText(
+            graphics,
+            text,
+            _rulesGrid.Font,
+            textBounds,
+            color,
+            TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis | TextFormatFlags.NoPrefix);
+
+        if (!withArrow)
+        {
+            return;
+        }
+
+        var previous = graphics.SmoothingMode;
+        graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+        var arrow = UiTheme.Scale(_rulesGrid, 8);
+        var centerX = bounds.Right - UiTheme.Scale(_rulesGrid, 12);
+        var centerY = bounds.Top + bounds.Height / 2;
+        using var arrowBrush = new SolidBrush(UiTheme.Muted);
+        graphics.FillPolygon(
+            arrowBrush,
+            new[]
+            {
+                new Point(centerX - arrow / 2, centerY - arrow / 4),
+                new Point(centerX + arrow / 2, centerY - arrow / 4),
+                new Point(centerX, centerY + arrow / 3)
+            });
+        graphics.SmoothingMode = previous;
+    }
+
+    private void PaintRelaxedActionButton(Graphics graphics, Rectangle bounds, string text, bool enabled, bool danger)
+    {
+        PaintRelaxedChrome(graphics, bounds, UiTheme.Field, UiTheme.Border);
+        if (bounds.Width <= 1 || bounds.Height <= 1)
+        {
+            return;
+        }
+
+        var color = !enabled ? UiTheme.Muted : danger ? UiTheme.Danger : UiTheme.Text;
+        TextRenderer.DrawText(
+            graphics,
+            text,
+            _rulesGrid.Font,
+            bounds,
+            color,
+            TextFormatFlags.HorizontalCenter
+            | TextFormatFlags.VerticalCenter
+            | TextFormatFlags.EndEllipsis
+            | TextFormatFlags.NoPrefix);
+    }
+
+    private Rectangle GetRelaxedCommentEditorBounds(Rectangle comment)
+    {
+        if (comment.Width <= 1 || comment.Height <= 1)
+        {
+            return Rectangle.Empty;
+        }
+
+        var padX = UiTheme.Scale(_rulesGrid, 8);
+        var textHeight = TextRenderer.MeasureText(
+            "注释",
+            _rulesGrid.Font,
+            Size.Empty,
+            TextFormatFlags.NoPadding | TextFormatFlags.SingleLine).Height;
+        textHeight = Math.Min(Math.Max(1, comment.Height - 4), textHeight + UiTheme.Scale(_rulesGrid, 2));
+        return new Rectangle(
+            comment.X + padX,
+            comment.Y + Math.Max(0, (comment.Height - textHeight) / 2),
+            Math.Max(1, comment.Width - padX * 2),
+            textHeight);
+    }
+
+    private Rectangle GetRelaxedCardBounds(Rectangle rowBounds)
+    {
+        var metrics = RelaxedRuleMetrics();
+        return new Rectangle(
+            rowBounds.Left + metrics.Side,
+            rowBounds.Top + metrics.CardGap / 2,
+            Math.Max(0, rowBounds.Width - metrics.Side * 2),
+            Math.Max(0, rowBounds.Height - metrics.CardGap));
+    }
+
+    private RelaxedRuleRegions BuildRelaxedRuleRegions(Rectangle bounds)
+    {
+        var metrics = RelaxedRuleMetrics();
+        var x = bounds.Left + metrics.Pad;
+        var y = bounds.Top + metrics.Pad;
+        var contentWidth = Math.Max(0, bounds.Width - metrics.Pad * 2);
+        var check = UiTheme.Scale(_rulesGrid, 16);
+        var enabled = new Rectangle(x, y, check + metrics.LineGap, metrics.Control);
+        x += enabled.Width;
+
+        var icon = new Rectangle(x, y, metrics.Control, metrics.Control);
+        x += icon.Width + metrics.LineGap;
+
+        var commentMin = UiTheme.Scale(_rulesGrid, 96);
+        var dropDown = metrics.DropDown;
+        var available = Math.Max(0, bounds.Right - metrics.Pad - x);
+        var fieldGaps = metrics.LineGap * 3;
+        if (dropDown * 3 + fieldGaps + commentMin > available)
+        {
+            dropDown = Math.Max(UiTheme.Scale(_rulesGrid, 80), (available - fieldGaps - commentMin) / 3);
+        }
+
+        var spell = new Rectangle(x, y, dropDown, metrics.Control);
+        x += dropDown + metrics.LineGap;
+        var unit = new Rectangle(x, y, dropDown, metrics.Control);
+        x += dropDown + metrics.LineGap;
+        var macro = new Rectangle(x, y, dropDown, metrics.Control);
+        x += dropDown + metrics.LineGap;
+        var comment = new Rectangle(x, y, Math.Max(0, bounds.Right - metrics.Pad - x), metrics.Control);
+
+        var condition = new Rectangle(
+            bounds.Left + metrics.Pad,
+            enabled.Bottom + metrics.LineGap,
+            contentWidth,
+            metrics.Control);
+        var buttonY = condition.Bottom + metrics.LineGap;
+        var labels = new[] { "上移一行", "下移一行", "复制到下一行", "在下一行添加空白行", "删除" };
+        var textPad = UiTheme.Scale(_rulesGrid, 16);
+        var widths = labels
+            .Select(label => TextRenderer.MeasureText(label, _rulesGrid.Font).Width + textPad)
+            .ToArray();
+        var total = widths.Sum() + metrics.LineGap * (widths.Length - 1);
+        if (total > contentWidth && total > 0)
+        {
+            var scale = contentWidth / (float)total;
+            var minimum = UiTheme.Scale(_rulesGrid, 28);
+            for (var i = 0; i < widths.Length; i++)
+            {
+                widths[i] = Math.Max(minimum, (int)(widths[i] * scale));
+            }
+
+            total = widths.Sum() + metrics.LineGap * (widths.Length - 1);
+        }
+
+        var buttons = new Rectangle[widths.Length];
+        var buttonX = bounds.Right - metrics.Pad - total;
+        for (var i = 0; i < widths.Length; i++)
+        {
+            buttons[i] = new Rectangle(buttonX, buttonY, widths[i], metrics.Control);
+            buttonX += widths[i] + metrics.LineGap;
+        }
+
+        return new RelaxedRuleRegions(
+            enabled,
+            icon,
+            spell,
+            unit,
+            macro,
+            comment,
+            condition,
+            buttons[0],
+            buttons[1],
+            buttons[2],
+            buttons[3],
+            buttons[4]);
+    }
+
+    private bool TryGetRelaxedRowBounds(int rowIndex, out Rectangle bounds)
+    {
+        bounds = Rectangle.Empty;
+        if (rowIndex < 0 || rowIndex >= _rulesGrid.Rows.Count)
+        {
+            return false;
+        }
+
+        var rowRect = _rulesGrid.GetRowDisplayRectangle(rowIndex, cutOverflow: false);
+        if (rowRect.Height <= 0)
+        {
+            return false;
+        }
+
+        var display = _rulesGrid.DisplayRectangle;
+        bounds = new Rectangle(display.Left, rowRect.Top, display.Width, rowRect.Height);
+        return true;
+    }
+
+    private RelaxedRulePart HitRelaxedRulePart(int rowIndex, Point location)
+    {
+        if (!TryGetRelaxedRowBounds(rowIndex, out var bounds))
+        {
+            return RelaxedRulePart.None;
+        }
+
+        var regions = BuildRelaxedRuleRegions(GetRelaxedCardBounds(bounds));
+        if (regions.Enabled.Contains(location))
+        {
+            return RelaxedRulePart.Enabled;
+        }
+
+        if (regions.Icon.Contains(location) || regions.Spell.Contains(location))
+        {
+            return RelaxedRulePart.Spell;
+        }
+
+        if (regions.Unit.Contains(location))
+        {
+            return RelaxedRulePart.Unit;
+        }
+
+        if (regions.Macro.Contains(location))
+        {
+            return RelaxedRulePart.Macro;
+        }
+
+        if (regions.Condition.Contains(location))
+        {
+            return RelaxedRulePart.Condition;
+        }
+
+        if (regions.MoveUp.Contains(location))
+        {
+            return RelaxedRulePart.MoveUp;
+        }
+
+        if (regions.MoveDown.Contains(location))
+        {
+            return RelaxedRulePart.MoveDown;
+        }
+
+        if (regions.Copy.Contains(location))
+        {
+            return RelaxedRulePart.Copy;
+        }
+
+        if (regions.InsertBlank.Contains(location))
+        {
+            return RelaxedRulePart.InsertBlank;
+        }
+
+        if (regions.Delete.Contains(location))
+        {
+            return RelaxedRulePart.Delete;
+        }
+
+        return RelaxedRulePart.None;
+    }
+
+    private void DispatchRelaxedRuleClick(int rowIndex, Point location)
+    {
+        var part = HitRelaxedRulePart(rowIndex, location);
+        SelectRelaxedRuleRow(rowIndex);
+        switch (part)
+        {
+            case RelaxedRulePart.Enabled:
+                ToggleRelaxedRuleEnabled(rowIndex);
+                break;
+            case RelaxedRulePart.Spell:
+                ShowRulesComboDropDown(rowIndex, _rulesGrid.Columns["Spell"]!.Index);
+                break;
+            case RelaxedRulePart.Unit:
+                ShowRulesComboDropDown(rowIndex, _rulesGrid.Columns["Unit"]!.Index);
+                break;
+            case RelaxedRulePart.Macro:
+                ShowRulesComboDropDown(rowIndex, _rulesGrid.Columns["MacroCondition"]!.Index);
+                break;
+            case RelaxedRulePart.Condition:
+                OpenConditionEditor(rowIndex);
+                break;
+            case RelaxedRulePart.MoveUp when IsRuleIconEnabled("MoveUp", rowIndex):
+                MoveRule(rowIndex, -1);
+                break;
+            case RelaxedRulePart.MoveDown when IsRuleIconEnabled("MoveDown", rowIndex):
+                MoveRule(rowIndex, 1);
+                break;
+            case RelaxedRulePart.Copy when IsRuleIconEnabled("Copy", rowIndex):
+                CopyRule(rowIndex);
+                break;
+            case RelaxedRulePart.InsertBlank when IsRuleIconEnabled("InsertBlank", rowIndex):
+                InsertBlankRule(rowIndex);
+                break;
+            case RelaxedRulePart.Delete when IsRuleIconEnabled("Delete", rowIndex):
+                DeleteRule(rowIndex);
+                break;
+        }
+    }
+
+    private void UpdateRelaxedRuleCursor(Point location)
+    {
+        var hit = _rulesGrid.HitTest(location.X, location.Y);
+        if (hit.RowIndex < 0)
+        {
+            _rulesGrid.Cursor = Cursors.Default;
+            return;
+        }
+
+        var part = HitRelaxedRulePart(hit.RowIndex, location);
+        var interactive = part is RelaxedRulePart.Enabled
+            or RelaxedRulePart.Spell
+            or RelaxedRulePart.Unit
+            or RelaxedRulePart.Macro
+            or RelaxedRulePart.Condition
+            || part switch
+            {
+                RelaxedRulePart.MoveUp => IsRuleIconEnabled("MoveUp", hit.RowIndex),
+                RelaxedRulePart.MoveDown => IsRuleIconEnabled("MoveDown", hit.RowIndex),
+                RelaxedRulePart.Copy => IsRuleIconEnabled("Copy", hit.RowIndex),
+                RelaxedRulePart.InsertBlank => IsRuleIconEnabled("InsertBlank", hit.RowIndex),
+                RelaxedRulePart.Delete => IsRuleIconEnabled("Delete", hit.RowIndex),
+                _ => false
+            };
+        _rulesGrid.Cursor = interactive ? Cursors.Hand : Cursors.Default;
+    }
+
+    private void SelectRelaxedRuleRow(int rowIndex)
+    {
+        if (!IsExistingRuleRow(rowIndex))
+        {
+            return;
+        }
+
+        _rulesGrid.ClearSelection();
+        _rulesGrid.Rows[rowIndex].Selected = true;
+        var cell = _rulesGrid.Rows[rowIndex].Cells["Spell"];
+        if (!ReferenceEquals(_rulesGrid.CurrentCell, cell))
+        {
+            _rulesGrid.CurrentCell = cell;
+        }
+
+        _rulesGrid.HorizontalScrollingOffset = 0;
+    }
+
+    private void ToggleRelaxedRuleEnabled(int rowIndex)
+    {
+        var row = _rulesGrid.Rows[rowIndex];
+        if (row.IsNewRow)
+        {
+            var index = _rulesGrid.Rows.Add(true, null!, string.Empty, string.Empty, string.Empty, string.Empty);
+            SelectRelaxedRuleRow(index);
+            return;
+        }
+
+        row.Cells["Enabled"].Value = !CellBool(row, "Enabled", defaultValue: true);
+        _rulesGrid.InvalidateRow(rowIndex);
+    }
+
+    private Rectangle GetRuleDropDownAnchor(int rowIndex, string columnName)
+    {
+        if (_relaxedRuleView && TryGetRelaxedRowBounds(rowIndex, out var rowBounds))
+        {
+            var regions = BuildRelaxedRuleRegions(GetRelaxedCardBounds(rowBounds));
+            return columnName switch
+            {
+                "Unit" => regions.Unit,
+                "MacroCondition" => regions.Macro,
+                _ => regions.Spell
+            };
+        }
+
+        var columnIndex = _rulesGrid.Columns[columnName]?.Index ?? 0;
+        return _rulesGrid.GetCellDisplayRectangle(columnIndex, rowIndex, cutOverflow: true);
+    }
+
+    private TextBox CreateRelaxedCommentBox()
+    {
+        var editor = new TextBox
+        {
+            Visible = false,
+            PlaceholderText = "注释",
+            TabStop = true,
+            BorderStyle = BorderStyle.None,
+            BackColor = UiTheme.Field,
+            ForeColor = UiTheme.Text
+        };
+        UiTheme.StyleTextBox(editor);
+        editor.BorderStyle = BorderStyle.None;
+        editor.TextChanged += OnRelaxedCommentBoxTextChanged;
+        editor.KeyDown += (_, e) =>
+        {
+            if (e.KeyCode != Keys.Enter)
+            {
+                return;
+            }
+
+            e.SuppressKeyPress = true;
+            e.Handled = true;
+            _rulesGrid.Focus();
+        };
+        _rulesGrid.Controls.Add(editor);
+        return editor;
+    }
+
+    private void OnRelaxedCommentBoxTextChanged(object? sender, EventArgs e)
+    {
+        if (_relaxedCommentSyncing || sender is not TextBox box || box.Tag is not int rowIndex)
+        {
+            return;
+        }
+
+        if (rowIndex < 0 || rowIndex >= _rulesGrid.Rows.Count)
+        {
+            return;
+        }
+
+        var row = _rulesGrid.Rows[rowIndex];
+        if (row.IsNewRow)
+        {
+            if (box.Text.Length == 0)
+            {
+                return;
+            }
+
+            var text = box.Text;
+            var caret = box.SelectionStart;
+            _relaxedCommentSyncing = true;
+            int index;
+            try
+            {
+                index = _rulesGrid.Rows.Add(
+                    true,
+                    null!,
+                    string.Empty,
+                    string.Empty,
+                    string.Empty,
+                    string.Empty,
+                    text);
+                box.Tag = index;
+            }
+            finally
+            {
+                _relaxedCommentSyncing = false;
+            }
+
+            SyncRelaxedCommentBoxes();
+            if (_relaxedCommentBoxes.FirstOrDefault(item => item.Tag is int itemRow && itemRow == index) is TextBox current)
+            {
+                current.Focus();
+                current.SelectionStart = Math.Min(caret, current.Text.Length);
+            }
+
+            return;
+        }
+
+        row.Cells[RuleCommentColumnName].Value = box.Text;
+    }
+
+    private void QueueRelaxedCommentSync()
+    {
+        if (_relaxedCommentSyncQueued || !IsHandleCreated || IsDisposed)
+        {
+            return;
+        }
+
+        _relaxedCommentSyncQueued = true;
+        BeginInvoke(() =>
+        {
+            _relaxedCommentSyncQueued = false;
+            if (!IsDisposed)
+            {
+                SyncRelaxedCommentBoxes();
+            }
+        });
+    }
+
+    private void SyncRelaxedCommentBoxes()
+    {
+        if (_relaxedCommentSyncing || IsDisposed)
+        {
+            return;
+        }
+
+        if (!_relaxedRuleView)
+        {
+            HideRelaxedCommentEditors();
+            return;
+        }
+
+        var display = _rulesGrid.DisplayRectangle;
+        var visible = new List<int>();
+        for (var i = 0; i < _rulesGrid.Rows.Count; i++)
+        {
+            if (!TryGetRelaxedRowBounds(i, out var rowBounds))
+            {
+                continue;
+            }
+
+            if (rowBounds.Bottom <= display.Top || rowBounds.Top >= display.Bottom)
+            {
+                continue;
+            }
+
+            visible.Add(i);
+        }
+
+        while (_relaxedCommentBoxes.Count < visible.Count)
+        {
+            _relaxedCommentBoxes.Add(CreateRelaxedCommentBox());
+        }
+
+        TextBox? focused = null;
+        var focusedRow = -1;
+        foreach (var box in _relaxedCommentBoxes)
+        {
+            if (box.Focused && box.Tag is int row)
+            {
+                focused = box;
+                focusedRow = row;
+                break;
+            }
+        }
+
+        var pool = new List<TextBox>(_relaxedCommentBoxes);
+        var assignment = new List<(TextBox Box, int Row)>();
+        if (focused is not null && visible.Contains(focusedRow))
+        {
+            assignment.Add((focused, focusedRow));
+            pool.Remove(focused);
+            visible.Remove(focusedRow);
+        }
+
+        foreach (var rowIndex in visible)
+        {
+            var box = pool[0];
+            pool.RemoveAt(0);
+            assignment.Add((box, rowIndex));
+        }
+
+        _relaxedCommentSyncing = true;
+        try
+        {
+            var shown = new HashSet<TextBox>();
+            foreach (var (box, rowIndex) in assignment)
+            {
+                if (!TryGetRelaxedRowBounds(rowIndex, out var rowBounds))
+                {
+                    continue;
+                }
+
+                var comment = GetRelaxedCommentEditorBounds(
+                    BuildRelaxedRuleRegions(GetRelaxedCardBounds(rowBounds)).Comment);
+                if (comment.Width <= 1 || comment.Height <= 1)
+                {
+                    continue;
+                }
+
+                if (!ReferenceEquals(box.Font, _rulesGrid.Font))
+                {
+                    box.Font = _rulesGrid.Font;
+                }
+                if (box.Bounds != comment)
+                {
+                    box.Bounds = comment;
+                }
+
+                if (!box.Focused)
+                {
+                    var text = _rulesGrid.Rows[rowIndex].IsNewRow
+                        ? string.Empty
+                        : CellText(_rulesGrid.Rows[rowIndex], RuleCommentColumnName);
+                    if (!string.Equals(box.Text, text, StringComparison.Ordinal))
+                    {
+                        box.Text = text;
+                    }
+                }
+
+                box.Tag = rowIndex;
+                if (!box.Visible)
+                {
+                    box.Visible = true;
+                    box.BringToFront();
+                }
+
+                shown.Add(box);
+            }
+
+            foreach (var box in _relaxedCommentBoxes)
+            {
+                if (shown.Contains(box))
+                {
+                    continue;
+                }
+
+                box.Visible = false;
+                box.Tag = -1;
+            }
+        }
+        finally
+        {
+            _relaxedCommentSyncing = false;
+        }
+    }
+
+    private void HideRelaxedCommentEditors()
+    {
+        _relaxedCommentSyncing = true;
+        try
+        {
+            foreach (var box in _relaxedCommentBoxes)
+            {
+                box.Visible = false;
+                box.Tag = -1;
+            }
+        }
+        finally
+        {
+            _relaxedCommentSyncing = false;
+        }
     }
 
     private void OnRulesGridCellPainting(object? sender, DataGridViewCellPaintingEventArgs e)
@@ -3204,7 +4399,7 @@ public sealed class ModuleEditorControl : UserControl
 
     private void OnRulesGridCellMouseEnter(object? sender, DataGridViewCellEventArgs e)
     {
-        if (e.RowIndex < 0 || e.ColumnIndex < 0)
+        if (_relaxedRuleView || e.RowIndex < 0 || e.ColumnIndex < 0)
         {
             return;
         }
@@ -3233,6 +4428,11 @@ public sealed class ModuleEditorControl : UserControl
 
     private void OnRulesGridCellMouseLeave(object? sender, DataGridViewCellEventArgs e)
     {
+        if (_relaxedRuleView)
+        {
+            return;
+        }
+
         _rulesGrid.Cursor = Cursors.Default;
         _rulesGridToolTip.Hide(_rulesGrid);
     }
@@ -3294,7 +4494,8 @@ public sealed class ModuleEditorControl : UserControl
                 metadata.SubConditions,
                 metadata.DelayMs,
                 metadata.LogicDelayMs,
-                metadata.ContinueLogic);
+                metadata.ContinueLogic,
+                metadata.MatchDelayMs);
             if (text.Length == 0)
             {
                 return "点击编辑条件 (当前: 始终命中)";
@@ -3341,7 +4542,10 @@ public sealed class ModuleEditorControl : UserControl
         }
 
         var columnName = _adjustmentsGrid.Columns[e.ColumnIndex].Name;
-        if (columnName is "Type" or "Field")
+        if (columnName == "Type"
+            || (columnName == "Delta" && CanSelectAdjustmentBoolean(_adjustmentsGrid.Rows[e.RowIndex]))
+            || (columnName == "Operation" && !IsCustomAdjustmentRow(_adjustmentsGrid.Rows[e.RowIndex]))
+            || (columnName == "Field" && !IsCustomAdjustmentRow(_adjustmentsGrid.Rows[e.RowIndex])))
         {
             UiTheme.PaintDataGridViewComboBoxCell(_adjustmentsGrid, e);
             return;
@@ -3433,16 +4637,35 @@ public sealed class ModuleEditorControl : UserControl
         }
 
         var columnName = _adjustmentsGrid.Columns[e.ColumnIndex].Name;
-        if (columnName is "Type" or "Field")
+        var row = _adjustmentsGrid.Rows[e.RowIndex];
+        if (columnName == "Type"
+            || (columnName == "Operation" && !IsCustomAdjustmentRow(row))
+            || (columnName == "Field" && !IsCustomAdjustmentRow(row)))
         {
             ShowAdjustmentComboDropDown(e.RowIndex, e.ColumnIndex);
             return;
         }
 
+        if (columnName == "Delta" && CanSelectAdjustmentBoolean(row))
+        {
+            var bounds = _adjustmentsGrid.GetCellDisplayRectangle(e.ColumnIndex, e.RowIndex, true);
+            var button = UiTheme.GetDropDownButtonBounds(_adjustmentsGrid, bounds);
+            if (button.Contains(_adjustmentsGrid.PointToClient(Cursor.Position)))
+            {
+                ShowAdjustmentComboDropDown(e.RowIndex, e.ColumnIndex);
+                return;
+            }
+        }
+
         CloseAdjustmentComboDropDown();
+        if (IsCustomAdjustmentRow(row) && columnName is "Field" or "Delta")
+        {
+            _adjustmentsGrid.CurrentCell = row.Cells[e.ColumnIndex];
+            _adjustmentsGrid.BeginEdit(selectAll: false);
+            return;
+        }
         if (columnName == "Delete")
         {
-            var row = _adjustmentsGrid.Rows[e.RowIndex];
             if (!row.IsNewRow)
             {
                 _adjustmentsGrid.Rows.RemoveAt(e.RowIndex);
@@ -3462,7 +4685,11 @@ public sealed class ModuleEditorControl : UserControl
     {
         var cell = _adjustmentsGrid.CurrentCell;
         if (cell is null
-            || cell.OwningColumn?.Name is not ("Type" or "Field")
+            || cell.OwningColumn?.Name is not ("Type" or "Field" or "Operation" or "Delta")
+            || (cell.OwningColumn.Name == "Field" && IsCustomAdjustmentRow(cell.OwningRow))
+            || (cell.OwningColumn.Name == "Operation" && IsCustomAdjustmentRow(cell.OwningRow))
+            || (cell.OwningColumn.Name == "Delta" && !CanSelectAdjustmentBoolean(cell.OwningRow))
+            || (cell.OwningColumn.Name == "Delta" && !(e.KeyCode == Keys.F4 || (e.KeyCode == Keys.Down && e.Alt)))
             || e.KeyCode is not (Keys.Enter or Keys.Space or Keys.F4 or Keys.Down))
         {
             return;
@@ -3481,6 +4708,7 @@ public sealed class ModuleEditorControl : UserControl
     private void ShowAdjustmentComboDropDown(int rowIndex, int columnIndex)
     {
         CloseAdjustmentComboDropDown();
+        _adjustmentsGrid.EndEdit();
         if (rowIndex < 0 || rowIndex >= _adjustmentsGrid.Rows.Count)
         {
             return;
@@ -3495,7 +4723,10 @@ public sealed class ModuleEditorControl : UserControl
 
         var cell = row.Cells[columnIndex];
         var columnName = cell.OwningColumn?.Name;
-        if (columnName is not ("Type" or "Field"))
+        if (columnName is not ("Type" or "Field" or "Operation" or "Delta")
+            || (columnName == "Delta" && !CanSelectAdjustmentBoolean(row))
+            || (columnName == "Operation" && IsCustomAdjustmentRow(row))
+            || (columnName == "Field" && IsCustomAdjustmentRow(row)))
         {
             return;
         }
@@ -3508,6 +4739,15 @@ public sealed class ModuleEditorControl : UserControl
             options = AdjustmentTypeOptions
                 .Select(option => new UiDropDownOption(option.Text, option.Text))
                 .ToList();
+        }
+        else if (columnName == "Operation")
+        {
+            options = new[] { "+", "-", "=" }.Select(value => new UiDropDownOption(value, value)).ToList();
+        }
+        else if (columnName == "Delta")
+        {
+            options = [new UiDropDownOption(ModuleValueAdjustment.ConditionBooleanValue,
+                ModuleValueAdjustment.ConditionBooleanValue)];
         }
         else
         {
@@ -3603,7 +4843,7 @@ public sealed class ModuleEditorControl : UserControl
 
     private void OnAdjustmentsGridEditingControlShowing(object? sender, DataGridViewEditingControlShowingEventArgs e)
     {
-        if (_adjustmentsGrid.CurrentCell?.OwningColumn?.Name != "Field"
+        if (_adjustmentsGrid.CurrentCell?.OwningColumn?.Name is not ("Field" or "Delta")
             || e.Control is not TextBox textBox)
         {
             return;
@@ -3626,7 +4866,8 @@ public sealed class ModuleEditorControl : UserControl
             spells: RefreshAndBuildConditionSpells(),
             conditionSpellsProvider: () => RefreshAndBuildConditionSpells(),
             items: RefreshAndBuildConditionItems(),
-            conditionItemsProvider: () => RefreshAndBuildConditionItems());
+            conditionItemsProvider: () => RefreshAndBuildConditionItems(),
+            numberArrayNames: _numberArrays.Select(array => array.Name).ToArray(), dataVersion: _resolveProfile().Version);
         if (editor.ShowDialog(FindForm()) != DialogResult.OK)
         {
             return;
@@ -3783,6 +5024,22 @@ public sealed class ModuleEditorControl : UserControl
     // 拖拽手柄按下: 记录起始行(仅限抓手列上的已有规则行)。
     private void OnRulesGridMouseDown(object? sender, MouseEventArgs e)
     {
+        if (_relaxedRuleView)
+        {
+            _dragSourceRow = -1;
+            if (e.Button == MouseButtons.Left)
+            {
+                var relaxedHit = _rulesGrid.HitTest(e.X, e.Y);
+                if (relaxedHit.RowIndex >= 0)
+                {
+                    _suppressNextRulesCellClick = true;
+                    DispatchRelaxedRuleClick(relaxedHit.RowIndex, e.Location);
+                }
+            }
+
+            return;
+        }
+
         _dragSourceRow = -1;
         var hit = _rulesGrid.HitTest(e.X, e.Y);
         if (hit.RowIndex >= 0
@@ -3797,6 +5054,13 @@ public sealed class ModuleEditorControl : UserControl
     // 在抓手上按住左键移动即开始拖拽(DoDragDrop 自带模态循环, 结束后复位)。
     private void OnRulesGridMouseMove(object? sender, MouseEventArgs e)
     {
+        if (_relaxedRuleView)
+        {
+            _dragSourceRow = -1;
+            UpdateRelaxedRuleCursor(e.Location);
+            return;
+        }
+
         if (_dragSourceRow < 0 || (e.Button & MouseButtons.Left) == 0)
         {
             return;
@@ -3831,6 +5095,11 @@ public sealed class ModuleEditorControl : UserControl
 
     private void OnRulesGridPaint(object? sender, PaintEventArgs e)
     {
+        if (_relaxedRuleView)
+        {
+            QueueRelaxedCommentSync();
+        }
+
         if (_dragIndicatorRow < 0)
         {
             return;
@@ -3959,7 +5228,8 @@ public sealed class ModuleEditorControl : UserControl
             GetRuleMetadata(row).SubConditions,
             GetRuleMetadata(row).DelayMs,
             GetRuleMetadata(row).LogicDelayMs,
-            GetRuleMetadata(row).ContinueLogic);
+            GetRuleMetadata(row).ContinueLogic,
+            GetRuleMetadata(row).MatchDelayMs);
     }
 
     private void WriteRuleRow(DataGridViewRow row, RuleRowValues values)
@@ -3974,7 +5244,8 @@ public sealed class ModuleEditorControl : UserControl
             values.SubConditions,
             values.DelayMs,
             values.LogicDelayMs,
-            values.ContinueLogic);
+            values.ContinueLogic,
+            values.MatchDelayMs);
         RebuildUnitCell(row, values.UnitText);
         RebuildMacroConditionCell(row, values.MacroCondition);
     }
@@ -3995,13 +5266,15 @@ public sealed class ModuleEditorControl : UserControl
             allowSubConditions: true,
             delayMs: currentMetadata.DelayMs,
             logicDelayMs: currentMetadata.LogicDelayMs,
+            matchDelayMs: currentMetadata.MatchDelayMs,
             continueLogic: currentMetadata.ContinueLogic,
             allowRuleSettings: true,
             conditionFieldsProvider: () => RefreshAndBuildConditionFields(includeRuleSettings: true),
             spells: spells,
             conditionSpellsProvider: () => RefreshAndBuildConditionSpells(),
             items: items,
-            conditionItemsProvider: () => RefreshAndBuildConditionItems());
+            conditionItemsProvider: () => RefreshAndBuildConditionItems(),
+            numberArrayNames: _numberArrays.Select(array => array.Name).ToArray(), dataVersion: _resolveProfile().Version);
         if (editor.ShowDialog(FindForm()) != DialogResult.OK)
         {
             return;
@@ -4015,6 +5288,7 @@ public sealed class ModuleEditorControl : UserControl
                 || subs.Count > 0
                 || editor.DelayMs is > 0
                 || editor.LogicDelayMs is > 0
+                || editor.MatchDelayMs is > 0
                 || editor.ContinueLogic is true)
             {
                 var index = _rulesGrid.Rows.Add(true, null!, string.Empty, string.Empty, string.Empty, editor.ConditionText);
@@ -4022,14 +5296,15 @@ public sealed class ModuleEditorControl : UserControl
                     subs,
                     editor.DelayMs,
                     editor.LogicDelayMs,
-                    editor.ContinueLogic);
+                    editor.ContinueLogic,
+                    editor.MatchDelayMs);
             }
 
             return;
         }
 
         row.Cells["Condition"].Value = editor.ConditionText;
-        row.Tag = new RuleRowMetadata(subs, editor.DelayMs, editor.LogicDelayMs, editor.ContinueLogic);
+        row.Tag = new RuleRowMetadata(subs, editor.DelayMs, editor.LogicDelayMs, editor.ContinueLogic, editor.MatchDelayMs);
         // 让「条件」列的装饰显示(主条件 且任一(…))立即刷新。
         _rulesGrid.InvalidateRow(rowIndex);
     }
@@ -4107,6 +5382,12 @@ public sealed class ModuleEditorControl : UserControl
                 ConditionFieldCategory.Shigure));
         }
 
+        if (includeRuleSettings && seen.Add(ShigureConditionFields.MatchDelay))
+        {
+            fields.Add(new ConditionField(ShigureConditionFields.MatchDelay, "命中延迟 (ms)",
+                ConditionFieldType.Int, ConditionFieldCategory.Shigure));
+        }
+
         foreach (var unit in _units)
         {
             if (string.IsNullOrWhiteSpace(unit.Name))
@@ -4160,11 +5441,12 @@ public sealed class ModuleEditorControl : UserControl
         {
             if (seen.Add(fieldName))
             {
+                var custom = GetCustomAdjustmentFields().FirstOrDefault(field => field.Name == fieldName);
                 fields.Add(new ConditionField(
                     fieldName,
-                    $"{fieldName} (动态数值)",
-                    ConditionFieldType.Int,
-                    ConditionFieldCategory.DynamicValue));
+                    custom?.DisplayName ?? $"{fieldName} (动态数值)",
+                    custom?.Type ?? ConditionFieldType.Int,
+                    custom?.Category ?? ConditionFieldCategory.DynamicValue));
             }
         }
 
@@ -4177,14 +5459,16 @@ public sealed class ModuleEditorControl : UserControl
         {
             Dock = DockStyle.Fill,
             BackColor = UiTheme.Surface,
-            ColumnCount = 3,
+            ColumnCount = 5,
             RowCount = 1,
             Margin = new Padding(0),
             Padding = new Padding(UiTheme.CardPadding, 12, UiTheme.CardPadding, 12)
         };
-        row.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 148));
         row.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-        row.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 352));
+        row.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 240));
+        row.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120));
+        row.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120));
+        row.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 472));
         row.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
 
         var openFolderButton = UiTheme.CreateButton("打开目录", UiTheme.ButtonKind.Secondary);
@@ -4196,10 +5480,19 @@ public sealed class ModuleEditorControl : UserControl
             openFolderButton,
             "在资源管理器中打开模块目录；若已选中已保存模块则定位到对应文件");
 
-        _pathLabel.Dock = DockStyle.Fill;
-        _pathLabel.Margin = new Padding(8, 0, 16, 0);
+        _ruleViewButton = UiTheme.CreateButton("宽松视图", UiTheme.ButtonKind.Secondary);
+        StyleModuleFooterButton(_ruleViewButton);
+        _ruleViewButton.Dock = DockStyle.Fill;
+        _ruleViewButton.Margin = new Padding(0, 0, 8, 0);
+        _ruleViewButton.Click += (_, _) => ToggleRuleView();
+        _pathToolTip.SetToolTip(_ruleViewButton, "当前为紧缩视图，点击切换为宽松视图");
+
+        _pathLabel.Dock = DockStyle.None;
+        _pathLabel.Anchor = AnchorStyles.Left | AnchorStyles.Right;
+        _pathLabel.Height = UiTheme.Scale(this, 24);
+        _pathLabel.Margin = new Padding(0, 0, 16, 0);
         _pathLabel.ForeColor = UiTheme.Muted;
-        _pathLabel.BackColor = Color.Transparent;
+        _pathLabel.BackColor = row.FillColor;
         _pathLabel.TextAlign = ContentAlignment.MiddleLeft;
         _pathLabel.AutoEllipsis = true;
         _pathLabel.TextChanged += (_, _) => _pathToolTip.SetToolTip(_pathLabel, _pathLabel.Text);
@@ -4207,17 +5500,19 @@ public sealed class ModuleEditorControl : UserControl
         var buttons = new TableLayoutPanel
         {
             Dock = DockStyle.Fill,
-            BackColor = Color.Transparent,
-            ColumnCount = 5,
+            BackColor = row.FillColor,
+            ColumnCount = 7,
             RowCount = 1,
             Margin = new Padding(0),
             Padding = new Padding(0)
         };
-        buttons.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 112));
+        buttons.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25));
         buttons.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 8));
-        buttons.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 112));
+        buttons.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25));
         buttons.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 8));
-        buttons.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 112));
+        buttons.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25));
+        buttons.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 8));
+        buttons.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25));
         buttons.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
 
         _addButton = UiTheme.CreateButton("新建", UiTheme.ButtonKind.Secondary);
@@ -4240,13 +5535,34 @@ public sealed class ModuleEditorControl : UserControl
         _saveButton.Click += async (_, _) => await RunModuleCommandAsync(SaveSelectedModuleAsync);
         _pathToolTip.SetToolTip(_saveButton, "保存当前模块 (Ctrl+S)");
 
+        _saveAllButton = UiTheme.CreateButton("保存所有", UiTheme.ButtonKind.Secondary);
+        StyleModuleFooterButton(_saveAllButton);
+        _saveAllButton.Dock = DockStyle.Fill;
+        _saveAllButton.Click += async (_, _) => await RunModuleCommandAsync(SaveAllModulesAsync);
+        _pathToolTip.SetToolTip(_saveAllButton, "依次保存所有职业的模块，包含当前模块的未保存编辑");
+
         buttons.Controls.Add(_addButton, 0, 0);
         buttons.Controls.Add(_deleteButton, 2, 0);
         buttons.Controls.Add(_saveButton, 4, 0);
+        buttons.Controls.Add(_saveAllButton, 6, 0);
 
-        row.Controls.Add(openFolderButton, 0, 0);
-        row.Controls.Add(_pathLabel, 1, 0);
-        row.Controls.Add(buttons, 2, 0);
+        row.Controls.Add(_pathLabel, 0, 0);
+        row.Controls.Add(BuildSidebarFooter(row.FillColor), 1, 0);
+        row.Controls.Add(openFolderButton, 2, 0);
+        row.Controls.Add(_ruleViewButton, 3, 0);
+        row.Controls.Add(buttons, 4, 0);
+        row.Resize += (_, _) =>
+        {
+            // 按钮集中靠右，左侧为路径预留空间；小窗口缩短按钮并省略长路径。
+            var gap = UiTheme.Scale(row, 8);
+            var width = Math.Clamp(
+                (row.ClientSize.Width - row.Padding.Horizontal - gap * 7 - UiTheme.Scale(row, 160)) / 8,
+                UiTheme.Scale(row, 72), UiTheme.Scale(row, 112));
+            row.ColumnStyles[1].Width = width * 2 + gap * 3;
+            row.ColumnStyles[2].Width = width + gap;
+            row.ColumnStyles[3].Width = width + gap;
+            row.ColumnStyles[4].Width = width * 4 + gap * 3;
+        };
         return row;
     }
 
@@ -4261,7 +5577,7 @@ public sealed class ModuleEditorControl : UserControl
                 Process.Start(new ProcessStartInfo
                 {
                     FileName = "explorer.exe",
-                    Arguments = $"/select,\"{filePath}\"",
+                    Arguments = $"/fulect,\"{filePath}\"",
                     UseShellExecute = true
                 });
                 return;
@@ -4392,6 +5708,9 @@ public sealed class ModuleEditorControl : UserControl
         _averageHealthFields.AddRange(module.AverageHealthFields.Select(field => field.Clone()));
         _valueAdjustments.Clear();
         _valueAdjustments.AddRange(module.ValueAdjustments.Select(adjustment => adjustment.Clone()));
+        _numberArrays.Clear();
+        _numberArrays.AddRange(module.NumberArrays.Select(array => array.Clone()));
+        RefreshNumberArraysList();
         SelectClass(module.Match.ClassId);
         SelectSpec(module.Match.SpecId);
         SelectPartyType(module.Match.PartyType);
@@ -4405,9 +5724,27 @@ public sealed class ModuleEditorControl : UserControl
         {
             if (string.IsNullOrWhiteSpace(adjustment.Formula))
             {
-                var index = _adjustmentsGrid.Rows.Add(adjustment.Enabled, adjustment.Field, adjustment.Delta, adjustment.Condition);
-                // 由字段名回填"类型", 并按类型重建该行"数值"的可选项。
-                ApplyAdjustmentRowType(_adjustmentsGrid.Rows[index], adjustment.Field);
+                var index = _adjustmentsGrid.Rows.Add(adjustment.Enabled, adjustment.Field,
+                    adjustment.Value ?? adjustment.Delta.ToString(System.Globalization.CultureInfo.InvariantCulture), adjustment.Condition);
+                _adjustmentsGrid.Rows[index].Cells["Operation"].Value = adjustment.Operation;
+                // 新数据恢复自建标记，旧数据由字段名回填类型。
+                if (adjustment.IsCustom)
+                {
+                    _suppressAdjustmentTypeChange = true;
+                    try
+                    {
+                        _adjustmentsGrid.Rows[index].Cells["Type"].Value = "自建";
+                    }
+                    finally
+                    {
+                        _suppressAdjustmentTypeChange = false;
+                    }
+                    RebuildAdjustmentFieldCell(_adjustmentsGrid.Rows[index], adjustment.Field, keepCustom: true);
+                }
+                else
+                {
+                    ApplyAdjustmentRowType(_adjustmentsGrid.Rows[index], adjustment.Field);
+                }
             }
             else
             {
@@ -4420,6 +5757,7 @@ public sealed class ModuleEditorControl : UserControl
 
         RefreshAdjustmentFieldColumn();
 
+        HideRelaxedCommentEditors();
         _rulesGrid.Rows.Clear();
         RefreshKeymapColumns();
 
@@ -4430,6 +5768,7 @@ public sealed class ModuleEditorControl : UserControl
             var unitText = !string.IsNullOrWhiteSpace(rule.UnitName)
                 ? rule.UnitName!
                 : rule.Unit is { } unit ? ReservedUnit.ToDisplayText(unit) : string.Empty;
+            if (ModuleSpecialActions.IsKeyPress(rule.Spell)) unitText = rule.Hotkey;
             EnsureComboItem(_spellColumn, ruleSpellDisplay);
             // 先加行(目标先留空), 再按技能重建目标选项并写回目标值, 避免值不在选项内被吞掉。
             var index = _rulesGrid.Rows.Add(
@@ -4444,7 +5783,8 @@ public sealed class ModuleEditorControl : UserControl
                 rule.SubConditions,
                 rule.DelayMs,
                 rule.LogicDelayMs,
-                rule.ContinueLogic);
+                rule.ContinueLogic,
+                rule.MatchDelayMs);
             RebuildUnitCell(_rulesGrid.Rows[index], unitText);
             RebuildMacroConditionCell(_rulesGrid.Rows[index], rule.MacroCondition);
         }
@@ -4464,6 +5804,8 @@ public sealed class ModuleEditorControl : UserControl
         _enemyCounts.Clear();
         _averageHealthFields.Clear();
         _valueAdjustments.Clear();
+        _numberArrays.Clear();
+        RefreshNumberArraysList();
         RefreshUnitsList();
         SelectClass(null);
         SelectSpec(null);
@@ -4473,6 +5815,7 @@ public sealed class ModuleEditorControl : UserControl
         _adjustmentsGrid.Rows.Clear();
         _formulaAdjustmentsGrid.Rows.Clear();
         RefreshAdjustmentFieldColumn();
+        HideRelaxedCommentEditors();
         _rulesGrid.Rows.Clear();
         SetEditorEnabled(hasModule: false);
         _editorBaseline = null;
@@ -4482,6 +5825,8 @@ public sealed class ModuleEditorControl : UserControl
     private void SetEditorEnabled(bool hasModule)
     {
         _saveButton.Enabled = hasModule && !_moduleCommandInProgress;
+        _saveAllButton.Enabled = _allModules.Count > 0 && !_moduleCommandInProgress;
+        _reloadButton.Enabled = !_moduleCommandInProgress;
         _deleteButton.Enabled = hasModule && !_moduleCommandInProgress;
         _addButton.Enabled = !_moduleCommandInProgress;
         _editorEmptyHint.Visible = !hasModule;
@@ -4584,6 +5929,104 @@ public sealed class ModuleEditorControl : UserControl
         await _runtimeRestartRequested();
     }
 
+    private async Task SaveAllModulesAsync()
+    {
+        // 从完整列表取快照，职业筛选只影响显示，不影响批量保存范围。
+        var modules = _moduleStore.GetModulesForDisplay().ToList();
+        if (modules.Count == 0)
+        {
+            return;
+        }
+
+        var selectedId = _selectedModule?.Id;
+        var editorBaseline = _editorBaseline;
+        ModuleDefinition? editedModule = null;
+        if (_selectedModule is not null)
+        {
+            // 先提交当前单元格，再读取尚未保存的编辑，避免批量刷新时丢失。
+            _rulesGrid.EndEdit();
+            _adjustmentsGrid.EndEdit();
+            _formulaAdjustmentsGrid.EndEdit();
+            if (!TryReadModule(out editedModule))
+            {
+                return;
+            }
+
+            var selectedIndex = modules.FindIndex(module =>
+                string.Equals(module.Id, selectedId, StringComparison.OrdinalIgnoreCase));
+            if (selectedIndex >= 0)
+            {
+                modules[selectedIndex] = editedModule;
+            }
+        }
+
+        var warnings = new List<string>();
+        var errors = new List<string>();
+        var savedCount = 0;
+        var selectedSaved = false;
+        foreach (var module in modules)
+        {
+            try
+            {
+                if (!TryValidateNumberArrayReferences(module, out var arrayError))
+                {
+                    throw new InvalidOperationException(arrayError);
+                }
+                if (!TryUpgradeLegacySpellReferences(module, out var upgradeError))
+                {
+                    throw new InvalidOperationException(upgradeError);
+                }
+
+                module.Version = AppInfo.Version;
+                var warning = _captureDependencies(module);
+                _moduleStore.Save(module);
+                savedCount++;
+                selectedSaved |= string.Equals(module.Id, selectedId, StringComparison.OrdinalIgnoreCase);
+                if (!string.IsNullOrWhiteSpace(warning))
+                {
+                    warnings.Add($"{module.Name}：{warning}");
+                }
+            }
+            catch (Exception ex)
+            {
+                errors.Add($"{module.Name}：{ex.Message}");
+            }
+        }
+
+        LoadModules(reloadStore: false);
+        var index = _modules.FindIndex(module =>
+            string.Equals(module.Id, selectedId, StringComparison.OrdinalIgnoreCase));
+        if (index >= 0)
+        {
+            _moduleList.SelectedIndex = index;
+            if (!selectedSaved && editedModule is not null)
+            {
+                // 当前模块保存失败时保留其编辑内容和未保存标记。
+                _selectedModule = editedModule;
+                FillEditor(editedModule);
+                _editorBaseline = editorBaseline;
+            }
+        }
+
+        // 全部写盘完成后只重启一次运行时。
+        if (savedCount > 0)
+        {
+            await _runtimeRestartRequested();
+        }
+
+        var message = $"已保存 {savedCount}/{modules.Count} 个模块。";
+        if (errors.Count > 0)
+        {
+            message += "\n\n保存失败：\n" + string.Join("\n", errors);
+        }
+        if (warnings.Count > 0)
+        {
+            message += "\n\n依赖提示：\n" + string.Join("\n", warnings);
+        }
+        MessageBox.Show(message, "保存所有模块", MessageBoxButtons.OK,
+            errors.Count > 0 ? MessageBoxIcon.Warning : MessageBoxIcon.Information);
+    }
+
     private async Task DeleteSelectedModuleAsync()
     {
         if (_selectedModule is null)
@@ -4635,6 +6078,7 @@ public sealed class ModuleEditorControl : UserControl
         }
 
         module.ValueAdjustments = valueAdjustments;
+        module.NumberArrays = _numberArrays.Select(array => array.Clone()).ToList();
         if (!TryReadRules(out var rules, out var rulesError))
         {
             MessageBox.Show(rulesError, "Shigure", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -4642,12 +6086,77 @@ public sealed class ModuleEditorControl : UserControl
         }
 
         module.Rules = rules;
+        if (!TryValidateNumberArrayReferences(module, out var arrayError))
+        {
+            MessageBox.Show(arrayError, "Shigure", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return false;
+        }
         if (!TryUpgradeLegacySpellReferences(module, out var upgradeError))
         {
             MessageBox.Show(upgradeError, "Shigure", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             return false;
         }
 
+        return true;
+    }
+
+    private static bool TryValidateNumberArrayReferences(ModuleDefinition module, out string error)
+    {
+        error = string.Empty;
+        var names = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var array in module.NumberArrays)
+        {
+            if (!ConditionExpression.IsArrayName(array.Name) || !names.Add(array.Name))
+            {
+                error = $"数组名称“{array.Name}”无效或重复。";
+                return false;
+            }
+        }
+
+        static string? MissingName(string? expression, HashSet<string> names)
+        {
+            foreach (var term in ConditionExpression.Parse(expression))
+            {
+                if (term.NamedArray && !names.Contains(term.Value))
+                    return term.Value;
+            }
+            return null;
+        }
+
+        for (var i = 0; i < module.Rules.Count; i++)
+        {
+            if (MissingName(module.Rules[i].Condition, names) is { } missing)
+            {
+                error = $"规则第 {i + 1} 行引用的数组“{missing}”不存在。";
+                return false;
+            }
+            foreach (var sub in module.Rules[i].SubConditions ?? [])
+            {
+                if (MissingName(sub, names) is not { } subMissing) continue;
+                error = $"规则第 {i + 1} 行子条件引用的数组“{subMissing}”不存在。";
+                return false;
+            }
+        }
+        for (var i = 0; i < module.ValueAdjustments.Count; i++)
+        {
+            if (MissingName(module.ValueAdjustments[i].Condition, names) is not { } missing) continue;
+            error = $"动态数值第 {i + 1} 行引用的数组“{missing}”不存在。";
+            return false;
+        }
+        var filters = module.Units.Select(unit => (unit.Name, unit.FilterGroups))
+            .Concat(module.Counts.Select(count => (count.Name, count.FilterGroups)))
+            .Concat(module.EnemyCounts.Select(count => (count.Name, count.FilterGroups)))
+            .Concat(module.AverageHealthFields.Select(field => (field.Name, field.FilterGroups)));
+        foreach (var (fieldName, groups) in filters)
+        {
+            foreach (var condition in groups.SelectMany(group => group.Conditions))
+            {
+                if (condition.ValueKind != CountConditionValueKind.NumberArray) continue;
+                if (condition.ValueField is { } arrayName && names.Contains(arrayName)) continue;
+                error = $"动态字段“{fieldName}”引用的数组“{condition.ValueField}”不存在。";
+                return false;
+            }
+        }
         return true;
     }
 
@@ -4690,7 +6199,7 @@ public sealed class ModuleEditorControl : UserControl
                 {
                     Add($"spells.{spell.Name}充能", SpellFieldKey.Spell(spell.SpellId, SpellFieldKey.SpellChargeCooldown));
                 }
-                if (spell.MaxCharge is not null || spell.CastCount is not null)
+                if (spell.Charge || spell.CastCount is > 0)
                 {
                     Add($"spells.{spell.Name}层数", SpellFieldKey.Spell(spell.SpellId, SpellFieldKey.SpellCount));
                 }
@@ -4861,6 +6370,7 @@ public sealed class ModuleEditorControl : UserControl
     private bool TryReadValueAdjustments(out List<ModuleValueAdjustment> adjustments, out string error)
     {
         adjustments = new List<ModuleValueAdjustment>();
+        var adjustmentRowNumbers = new Dictionary<ModuleValueAdjustment, int>();
         error = string.Empty;
 
         foreach (DataGridViewRow row in _adjustmentsGrid.Rows)
@@ -4872,27 +6382,49 @@ public sealed class ModuleEditorControl : UserControl
 
             var field = CellText(row, "Field");
             var condition = CellText(row, "Condition");
-            var delta = ParseNullableInt(CellText(row, "Delta")) ?? 0;
+            var value = CellText(row, "Delta");
             if (string.IsNullOrWhiteSpace(field)
                 && string.IsNullOrWhiteSpace(condition)
-                && delta == 0)
+                && (string.IsNullOrWhiteSpace(value) || value == "0")
+                && !IsCustomAdjustmentRow(row))
             {
                 continue;
             }
 
             if (string.IsNullOrWhiteSpace(field))
             {
-                continue;
+                error = $"条件动态数值第 {row.Index + 1} 行缺少字段。";
+                return false;
             }
 
-            adjustments.Add(new ModuleValueAdjustment
+            var adjustment = new ModuleValueAdjustment
             {
                 Enabled = CellBool(row, "Enabled", defaultValue: true),
                 Field = field,
-                Delta = delta,
+                Operation = ReadAdjustmentOperation(row),
+                Value = value,
+                IsCustom = IsCustomAdjustmentRow(row),
                 Formula = string.Empty,
                 Condition = condition
-            });
+            };
+            if (!adjustment.TryGetOperand(out var operand))
+            {
+                error = $"条件动态数值第 {row.Index + 1} 行：调整必须是整数或布尔值，布尔值只能使用“=”。";
+                return false;
+            }
+            if (operand is bool && (_counts.Any(count => count.Name == field)
+                                    || _enemyCounts.Any(count => count.Name == field)
+                                    || _averageHealthFields.Any(item => item.Name == field)))
+            {
+                error = $"条件动态数值第 {row.Index + 1} 行：数量和平均血量字段只能赋整数。";
+                return false;
+            }
+            adjustment.Delta = operand is int number ? number : 0;
+            adjustment.Value = adjustment.IsConditionBoolean ? ModuleValueAdjustment.ConditionBooleanValue
+                : operand is bool boolean ? (boolean ? "true" : "false")
+                : ((int)operand!).ToString(System.Globalization.CultureInfo.InvariantCulture);
+            adjustments.Add(adjustment);
+            adjustmentRowNumbers[adjustment] = row.Index + 1;
         }
 
         foreach (DataGridViewRow row in _formulaAdjustmentsGrid.Rows)
@@ -4939,7 +6471,64 @@ public sealed class ModuleEditorControl : UserControl
             });
         }
 
+        var reserved = new HashSet<string>(
+            _fieldCatalog.GetFields(ReadMatchCombo(_classBox), ReadMatchCombo(_specBox)).Select(field => field.Name),
+            StringComparer.OrdinalIgnoreCase);
+        reserved.UnionWith(_units.SelectMany(unit => new[] { unit.Name, unit.ValueName ?? string.Empty }));
+        reserved.UnionWith(_counts.Select(count => count.Name));
+        reserved.UnionWith(_enemyCounts.Select(count => count.Name));
+        reserved.UnionWith(_averageHealthFields.Select(field => field.Name));
+        reserved.UnionWith(_numberArrays.Select(array => array.Name));
+        reserved.UnionWith(adjustments.Where(adjustment => !string.IsNullOrWhiteSpace(adjustment.Formula))
+            .Select(adjustment => adjustment.Field));
+        reserved.UnionWith(new[] { ShigureConditionFields.Delay, ShigureConditionFields.LogicDelay,
+            ShigureConditionFields.MatchDelay,
+            ShigureConditionFields.ContinueLogic, ShigureConditionFields.TotalCombatTimeSeconds,
+            "延迟 (ms)", "逻辑延迟 (ms)", "继续逻辑", "true", "false", "null", "nil" });
+        var customTypes = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
+        foreach (var adjustment in adjustments.Where(adjustment => adjustment.IsCustom))
+        {
+            var rowNumber = adjustmentRowNumbers[adjustment];
+            var name = adjustment.Field;
+            if (name.Contains('.') || name.Contains('$') || double.TryParse(name, out _) || reserved.Contains(name))
+            {
+                error = $"条件动态数值第 {rowNumber} 行：自建字段名称“{name}”无效或已被其它字段占用。";
+                return false;
+            }
+            adjustment.TryGetOperand(out var operand);
+            var isBoolean = operand is bool;
+            if (customTypes.TryGetValue(name, out var existingType) && existingType != isBoolean)
+            {
+                error = $"条件动态数值第 {rowNumber} 行：自建字段“{name}”不能混用整数与布尔值。";
+                return false;
+            }
+            customTypes[name] = isBoolean;
+        }
+        foreach (var adjustment in adjustments.Where(adjustment => !adjustment.IsCustom
+                     && string.IsNullOrWhiteSpace(adjustment.Formula) && customTypes.ContainsKey(adjustment.Field)))
+        {
+            error = $"自建字段“{adjustment.Field}”的调整行请选择“自建”类型。";
+            return false;
+        }
         return true;
+    }
+
+    // 赋值时给布尔值下拉预留空间，加减时使用完整的整数输入区域。
+    private sealed class AdjustmentValueCell : DataGridViewTextBoxCell
+    {
+        public override void PositionEditingControl(bool setLocation, bool setSize, Rectangle cellBounds,
+            Rectangle cellClip, DataGridViewCellStyle cellStyle, bool singleVerticalBorderAdded,
+            bool singleHorizontalBorderAdded, bool isFirstDisplayedColumn, bool isFirstDisplayedRow)
+        {
+            if (DataGridView is { } grid && cellBounds.Width > 0 && CanSelectAdjustmentBoolean(OwningRow))
+            {
+                var button = UiTheme.GetDropDownButtonBounds(grid, new Rectangle(Point.Empty, cellBounds.Size));
+                cellBounds.Width = Math.Max(1, button.Left - UiTheme.Scale(grid, 4));
+                cellClip = Rectangle.Intersect(cellClip, cellBounds);
+            }
+            base.PositionEditingControl(setLocation, setSize, cellBounds, cellClip, cellStyle,
+                singleVerticalBorderAdded, singleHorizontalBorderAdded, isFirstDisplayedColumn, isFirstDisplayedRow);
+        }
     }
 
     private bool TryReadRules(out List<ModuleRule> rules, out string error)
@@ -4962,6 +6551,12 @@ public sealed class ModuleEditorControl : UserControl
             var unitText = CellText(row, "Unit");
             var macroCondition = CellText(row, "MacroCondition");
             var metadata = GetRuleMetadata(row);
+            var isKeyPress = ModuleSpecialActions.IsKeyPress(spell);
+            if (isKeyPress && !KeySender.IsValidHotkey(unitText))
+            {
+                error = $"规则第 {row.Index + 1} 行：请点击目标格录制按键。";
+                return false;
+            }
             if (string.IsNullOrWhiteSpace(condition)
                 && string.IsNullOrWhiteSpace(comment)
                 && string.IsNullOrWhiteSpace(spell)
@@ -4970,6 +6565,7 @@ public sealed class ModuleEditorControl : UserControl
                 && metadata.SubConditions.Count == 0
                 && metadata.DelayMs is not > 0
                 && metadata.LogicDelayMs is not > 0
+                && metadata.MatchDelayMs is not > 0
                 && metadata.ContinueLogic is not true)
             {
                 continue;
@@ -4986,15 +6582,16 @@ public sealed class ModuleEditorControl : UserControl
                 Enabled = CellBool(row, "Enabled", defaultValue: true),
                 Condition = condition,
                 Comment = comment,
-                Unit = isDynamic ? null : ReservedUnit.ParseDisplayText(unitText),
-                UnitName = isDynamic ? unitText : null,
+                Unit = isKeyPress || isDynamic ? null : ReservedUnit.ParseDisplayText(unitText),
+                UnitName = !isKeyPress && isDynamic ? unitText : null,
                 Spell = spell,
                 MacroCondition = MacroConditionText.ParseDisplayText(macroCondition),
-                Hotkey = string.Empty,
+                Hotkey = isKeyPress ? unitText : string.Empty,
                 Step = string.Empty,
                 SubConditions = subs is { Count: > 0 } ? subs : null,
                 DelayMs = metadata.DelayMs,
                 LogicDelayMs = metadata.LogicDelayMs,
+                MatchDelayMs = metadata.MatchDelayMs,
                 ContinueLogic = metadata.ContinueLogic
             });
         }
@@ -5100,19 +6697,6 @@ public sealed class ModuleEditorControl : UserControl
             BackColor = Color.Transparent,
             TextAlign = ContentAlignment.MiddleLeft,
             AutoEllipsis = true
-        };
-    }
-
-    private static Label CreateSectionLabel(string text)
-    {
-        return new Label
-        {
-            Text = text,
-            Dock = DockStyle.Fill,
-            ForeColor = UiTheme.Muted,
-            TextAlign = ContentAlignment.MiddleLeft,
-            AutoEllipsis = true,
-            Padding = new Padding(0, 2, 0, 0)
         };
     }
 

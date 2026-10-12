@@ -23,7 +23,7 @@ internal static class FuyutsuiConfigConverter
 
     private static readonly HashSet<string> BoolFieldNames = new(StringComparer.Ordinal)
     {
-        "锚点", "有效性", "移动"
+        "锚点", "有效性", "移动", "自动射击", "自动攻击"
     };
 
     private static readonly string[] StateCategoryOrder =
@@ -53,6 +53,21 @@ internal static class FuyutsuiConfigConverter
         if (!Directory.Exists(classDirectory))
         {
             throw new DirectoryNotFoundException($"找不到 Fuyutsui class 目录: {classDirectory}");
+        }
+
+        // 全量转换先验证所有职业，避免旧驱散展开后超限而留下半次配置更新。
+        foreach (var (classId, _) in ClassNames.GetClasses())
+        {
+            var fileName = ClassNames.GetConfigFileName(classId);
+            var luaPath = Path.Combine(classDirectory, fileName + ".lua");
+            if (!File.Exists(luaPath)) continue;
+            var source = File.ReadAllText(luaPath, Encoding.UTF8);
+            var blocks = ExtractAssignedTable(source, AddonLuaNames.Assignment(source, "ClassBlocks"))
+                ?? throw new InvalidDataException($"{fileName}.lua 中未找到 ClassBlocks");
+            for (var specId = 1; specId <= 4; specId++)
+                if (blocks.Get((long)specId) is TableValue spec)
+                    CompileSpec(spec, $"{fileName}[{specId}]",
+                        NameplateStateLayout.SupportsImprovedGarrote(classDirectory, classId, specId), rejectPixelOverflow: true);
         }
 
         Directory.CreateDirectory(configDirectory);
@@ -92,7 +107,8 @@ internal static class FuyutsuiConfigConverter
             }
             else
             {
-                CompileSpellMaps(spellsList, root, warnings, fileName);
+                CompileSpellMaps(spellsList, root, warnings, fileName,
+                    AddonLuaNames.Assignment(lua, "spellsList").StartsWith("Shingen.", StringComparison.Ordinal));
             }
 
             if (itemsList is null)
@@ -191,9 +207,11 @@ internal static class FuyutsuiConfigConverter
         TableValue spellsList,
         JsonObject target,
         List<string> warnings,
-        string label)
+        string label,
+        bool supportsRankGroups)
     {
         var oneKeySpells = new SortedDictionary<int, long>();
+        var representatives = new Dictionary<int, (long SpellId, int? Rank, string? Name)>();
 
         foreach (var (key, value) in spellsList.Entries)
         {
@@ -224,7 +242,25 @@ internal static class FuyutsuiConfigConverter
             }
 
             var index = (int)indexValue.Value;
+            var spellId = (long)spellIdValue.Value;
+            var rank = ClassBlocksStore.ReadSpellRank(spell);
+            var name = spell.GetString("name");
+            if (representatives.TryGetValue(index, out var existing)
+                && (supportsRankGroups || (rank is not null && existing.Rank is not null))
+                && string.Equals(name, existing.Name, StringComparison.Ordinal))
+            {
+                // 等级共享索引是合法技能组；用最低等级及最小 ID 稳定生成反向映射。
+                var candidateRank = rank ?? int.MaxValue;
+                var existingRank = existing.Rank ?? int.MaxValue;
+                if (candidateRank < existingRank || (candidateRank == existingRank && spellId < existing.SpellId))
+                {
+                    oneKeySpells[index] = spellId;
+                    representatives[index] = (spellId, rank, name);
+                }
+                continue;
+            }
             AddSpellMapEntry(oneKeySpells, index, (long)spellIdValue.Value, "一键法术", warnings, label);
+            representatives.TryAdd(index, (spellId, rank, name));
         }
 
         target[ModuleSpecialActions.OneKeySpell] = ToSpellMap(oneKeySpells);
@@ -305,8 +341,25 @@ internal static class FuyutsuiConfigConverter
         return result;
     }
 
+    internal sealed class PixelCapacityExceededException(string label, string region, int requiredPixels)
+        : InvalidOperationException(
+            $"布局校验失败：{label} 的{region}布局需要 {requiredPixels} 格，超过主像素行 {MainPixelLayout.MaxCapacity} 格上限；配置和宏均未写入。");
+
+    public static void EnsurePixelCapacity(
+        ClassBlocksStore.SpecBlocks spec, string label, bool supportsImprovedGarrote)
+    {
+        // 用实际保存格式走同一转换流程，避免容量检查与 config 的像素占位规则不一致。
+        var source = "ClassBlocks = " + ClassBlocksStore.SerializeClassBlocks(
+            new Dictionary<int, ClassBlocksStore.SpecBlocks> { [1] = spec });
+        var blocks = ExtractAssignedTable(source, "ClassBlocks")
+            ?? throw new InvalidDataException("无法解析合并后的职业配置。");
+        var specTable = blocks.Get(1L) as TableValue
+            ?? throw new InvalidDataException("无法解析合并后的专精配置。");
+        CompileSpec(specTable, label, supportsImprovedGarrote, rejectPixelOverflow: true);
+    }
+
     private static (JsonObject Spec, List<string> Warnings) CompileSpec(
-        TableValue spec, string label, bool supportsImprovedGarrote)
+        TableValue spec, string label, bool supportsImprovedGarrote, bool rejectPixelOverflow = false)
     {
         var warnings = new List<string>();
         var result = new JsonObject();
@@ -338,7 +391,16 @@ internal static class FuyutsuiConfigConverter
                             ? category + stateName
                             : stateName;
                         AddStateField(result, key, index, skipCommon: true, category);
-                        index++;
+                        if (IsRgbState(category, stateName) && result[key] is JsonObject rgbField)
+                        {
+                            rgbField["pixelFormat"] = "rgb24";
+                            rgbField["payloadStep"] = index + 1;
+                            index += 2;
+                        }
+                        else
+                        {
+                            index++;
+                        }
                     }
                 }
             }
@@ -358,7 +420,17 @@ internal static class FuyutsuiConfigConverter
                         index,
                         skipCommon: true,
                         ClassStateCatalog.FindCategory(stateName) ?? ClassStateCatalog.CategoryState);
-                    index++;
+                    if (stateName == "目标NPCID" && result[stateName] is JsonObject npcField)
+                    {
+                        npcField["category"] = ClassStateCatalog.CategoryTarget;
+                        npcField["pixelFormat"] = "rgb24";
+                        npcField["payloadStep"] = index + 1;
+                        index += 2;
+                    }
+                    else
+                    {
+                        index++;
+                    }
                 }
             }
         }
@@ -450,9 +522,8 @@ internal static class FuyutsuiConfigConverter
                     index++;
                 }
 
-                var maxCharge = spell.GetNumber("maxCharge");
-                var castCount = spell.GetNumber("castCount");
-                if (charge && maxCharge is not null)
+                var castCount = spell.GetBool("castCount") == true;
+                if (charge)
                 {
                     if (countSpellIds.Add(id))
                     {
@@ -464,7 +535,7 @@ internal static class FuyutsuiConfigConverter
                             "充能层数");
                     }
                 }
-                else if (castCount is not null && castCount.Value > 0)
+                else if (castCount)
                 {
                     if (countSpellIds.Add(id))
                     {
@@ -477,6 +548,14 @@ internal static class FuyutsuiConfigConverter
                     }
                 }
             }
+        }
+
+        foreach (var entry in OverrideSpellLayout.Read(spec.GetTable("override")))
+        {
+            var field = Field(index++, "int", OverrideSpellLayout.Category);
+            field["displayName"] = entry.Name;
+            field["spellId"] = entry.OriginalId;
+            result[OverrideSpellLayout.FieldKey(entry.OriginalId)] = field;
         }
 
         if (spec.GetTable("items") is { } items)
@@ -506,6 +585,11 @@ internal static class FuyutsuiConfigConverter
         if (spellsObject.Count > 0)
         {
             result["spells"] = spellsObject;
+        }
+
+        if (rejectPixelOverflow && index - 1 > MainPixelLayout.MaxCapacity)
+        {
+            throw new PixelCapacityExceededException(label, "状态、光环、冷却和替换技", index - 1);
         }
 
         // group
@@ -561,7 +645,7 @@ internal static class FuyutsuiConfigConverter
                         "group",
                         SpellFieldKey.AuraValue,
                         ids);
-                    if (auraInfo.GetNumber("maxApps") is > 0)
+                    if (auraInfo.GetBool("maxApps") == true)
                     {
                         groupJson[$"auras.{canonicalId}.{SpellFieldKey.AuraApplications}"] = AuraField(
                             ++groupFieldCount,
@@ -580,6 +664,10 @@ internal static class FuyutsuiConfigConverter
                 var groupEnd = index + GroupStateLayout.SlotCount * groupFieldCount + 1;
                 if (groupEnd - 1 > MainPixelLayout.MaxCapacity)
                 {
+                    if (rejectPixelOverflow)
+                    {
+                        throw new PixelCapacityExceededException(label, "队伍", groupEnd - 1);
+                    }
                     warnings.Add($"{label}: 队伍像素超出主像素行 {MainPixelLayout.MaxCapacity} 格上限，已停用队伍");
                 }
                 else
@@ -627,7 +715,7 @@ internal static class FuyutsuiConfigConverter
                         ["spellId"] = ids[0],
                         ["valueOffset"] = ++fieldCount
                     };
-                    if (aura.GetNumber("maxApps") is > 0)
+                    if (aura.GetBool("maxApps") == true)
                     {
                         auraJson["appsOffset"] = ++fieldCount;
                     }
@@ -652,10 +740,27 @@ internal static class FuyutsuiConfigConverter
             {
                 nameplateJson["improvedGarroteOffset"] = ++fieldCount;
             }
+            if (nameplates.GetBool("threat") == true)
+            {
+                nameplateJson["threatOffset"] = ++fieldCount;
+            }
+            if (nameplates.GetBool("castSpell") == true)
+            {
+                nameplateJson["castSpellOffset"] = ++fieldCount;
+                nameplateJson["castSpellPayloadOffset"] = ++fieldCount;
+            }
+            if (nameplates.GetBool("castCountdown") == true)
+            {
+                nameplateJson["castCountdownOffset"] = ++fieldCount;
+            }
             nameplateJson["num"] = fieldCount;
             var totalPixels = NameplateStateLayout.TotalPixelCount(fieldCount);
             if (regionStart + totalPixels - 1 > MainPixelLayout.MaxCapacity)
             {
+                if (rejectPixelOverflow)
+                {
+                    throw new PixelCapacityExceededException(label, "姓名板", regionStart + totalPixels - 1);
+                }
                 warnings.Add(
                     $"{label}: 姓名板需要 {totalPixels} 格（映射 {NameplateStateLayout.MappingFieldCount} + {NameplateStateLayout.SlotCount}×{fieldCount}），超过主像素行 {MainPixelLayout.MaxCapacity} 格上限，已停用姓名板");
             }
@@ -781,7 +886,7 @@ internal static class FuyutsuiConfigConverter
                 classification);
             index++;
 
-            if (aura.GetNumber("maxApps") is > 0)
+            if (aura.GetBool("maxApps") == true)
             {
                 var appsKey = $"{scope}.{canonicalId}.{SpellFieldKey.AuraApplications}";
                 aurasObject[appsKey] = AuraField(
@@ -823,6 +928,14 @@ internal static class FuyutsuiConfigConverter
 
         return result;
     }
+
+    private static bool IsRgbState(string category, string stateName)
+        => (stateName == "NPCID" && category == ClassStateCatalog.CategoryTarget)
+           || (stateName == "施法技能" && category is
+            ClassStateCatalog.CategoryTarget or ClassStateCatalog.CategoryFocus or
+            ClassStateCatalog.CategoryBoss1 or ClassStateCatalog.CategoryBoss2 or
+            ClassStateCatalog.CategoryBoss3 or ClassStateCatalog.CategoryBoss4 or
+            ClassStateCatalog.CategoryBoss5);
 
     private static void AddStateField(
         JsonObject result,

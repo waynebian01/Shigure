@@ -72,10 +72,15 @@ internal static class Program
             var options = AppOptions.FromArgs(args);
             var baseDirectory = AppPaths.BaseDirectory;
             var profiles = GameProfiles.Load(baseDirectory);
-            var processLocator = new WowProcessLocator(profiles);
-            var foregroundProfile = profiles.Find(processLocator.FindFrontmostProcessName());
-            var initialProfile = foregroundProfile ?? profiles.Default;
-            var activeProfile = new ActiveGameProfile(initialProfile);
+            var uiCache = UiCacheStore.Load();
+            var executableBindings = new GameExecutableBindings(profiles);
+            executableBindings.Update(uiCache.RetailGameExecutablePath, uiCache.ForeverGameExecutablePath);
+            var processLocator = new WowProcessLocator(executableBindings);
+            var foregroundGame = processLocator.FindFrontmostGame();
+            var initialProfile = foregroundGame?.Profile ?? profiles.Default;
+            var initialPath = foregroundGame?.ExecutablePath ?? executableBindings.ReadValidBindings()
+                .FirstOrDefault(binding => binding.Profile.Version == initialProfile.Version)?.ExecutablePath;
+            var activeProfile = new ActiveGameProfile(initialProfile, initialPath);
             var workspaces = profiles.DistinctAddons.ToDictionary(
                 profile => profile.AddonName,
                 profile => new GameWorkspace(profile),
@@ -95,6 +100,8 @@ internal static class Program
                 processLocator,
                 profiles,
                 activeProfile,
+                executableBindings,
+                uiCache,
                 runtimeSession));
         }
         finally

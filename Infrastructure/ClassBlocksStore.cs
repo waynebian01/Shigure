@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using static Shigure.LuaLiteParser;
@@ -47,9 +47,11 @@ internal static class ClassBlocksStore
         public long SpellId { get; set; }
         public int Index { get; set; }
         public string Name { get; set; } = string.Empty;
+        public int? Rank { get; set; }
         public long OriginalSpellId { get; set; }
         public int OriginalIndex { get; set; }
         public string OriginalName { get; set; } = string.Empty;
+        public int? OriginalRank { get; set; }
     }
 
     public sealed class ItemsListEntry
@@ -95,6 +97,7 @@ internal static class ClassBlocksStore
         public List<AuraEntry> Boss4HarmfulAuras { get; } = new();
         public List<AuraEntry> Boss5HarmfulAuras { get; } = new();
         public List<SpellEntry> Spells { get; } = new();
+        public List<OverrideEntry> Overrides { get; } = new();
         public GroupBlocks? Group { get; set; }
         public NameplateBlocks? Nameplates { get; set; }
     }
@@ -108,12 +111,18 @@ internal static class ClassBlocksStore
         public bool IsPlayer { get; set; }
     }
 
+    public sealed class OverrideEntry
+    {
+        public string Name { get; set; } = string.Empty;
+        public long OriginalId { get; set; }
+        public long?[] TargetIds { get; set; } = new long?[OverrideSpellLayout.TargetCount];
+    }
+
     public sealed class SpellEntry
     {
         public string Name { get; set; } = string.Empty;
         public long SpellId { get; set; }
         public bool Charge { get; set; }
-        public int? MaxCharge { get; set; }
         public int? CastCount { get; set; }
         public bool ForcedKnown { get; set; }
         public bool InSpellBook { get; set; }
@@ -133,11 +142,14 @@ internal static class ClassBlocksStore
         public int? MaxApps { get; set; }
     }
 
-    // 生命值/距离/战斗是固定像素；配置保存光环列表及可选的锁喉类型开关。
+    // 生命值/距离/战斗是固定像素；配置保存光环列表及可选的锁喉类型、仇恨值和施法开关。
     public sealed class NameplateBlocks
     {
         // null 保留旧配置省略值；正式服奇袭的有效默认值为 true。
         public bool? ImprovedGarrote { get; set; }
+        public bool? Threat { get; set; }
+        public bool? CastSpell { get; set; }
+        public bool? CastCountdown { get; set; }
         public List<AuraEntry> Auras { get; } = new();
     }
 
@@ -210,13 +222,22 @@ internal static class ClassBlocksStore
                 SpellId = spellId,
                 Index = (int)indexValue.Value,
                 Name = name,
+                Rank = ReadSpellRank(spell),
                 OriginalSpellId = spellId,
                 OriginalIndex = (int)indexValue.Value,
-                OriginalName = name
+                OriginalName = name,
+                OriginalRank = ReadSpellRank(spell)
             });
         }
 
         return result;
+    }
+
+    internal static int? ReadSpellRank(TableValue spell)
+    {
+        var rank = spell.GetNumber("Rank");
+        return rank is >= 1 and <= 255 && rank == Math.Truncate(rank.Value)
+            ? (int)rank.Value : null;
     }
 
     private static List<ItemsListEntry> ParseItemsList(TableValue? table)
@@ -299,6 +320,13 @@ internal static class ClassBlocksStore
             throw new InvalidOperationException("当前文件仍是旧版稀疏索引 ClassBlocks，无法用图形编辑器保存。");
         }
 
+        var classDirectory = Path.GetDirectoryName(document.FilePath)!;
+        var classId = ClassNames.GetClasses().FirstOrDefault(item =>
+            ClassNames.GetConfigFileName(item.Id).Equals(Path.GetFileNameWithoutExtension(document.FilePath), StringComparison.OrdinalIgnoreCase)).Id;
+        foreach (var (specId, spec) in document.Specs)
+            FuyutsuiConfigConverter.EnsurePixelCapacity(spec, $"{Path.GetFileName(document.FilePath)}[{specId}]",
+                NameplateStateLayout.SupportsImprovedGarrote(classDirectory, classId, specId));
+
         var updated = UpdateSpellsListEntries(
             document.SourceText,
             document.SpellsList,
@@ -331,6 +359,7 @@ internal static class ClassBlocksStore
             spell.OriginalSpellId = spell.SpellId;
             spell.OriginalIndex = spell.Index;
             spell.OriginalName = spell.Name;
+            spell.OriginalRank = spell.Rank;
         }
 
         document.DeletedSpellsListOriginalIds.Clear();
@@ -362,6 +391,7 @@ internal static class ClassBlocksStore
             .Where(entry => entry.OriginalSpellId != 0
                 && (entry.SpellId != entry.OriginalSpellId
                 || entry.Index != entry.OriginalIndex
+                || entry.Rank != entry.OriginalRank
                 || !string.Equals(entry.Name, entry.OriginalName, StringComparison.Ordinal)))
             .ToDictionary(entry => entry.OriginalSpellId);
         if (changedEntries.Count == 0 && newEntries.Length == 0 && deletedOriginalIds.Count == 0)
@@ -411,7 +441,7 @@ internal static class ClassBlocksStore
                 + quote
                 + EscapeLuaString(entry.Name, quote)
                 + quote
-                + match.Groups["suffix"].Value
+                + UpdateSpellRankSuffix(match.Groups["suffix"].Value, entry.Rank)
                 + match.Groups["lineEnd"].Value;
         });
 
@@ -449,7 +479,12 @@ internal static class ClassBlocksStore
                     .Append(entry.Index.ToString(CultureInfo.InvariantCulture))
                     .Append(", name = \"")
                     .Append(EscapeLuaString(entry.Name, '"'))
-                    .Append("\" },")
+                    .Append('"');
+                if (entry.Rank is { } rank)
+                {
+                    insertion.Append(", Rank = ").Append(rank.ToString(CultureInfo.InvariantCulture));
+                }
+                insertion.Append(" },")
                     .Append(newline);
             }
 
@@ -457,6 +492,26 @@ internal static class ClassBlocksStore
         }
 
         return source[..tableStart] + updatedTable + source[tableEnd..];
+    }
+
+    private static string UpdateSpellRankSuffix(string suffix, int? rank)
+    {
+        var closingBrace = suffix.IndexOf('}');
+        if (closingBrace < 0) return suffix;
+        var fields = suffix[..closingBrace];
+        var pattern = new Regex(@",\s*Rank\s*=\s*\d+", RegexOptions.CultureInvariant);
+        if (pattern.IsMatch(fields))
+        {
+            fields = pattern.Replace(fields, rank is { } value
+                ? ", Rank = " + value.ToString(CultureInfo.InvariantCulture) : "");
+        }
+        else if (rank is { } value)
+        {
+            fields = fields.TrimEnd();
+            fields += (fields.EndsWith(',') ? " Rank = " : ", Rank = ")
+                + value.ToString(CultureInfo.InvariantCulture) + " ";
+        }
+        return fields + suffix[closingBrace..];
     }
 
     private static string UpdateItemsListEntries(
@@ -550,6 +605,7 @@ internal static class ClassBlocksStore
         isModern = spec.GetTable("states") is not null
             || spec.GetTable("auras") is not null
             || spec.GetTable("spells") is not null
+            || spec.GetTable("override") is not null
             || spec.GetTable("items") is not null
             || spec.GetTable("group") is not null
             || spec.GetTable("nameplates") is not null;
@@ -651,13 +707,14 @@ internal static class ClassBlocksStore
                     SpellId = (long)spellId.Value,
                     Name = spell.GetString("name")?.Trim() ?? string.Empty,
                     Charge = spell.GetBool("charge") == true,
-                    MaxCharge = spell.GetNumber("maxCharge") is { } maxCharge ? (int)maxCharge : null,
-                    CastCount = spell.GetNumber("castCount") is { } castCount ? (int)castCount : null,
+                    CastCount = ReadEnabledFlag(spell, "castCount"),
                     ForcedKnown = spell.GetBool("forcedKnown") == true,
                     InSpellBook = spell.GetBool("inSpellBook") == true
                 });
             }
         }
+
+        result.Overrides.AddRange(OverrideSpellLayout.Read(spec.GetTable("override")));
 
         if (spec.GetTable("items") is { } items)
         {
@@ -681,7 +738,7 @@ internal static class ClassBlocksStore
                     var entry = new GroupAuraEntry
                     {
                         Name = auraInfo.GetString("name")?.Trim() ?? string.Empty,
-                        MaxApps = auraInfo.GetNumber("maxApps") is { } maxApps ? (int)maxApps : null
+                        MaxApps = ReadEnabledFlag(auraInfo, "maxApps")
                     };
                     if (auraInfo.GetNumber("spellId") is { } sid)
                     {
@@ -709,7 +766,13 @@ internal static class ClassBlocksStore
 
         if (spec.GetTable("nameplates") is { } nameplates)
         {
-            var blocks = new NameplateBlocks { ImprovedGarrote = nameplates.GetBool("improvedGarrote") };
+            var blocks = new NameplateBlocks
+            {
+                ImprovedGarrote = nameplates.GetBool("improvedGarrote"),
+                Threat = nameplates.GetBool("threat"),
+                CastSpell = nameplates.GetBool("castSpell"),
+                CastCountdown = nameplates.GetBool("castCountdown")
+            };
             AppendAuraList(nameplates.GetTable("auras"), blocks.Auras);
             result.Nameplates = blocks;
         }
@@ -774,7 +837,7 @@ internal static class ClassBlocksStore
             var entry = new AuraEntry
             {
                 Name = aura.GetString("name")?.Trim() ?? string.Empty,
-                MaxApps = aura.GetNumber("maxApps") is { } maxApps ? (int)maxApps : null,
+                MaxApps = ReadEnabledFlag(aura, "maxApps"),
                 IsPlayer = aura.GetBool("isPlayer") == true
             };
             if (aura.GetNumber("spellId") is { } sid)
@@ -816,6 +879,7 @@ internal static class ClassBlocksStore
     {
         RelocateSpecialStateFields(spec);
         ValidateItemsForSerialization(spec);
+        OverrideSpellLayout.Validate(spec.Overrides);
 
         // states
         sb.Append(indent).AppendLine("states = {");
@@ -885,14 +949,9 @@ internal static class ClassBlocksStore
                     sb.Append(", charge = true");
                 }
 
-                if (spell.MaxCharge is { } maxCharge)
+                if (spell.CastCount is > 0)
                 {
-                    sb.Append(", maxCharge = ").Append(maxCharge);
-                }
-
-                if (spell.CastCount is { } castCount)
-                {
-                    sb.Append(", castCount = ").Append(castCount);
+                    sb.Append(", castCount = true");
                 }
 
                 if (spell.ForcedKnown)
@@ -908,6 +967,22 @@ internal static class ClassBlocksStore
                 sb.AppendLine(" },");
             }
 
+            sb.Append(indent).AppendLine("},");
+        }
+
+        // 固定数字键保留中间空槽，不能使用连续数组压缩目标序号。
+        if (spec.Overrides.Count > 0)
+        {
+            sb.Append(indent).AppendLine("override = {");
+            foreach (var entry in spec.Overrides.OrderBy(entry => entry.OriginalId))
+            {
+                sb.Append(indent).Append("    [").Append(entry.OriginalId)
+                    .Append("] = { overrideSpellID = { ");
+                for (var slot = 0; slot < OverrideSpellLayout.TargetCount; slot++)
+                    if (entry.TargetIds[slot] is { } id)
+                        sb.Append('[').Append(slot + 1).Append("] = ").Append(id).Append(", ");
+                sb.Append("}, name = \"").Append(Escape(entry.Name)).AppendLine("\" },");
+            }
             sb.Append(indent).AppendLine("},");
         }
 
@@ -953,9 +1028,9 @@ internal static class ClassBlocksStore
                     }
 
                     WriteSpellIdFields(sb, aura.SpellId, aura.SpellIds);
-                    if (aura.MaxApps is { } maxApps)
+                    if (aura.MaxApps is > 0)
                     {
-                        sb.Append(" maxApps = ").Append(maxApps).Append(',');
+                        sb.Append(" maxApps = true,");
                     }
                     sb.AppendLine(" },");
                 }
@@ -973,6 +1048,21 @@ internal static class ClassBlocksStore
             {
                 sb.Append(indent).Append("    improvedGarrote = ")
                     .Append(improvedGarrote ? "true" : "false").AppendLine(",");
+            }
+            if (nameplates.Threat is { } threat)
+            {
+                sb.Append(indent).Append("    threat = ")
+                    .Append(threat ? "true" : "false").AppendLine(",");
+            }
+            if (nameplates.CastSpell is { } castSpell)
+            {
+                sb.Append(indent).Append("    castSpell = ")
+                    .Append(castSpell ? "true" : "false").AppendLine(",");
+            }
+            if (nameplates.CastCountdown is { } castCountdown)
+            {
+                sb.Append(indent).Append("    castCountdown = ")
+                    .Append(castCountdown ? "true" : "false").AppendLine(",");
             }
             if (nameplates.Auras.Count > 0)
             {
@@ -1139,6 +1229,10 @@ internal static class ClassBlocksStore
         sb.Append(indent).AppendLine("},");
     }
 
+    // 内部快照仍用 1 表示启用，以兼容旧模块的数字字段；新 Lua 统一写 true。
+    private static int? ReadEnabledFlag(TableValue table, string key)
+        => table.GetBool(key) == true || table.GetNumber(key) is > 0 ? 1 : null;
+
     private static void WriteAuraEntry(StringBuilder sb, AuraEntry aura, string indent)
     {
         sb.Append(indent).Append("{");
@@ -1148,9 +1242,9 @@ internal static class ClassBlocksStore
         }
 
         WriteSpellIdFields(sb, aura.SpellId, aura.SpellIds);
-        if (aura.MaxApps is { } maxApps)
+        if (aura.MaxApps is > 0)
         {
-            sb.Append(" maxApps = ").Append(maxApps).Append(',');
+            sb.Append(" maxApps = true,");
         }
 
         sb.Append(" isPlayer = ").Append(aura.IsPlayer ? "true" : "false").Append(',');

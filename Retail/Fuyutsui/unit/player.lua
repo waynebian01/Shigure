@@ -404,48 +404,6 @@ end
 
 -- ============================ 职业特殊状态 ============================
 
-local playerWasStealthed = false
-local garroteStealthGraceUntil = nil
-local improvedGarroteExpires = 0
-local IMPROVED_GARROTE_DURATION = 24
-local IMPROVED_GARROTE_MAX_DURATION = 32
-local GARROTE_STEALTH_GRACE_DURATION = 6
-
-function Fuyutsui:RefreshPlayerStealthState()
-    if state.classFilename ~= "ROGUE" then return end
-    local stealthed = IsStealthed()
-    if issecretvalue(stealthed) then return end
-    stealthed = not not stealthed
-
-    if stealthed then
-        garroteStealthGraceUntil = nil
-    elseif playerWasStealthed then
-        garroteStealthGraceUntil = GetTime() + GARROTE_STEALTH_GRACE_DURATION
-    end
-    playerWasStealthed = stealthed
-    return stealthed
-end
-
-function Fuyutsui:RefreshImprovedGarroteState()
-    if state.classFilename ~= "ROGUE" then return end
-    local remaining = math.max(0, improvedGarroteExpires - GetTime())
-    state.improvedGarrote = math.ceil(remaining) / 255
-    self:UpdateStateBlock("特殊", "强化锁喉")
-end
-
-function Fuyutsui:UpdateImprovedGarrote(spellID)
-    if spellID ~= 703 or state.classFilename ~= "ROGUE" then return end
-    -- 施法成功可能先于脱潜事件到达；此处主动刷新，保留破潜锁喉的触发资格。
-    local stealthed = self:RefreshPlayerStealthState()
-    if stealthed == nil then return end
-    local now = GetTime()
-    if not stealthed and (not garroteStealthGraceUntil or now >= garroteStealthGraceUntil) then return end
-
-    local remaining = math.max(0, improvedGarroteExpires - now)
-    improvedGarroteExpires = now + math.min(IMPROVED_GARROTE_MAX_DURATION, remaining + IMPROVED_GARROTE_DURATION)
-    self:RefreshImprovedGarroteState()
-end
-
 function Fuyutsui:UpdatePlayerStagger()
     local unit = "player"
     local damage = UnitStagger(unit)
@@ -458,23 +416,6 @@ function Fuyutsui:UpdatePlayerStagger()
     local staggerPercent = damage / maxHealth * 100
     state.staggerPercent = staggerPercent / 255 or 0
     self:UpdateStateBlock("特殊", "酒池")
-end
-
-local holyArmaments = {
-    [432459] = 1, -- 神圣壁垒
-    [432472] = 2, -- 圣洁武器
-}
-
-function Fuyutsui:UpdateHolyArmaments(spellID) -- 神圣军备
-    if not spellID or spellID ~= 375576 then return end
-    for spellId, index in pairs(holyArmaments) do
-        local overrideSpellID = C_Spell.GetOverrideSpell(375576)
-        if not overrideSpellID then return end
-        if overrideSpellID == spellId then
-            state.holyArmaments = index / 255 or 0
-            self:UpdateStateBlock("特殊", "神圣军备")
-        end
-    end
 end
 
 local forbearanceTimer = nil
@@ -497,21 +438,6 @@ function Fuyutsui:UpdatePlayerForbearance() -- 25771 自律
             forbearanceTimer = nil
         end
     end, 30)
-end
-
-function Fuyutsui:UpdateVampiricStrike(spellID) -- 吸血鬼打击
-    if spellID == 206930 or spellID == 55090 then
-        local overrideSpellID1 = C_Spell.GetOverrideSpell(206930)
-        local overrideSpellID2 = C_Spell.GetOverrideSpell(55090)
-
-        if overrideSpellID1 == 433895 or overrideSpellID2 == 433895 then
-            state.VampiricStrike = 1 / 255
-            self:UpdateStateBlock("特殊", "吸血鬼打击")
-        else
-            state.VampiricStrike = 0
-            self:UpdateStateBlock("特殊", "吸血鬼打击")
-        end
-    end
 end
 
 local boilingPointTimer = nil

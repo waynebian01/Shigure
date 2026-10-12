@@ -20,6 +20,14 @@ public sealed class KeySender : IRuntimeKeyOutput
 
     public static int? GetVk(string keyName) => WindowsVirtualKeyMap.Resolve(keyName);
 
+    internal static bool IsValidHotkey(string? hotkey)
+    {
+        var (_, main) = ParseHotkey(hotkey ?? "");
+        return main is not null && WindowsVirtualKeyMap.Resolve(main) is not null
+            && main.ToUpperInvariant() is not ("CTRL" or "CONTROL" or "SHIFT" or "ALT" or "MENU"
+                or "LCTRL" or "RCTRL" or "LSHIFT" or "RSHIFT" or "LALT" or "RALT");
+    }
+
     KeySendResult IRuntimeKeyOutput.Send(string hotkey, nint expectedWindow)
         => SendCore(hotkey, expectedWindow);
 
@@ -40,7 +48,7 @@ public sealed class KeySender : IRuntimeKeyOutput
         var hwnd = _processLocator.FindFrontmostWindow();
         if (hwnd == 0)
         {
-            return Fail($"未找到目标进程的可见窗口（game_profiles.json: {_processLocator.DescribeConfiguredProcesses()}）");
+            return Fail($"等待所选游戏程序的可见窗口（{_processLocator.DescribeConfiguredPaths()}）");
         }
 
         if (expectedWindow != 0 && hwnd != expectedWindow)
@@ -72,8 +80,35 @@ public sealed class KeySender : IRuntimeKeyOutput
             SendMessage(modVks[i], keyUp: false, IsExtendedKey(mods[i]));
         }
 
-        SendMessage(vkMain.Value, keyUp: false, mainExtended);
-        SendMessage(vkMain.Value, keyUp: true, mainExtended);
+        if (vkMain.Value is 0x01 or 0x02 or 0x04 or 0x05 or 0x06)
+        {
+            if (!NativeMethods.GetCursorPos(out var point) || !NativeMethods.ScreenToClient(hwnd, ref point))
+                succeeded = false;
+            else
+            {
+                var (down, up, button) = vkMain.Value switch
+                {
+                    0x01 => (0x0201u, 0x0202u, 0x0001),
+                    0x02 => (0x0204u, 0x0205u, 0x0002),
+                    0x04 => (0x0207u, 0x0208u, 0x0010),
+                    _ => (0x020Bu, 0x020Cu, vkMain.Value == 0x05 ? 0x0020 : 0x0040)
+                };
+                var flags = mods.Any(mod => mod.Contains("CTRL")) ? 0x0008 : 0;
+                if (mods.Any(mod => mod.Contains("SHIFT"))) flags |= 0x0004;
+                var xbutton = vkMain.Value is 0x05 or 0x06 ? (vkMain.Value == 0x05 ? 1 : 2) << 16 : 0;
+                var position = unchecked((nint)((point.X & 0xffff) | ((point.Y & 0xffff) << 16)));
+                var postedDown = NativeMethods.PostMessageW(hwnd, down, (nint)(xbutton | flags | button), position);
+                if (!postedDown) firstError = System.Runtime.InteropServices.Marshal.GetLastWin32Error();
+                var postedUp = NativeMethods.PostMessageW(hwnd, up, (nint)(xbutton | flags), position);
+                if (!postedUp && firstError == 0) firstError = System.Runtime.InteropServices.Marshal.GetLastWin32Error();
+                succeeded &= postedDown && postedUp;
+            }
+        }
+        else
+        {
+            SendMessage(vkMain.Value, keyUp: false, mainExtended);
+            SendMessage(vkMain.Value, keyUp: true, mainExtended);
+        }
 
         for (var i = modVks.Count - 1; i >= 0; i--)
         {

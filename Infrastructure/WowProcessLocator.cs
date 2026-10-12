@@ -4,161 +4,94 @@ using System.Text;
 
 namespace Shigure;
 
+internal sealed record LocatedGameWindow(nint WindowHandle, GameExecutableBinding Binding)
+{
+    public GameProfile Profile => Binding.Profile;
+    public string ExecutablePath => Binding.ExecutablePath;
+}
+
 /// <summary>
-/// 按 game_profiles.json 中的进程名，从 Windows Z 顺序顶部查找第一个可见顶层窗口。
-/// 每次查询都会重新检查窗口顺序，以便运行期间切换游戏窗口。
+/// 按所选 exe 的完整路径识别版本，从 Windows Z 顺序顶部查找第一个匹配的可见顶层窗口。
+/// 绑定的运行时只接受创建时的版本和路径；修改路径后旧实例立即失去目标。
 /// </summary>
 internal sealed class WowProcessLocator
 {
-    private readonly GameProfiles _profiles;
-    private readonly string? _boundProcessName;
+    private readonly GameExecutableBindings _bindings;
+    private readonly GameProfile? _boundProfile;
+    private readonly string? _boundExecutablePath;
 
-    public WowProcessLocator(GameProfiles profiles, string? boundProcessName = null)
+    public WowProcessLocator(GameExecutableBindings bindings)
     {
-        _profiles = profiles;
-        _boundProcessName = boundProcessName;
+        _bindings = bindings;
     }
 
-    public WowProcessLocator ForProcess(string processName)
-        => new(_profiles, processName);
-
-    public nint FindFrontmostWindow()
+    private WowProcessLocator(GameExecutableBindings bindings, GameProfile profile, string? executablePath)
     {
-        if (_boundProcessName is not null)
-        {
-            var frontmost = new WowProcessLocator(_profiles);
-            var hwnd = frontmost.FindFrontmostWindow();
-            return string.Equals(GetProcessName(hwnd), _boundProcessName, StringComparison.OrdinalIgnoreCase)
-                ? hwnd
-                : 0;
-        }
-        var processIds = GetCandidateProcessIds();
-        if (processIds.Count == 0)
-        {
-            return 0;
-        }
+        _bindings = bindings;
+        _boundProfile = profile;
+        _boundExecutablePath = executablePath;
+    }
 
-        nint foundWindow = 0;
+    public WowProcessLocator ForProfile(GameProfile profile, string? executablePath)
+        => new(_bindings, profile, executablePath);
+
+    public nint FindFrontmostWindow() => FindFrontmostGame()?.WindowHandle ?? 0;
+
+    public string? FindFrontmostProcessPath() => FindFrontmostGame()?.ExecutablePath;
+
+    public LocatedGameWindow? FindFrontmostGame()
+    {
+        if (_boundProfile is not null && (_boundExecutablePath is null
+            || !_bindings.IsCurrent(new GameExecutableBinding(_boundProfile, _boundExecutablePath))))
+            return null;
+
+        // 所有版本一起排序，防止旧版本在切换间隙继续操作后方窗口。
+        var candidates = GetCandidateProcesses();
+        if (candidates.Count == 0) return null;
+
+        LocatedGameWindow? found = null;
         _ = NativeMethods.EnumWindows((hwnd, lParam) =>
         {
-            if (!NativeMethods.IsWindowVisible(hwnd))
-            {
-                return true;
-            }
-
+            if (!NativeMethods.IsWindowVisible(hwnd)) return true;
             _ = NativeMethods.GetWindowThreadProcessId(hwnd, out var processId);
-            if (!processIds.Contains(processId))
-            {
-                return true;
-            }
-
-            foundWindow = hwnd;
+            if (!candidates.TryGetValue(processId, out var binding)) return true;
+            // 枚举后进程可能退出或 PID 被复用，最终窗口仍需核对路径。
+            if (!GameExecutablePath.Equals(TryGetProcessPath(processId), binding.ExecutablePath)) return true;
+            found = new LocatedGameWindow(hwnd, binding);
             return false;
         }, 0);
 
-        return foundWindow;
+        if (found is null || !_bindings.IsCurrent(found.Binding)) return null;
+        if (_boundProfile is not null && (
+            !found.Profile.Version.Equals(_boundProfile.Version, StringComparison.OrdinalIgnoreCase)
+            || !GameExecutablePath.Equals(found.ExecutablePath, _boundExecutablePath))) return null;
+        return found;
     }
 
-    public string? FindFrontmostProcessPath()
+    public string DescribeConfiguredPaths()
     {
-        var hwnd = FindFrontmostWindow();
-        if (hwnd == 0)
-        {
-            return null;
-        }
-
-        _ = NativeMethods.GetWindowThreadProcessId(hwnd, out var processId);
-        return processId == 0 ? null : TryGetProcessPath(processId);
+        if (_bindings.ConflictError is { } conflict) return conflict;
+        var bindings = _bindings.ReadValidBindings()
+            .Where(binding => _boundProfile is null
+                || binding.Profile.Version.Equals(_boundProfile.Version, StringComparison.OrdinalIgnoreCase));
+        var descriptions = bindings.Select(binding => $"{binding.Profile.Version}: {binding.ExecutablePath}").ToArray();
+        return descriptions.Length == 0 ? "请在设置 → 通用中选择有效的游戏程序路径" : string.Join("；", descriptions);
     }
 
-    public string? FindFrontmostProcessName()
+    private Dictionary<uint, GameExecutableBinding> GetCandidateProcesses()
     {
-        return GetProcessName(FindFrontmostWindow());
-    }
-
-    /// <summary>部署插件时查找指定进程的所有安装位置，不受前台窗口限制。</summary>
-    public IReadOnlyList<string> FindRunningProcessPaths(string processName)
-    {
-        var paths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        Process[] processes;
-        try
-        {
-            processes = Process.GetProcessesByName(processName);
-        }
-        catch (InvalidOperationException)
-        {
-            return [];
-        }
-        catch (Win32Exception)
-        {
-            return [];
-        }
-
-        foreach (var process in processes)
-        {
-            using (process)
-            {
-                try
-                {
-                    var path = TryGetProcessPath(unchecked((uint)process.Id));
-                    if (!string.IsNullOrWhiteSpace(path)) paths.Add(path);
-                }
-                catch (InvalidOperationException)
-                {
-                    // 进程可能刚退出。
-                }
-                catch (Win32Exception)
-                {
-                    // 无权读取单个进程时继续尝试其它安装位置。
-                }
-            }
-        }
-        return paths.ToArray();
-    }
-
-    private static string? GetProcessName(nint hwnd)
-    {
-        if (hwnd == 0)
-        {
-            return null;
-        }
-        _ = NativeMethods.GetWindowThreadProcessId(hwnd, out var processId);
-        if (processId == 0)
-        {
-            return null;
-        }
-        try
-        {
-            using var process = Process.GetProcessById(checked((int)processId));
-            return process.ProcessName;
-        }
-        catch (InvalidOperationException)
-        {
-            return null;
-        }
-        catch (ArgumentException)
-        {
-            return null;
-        }
-    }
-
-    public string DescribeConfiguredProcesses()
-    {
-        var names = ReadProcessNames();
-        return names.Count == 0 ? "未配置" : string.Join("、", names);
-    }
-
-    private HashSet<uint> GetCandidateProcessIds()
-    {
-        var result = new HashSet<uint>();
-        foreach (var processName in ReadProcessNames())
+        var bindings = _bindings.ReadValidBindings();
+        var result = new Dictionary<uint, GameExecutableBinding>();
+        foreach (var processName in bindings.Select(binding => Path.GetFileNameWithoutExtension(binding.ExecutablePath))
+                     .Distinct(StringComparer.OrdinalIgnoreCase))
         {
             Process[] processes;
             try
             {
+                // 文件名仅缩小枚举范围，不能用于决定版本。
                 processes = Process.GetProcessesByName(processName);
             }
-            catch (InvalidOperationException)
+            catch (Exception ex) when (ex is InvalidOperationException or Win32Exception)
             {
                 continue;
             }
@@ -169,39 +102,29 @@ internal sealed class WowProcessLocator
                 {
                     try
                     {
-                        result.Add(unchecked((uint)process.Id));
+                        var processId = unchecked((uint)process.Id);
+                        var processPath = TryGetProcessPath(processId);
+                        var binding = bindings.FirstOrDefault(item =>
+                            GameExecutablePath.Equals(item.ExecutablePath, processPath));
+                        if (binding is not null) result[processId] = binding;
                     }
-                    catch (InvalidOperationException)
+                    catch (Exception ex) when (ex is InvalidOperationException or Win32Exception)
                     {
-                        // 进程可能在枚举期间退出。
+                        // 进程退出或无权读取时跳过，不按文件名回退。
                     }
                 }
             }
         }
-
         return result;
-    }
-
-    private IReadOnlyList<string> ReadProcessNames()
-    {
-        if (_boundProcessName is not null)
-        {
-            return [_boundProcessName];
-        }
-        return _profiles.ProcessNames;
     }
 
     private static string? TryGetProcessPath(uint processId)
     {
         var handle = NativeMethods.OpenProcess(NativeMethods.ProcessQueryLimitedInformation, false, processId);
-        if (handle == 0)
-        {
-            return null;
-        }
-
+        if (handle == 0) return null;
         try
         {
-            var buffer = new StringBuilder(1024);
+            var buffer = new StringBuilder(32768);
             var size = buffer.Capacity;
             return NativeMethods.QueryFullProcessImageName(handle, 0, buffer, ref size) && size > 0
                 ? buffer.ToString()

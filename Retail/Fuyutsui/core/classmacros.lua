@@ -382,8 +382,8 @@ Fuyutsui.ClassMacros = {
             "/use 剧毒狂怒之泉", -- 剧毒狂怒之泉
             "/use 治疗石", -- 治疗石
             "/use 浓缩银月城生命药水", -- 浓缩银月城生命药水
-            "/se cd on", -- 开启爆发
-            "/se cd off", -- 关闭爆发
+            "/fu cd on", -- 开启爆发
+            "/fu cd off", -- 关闭爆发
             "/stopcasting\n/cast [target=focus,harm,nodead][target=mouseover,harm,nodead][harm,nodead] 窒息", -- 窒息
             "/cast [target=player] 血魔之握", -- 血魔之握
             "/stopattack\n/stopcasting\n/cleartarget\n/targetenemy\n/cast [target=focus,harm]心灵冰冻;[target=mouseover,harm,nodead]心灵冰冻;心灵冰冻\n/targetlasttarget", -- 心灵冰冻

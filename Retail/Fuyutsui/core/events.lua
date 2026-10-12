@@ -87,10 +87,9 @@ function Fuyutsui:ZONE_CHANGED_NEW_AREA()
 end
 
 function Fuyutsui:PLAYER_ENTERING_WORLD()
+    self:RefreshOverrideSpells()
     state.mapID = C_Map.GetBestMapForUnit("player") or 0
     self:RefreshPlayerMapState()
-    self:UpdateHolyArmaments(375576)
-    self:UpdateVampiricStrike(206930)
     self:UpdateReaverGlaive(204157)
     self:UpdateHeroTalent()
     self:CacheCollectedMountSpells()
@@ -436,9 +435,8 @@ function Fuyutsui:SPELL_UPDATE_USES(_, spellID, baseSpellID)
 end
 
 function Fuyutsui:SPELL_UPDATE_ICON(_, spellID)
+    self:RefreshOverrideSpells()
     if issecretvalue(spellID) then return end
-    self:UpdateHolyArmaments(spellID)
-    self:UpdateVampiricStrike(spellID)
     self:UpdateReaverGlaive(spellID)
     self:UpdateHeroicStrike(spellID)
 end
@@ -480,6 +478,7 @@ function Fuyutsui:UPDATE_BINDINGS()
 end
 
 function Fuyutsui:SPELLS_CHANGED()
+    self:RefreshOverrideSpells()
     self:ReadKeybindings()
 end
 
@@ -493,6 +492,7 @@ end
 
 function Fuyutsui:PLAYER_TARGET_CHANGED()
     self:RefreshTargetState()
+    self:UpdateStateBlock("状态", "生物类型")
     self:UpdateUnitAuraContainer("target")
     if self.RefreshNameplateUnitMappings then
         self:RefreshNameplateUnitMappings()
@@ -639,6 +639,11 @@ function Fuyutsui:OnUpdate(elapsed)
     self.timeElapsed = self.timeElapsed + elapsed
     if self.timeElapsed > 0.2 then
         RunUpdateSafely(self, "UpdateSpellCooldown")
+        RunUpdateSafely(self, "RefreshOverrideSpells")
+        RunUpdateSafely(self, "UpdateStateBlock", "状态", "生物类型")
+        RunUpdateSafely(self, "UpdateStateBlock", "状态", "等级")
+        RunUpdateSafely(self, "UpdateStateBlock", "状态", "自动射击")
+        RunUpdateSafely(self, "UpdateStateBlock", "状态", "自动攻击")
         RunUpdateSafely(self, "RefreshAssistedCombatSuggestion")
         RunUpdateSafely(self, "UpdateRune")
         RunUpdateSafely(self, "RefreshTargetRangeState")

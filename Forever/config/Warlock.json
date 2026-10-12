@@ -45,8 +45,29 @@
     "42": 18708,
     "43": 19028,
     "44": 17877,
-    "45": 17962,
-    "46": 18223
+    "45": 1293817,
+    "46": 18223,
+    "47": 713,
+    "48": 18288,
+    "49": 18788,
+    "50": 403619,
+    "51": 403629,
+    "52": 403789,
+    "53": 403828,
+    "54": 403835,
+    "55": 412758,
+    "56": 412788,
+    "57": 412789,
+    "58": 425463,
+    "59": 426195,
+    "60": 426241,
+    "61": 426301,
+    "62": 426320,
+    "63": 437169,
+    "64": 440892,
+    "65": 445459,
+    "66": 1225228,
+    "67": 1316697
   },
   "一键物品": {},
   "1": {
@@ -80,48 +101,75 @@
       "type": "int",
       "category": "状态"
     },
-    "法力值": {
+    "施法技能": {
       "step": 10,
+      "type": "int",
+      "category": "状态"
+    },
+    "技能等级": {
+      "step": 11,
+      "type": "int",
+      "category": "状态"
+    },
+    "生物类型": {
+      "step": 12,
+      "type": "int",
+      "category": "状态"
+    },
+    "等级": {
+      "step": 13,
+      "type": "int",
+      "category": "状态"
+    },
+    "法力值": {
+      "step": 14,
       "type": "int",
       "category": "能量"
     },
     "目标施法技能": {
-      "step": 11,
+      "step": 15,
       "type": "int",
       "category": "目标",
       "pixelFormat": "rgb24",
-      "payloadStep": 12
+      "payloadStep": 16
     },
     "目标类型": {
-      "step": 13,
+      "step": 17,
       "type": "int",
       "category": "目标"
     },
     "目标生命值": {
-      "step": 14,
+      "step": 18,
       "type": "int",
       "category": "目标"
     },
     "目标距离": {
-      "step": 15,
+      "step": 19,
       "type": "int",
       "category": "目标"
     },
+    "目标NPCID": {
+      "step": 20,
+      "type": "int",
+      "category": "目标",
+      "pixelFormat": "rgb24",
+      "payloadStep": 21
+    },
     "焦点施法技能": {
-      "step": 16,
+      "step": 22,
       "type": "int",
       "category": "焦点",
       "pixelFormat": "rgb24",
-      "payloadStep": 17
+      "payloadStep": 23
     },
     "焦点生命值": {
-      "step": 18,
+      "step": 24,
       "type": "int",
       "category": "焦点"
     },
     "spells": {
       "710.cooldown": {
-        "step": 19,
+        "step": 25,
         "type": "int",
         "displayName": "放逐术",
         "spellId": 710,
@@ -129,7 +177,7 @@
         "displayType": "冷却"
       },
       "6229.cooldown": {
-        "step": 20,
+        "step": 26,
         "type": "int",
         "displayName": "防护暗影结界",
         "spellId": 6229,
@@ -137,7 +185,7 @@
         "displayType": "冷却"
       },
       "5484.cooldown": {
-        "step": 21,
+        "step": 27,
         "type": "int",
         "displayName": "恐惧嚎叫",
         "spellId": 5484,
@@ -145,7 +193,7 @@
         "displayType": "冷却"
       },
       "6789.cooldown": {
-        "step": 22,
+        "step": 28,
         "type": "int",
         "displayName": "死亡缠绕",
         "spellId": 6789,
@@ -153,7 +201,7 @@
         "displayType": "冷却"
       },
       "18265.cooldown": {
-        "step": 23,
+        "step": 29,
         "type": "int",
         "displayName": "生命虹吸",
         "spellId": 18265,
@@ -161,7 +209,7 @@
         "displayType": "冷却"
       },
       "18708.cooldown": {
-        "step": 24,
+        "step": 30,
         "type": "int",
         "displayName": "恶魔支配",
         "spellId": 18708,
@@ -169,7 +217,7 @@
         "displayType": "冷却"
       },
       "19028.cooldown": {
-        "step": 25,
+        "step": 31,
         "type": "int",
         "displayName": "灵魂链接",
         "spellId": 19028,
@@ -177,7 +225,7 @@
         "displayType": "冷却"
       },
       "17877.cooldown": {
-        "step": 26,
+        "step": 32,
         "type": "int",
         "displayName": "暗影灼烧",
         "spellId": 17877,
@@ -185,7 +233,7 @@
         "displayType": "冷却"
       },
       "17962.cooldown": {
-        "step": 27,
+        "step": 33,
         "type": "int",
         "displayName": "燃烧",
         "spellId": 17962,
@@ -193,7 +241,7 @@
         "displayType": "冷却"
       },
       "18223.cooldown": {
-        "step": 28,
+        "step": 34,
         "type": "int",
         "displayName": "疲劳诅咒",
         "spellId": 18223,
@@ -202,7 +250,7 @@
       }
     },
     "group": {
-      "start": 29,
+      "start": 35,
       "生命值": {
         "step": 1,
         "type": "int"

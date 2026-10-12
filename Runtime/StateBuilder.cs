@@ -23,6 +23,7 @@ public sealed class StateBuilder : IRuntimeStateBuilder
         healAbsorbData ??= new Dictionary<int, int>();
 
         var itemIds = new Dictionary<string, long>(StringComparer.Ordinal);
+        var overrideNames = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (var (key, node) in stateConfig)
         {
             if (key is "group" or "spells" or "auras" || node is not JsonObject field || !field.ContainsKey("step"))
@@ -31,12 +32,16 @@ public sealed class StateBuilder : IRuntimeStateBuilder
             }
 
             result[key] = ConvertRawValue(ResolveRaw(field, rowData, barData), JsonHelpers.GetString(JsonHelpers.Get(field, "type")));
+            if (key.StartsWith(OverrideSpellLayout.Prefix, StringComparison.Ordinal))
+                overrideNames[key] = $"{JsonHelpers.GetString(field["displayName"]) ?? key} / {JsonHelpers.GetLong(field["spellId"])}";
             var itemId = JsonHelpers.GetLong(JsonHelpers.Get(field, "itemId"));
             if (itemId is > 0)
             {
                 itemIds[key] = itemId.Value;
             }
         }
+
+        if (overrideNames.Count > 0) result["$overrideDisplayNames"] = overrideNames;
 
         if (result.TryGetValue("战斗计时(分)", out var combatMinutes)
             && result.TryGetValue("战斗计时(秒)", out var combatSeconds)
@@ -64,6 +69,7 @@ public sealed class StateBuilder : IRuntimeStateBuilder
         if (JsonHelpers.Get(stateConfig, "auras") is JsonObject aurasConfig)
         {
             result["auras"] = BuildFieldMap(aurasConfig, rowData, barData);
+            result["$auraDisplayIds"] = BuildAuraDisplayIds(aurasConfig);
         }
 
         if (JsonHelpers.Get(stateConfig, "group") is JsonObject groupConfig)
@@ -195,6 +201,40 @@ public sealed class StateBuilder : IRuntimeStateBuilder
         }
 
         return values;
+    }
+
+    // 显示按配置字段保留一份 ID 列表；别名仍留在运行状态中供条件查询。
+    private static Dictionary<string, IReadOnlyList<long>> BuildAuraDisplayIds(JsonObject fieldsConfig)
+    {
+        var result = new Dictionary<string, IReadOnlyList<long>>(StringComparer.Ordinal);
+        foreach (var (fieldName, node) in fieldsConfig)
+        {
+            if (node is not JsonObject field || !field.ContainsKey("step"))
+            {
+                continue;
+            }
+
+            var ids = new List<long>();
+            if (SpellFieldKey.TryParseAura($"auras.{fieldName}", out _, out var spellId, out _))
+            {
+                ids.Add(spellId);
+            }
+
+            if (JsonHelpers.Get(field, "spellIds") is JsonArray aliases)
+            {
+                foreach (var alias in aliases)
+                {
+                    if (JsonHelpers.GetLong(alias) is > 0 and var id && !ids.Contains(id))
+                    {
+                        ids.Add(id);
+                    }
+                }
+            }
+
+            result[fieldName] = ids.ToArray();
+        }
+
+        return result;
     }
 
     private static Dictionary<string, string> BuildSpellDisplayTypes(JsonObject fieldsConfig)

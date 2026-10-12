@@ -418,23 +418,6 @@ function Fuyutsui:UpdatePlayerStagger()
     self:UpdateStateBlock("特殊", "酒池")
 end
 
-local holyArmaments = {
-    [432459] = 1, -- 神圣壁垒
-    [432472] = 2, -- 圣洁武器
-}
-
-function Fuyutsui:UpdateHolyArmaments(spellID) -- 神圣军备
-    if not spellID or spellID ~= 375576 then return end
-    for spellId, index in pairs(holyArmaments) do
-        local overrideSpellID = C_Spell.GetOverrideSpell(375576)
-        if not overrideSpellID then return end
-        if overrideSpellID == spellId then
-            state.holyArmaments = index / 255 or 0
-            self:UpdateStateBlock("特殊", "神圣军备")
-        end
-    end
-end
-
 local forbearanceTimer = nil
 
 function Fuyutsui:UpdatePlayerForbearance() -- 25771 自律
@@ -455,21 +438,6 @@ function Fuyutsui:UpdatePlayerForbearance() -- 25771 自律
             forbearanceTimer = nil
         end
     end, 30)
-end
-
-function Fuyutsui:UpdateVampiricStrike(spellID) -- 吸血鬼打击
-    if spellID == 206930 or spellID == 55090 then
-        local overrideSpellID1 = C_Spell.GetOverrideSpell(206930)
-        local overrideSpellID2 = C_Spell.GetOverrideSpell(55090)
-
-        if overrideSpellID1 == 433895 or overrideSpellID2 == 433895 then
-            state.VampiricStrike = 1 / 255
-            self:UpdateStateBlock("特殊", "吸血鬼打击")
-        else
-            state.VampiricStrike = 0
-            self:UpdateStateBlock("特殊", "吸血鬼打击")
-        end
-    end
 end
 
 local boilingPointTimer = nil

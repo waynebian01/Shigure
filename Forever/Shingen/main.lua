@@ -10,6 +10,8 @@ function Shingen:RefreshPlayerState()
     self:RefreshPlayerPetState()
     self:RefreshPlayerCombatState()
     self:SetPlayerMoving(IsPlayerMoving())
+    self:UpdateStateBlock("状态", "自动射击")
+    self:UpdateStateBlock("状态", "自动攻击")
     self:RefreshPlayerCastStateBlocks()
     self:UpdatePlayerHealth()
     self:RefreshAssistedCombatSuggestion()
@@ -48,6 +50,7 @@ function Shingen:LoadPlayerBlocks(specIndex)
         items = {},
         auras = {},
         spells = {},
+        overrides = {},
         counts = {},
         nameplates = nil,
     }
@@ -80,10 +83,11 @@ function Shingen:LoadPlayerBlocks(specIndex)
                         if name then
                             local key = bareKeyCategories[category] and name or (category .. name)
                             blocks.state[key] = index
-                            local rgbSpell = name == "施法技能" and (category == "目标" or category == "焦点"
+                            local rgbState = (name == "NPCID" and category == "目标")
+                                or name == "施法技能" and (category == "目标" or category == "焦点"
                                 or category == "首领1" or category == "首领2" or category == "首领3"
                                 or category == "首领4" or category == "首领5")
-                            index = index + (rgbSpell and 2 or 1)
+                            index = index + (rgbState and 2 or 1)
                         end
                     end
                 end
@@ -92,7 +96,7 @@ function Shingen:LoadPlayerBlocks(specIndex)
             for _, name in ipairs(t.states) do
                 if name then
                     blocks.state[name] = index
-                    index = index + 1
+                    index = index + (name == "目标NPCID" and 2 or 1)
                 end
             end
         end
@@ -194,6 +198,23 @@ function Shingen:LoadPlayerBlocks(specIndex)
                     index = index + 1
                 end
             end
+        end
+    end
+
+    -- 替换技与 Shigure 转换器一致，按原始 ID 升序，每行占一个像素。
+    if type(t.override) == "table" then
+        local originalIDs = {}
+        for originalID, info in pairs(t.override) do
+            if type(originalID) == "number" and originalID > 0 and originalID % 1 == 0
+                and type(info) == "table" and type(info.overrideSpellID) == "table" then
+                originalIDs[#originalIDs + 1] = originalID
+            end
+        end
+        table.sort(originalIDs)
+        for _, originalID in ipairs(originalIDs) do
+            local info = t.override[originalID]
+            blocks.overrides[originalID] = { index = index, targets = info.overrideSpellID }
+            index = index + 1
         end
     end
 
@@ -361,11 +382,23 @@ function Shingen:LoadPlayerBlocks(specIndex)
     end
 
     -- 先按实际占用选定容量档位（可能改变格宽），再重建光环容器，避免容器按旧格宽定位。
+    self:ClearNpcIdPixel()
     if self.ApplyMainPixelCapacity then
         self:ApplyMainPixelCapacity(index - 1)
     end
 
     self.blocks = blocks
+    self:RefreshOverrideSpells()
+    self:UpdateStateBlock("目标", "NPCID")
+    -- 容量和索引确定后重建；字段关闭时释放旧像素。
+    self:ClearCreatureTypePixel()
+    if blocks.state["生物类型"] then
+        self:CreateCreatureTypePixel(blocks.state["生物类型"])
+    end
+    self:ClearPlayerLevelPixel()
+    if blocks.state["等级"] then
+        self:CreatePlayerLevelPixel(blocks.state["等级"])
+    end
     if self.ReleaseUnitAuraContainers then
         self:ReleaseUnitAuraContainers()
     elseif self.ReleasePlayerAuraContainers then

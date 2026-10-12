@@ -82,6 +82,7 @@ function Shingen:ZONE_CHANGED_INDOORS()
 end
 
 function Shingen:PLAYER_ENTERING_WORLD()
+    self:RefreshOverrideSpells()
     state.mapID = C_Map.GetBestMapForUnit("player") or 0
     self:CacheCollectedMountSpells()
     self:RefreshChargedComboPoints()
@@ -247,6 +248,15 @@ function Shingen:UNIT_SPELLCAST_CHANNEL_START(_, unitTarget, castGUID, spellID, 
     end
 end
 
+function Shingen:UNIT_SPELLCAST_FAILED(_, unitTarget, castGUID, spellID, castBarID)
+    if unitTarget ~= "player" then return end
+    -- 失败的瞬发请求不能清除另一条仍在进行的读条或引导。
+    if not UnitCastingInfo("player") and not UnitChannelInfo("player") then
+        SetUnitCastState(self, unitTarget, "casting", false)
+        ClearPlayerCastTarget(self)
+    end
+end
+
 function Shingen:UNIT_SPELLCAST_CHANNEL_STOP(_, unitTarget, castGUID, spellID, castBarID)
     SetUnitCastState(self, unitTarget, "channeling", false)
     if unitTarget == "player" then
@@ -393,6 +403,7 @@ function Shingen:SPELL_UPDATE_USES(_, spellID, baseSpellID)
 end
 
 function Shingen:SPELL_UPDATE_ICON(_, spellID)
+    self:RefreshOverrideSpells()
     if issecretvalue(spellID) then return end
 end
 
@@ -433,6 +444,7 @@ function Shingen:UPDATE_BINDINGS()
 end
 
 function Shingen:SPELLS_CHANGED()
+    self:RefreshOverrideSpells()
     self:ReadKeybindings()
 end
 
@@ -446,6 +458,8 @@ end
 
 function Shingen:PLAYER_TARGET_CHANGED()
     self:RefreshTargetState()
+    self:UpdateStateBlock("目标", "NPCID")
+    self:UpdateStateBlock("状态", "生物类型")
     self:UpdateUnitAuraContainer("target")
     if self.RefreshNameplateUnitMappings then
         self:RefreshNameplateUnitMappings()
@@ -592,6 +606,12 @@ function Shingen:OnUpdate(elapsed)
     self.timeElapsed = self.timeElapsed + elapsed
     if self.timeElapsed > 0.2 then
         RunUpdateSafely(self, "UpdateSpellCooldown")
+        RunUpdateSafely(self, "RefreshOverrideSpells")
+        RunUpdateSafely(self, "UpdateStateBlock", "状态", "生物类型")
+        RunUpdateSafely(self, "UpdateStateBlock", "状态", "等级")
+        RunUpdateSafely(self, "UpdateStateBlock", "状态", "自动射击")
+        RunUpdateSafely(self, "UpdateStateBlock", "状态", "自动攻击")
+        RunUpdateSafely(self, "UpdateStateBlock", "目标", "NPCID")
         RunUpdateSafely(self, "RefreshAssistedCombatSuggestion")
         RunUpdateSafely(self, "UpdateRune")
         RunUpdateSafely(self, "RefreshTargetRangeState")

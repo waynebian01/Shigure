@@ -47,9 +47,11 @@ internal static class ClassBlocksStore
         public long SpellId { get; set; }
         public int Index { get; set; }
         public string Name { get; set; } = string.Empty;
+        public int? Rank { get; set; }
         public long OriginalSpellId { get; set; }
         public int OriginalIndex { get; set; }
         public string OriginalName { get; set; } = string.Empty;
+        public int? OriginalRank { get; set; }
     }
 
     public sealed class ItemsListEntry
@@ -95,6 +97,7 @@ internal static class ClassBlocksStore
         public List<AuraEntry> Boss4HarmfulAuras { get; } = new();
         public List<AuraEntry> Boss5HarmfulAuras { get; } = new();
         public List<SpellEntry> Spells { get; } = new();
+        public List<OverrideEntry> Overrides { get; } = new();
         public GroupBlocks? Group { get; set; }
         public NameplateBlocks? Nameplates { get; set; }
     }
@@ -106,6 +109,13 @@ internal static class ClassBlocksStore
         public List<long> SpellIds { get; } = new();
         public int? MaxApps { get; set; }
         public bool IsPlayer { get; set; }
+    }
+
+    public sealed class OverrideEntry
+    {
+        public string Name { get; set; } = string.Empty;
+        public long OriginalId { get; set; }
+        public long?[] TargetIds { get; set; } = new long?[OverrideSpellLayout.TargetCount];
     }
 
     public sealed class SpellEntry
@@ -212,13 +222,22 @@ internal static class ClassBlocksStore
                 SpellId = spellId,
                 Index = (int)indexValue.Value,
                 Name = name,
+                Rank = ReadSpellRank(spell),
                 OriginalSpellId = spellId,
                 OriginalIndex = (int)indexValue.Value,
-                OriginalName = name
+                OriginalName = name,
+                OriginalRank = ReadSpellRank(spell)
             });
         }
 
         return result;
+    }
+
+    internal static int? ReadSpellRank(TableValue spell)
+    {
+        var rank = spell.GetNumber("Rank");
+        return rank is >= 1 and <= 255 && rank == Math.Truncate(rank.Value)
+            ? (int)rank.Value : null;
     }
 
     private static List<ItemsListEntry> ParseItemsList(TableValue? table)
@@ -340,6 +359,7 @@ internal static class ClassBlocksStore
             spell.OriginalSpellId = spell.SpellId;
             spell.OriginalIndex = spell.Index;
             spell.OriginalName = spell.Name;
+            spell.OriginalRank = spell.Rank;
         }
 
         document.DeletedSpellsListOriginalIds.Clear();
@@ -371,6 +391,7 @@ internal static class ClassBlocksStore
             .Where(entry => entry.OriginalSpellId != 0
                 && (entry.SpellId != entry.OriginalSpellId
                 || entry.Index != entry.OriginalIndex
+                || entry.Rank != entry.OriginalRank
                 || !string.Equals(entry.Name, entry.OriginalName, StringComparison.Ordinal)))
             .ToDictionary(entry => entry.OriginalSpellId);
         if (changedEntries.Count == 0 && newEntries.Length == 0 && deletedOriginalIds.Count == 0)
@@ -420,7 +441,7 @@ internal static class ClassBlocksStore
                 + quote
                 + EscapeLuaString(entry.Name, quote)
                 + quote
-                + match.Groups["suffix"].Value
+                + UpdateSpellRankSuffix(match.Groups["suffix"].Value, entry.Rank)
                 + match.Groups["lineEnd"].Value;
         });
 
@@ -458,7 +479,12 @@ internal static class ClassBlocksStore
                     .Append(entry.Index.ToString(CultureInfo.InvariantCulture))
                     .Append(", name = \"")
                     .Append(EscapeLuaString(entry.Name, '"'))
-                    .Append("\" },")
+                    .Append('"');
+                if (entry.Rank is { } rank)
+                {
+                    insertion.Append(", Rank = ").Append(rank.ToString(CultureInfo.InvariantCulture));
+                }
+                insertion.Append(" },")
                     .Append(newline);
             }
 
@@ -466,6 +492,26 @@ internal static class ClassBlocksStore
         }
 
         return source[..tableStart] + updatedTable + source[tableEnd..];
+    }
+
+    private static string UpdateSpellRankSuffix(string suffix, int? rank)
+    {
+        var closingBrace = suffix.IndexOf('}');
+        if (closingBrace < 0) return suffix;
+        var fields = suffix[..closingBrace];
+        var pattern = new Regex(@",\s*Rank\s*=\s*\d+", RegexOptions.CultureInvariant);
+        if (pattern.IsMatch(fields))
+        {
+            fields = pattern.Replace(fields, rank is { } value
+                ? ", Rank = " + value.ToString(CultureInfo.InvariantCulture) : "");
+        }
+        else if (rank is { } value)
+        {
+            fields = fields.TrimEnd();
+            fields += (fields.EndsWith(',') ? " Rank = " : ", Rank = ")
+                + value.ToString(CultureInfo.InvariantCulture) + " ";
+        }
+        return fields + suffix[closingBrace..];
     }
 
     private static string UpdateItemsListEntries(
@@ -559,6 +605,7 @@ internal static class ClassBlocksStore
         isModern = spec.GetTable("states") is not null
             || spec.GetTable("auras") is not null
             || spec.GetTable("spells") is not null
+            || spec.GetTable("override") is not null
             || spec.GetTable("items") is not null
             || spec.GetTable("group") is not null
             || spec.GetTable("nameplates") is not null;
@@ -666,6 +713,8 @@ internal static class ClassBlocksStore
                 });
             }
         }
+
+        result.Overrides.AddRange(OverrideSpellLayout.Read(spec.GetTable("override")));
 
         if (spec.GetTable("items") is { } items)
         {
@@ -830,6 +879,7 @@ internal static class ClassBlocksStore
     {
         RelocateSpecialStateFields(spec);
         ValidateItemsForSerialization(spec);
+        OverrideSpellLayout.Validate(spec.Overrides);
 
         // states
         sb.Append(indent).AppendLine("states = {");
@@ -917,6 +967,22 @@ internal static class ClassBlocksStore
                 sb.AppendLine(" },");
             }
 
+            sb.Append(indent).AppendLine("},");
+        }
+
+        // 固定数字键保留中间空槽，不能使用连续数组压缩目标序号。
+        if (spec.Overrides.Count > 0)
+        {
+            sb.Append(indent).AppendLine("override = {");
+            foreach (var entry in spec.Overrides.OrderBy(entry => entry.OriginalId))
+            {
+                sb.Append(indent).Append("    [").Append(entry.OriginalId)
+                    .Append("] = { overrideSpellID = { ");
+                for (var slot = 0; slot < OverrideSpellLayout.TargetCount; slot++)
+                    if (entry.TargetIds[slot] is { } id)
+                        sb.Append('[').Append(slot + 1).Append("] = ").Append(id).Append(", ");
+                sb.Append("}, name = \"").Append(Escape(entry.Name)).AppendLine("\" },");
+            }
             sb.Append(indent).AppendLine("},");
         }
 

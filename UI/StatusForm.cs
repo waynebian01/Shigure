@@ -38,6 +38,7 @@ internal sealed record StatusListIcon(long Id, bool IsItem);
 
 public sealed partial class StatusForm : Form
 {
+    private VersionedSpellIconCatalog Catalog => SpellIconCatalog.ForVersion(_resolveProfile().Version);
     private readonly Func<GameProfile> _resolveProfile;
     private const string AboutLogoResourcePath = "Assets.arasaka-icon-transparent.png";
     private const int SettingsContentWidth = 1200;
@@ -480,7 +481,7 @@ public sealed partial class StatusForm : Form
         base.OnFormClosing(e);
     }
 
-    private static Image? ResolveStatusListIcon(ListViewItem item, int columnIndex)
+    private Image? ResolveStatusListIcon(ListViewItem item, int columnIndex)
     {
         if (item.ListView is not { } list
             || columnIndex < 0
@@ -492,9 +493,9 @@ public sealed partial class StatusForm : Form
 
         return item.Tag switch
         {
-            StatusListIcon { IsItem: true, Id: var itemId } when itemId > 0 => SpellIconCatalog.GetItem(itemId),
-            StatusListIcon { Id: var spellId } when spellId > 0 => SpellIconCatalog.Get(spellId),
-            long itemId when itemId > 0 => SpellIconCatalog.GetItem(itemId),
+            StatusListIcon { IsItem: true, Id: var itemId } when itemId > 0 => Catalog.GetItem(itemId),
+            StatusListIcon { Id: var spellId } when spellId > 0 => Catalog.Get(spellId),
+            long itemId when itemId > 0 => Catalog.GetItem(itemId),
             _ => null
         };
     }
@@ -529,6 +530,7 @@ public sealed partial class StatusForm : Form
         _auraList.Invalidate();
         _spellList.Invalidate();
         _dungeonSpellList?.Invalidate();
+        if (Visible && _lastSnapshot is not null) UpdateSelectedPage(_lastSnapshot);
     }
 
     private void InitializeComponent()
@@ -1356,7 +1358,7 @@ public sealed partial class StatusForm : Form
         _stateCategoryFilter.Items.Add("全部");
         foreach (var category in ClassStateCatalog.TopCategories
                      .Select(ClassStateCatalog.GetCategoryDisplayName)
-                     .Concat(new[] { "模块", NameplateStateLayout.MappingClassification })
+                     .Concat(new[] { "模块", NameplateStateLayout.MappingClassification, OverrideSpellLayout.Category })
                      .Distinct(StringComparer.Ordinal))
         {
             _stateCategoryFilter.Items.Add(category);
@@ -2925,6 +2927,14 @@ public sealed partial class StatusForm : Form
                 }
 
                 index++;
+                if (snapshot.State.Values.TryGetValue("$overrideDisplayNames", out var namesValue)
+                    && namesValue is IReadOnlyDictionary<string, string> names
+                    && names.TryGetValue(key, out var overrideName))
+                {
+                    items.Add(new ListViewItem(new[] { index.ToString(), OverrideSpellLayout.Category,
+                        overrideName, UiTheme.FormatValue(value) }) { Tag = OverrideSpellLayout.Category });
+                    continue;
+                }
                 items.Add(CreateStateRow(index, key, UiTheme.FormatValue(value)));
             }
         }
@@ -2963,10 +2973,20 @@ public sealed partial class StatusForm : Form
         var index = 0;
         if (snapshot?.State is not null)
         {
+            var displayIds = snapshot.State.AuraDisplayIds;
             foreach (var (key, value) in snapshot.State.Auras)
             {
+                if (displayIds.Count > 0 && !displayIds.ContainsKey(key))
+                {
+                    continue;
+                }
+
                 index++;
                 var display = DescribeAuraState(key);
+                if (displayIds.TryGetValue(key, out var ids) && ids.Count > 0)
+                {
+                    display = display with { SpellId = string.Join(", ", ids) };
+                }
                 items.Add(CreateNamedStateRow(index, display, value));
             }
         }
@@ -3047,7 +3067,7 @@ public sealed partial class StatusForm : Form
             .OrderBy(option => option.Number)
             .ToArray();
 
-    private static StateFieldDisplay DescribeAuraState(string key)
+    private StateFieldDisplay DescribeAuraState(string key)
     {
         if (!SpellFieldKey.TryParseAura($"auras.{key}", out _, out var spellId, out var metric))
         {
@@ -3063,7 +3083,7 @@ public sealed partial class StatusForm : Form
         return CreateStateFieldDisplay(spellId, type);
     }
 
-    private static StateFieldDisplay DescribeSpellState(GameState state, string key)
+    private StateFieldDisplay DescribeSpellState(GameState state, string key)
     {
         if (!SpellFieldKey.TryParseSpell($"spells.{key}", out var spellId, out var metric))
         {
@@ -3091,9 +3111,9 @@ public sealed partial class StatusForm : Form
         return CreateStateFieldDisplay(spellId, type);
     }
 
-    private static StateFieldDisplay CreateStateFieldDisplay(long spellId, string type)
+    private StateFieldDisplay CreateStateFieldDisplay(long spellId, string type)
     {
-        var name = SpellIconCatalog.ResolveSuggestionName(spellId, null) ?? "未知法术";
+        var name = Catalog.ResolveSuggestionName(spellId, null) ?? "未知法术";
         return new StateFieldDisplay(name, spellId.ToString(), type, spellId);
     }
 
@@ -3155,7 +3175,7 @@ public sealed partial class StatusForm : Form
         ReplaceItems(_nameplateList, items);
     }
 
-    private static ListViewItem CreateUnitStatusRow(
+    private ListViewItem CreateUnitStatusRow(
         ListView listView,
         string unit,
         IReadOnlyDictionary<string, object?>? data,
@@ -3192,14 +3212,14 @@ public sealed partial class StatusForm : Form
         return row;
     }
 
-    private static string DisplayPartyFieldName(string key)
+    private string DisplayPartyFieldName(string key)
     {
         if (!SpellFieldKey.TryParseAuraMember(key, out var spellId, out var metric))
         {
             return key;
         }
 
-        var name = SpellIconCatalog.ResolveSuggestionName(spellId, null) ?? key;
+        var name = Catalog.ResolveSuggestionName(spellId, null) ?? key;
         return metric == SpellFieldKey.AuraApplications ? name + "层数" : name;
     }
 

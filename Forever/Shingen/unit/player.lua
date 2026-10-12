@@ -34,6 +34,7 @@ function Shingen:InitializeSpecializationState()
     self.state.empowering = false
     self.state.mountCasting = false
     self:LoadPlayerBlocks(self.state.specIndex)
+    self:SetPlayerCastingSpell(0)
     self:UpdateSpellKnown()
     self:RefreshPlayerMountedState()
     self:RefreshPlayerPetState()
@@ -148,19 +149,27 @@ function Shingen:UpdatePlayerPower(powerType)
     local blocks = self.blocks
     if not blocks then return end
     local powerName = self.powerNameMap[powerType]
-    local power = UnitPower("player", EnumPowerType[powerType])
     if not powerName then return end
-    if issecretvalue(power) then
+    -- 法力始终通过百分比曲线编码，避免普通数值分支输出绝对法力并溢出蓝色通道。
+    if powerType == "MANA" then
         if not self.powerCurves[powerType] then self:CreatePowerCurve(powerType) end
         local powerPercent = UnitPowerPercent("player", EnumPowerType[powerType], nil, self.powerCurves[powerType])
         ---@diagnostic disable-next-line: param-type-mismatch
         local _, _, b = powerPercent:GetRGB()
         state.power[powerType] = b
-        self:UpdateBareStateBlock(powerName, { "能量", "状态" })
     else
-        state.power[powerType] = power / 255
-        self:UpdateBareStateBlock(powerName, { "能量", "状态" })
+        local power = UnitPower("player", EnumPowerType[powerType])
+        if issecretvalue(power) then
+            if not self.powerCurves[powerType] then self:CreatePowerCurve(powerType) end
+            local powerPercent = UnitPowerPercent("player", EnumPowerType[powerType], nil, self.powerCurves[powerType])
+            ---@diagnostic disable-next-line: param-type-mismatch
+            local _, _, b = powerPercent:GetRGB()
+            state.power[powerType] = b
+        else
+            state.power[powerType] = power / 255
+        end
     end
+    self:UpdateBareStateBlock(powerName, { "能量", "状态" })
 end
 
 function Shingen:RefreshChargedComboPoints()
@@ -269,10 +278,13 @@ function Shingen:RefreshPlayerMountedState()
 end
 
 function Shingen:SetPlayerCastingSpell(spellId)
-    local castingSpell = spellsList[spellId] and spellsList[spellId].index or 0
+    local info = spellsList[spellId]
+    local castingSpell = info and info.index or 0
     state.castingSpell = castingSpell / 255 or 0
+    state.castingSpellRank = info and (info.Rank or 0) / 255 or 0
     self:UpdateStateBlock("状态", "施法目标")
     self:UpdateStateBlock("状态", "施法技能")
+    self:UpdateStateBlock("状态", "技能等级")
 end
 
 function Shingen:RefreshPlayerConfigStateBlocks()

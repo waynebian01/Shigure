@@ -13,13 +13,19 @@ public sealed class LogicRegistry : IRuntimeLogic
     private readonly ModuleStore _moduleStore;
     private readonly string? _selectedModuleId;
     private readonly IReadOnlyList<DefaultModuleSelection> _defaultModules;
+    private readonly IRuntimeSoundInput? _soundInput;
+    private readonly Dictionary<string, long> _sentKeyRules = new(StringComparer.Ordinal);
+    private string? _triggerModuleId;
+    private SoundRecognitionEvent? _pendingSound;
+    private readonly RuleMatchTracker _ruleMatches;
 
     public LogicRegistry(
         IKeymapResolver keymap,
         ModuleStore moduleStore,
         string? selectedModuleId,
         IEnumerable<KeyValuePair<int, IClassLogic>>? classLogics = null,
-        IReadOnlyList<DefaultModuleSelection>? defaultModules = null)
+        IReadOnlyList<DefaultModuleSelection>? defaultModules = null,
+        TimeProvider? timeProvider = null)
     {
         _keymap = keymap;
         _moduleStore = moduleStore;
@@ -27,6 +33,30 @@ public sealed class LogicRegistry : IRuntimeLogic
         _defaultModules = defaultModules ?? [];
         _defaultLogic = new DefaultClassLogic(keymap);
         _logicByClass = classLogics?.ToDictionary(pair => pair.Key, pair => pair.Value) ?? new();
+        _ruleMatches = new RuleMatchTracker(timeProvider ?? TimeProvider.System);
+    }
+
+    internal LogicRegistry(IKeymapResolver keymap, ModuleStore moduleStore, string? selectedModuleId,
+        IReadOnlyList<DefaultModuleSelection>? defaultModules, IRuntimeSoundInput soundInput,
+        TimeProvider? timeProvider = null)
+        : this(keymap, moduleStore, selectedModuleId, defaultModules: defaultModules, timeProvider: timeProvider)
+    {
+        _soundInput = soundInput;
+    }
+
+    public void DecisionSent(LogicDecision decision)
+    {
+        if (decision.SendOnce && decision.RateLimitKey is { } key)
+            _sentKeyRules[key] = decision.SoundEventId;
+        if (decision.SoundEventId > 0 && _pendingSound?.Id == decision.SoundEventId)
+            _pendingSound = null;
+    }
+
+    public void ResetTriggers()
+    {
+        _sentKeyRules.Clear();
+        _pendingSound = null;
+        _ruleMatches.Clear();
     }
 
     public LogicEvaluation Evaluate(
@@ -38,6 +68,19 @@ public sealed class LogicRegistry : IRuntimeLogic
     {
         _keymap.SelectForClass(classId, specId);
         var module = FindModule(classId, specId, state);
+        if (_triggerModuleId != module?.Id || !runLogic) ResetTriggers();
+        _triggerModuleId = module?.Id;
+        _soundInput?.Configure(module is null ? [] : SoundConditions.GetNames(module.Rules), runLogic);
+        if (_pendingSound is not null
+            && DateTimeOffset.UtcNow - _pendingSound.DetectedAt >= TimeSpan.FromSeconds(1))
+            _pendingSound = null;
+        _pendingSound ??= runLogic ? _soundInput?.ReadEvent() : null;
+        var sound = _pendingSound;
+        state.Values[ShigureConditionFields.SoundRecognition] = sound?.Name ?? string.Empty;
+        state.Values["$soundEventId"] = sound?.Id ?? 0L;
+        if (_soundInput?.FailureReason is { } soundFailure)
+            state.Values["声音识别错误"] = soundFailure;
+        else state.Values.Remove("声音识别错误");
         if (module is not null)
         {
             ModuleLogic.ResolveDynamicFields(
@@ -45,9 +88,38 @@ public sealed class LogicRegistry : IRuntimeLogic
                 state,
                 _keymap.GetCurrentSpellIndices(),
                 _keymap.GetCurrentItemIndices());
+            var ruleMatches = new Dictionary<int, bool>();
+            var ruleSoundEvents = new Dictionary<int, long>();
+            // 所有带命中延迟的规则独立更新，前面的规则不能挡住取消命中的计时。
+            for (var index = 0; index < module.Rules.Count; index++)
+            {
+                var key = $"{module.Id}:{index}";
+                var rule = module.Rules[index];
+                if (!rule.Enabled)
+                {
+                    _ruleMatches.Forget(key);
+                    _sentKeyRules.Remove(key);
+                    continue;
+                }
+                if (!runLogic || rule.MatchDelayMs is not > 0 && !_sentKeyRules.ContainsKey(key)) continue;
+                if (!ModuleConditionEvaluator.TryEvaluateRule(rule, state,
+                        out var matched, out _, _keymap.GetCurrentFailedSpells(),
+                        _keymap.GetCurrentSpellIndices(), _keymap.GetCurrentItemIndices(),
+                        _keymap.GetCurrentInsertItems()))
+                {
+                    _ruleMatches.Forget(key);
+                    _sentKeyRules.Remove(key);
+                    continue;
+                }
+                var eventId = SoundConditions.UsesSound(rule) ? sound?.Id ?? 0L : 0L;
+                var tracked = _ruleMatches.Apply(key, rule.MatchDelayMs, matched, eventId);
+                ruleMatches[index] = tracked.Matched;
+                ruleSoundEvents[index] = tracked.SoundEventId;
+                if (!tracked.Matched) _sentKeyRules.Remove(key);
+            }
             return new LogicEvaluation(
                 module.Name,
-                runLogic ? ModuleLogic.Run(module, state, _keymap) : []);
+                runLogic ? ModuleLogic.Run(module, state, _keymap, _sentKeyRules, ruleMatches, ruleSoundEvents) : []);
         }
 
         if (!runLogic)

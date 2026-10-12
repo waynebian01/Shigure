@@ -41,7 +41,7 @@ public sealed class PixelScanner : IRuntimeScreenScanner
                 null,
                 emptyBars,
                 emptyAbsorb,
-                $"未找到目标进程的可见窗口（game_profiles.json: {_processLocator.DescribeConfiguredProcesses()}）");
+                $"等待所选游戏程序的可见窗口（{_processLocator.DescribeConfiguredPaths()}）");
         }
 
         if (NativeMethods.IsIconic(hwnd))

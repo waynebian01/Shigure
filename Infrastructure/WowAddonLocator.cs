@@ -1,7 +1,7 @@
 namespace Shigure;
 
 /// <summary>
-/// 从目标窗口进程定位 Fuyutsui 插件目录与相关文件。
+/// 从目标窗口进程定位游戏插件目录与相关文件。
 /// </summary>
 internal static class WowAddonLocator
 {
@@ -20,7 +20,7 @@ internal static class WowAddonLocator
         return Directory.Exists(classDirectory) ? classDirectory : null;
     }
 
-    /// <summary>定位 Fuyutsui 插件根目录（含 class/、core/）。</summary>
+    /// <summary>定位游戏插件根目录（含 class/、core/）。</summary>
     public static string? FindAddonRoot(WowProcessLocator processLocator, string addonName = "Fuyutsui")
     {
         var addOnsDirectory = FindAddOnsDirectory(processLocator);
@@ -34,8 +34,8 @@ internal static class WowAddonLocator
     }
 
     /// <summary>
-    /// 从目标游戏进程定位 Interface\AddOns。即使 AddOns 或 Fuyutsui 尚未创建，
-    /// 也会在找到 Interface 时返回预期路径；最后回退到游戏可执行文件同级目录。
+    /// 从所选游戏程序定位同级 Interface\AddOns。目录尚未创建时仍返回预期路径，
+    /// 不向父目录回溯，以免将相邻版本部署到同一个安装根目录。
     /// </summary>
     public static string? FindAddOnsDirectory(WowProcessLocator processLocator)
     {
@@ -53,19 +53,6 @@ internal static class WowAddonLocator
         if (string.IsNullOrWhiteSpace(exePath)) return null;
 
         var executableDirectory = Path.GetDirectoryName(exePath);
-        var directory = executableDirectory;
-        while (!string.IsNullOrWhiteSpace(directory))
-        {
-            var interfaceDirectory = Path.Combine(directory, InterfaceDirectoryName);
-            var addOnsDirectory = Path.Combine(interfaceDirectory, AddOnsDirectoryName);
-            if (Directory.Exists(addOnsDirectory) || Directory.Exists(interfaceDirectory))
-            {
-                return addOnsDirectory;
-            }
-
-            directory = Path.GetDirectoryName(directory);
-        }
-
         return string.IsNullOrWhiteSpace(executableDirectory)
             ? null
             : Path.Combine(executableDirectory, InterfaceDirectoryName, AddOnsDirectoryName);

@@ -33,6 +33,10 @@ end
 
 function Shingen:CreatePowerCurve(powerType)
     if self.powerCurves[powerType] then return end
+    if powerType == "MANA" then
+        self.powerCurves[powerType] = self:CreateColorCurve(1, 100)
+        return
+    end
     local powerMax = UnitPowerMax("player", EnumPowerType[powerType])
     if powerMax >= 300 then
         self.powerCurves[powerType] = self:CreateColorCurve(1, 100)

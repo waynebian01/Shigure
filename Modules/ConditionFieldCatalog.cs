@@ -6,7 +6,8 @@ public enum ConditionFieldType
 {
     Int,
     Bool,
-    String
+    String,
+    Number
 }
 
 public enum ConditionFieldCategory
@@ -22,14 +23,17 @@ public enum ConditionFieldCategory
 public static class ShigureConditionFields
 {
     public const string TotalCombatTimeSeconds = "总战斗时间(秒)";
+    public const string SoundRecognition = "声音识别";
+    public const string VolumeRecognition = "音量识别";
 
     // 仅供条件编辑器承载规则级配置，不会写入条件表达式参与状态求值。
     public const string Delay = "$shigure.delay";
     public const string LogicDelay = "$shigure.logicDelay";
+    public const string MatchDelay = "$shigure.matchDelay";
     public const string ContinueLogic = "$shigure.continueLogic";
 
     public static bool IsRuleSetting(string? fieldName)
-        => fieldName is Delay or LogicDelay or ContinueLogic;
+        => fieldName is Delay or LogicDelay or MatchDelay or ContinueLogic;
 }
 
 public sealed record ConditionField(
@@ -154,6 +158,10 @@ public sealed class ConditionFieldCatalog
     public IReadOnlyList<ConditionField> GetFields(int? classId, int? specId)
     {
         var fields = new List<ConditionField>();
+        fields.Add(new ConditionField(ShigureConditionFields.SoundRecognition, "声音识别",
+            ConditionFieldType.String, ConditionFieldCategory.Shigure));
+        fields.Add(new ConditionField(ShigureConditionFields.VolumeRecognition, "音量识别",
+            ConditionFieldType.Number, ConditionFieldCategory.Shigure));
         if (_config is null)
         {
             return fields;
@@ -197,7 +205,8 @@ public sealed class ConditionFieldCatalog
                     fields,
                     seen,
                     key,
-                    key,
+                    key.StartsWith(OverrideSpellLayout.Prefix, StringComparison.Ordinal)
+                        ? $"{ReadDisplayName(field) ?? key} / {ReadSpellId(field)}" : key,
                     ReadType(field),
                     ConditionFieldCategory.State,
                     classification,

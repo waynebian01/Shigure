@@ -16,13 +16,13 @@ internal sealed record SpellIconDownloadResult(
 internal sealed class SpellIconPackageDownloadService : IDisposable
 {
     internal const string LatestReleaseApiUrl =
-        "https://api.github.com/repos/waynebian01/funkoh/releases/latest";
+        "https://api.github.com/repos/waynebian01/shigure/releases/latest";
     internal const string LatestBrowserDownloadUrl =
-        "https://github.com/waynebian01/funkoh/releases/latest/download/SpellIcons.shgpack";
+        "https://github.com/waynebian01/shigure/releases/latest/download/SpellIcons.shgpack";
     internal const string ReleasesPageUrl =
-        "https://github.com/waynebian01/funkoh/releases";
+        "https://github.com/waynebian01/shigure/releases";
     private const string ReleasesApiUrl =
-        "https://api.github.com/repos/waynebian01/funkoh/releases?per_page=20";
+        "https://api.github.com/repos/waynebian01/shigure/releases?per_page=20";
     private const string AssetName = "SpellIcons.shgpack";
     private static readonly TimeSpan ApiRequestTimeout = TimeSpan.FromSeconds(15);
 
@@ -484,7 +484,7 @@ internal sealed class SpellIconPackageDownloadService : IDisposable
     }
 
     internal static Uri GetCurrentVersionDownloadUri() =>
-        new($"https://github.com/waynebian01/funkoh/releases/download/{CurrentReleaseTag}/{AssetName}");
+        new($"https://github.com/waynebian01/shigure/releases/download/{CurrentReleaseTag}/{AssetName}");
 
     private static async Task<string> ComputeSha256Async(
         string path,

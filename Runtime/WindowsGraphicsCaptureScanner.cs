@@ -15,7 +15,7 @@ using WinRtDirect3DSurface = Windows.Graphics.DirectX.Direct3D11.IDirect3DSurfac
 namespace Shigure;
 
 /// <summary>
-/// 直接从目标窗口的 DWM 图形表面读取 Fuyutsui 顶部像素，窗口被其他窗口遮挡时仍可工作。
+/// 直接从目标窗口的 DWM 图形表面读取 Shigure 顶部像素，窗口被其他窗口遮挡时仍可工作。
 /// </summary>
 internal sealed class WindowsGraphicsCaptureScanner : IRuntimeScreenScanner
 {

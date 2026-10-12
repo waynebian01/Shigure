@@ -50,7 +50,25 @@
     "47": 11958,
     "48": 11426,
     "49": 11129,
-    "50": 12042
+    "50": 12042,
+    "51": 11113,
+    "52": 12472,
+    "53": 28270,
+    "54": 400574,
+    "55": 400610,
+    "56": 400613,
+    "57": 1312002,
+    "58": 401417,
+    "59": 401462,
+    "60": 401502,
+    "61": 401556,
+    "62": 412510,
+    "63": 412532,
+    "64": 425121,
+    "65": 425124,
+    "66": 428878,
+    "67": 440802,
+    "68": 1297659
   },
   "一键物品": {},
   "1": {
@@ -84,48 +102,75 @@
       "type": "int",
       "category": "状态"
     },
-    "法力值": {
+    "施法技能": {
       "step": 10,
+      "type": "int",
+      "category": "状态"
+    },
+    "技能等级": {
+      "step": 11,
+      "type": "int",
+      "category": "状态"
+    },
+    "生物类型": {
+      "step": 12,
+      "type": "int",
+      "category": "状态"
+    },
+    "等级": {
+      "step": 13,
+      "type": "int",
+      "category": "状态"
+    },
+    "法力值": {
+      "step": 14,
       "type": "int",
       "category": "能量"
     },
     "目标施法技能": {
-      "step": 11,
+      "step": 15,
       "type": "int",
       "category": "目标",
       "pixelFormat": "rgb24",
-      "payloadStep": 12
+      "payloadStep": 16
     },
     "目标类型": {
-      "step": 13,
+      "step": 17,
       "type": "int",
       "category": "目标"
     },
     "目标生命值": {
-      "step": 14,
+      "step": 18,
       "type": "int",
       "category": "目标"
     },
     "目标距离": {
-      "step": 15,
+      "step": 19,
       "type": "int",
       "category": "目标"
     },
+    "目标NPCID": {
+      "step": 20,
+      "type": "int",
+      "category": "目标",
+      "pixelFormat": "rgb24",
+      "payloadStep": 21
+    },
     "焦点施法技能": {
-      "step": 16,
+      "step": 22,
       "type": "int",
       "category": "焦点",
       "pixelFormat": "rgb24",
-      "payloadStep": 17
+      "payloadStep": 23
     },
     "焦点生命值": {
-      "step": 18,
+      "step": 24,
       "type": "int",
       "category": "焦点"
     },
     "spells": {
       "2136.cooldown": {
-        "step": 19,
+        "step": 25,
         "type": "int",
         "displayName": "火焰冲击",
         "spellId": 2136,
@@ -133,7 +178,7 @@
         "displayType": "冷却"
       },
       "122.cooldown": {
-        "step": 20,
+        "step": 26,
         "type": "int",
         "displayName": "冰霜新星",
         "spellId": 122,
@@ -141,7 +186,7 @@
         "displayType": "冷却"
       },
       "1953.cooldown": {
-        "step": 21,
+        "step": 27,
         "type": "int",
         "displayName": "闪现术",
         "spellId": 1953,
@@ -149,7 +194,7 @@
         "displayType": "冷却"
       },
       "12051.cooldown": {
-        "step": 22,
+        "step": 28,
         "type": "int",
         "displayName": "唤醒",
         "spellId": 12051,
@@ -157,7 +202,7 @@
         "displayType": "冷却"
       },
       "543.cooldown": {
-        "step": 23,
+        "step": 29,
         "type": "int",
         "displayName": "防护火焰结界",
         "spellId": 543,
@@ -165,7 +210,7 @@
         "displayType": "冷却"
       },
       "6143.cooldown": {
-        "step": 24,
+        "step": 30,
         "type": "int",
         "displayName": "防护冰霜结界",
         "spellId": 6143,
@@ -173,7 +218,7 @@
         "displayType": "冷却"
       },
       "2139.cooldown": {
-        "step": 25,
+        "step": 31,
         "type": "int",
         "displayName": "法术反制",
         "spellId": 2139,
@@ -181,7 +226,7 @@
         "displayType": "冷却"
       },
       "120.cooldown": {
-        "step": 26,
+        "step": 32,
         "type": "int",
         "displayName": "冰锥术",
         "spellId": 120,
@@ -189,7 +234,7 @@
         "displayType": "冷却"
       },
       "11366.cooldown": {
-        "step": 27,
+        "step": 33,
         "type": "int",
         "displayName": "炎爆术",
         "spellId": 11366,
@@ -197,7 +242,7 @@
         "displayType": "冷却"
       },
       "12043.cooldown": {
-        "step": 28,
+        "step": 34,
         "type": "int",
         "displayName": "气定神闲",
         "spellId": 12043,
@@ -205,7 +250,7 @@
         "displayType": "冷却"
       },
       "11958.cooldown": {
-        "step": 29,
+        "step": 35,
         "type": "int",
         "displayName": "寒冰屏障",
         "spellId": 11958,
@@ -213,7 +258,7 @@
         "displayType": "冷却"
       },
       "11426.cooldown": {
-        "step": 30,
+        "step": 36,
         "type": "int",
         "displayName": "寒冰护体",
         "spellId": 11426,
@@ -221,7 +266,7 @@
         "displayType": "冷却"
       },
       "11129.cooldown": {
-        "step": 31,
+        "step": 37,
         "type": "int",
         "displayName": "燃烧",
         "spellId": 11129,
@@ -229,7 +274,7 @@
         "displayType": "冷却"
       },
       "12042.cooldown": {
-        "step": 32,
+        "step": 38,
         "type": "int",
         "displayName": "奥术强化",
         "spellId": 12042,
@@ -238,7 +283,7 @@
       }
     },
     "group": {
-      "start": 33,
+      "start": 39,
       "生命值": {
         "step": 1,
         "type": "int"

@@ -29,7 +29,6 @@ Fuyutsui.ClassBlocks = {
             },
             ["特殊"] = {
                 "符文",
-                "吸血鬼打击",
                 "沸点",
             },
             ["能量"] = {
@@ -145,6 +144,10 @@ Fuyutsui.ClassBlocks = {
             { spellId = 50842, name = "血液沸腾", charge = true },
             { spellId = 43265, name = "枯萎凋零", charge = true },
             { spellId = 49028, name = "符文刃舞" },
+        },
+        override = {
+            [206930] = { overrideSpellID = { 433895 }, name = "吸血鬼打击1" },
+            [55090] = { overrideSpellID = { 433895 }, name = "吸血鬼打击2" },
         },
         items = {
             [5512] = { name = "治疗石", isEquipped = false },
@@ -304,7 +307,6 @@ Fuyutsui.ClassBlocks = {
             },
             ["特殊"] = {
                 "天启骑士数量",
-                "吸血鬼打击",
                 "战斗计时(分)",
                 "战斗计时(秒)",
             },

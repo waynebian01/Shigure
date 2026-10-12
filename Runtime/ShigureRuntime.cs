@@ -11,6 +11,8 @@ public sealed class ShigureRuntime
     private readonly ITriggerKeyState _triggerKeyState;
     private readonly IRuntimeLogic _logic;
     private readonly TimeProvider _timeProvider;
+    private readonly IRuntimeSoundInput? _soundInput;
+    private readonly IRuntimeVolumeInput? _volumeInput;
     private readonly ConcurrentQueue<RuntimeCommand> _pendingCommands = new();
     private readonly NameplateTtdTracker _nameplateTtdTracker = new();
 
@@ -36,7 +38,9 @@ public sealed class ShigureRuntime
         IRuntimeKeyOutput keySender,
         ITriggerKeyState triggerKeyState,
         IRuntimeLogic logic,
-        TimeProvider timeProvider)
+        TimeProvider timeProvider,
+        IRuntimeSoundInput? soundInput = null,
+        IRuntimeVolumeInput? volumeInput = null)
     {
         _options = options;
         _scanner = scanner;
@@ -45,6 +49,8 @@ public sealed class ShigureRuntime
         _triggerKeyState = triggerKeyState;
         _logic = logic;
         _timeProvider = timeProvider;
+        _soundInput = soundInput;
+        _volumeInput = volumeInput;
     }
 
     public event Action<RenderSnapshot>? SnapshotUpdated;
@@ -67,6 +73,7 @@ public sealed class ShigureRuntime
         _clickPending = false;
         if (!enabled)
         {
+            ResetSoundTriggers();
             _lastRuleSentAt.Clear();
             _logicPausedUntil = DateTimeOffset.MinValue;
         }
@@ -134,6 +141,7 @@ public sealed class ShigureRuntime
                     _enabled = pressed;
                     if (falling)
                     {
+                        ResetSoundTriggers();
                         _lastRuleSentAt.Clear();
                         _logicPausedUntil = DateTimeOffset.MinValue;
                         _currentStep = "按住结束";
@@ -174,7 +182,8 @@ public sealed class ShigureRuntime
             _nameplateTtdTracker.Clear();
             _currentStep = "已停止";
             PublishSnapshot();
-            _scanner.Dispose();
+            try { _scanner.Dispose(); }
+            finally { _soundInput?.Dispose(); }
         }
     }
 
@@ -196,6 +205,7 @@ public sealed class ShigureRuntime
                 _clickPending = false;
                 if (!_enabled)
                 {
+                    ResetSoundTriggers();
                     _lastRuleSentAt.Clear();
                     _logicPausedUntil = DateTimeOffset.MinValue;
                 }
@@ -212,6 +222,7 @@ public sealed class ShigureRuntime
 
         if (scan.RowData is null)
         {
+            ResetSoundTriggers();
             _latestTargetWindowHandle = 0;
             _nameplateTtdTracker.Clear();
             _state = null;
@@ -237,6 +248,7 @@ public sealed class ShigureRuntime
         (_className, _specName) = ClassNames.GetClassAndSpecName(_classId, _specId);
         if (!_state.GetBool("有效性"))
         {
+            ResetSoundTriggers();
             _moduleName = null;
             _currentStep = "等待游戏状态";
             _unitInfo = new Dictionary<string, object?>();
@@ -250,6 +262,12 @@ public sealed class ShigureRuntime
         {
             return;
         }
+
+        var peak = _volumeInput?.ReadPeak(_latestTargetWindowHandle);
+        _state.Values[ShigureConditionFields.VolumeRecognition] = peak?.PeakPercent;
+        if (peak?.FailureReason is { } peakFailure)
+            _state.Values["音量识别错误"] = peakFailure;
+        else _state.Values.Remove("音量识别错误");
 
         var evaluation = _logic.Evaluate(_classId, _specId, _specName, _state, _enabled);
         _moduleName = evaluation.ModuleName;
@@ -282,6 +300,7 @@ public sealed class ShigureRuntime
 
             _enabled = false;
             _clickPending = false;
+            ResetSoundTriggers();
             return;
         }
 
@@ -322,6 +341,7 @@ public sealed class ShigureRuntime
 
         var sentAt = _timeProvider.GetUtcNow();
         RecordSent(decision, sentAt);
+        _logic.DecisionSent(decision);
         if (decision.LogicDelayMs > 0)
         {
             _logicPausedUntil = sentAt.AddMilliseconds(decision.LogicDelayMs);
@@ -345,6 +365,12 @@ public sealed class ShigureRuntime
         }
 
         return true;
+    }
+
+    private void ResetSoundTriggers()
+    {
+        _logic.ResetTriggers();
+        _soundInput?.Configure([], false);
     }
 
     private void RecordSent(LogicDecision decision, DateTimeOffset now)

@@ -12,6 +12,14 @@ internal static class NativeMethods
 
     public const uint WmKeyDown = 0x0100;
     public const uint WmKeyUp = 0x0101;
+
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool GetCursorPos(out Point point);
+
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool ScreenToClient(nint hwnd, ref Point point);
     public const uint WmNcLButtonDown = 0x00A1;
     public const nint HtClient = 1;
     public const nint HtCaption = 2;

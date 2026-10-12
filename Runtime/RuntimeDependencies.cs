@@ -7,7 +7,9 @@ public sealed record LogicDecision(
     string? ModuleName = null,
     int DelayMs = 0,
     string? RateLimitKey = null,
-    int LogicDelayMs = 0);
+    int LogicDelayMs = 0,
+    bool SendOnce = false,
+    long SoundEventId = 0);
 
 internal interface IRuntimeScreenScanner : IDisposable
 {
@@ -24,6 +26,8 @@ internal interface IRuntimeStateBuilder
 
 internal interface IRuntimeLogic
 {
+    void DecisionSent(LogicDecision decision) { }
+    void ResetTriggers() { }
     LogicEvaluation Evaluate(
         int? classId,
         int? specId,
@@ -31,6 +35,22 @@ internal interface IRuntimeLogic
         GameState state,
         bool runLogic);
 }
+
+internal interface IRuntimeSoundInput : IDisposable
+{
+    void Configure(IReadOnlyList<string> names, bool enabled);
+    SoundRecognitionEvent? ReadEvent();
+    string? FailureReason { get; }
+}
+
+internal sealed record SoundRecognitionEvent(string Name, long Id, DateTimeOffset DetectedAt);
+
+internal interface IRuntimeVolumeInput
+{
+    VolumePeakSample ReadPeak(nint expectedWindow);
+}
+
+internal readonly record struct VolumePeakSample(double? PeakPercent, string? FailureReason = null);
 
 public sealed record LogicEvaluation(string? ModuleName, IReadOnlyList<LogicDecision> Decisions)
 {

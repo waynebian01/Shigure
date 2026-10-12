@@ -52,6 +52,7 @@ public sealed class ModuleSpecSnapshot
     public List<ModuleAuraSnapshot> Boss4HarmfulAuras { get; set; } = new();
     public List<ModuleAuraSnapshot> Boss5HarmfulAuras { get; set; } = new();
     public List<ModuleSpellSnapshot> Spells { get; set; } = new();
+    public List<ModuleOverrideSnapshot> Overrides { get; set; } = new();
     public ModuleGroupSnapshot? Group { get; set; }
     public ModuleNameplateSnapshot? Nameplates { get; set; }
 
@@ -75,6 +76,7 @@ public sealed class ModuleSpecSnapshot
         Boss4HarmfulAuras = CloneEntries(Boss4HarmfulAuras),
         Boss5HarmfulAuras = CloneEntries(Boss5HarmfulAuras),
         Spells = (Spells ?? []).Where(entry => entry is not null).Select(entry => entry.Clone()).ToList(),
+        Overrides = (Overrides ?? []).Where(entry => entry is not null).Select(entry => entry.Clone()).ToList(),
         Group = Group?.Clone(),
         Nameplates = Nameplates?.Clone()
     };
@@ -130,6 +132,20 @@ public sealed class ModuleAuraSnapshot
     };
 }
 
+public sealed class ModuleOverrideSnapshot
+{
+    public string Name { get; set; } = string.Empty;
+    public long OriginalId { get; set; }
+    public long?[] TargetIds { get; set; } = new long?[5];
+
+    public ModuleOverrideSnapshot Clone() => new()
+    {
+        Name = Name,
+        OriginalId = OriginalId,
+        TargetIds = (long?[])(TargetIds ?? []).Clone()
+    };
+}
+
 public sealed class ModuleSpellSnapshot
 {
     private int? _castCount;
@@ -146,6 +162,8 @@ public sealed class ModuleSpellSnapshot
 public sealed class ModuleSpellListEntrySnapshot
 {
     public long SpellId { get; set; }
+    public int Index { get; set; }
+    public int? Rank { get; set; }
     public string Name { get; set; } = string.Empty;
 
     public ModuleSpellListEntrySnapshot Clone() => (ModuleSpellListEntrySnapshot)MemberwiseClone();

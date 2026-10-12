@@ -6,7 +6,7 @@ internal sealed record GameProfile(string AddonName, string Version, string Base
 {
     public string RuntimeDirectory => Path.Combine(BaseDirectory, Version);
     public string AddonRoot => Path.Combine(RuntimeDirectory, AddonName);
-    public string ModuleDirectory => AddonName.Equals("Fuyutsui", StringComparison.OrdinalIgnoreCase)
+    public string ModuleDirectory => Version.Equals("Retail", StringComparison.OrdinalIgnoreCase)
         ? ModuleStore.ResolveModuleDirectory()
         : Path.Combine(AppPaths.UserDataDirectory, "module-" + AddonName);
 }

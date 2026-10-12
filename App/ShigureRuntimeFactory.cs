@@ -35,6 +35,7 @@ internal sealed class ShigureRuntimeFactory : IShigureRuntimeFactory
         var config = ConfigService.LoadFromBaseDirectory(profile.RuntimeDirectory);
         var keymap = new KeymapService(profile.RuntimeDirectory, config, profile.AddonRoot);
         var processLocator = _processLocator.ForProfile(profile, _activeProfile.ExecutablePath);
+        var soundInput = new WasapiSoundInput();
 
         return new ShigureRuntime(
             options,
@@ -48,7 +49,11 @@ internal sealed class ShigureRuntimeFactory : IShigureRuntimeFactory
                 keymap,
                 _resolveModuleStore(profile),
                 options.ModuleId,
-                defaultModules: UiCacheStore.Load().DefaultModules),
-            _timeProvider);
+                UiCacheStore.Load().DefaultModules,
+                soundInput,
+                _timeProvider),
+            _timeProvider,
+            soundInput,
+            new WasapiProcessVolumeInput(processLocator));
     }
 }

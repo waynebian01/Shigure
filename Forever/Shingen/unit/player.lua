@@ -34,6 +34,7 @@ function Shingen:InitializeSpecializationState()
     self.state.empowering = false
     self.state.mountCasting = false
     self:LoadPlayerBlocks(self.state.specIndex)
+    self:SetPlayerCastingSpell(0)
     self:UpdateSpellKnown()
     self:RefreshPlayerMountedState()
     self:RefreshPlayerPetState()
@@ -277,10 +278,13 @@ function Shingen:RefreshPlayerMountedState()
 end
 
 function Shingen:SetPlayerCastingSpell(spellId)
-    local castingSpell = spellsList[spellId] and spellsList[spellId].index or 0
+    local info = spellsList[spellId]
+    local castingSpell = info and info.index or 0
     state.castingSpell = castingSpell / 255 or 0
+    state.castingSpellRank = info and (info.Rank or 0) / 255 or 0
     self:UpdateStateBlock("状态", "施法目标")
     self:UpdateStateBlock("状态", "施法技能")
+    self:UpdateStateBlock("状态", "技能等级")
 end
 
 function Shingen:RefreshPlayerConfigStateBlocks()

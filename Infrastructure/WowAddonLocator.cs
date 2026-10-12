@@ -1,7 +1,7 @@
 namespace Shigure;
 
 /// <summary>
-/// 从目标窗口进程定位 Fuyutsui 插件目录与相关文件。
+/// 从目标窗口进程定位游戏插件目录与相关文件。
 /// </summary>
 internal static class WowAddonLocator
 {
@@ -20,7 +20,7 @@ internal static class WowAddonLocator
         return Directory.Exists(classDirectory) ? classDirectory : null;
     }
 
-    /// <summary>定位 Fuyutsui 插件根目录（含 class/、core/）。</summary>
+    /// <summary>定位游戏插件根目录（含 class/、core/）。</summary>
     public static string? FindAddonRoot(WowProcessLocator processLocator, string addonName = "Fuyutsui")
     {
         var addOnsDirectory = FindAddOnsDirectory(processLocator);

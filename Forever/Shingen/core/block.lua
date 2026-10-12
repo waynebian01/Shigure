@@ -7,7 +7,7 @@ local screenWidth = GetScreenWidth()
 
 -- 主色条（ShingenColorBars / CreateTexture）
 -- 数据色块容量分档：默认 510，超出后升到 765，再超出升到 1020（上限）。
--- 档位之后再画一格恒定纯红的终止色块，Shigure 扫描到它即结束本次主色条扫描。
+-- 档位之后再画一格恒定纯红的终止色块，Fuyutsui 扫描到它即结束本次主色条扫描。
 local BLOCK_FIX_TIERS = { 510, 765, 1020 }
 local BLOCK_SCHEME_SPAN = 255          -- 每套索引方案容纳的索引数（r 通道区分第几套）
 local BLOCK_END_COLOR = { 1, 0, 0, 1 } -- 终止色块颜色（纯红 255,0,0）
@@ -128,6 +128,7 @@ function Shingen:CreateTexture(i, b)
 end
 
 local rgbSpellPixels = {}
+local npcIdPixelIndex = nil
 
 -- 两格 RGB 施法协议：定位格 (R=4..7, G=格号, B=容量档位)，下一格绘制原始 spellID。
 local function SpellRgbText(unit)
@@ -141,6 +142,22 @@ local function SpellRgbText(unit)
     return false, nil
 end
 
+-- GUID 必须先通过秘密值检查，之后才允许解析；不缓存上次可见的 NPCID。
+local function GetUnitNpcId(unit)
+    local guid = UnitGUID(unit)
+    if issecretvalue(guid) then return 0 end
+    if type(guid) ~= "string" then return 0 end
+    local kind, id = guid:match("^([^-]+)%-[^-]+%-[^-]+%-[^-]+%-[^-]+%-(%d+)%-[^-]+$")
+    if kind ~= "Creature" and kind ~= "Vehicle" and kind ~= "Pet" then return 0 end
+    local npcId = tonumber(id)
+    if not npcId or npcId < 1 or npcId > 0xFFFFFF then return 0 end
+    return npcId
+end
+
+local function NpcIdRgbText(unit)
+    return true, string.format("|cFF%06X█|r", GetUnitNpcId(unit))
+end
+
 function Shingen:ClearRgbSpellPixel(index)
     local entry = rgbSpellPixels[index]
     if entry then entry.frame:Hide() end
@@ -152,9 +169,11 @@ function Shingen:ClearAllRgbSpellPixels()
         entry.frame:SetParent(nil)
     end
     wipe(rgbSpellPixels)
+    npcIdPixelIndex = nil
 end
 
-function Shingen:RefreshRgbSpellPixel(index, unit)
+-- 两格 RGB 绘制共用于施法技能和 NPCID。
+local function RefreshRgbPixel(index, getText, unit)
     if not index or index < 1 or index + 1 > BLOCK_FIX_CONFIG.capacity then return end
     local entry = rgbSpellPixels[index]
     if not entry then
@@ -187,13 +206,37 @@ function Shingen:RefreshRgbSpellPixel(index, unit)
     local payload = createTextureByIndex(index + 1)
     payload:SetColorTexture(0, 0, 0, 1)
 
-    local hasText, formatted = SpellRgbText(unit)
+    local hasText, formatted = getText(unit)
     if hasText then
         entry.glyph:SetText(formatted)
         frame:Show()
     else
         frame:Hide()
     end
+end
+
+function Shingen:RefreshRgbSpellPixel(index, unit)
+    RefreshRgbPixel(index, SpellRgbText, unit)
+end
+
+function Shingen:ClearNpcIdPixel()
+    local entry = npcIdPixelIndex and rgbSpellPixels[npcIdPixelIndex]
+    if entry then
+        entry.frame:Hide()
+        entry.frame:SetParent(nil)
+        rgbSpellPixels[npcIdPixelIndex] = nil
+    end
+    if npcIdPixelIndex then
+        self:CreateTexture(npcIdPixelIndex, 0)
+        self:CreateTexture(npcIdPixelIndex + 1, 0)
+    end
+    npcIdPixelIndex = nil
+end
+
+function Shingen:RefreshNpcIdPixel(index, unit)
+    if npcIdPixelIndex ~= index then self:ClearNpcIdPixel() end
+    npcIdPixelIndex = index
+    RefreshRgbPixel(index, NpcIdRgbText, unit)
 end
 
 -- 姓名板单位不存在时清除索引通道，读取端由索引是否存在判断单位存在。
@@ -271,14 +314,13 @@ countClampBar:SetMinMaxValues(0, 255)
 
 local createdCountPixels = {}
 local spellIdToCountPixel = {}
+local creatureTypePixel = nil
+local playerLevelPixel = nil
 local BAR_EVENTS = { "SPELL_UPDATE_USES", "PLAYER_ENTERING_WORLD", "SPELL_UPDATE_CHARGES" }
 local UNIT_AURA_REBIND_ORDER = { "player", "target", "focus", "boss1", "boss2", "boss3", "boss4", "boss5" }
 
-function Shingen:CreateCountPixel(valueType, spellId, index)
-    if spellIdToCountPixel[spellId] then
-        return spellIdToCountPixel[spellId]
-    end
-
+-- 充能、施法计数、生物类型和玩家等级共用秘密值兼容的整数像素绘制。
+local function CreateSecretCountPixel(index, getValue, events)
     local frame = CreateFrame("Frame", nil, colorBars)
     frame:SetSize(BLOCK_FIX_CONFIG.blockWidth, BLOCK_FIX_CONFIG.blockHeight)
     frame:SetPoint("TOPLEFT", colorBars, "TOPLEFT", (index - 1) * BLOCK_FIX_CONFIG.blockWidth, 0)
@@ -298,17 +340,9 @@ function Shingen:CreateCountPixel(valueType, spellId, index)
     local position = index - scheme * BLOCK_SCHEME_SPAN
 
     local function Refresh()
-        local value = 0
-        if Shingen:IsSpellKnown(spellId) then
-            if valueType == "castCount" then
-                value = C_Spell.GetSpellCastCount(spellId) or 0
-            elseif valueType == "charge" then
-                local charges = C_Spell.GetSpellCharges(spellId)
-                if charges then
-                    value = charges.currentCharges or 0
-                end
-            end
-        end
+        local value = getValue()
+        -- 秘密值原样交给原生控件；只有普通空值才回退为 0。
+        if not issecretvalue(value) and value == nil then value = 0 end
 
         countClampBar:SetValue(value)
         local capped = countClampBar:GetValue()
@@ -316,18 +350,89 @@ function Shingen:CreateCountPixel(valueType, spellId, index)
             scheme, position, capped, AURA_DURATION_CHAR))
     end
 
-    for _, event in ipairs(BAR_EVENTS) do
+    for _, event in ipairs(events) do
         frame:RegisterEvent(event)
     end
     frame:SetScript("OnEvent", Refresh)
     Refresh()
 
+    return frame
+end
+
+local function ReleaseCountPixel(frame)
+    frame:UnregisterAllEvents()
+    frame:SetScript("OnEvent", nil)
+    frame:Hide()
+    frame:SetParent(nil)
+end
+
+function Shingen:CreateCountPixel(valueType, spellId, index)
+    if spellIdToCountPixel[spellId] then
+        return spellIdToCountPixel[spellId]
+    end
+
+    local frame = CreateSecretCountPixel(index, function()
+        if not self:IsSpellKnown(spellId) then return 0 end
+        if valueType == "castCount" then
+            return C_Spell.GetSpellCastCount(spellId)
+        elseif valueType == "charge" then
+            local charges = C_Spell.GetSpellCharges(spellId)
+            if charges then return charges.currentCharges end
+        end
+        return 0
+    end, BAR_EVENTS)
     tinsert(createdCountPixels, frame)
     spellIdToCountPixel[spellId] = frame
     return frame
 end
 
+function Shingen:ClearCreatureTypePixel()
+    if creatureTypePixel then
+        ReleaseCountPixel(creatureTypePixel)
+        creatureTypePixel = nil
+    end
+end
+
+function Shingen:CreateCreatureTypePixel(index)
+    self:ClearCreatureTypePixel()
+    creatureTypePixel = CreateSecretCountPixel(index, function()
+        if not UnitExists("target") then return 0 end
+        local _, id = UnitCreatureType("target")
+        return id
+    end, { "PLAYER_ENTERING_WORLD", "PLAYER_TARGET_CHANGED" })
+end
+
+function Shingen:RefreshCreatureTypePixel()
+    if creatureTypePixel then
+        local refresh = creatureTypePixel:GetScript("OnEvent")
+        if refresh then refresh() end
+    end
+end
+
+function Shingen:ClearPlayerLevelPixel()
+    if playerLevelPixel then
+        ReleaseCountPixel(playerLevelPixel)
+        playerLevelPixel = nil
+    end
+end
+
+function Shingen:CreatePlayerLevelPixel(index)
+    self:ClearPlayerLevelPixel()
+    playerLevelPixel = CreateSecretCountPixel(index, function()
+        return UnitLevel("player")
+    end, { "PLAYER_ENTERING_WORLD", "PLAYER_LEVEL_UP", "UNIT_LEVEL" })
+end
+
+function Shingen:RefreshPlayerLevelPixel()
+    if playerLevelPixel then
+        local refresh = playerLevelPixel:GetScript("OnEvent")
+        if refresh then refresh() end
+    end
+end
+
 local function RefreshAllCreatedCountPixels()
+    Shingen:RefreshCreatureTypePixel()
+    Shingen:RefreshPlayerLevelPixel()
     for _, frame in ipairs(createdCountPixels) do
         local onEvent = frame:GetScript("OnEvent")
         if onEvent then
@@ -338,11 +443,10 @@ end
 
 function Shingen:ClearAllShingenBars()
     self:ClearAllRgbSpellPixels()
+    self:ClearCreatureTypePixel()
+    self:ClearPlayerLevelPixel()
     for _, frame in ipairs(createdCountPixels) do
-        frame:UnregisterAllEvents()
-        frame:SetScript("OnEvent", nil)
-        frame:Hide()
-        frame:SetParent(nil)
+        ReleaseCountPixel(frame)
     end
     wipe(createdCountPixels)
     wipe(spellIdToCountPixel)
@@ -858,8 +962,8 @@ local function RebindContainerSpellFilters(container, unit)
             container:SetAuraSlotCandidateFilters(slot.key, AuraSlotFilters(slot.includeSpellIDs))
         end
     end
-    if container.shingenGroupDispelSlots then
-        for _, slot in ipairs(container.shingenGroupDispelSlots) do
+    if container.shingenDispelDurationSlots then
+        for _, slot in ipairs(container.shingenDispelDurationSlots) do
             -- 每次重建过滤表，保持各类独立且不受职业驱散能力影响。
             container:SetAuraSlotCandidateFilters(slot.key, {
                 includeDispelTypes = { [slot.auraType] = true },
@@ -1018,8 +1122,63 @@ local function AddUnitDispelSlots(container, unit, index)
     container.shingenUnitDispelSlots = slots
 end
 
+-- 玩家与队伍共用同类减益的最长剩余秒数编码，不受职业驱散能力影响。
+local DISPEL_DURATION_FIELDS = {
+    { field = "dispelMagic", stateName = "魔法", auraType = "Magic" },
+    { field = "dispelCurse", stateName = "诅咒", auraType = "Curse" },
+    { field = "dispelDisease", stateName = "疾病", auraType = "Disease" },
+    { field = "dispelPoison", stateName = "中毒", auraType = "Poison" },
+    { field = "dispelBleed", stateName = "流血", auraType = "Bleed" },
+}
+
+local function MakeDispelDurationSlotInitializer(index)
+    return function(button)
+        AnchorAuraPixelButton(button, index)
+        -- 原生计时文字在永久光环上停用；保留 255 底色。无候选时整个按钮隐藏，露出 0。
+        local cell = CreateAuraPixelCell(button, index, 0, 1)
+        local duration = cell:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+        duration:SetPoint("CENTER", cell, "CENTER", 0, 0)
+        duration:SetJustifyH("CENTER")
+        duration:SetJustifyV("MIDDLE")
+        button:SetDurationText(duration, {
+            textFormat = { formatString = AURA_DURATION_CHAR, components = {} },
+            textColor = {
+                curve = MakeDurationColorCurve(index),
+                property = Enum.DurationTextBindingProperty.RemainingDuration,
+            },
+        })
+    end
+end
+
+local function CollectPlayerDispelDefs(unit)
+    local defs = {}
+    local stateBlocks = Shingen.blocks and Shingen.blocks.state
+    if unit ~= "player" or not stateBlocks then return defs end
+    for _, def in ipairs(DISPEL_DURATION_FIELDS) do
+        local index = stateBlocks[def.stateName]
+        if index then
+            tinsert(defs, { index = index, auraType = def.auraType })
+        end
+    end
+    return defs
+end
+
+local function AddPlayerDispelSlots(container, defs)
+    container.shingenDispelDurationSlots = {}
+    for _, def in ipairs(defs) do
+        local key = "player_dispel_" .. def.auraType
+        container:AddAuraSlot(key, "HARMFUL", {
+            candidateFilters = { includeDispelTypes = { [def.auraType] = true } },
+            sortMethod = AuraContainerSortMethod.ExpirationOnly,
+            sortDirection = AuraContainerSortDirection.Reverse,
+            initializeFrame = MakeDispelDurationSlotInitializer(def.index),
+        })
+        tinsert(container.shingenDispelDurationSlots, { key = key, auraType = def.auraType })
+    end
+end
 local function CreateUnitAuraDurationSlots(unit, spellSlots, dispelIndex)
-    if (not spellSlots or #spellSlots == 0) and not dispelIndex then
+    local playerDispelDefs = CollectPlayerDispelDefs(unit)
+    if (not spellSlots or #spellSlots == 0) and not dispelIndex and #playerDispelDefs == 0 then
         return
     end
 
@@ -1044,6 +1203,7 @@ local function CreateUnitAuraDurationSlots(unit, spellSlots, dispelIndex)
     end
 
     AddUnitDispelSlots(durationSlots, unit, dispelIndex)
+    AddPlayerDispelSlots(durationSlots, playerDispelDefs)
 
     Shingen[key] = durationSlots
     durationSlots.shingenUnit = unit
@@ -1056,7 +1216,7 @@ function Shingen:RefreshUnitAuraContainers()
         if not Shingen[key] then
             local spellSlots = CollectAuraSpellSlots(unit)
             local dispelIndex = GetUnitDispelStateIndex(unit)
-            if #spellSlots > 0 or dispelIndex then
+            if #spellSlots > 0 or dispelIndex or #CollectPlayerDispelDefs(unit) > 0 then
                 CreateUnitAuraDurationSlots(unit, spellSlots, dispelIndex)
             end
         end
@@ -1118,17 +1278,10 @@ local function GroupAuraPixelIndex(groups, memberIndex, offset)
     return groups.start + (memberIndex - 1) * groups.num + offset
 end
 
-local GROUP_DISPEL_FIELDS = {
-    { field = "dispelMagic", auraType = "Magic" },
-    { field = "dispelCurse", auraType = "Curse" },
-    { field = "dispelDisease", auraType = "Disease" },
-    { field = "dispelPoison", auraType = "Poison" },
-    { field = "dispelBleed", auraType = "Bleed" },
-}
 
 local function CollectGroupDispelDefs(groups)
     local defs = {}
-    for _, def in ipairs(GROUP_DISPEL_FIELDS) do
+    for _, def in ipairs(DISPEL_DURATION_FIELDS) do
         if groups[def.field] then
             tinsert(defs, { offset = groups[def.field], auraType = def.auraType })
         end
@@ -1136,24 +1289,6 @@ local function CollectGroupDispelDefs(groups)
     return defs
 end
 
-local function MakeGroupDispelSlotInitializer(index)
-    return function(button)
-        AnchorAuraPixelButton(button, index)
-        -- 原生计时文字在永久光环上停用；保留 255 底色。无候选时整个按钮隐藏，露出 0。
-        local cell = CreateAuraPixelCell(button, index, 0, 1)
-        local duration = cell:CreateFontString(nil, "ARTWORK", "GameFontNormal")
-        duration:SetPoint("CENTER", cell, "CENTER", 0, 0)
-        duration:SetJustifyH("CENTER")
-        duration:SetJustifyV("MIDDLE")
-        button:SetDurationText(duration, {
-            textFormat = { formatString = AURA_DURATION_CHAR, components = {} },
-            textColor = {
-                curve = MakeDurationColorCurve(index),
-                property = Enum.DurationTextBindingProperty.RemainingDuration,
-            },
-        })
-    end
-end
 
 function Shingen:ReleaseGroupAuraContainers()
     for memberIndex, container in pairs(groupAuraContainers) do
@@ -1221,7 +1356,7 @@ local function CreateGroupMemberAuraContainer(memberIndex, groups, auraDefs, dis
         end
     end
 
-    container.shingenGroupDispelSlots = {}
+    container.shingenDispelDurationSlots = {}
     for _, def in ipairs(dispelDefs) do
         local pixelIndex = GroupAuraPixelIndex(groups, memberIndex, def.offset)
         if pixelIndex > 0 and pixelIndex <= BLOCK_FIX_CONFIG.capacity then
@@ -1230,9 +1365,9 @@ local function CreateGroupMemberAuraContainer(memberIndex, groups, auraDefs, dis
                 candidateFilters = { includeDispelTypes = { [def.auraType] = true } },
                 sortMethod = AuraContainerSortMethod.ExpirationOnly,
                 sortDirection = AuraContainerSortDirection.Reverse,
-                initializeFrame = MakeGroupDispelSlotInitializer(pixelIndex),
+                initializeFrame = MakeDispelDurationSlotInitializer(pixelIndex),
             })
-            tinsert(container.shingenGroupDispelSlots, { key = key, auraType = def.auraType })
+            tinsert(container.shingenDispelDurationSlots, { key = key, auraType = def.auraType })
         end
     end
 

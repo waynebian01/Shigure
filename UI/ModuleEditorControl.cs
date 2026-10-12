@@ -7,6 +7,7 @@ namespace Shigure;
 
 public sealed class ModuleEditorControl : UserControl
 {
+    private VersionedSpellIconCatalog Catalog => SpellIconCatalog.ForVersion(_resolveProfile().Version);
     private const string ModuleWebsiteUrl = "https://www.shigure.club";
     // 使用独立列名避开旧版“注释”文字列缓存的较大宽度；新图标列从紧凑宽度重新开始缓存。
     private const string RuleCommentColumnName = "RuleComment";
@@ -207,6 +208,7 @@ public sealed class ModuleEditorControl : UserControl
                         metadata.SubConditions,
                         metadata.DelayMs,
                         metadata.LogicDelayMs,
+                        metadata.MatchDelayMs,
                         metadata.ContinueLogic
                     }
                     : row.Tag
@@ -861,7 +863,7 @@ public sealed class ModuleEditorControl : UserControl
     private void AddNumberArray()
     {
         if (_selectedModule is null) return;
-        using var editor = new ModuleNumberArrayEditorForm(null, _numberArrays.Select(array => array.Name));
+        using var editor = new ModuleNumberArrayEditorForm(null, _numberArrays.Select(array => array.Name), _resolveProfile().Version);
         if (editor.ShowDialog(FindForm()) != DialogResult.OK || editor.Result is null) return;
         _numberArrays.Add(editor.Result);
         RefreshNumberArraysList(_numberArrays.Count - 1);
@@ -873,7 +875,7 @@ public sealed class ModuleEditorControl : UserControl
         var index = _numberArraysList.SelectedIndices[0];
         using var editor = new ModuleNumberArrayEditorForm(
             _numberArrays[index],
-            _numberArrays.Where((_, i) => i != index).Select(array => array.Name));
+            _numberArrays.Where((_, i) => i != index).Select(array => array.Name), _resolveProfile().Version);
         if (editor.ShowDialog(FindForm()) != DialogResult.OK || editor.Result is null) return;
         _numberArrays[index] = editor.Result;
         RefreshNumberArraysList(index);
@@ -1464,6 +1466,7 @@ public sealed class ModuleEditorControl : UserControl
         _spellColumn.Items.Clear();
         _spellColumn.Items.Add(string.Empty);
         _spellColumn.Items.Add(ModuleSpecialActions.PauseSpell);
+        _spellColumn.Items.Add(ModuleSpecialActions.KeyPress);
         _spellColumn.Items.Add(ModuleSpecialActions.FailedSpell);
         _spellColumn.Items.Add(ModuleSpecialActions.FailedItem);
         _spellColumn.Items.Add(ModuleSpecialActions.OneKeySpell);
@@ -1527,6 +1530,16 @@ public sealed class ModuleEditorControl : UserControl
         var spell = row.Cells["Spell"].Value?.ToString();
         cell.Items.Clear();
         cell.Items.Add(string.Empty);
+
+        if (ModuleSpecialActions.IsKeyPress(spell))
+        {
+            var recorded = KeySender.IsValidHotkey(desiredValue) ? desiredValue! : "录制按键…";
+            cell.Items.Add(recorded);
+            cell.Value = recorded;
+            cell.ToolTipText = "点击录制一个键盘按键、组合键或鼠标键；条件每次命中只发送一次。";
+            return;
+        }
+        cell.ToolTipText = string.Empty;
 
         if (ModuleSpecialActions.IsPauseSpell(spell))
         {
@@ -1609,6 +1622,14 @@ public sealed class ModuleEditorControl : UserControl
         var desired = MacroConditionText.ToDisplayText(desiredValue);
         var spell = row.Cells["Spell"].Value?.ToString();
         var unitText = row.Cells["Unit"].Value?.ToString();
+        cell.ReadOnly = ModuleSpecialActions.IsKeyPress(spell);
+        if (cell.ReadOnly)
+        {
+            cell.Items.Clear();
+            cell.Items.Add(string.Empty);
+            cell.Value = string.Empty;
+            return;
+        }
         var unit = ReservedUnit.ParseDisplayText(unitText);
         var allowed = unit is null || string.IsNullOrWhiteSpace(spell)
             ? (IReadOnlyList<string>)[]
@@ -1659,6 +1680,8 @@ public sealed class ModuleEditorControl : UserControl
         {
             _rulesGrid.Rows[e.RowIndex].Cells["SpellIcon"].Value =
                 GetRuleSpellIcon(CellText(_rulesGrid.Rows[e.RowIndex], "Spell"));
+            if (ModuleSpecialActions.IsKeyPress(CellText(_rulesGrid.Rows[e.RowIndex], "Spell")))
+                RebuildUnitCell(_rulesGrid.Rows[e.RowIndex], null);
             UpdateUnitCellItems(_rulesGrid.Rows[e.RowIndex]);
             UpdateMacroConditionCellItems(_rulesGrid.Rows[e.RowIndex]);
         }
@@ -1670,7 +1693,7 @@ public sealed class ModuleEditorControl : UserControl
 
     private void OnSpellIconCatalogChanged()
     {
-        if (IsDisposed || Disposing || !IsHandleCreated)
+        if (IsDisposed || Disposing)
         {
             return;
         }
@@ -1730,7 +1753,7 @@ public sealed class ModuleEditorControl : UserControl
                          .ThenBy(item => item.ItemId))
             {
                 var name = item.Name.Trim();
-                SpellIconCatalog.RegisterItem(item.ItemId, name);
+                Catalog.RegisterItem(item.ItemId, name);
                 if (_currentClassConditionItems.All(entry => entry.ItemId != item.ItemId))
                 {
                     _currentClassConditionItems.Add(new ConditionItem(item.ItemId, item.Index, name));
@@ -1759,7 +1782,7 @@ public sealed class ModuleEditorControl : UserControl
                     }
 
                     var name = item.Name.Trim();
-                    SpellIconCatalog.RegisterItem(itemId, name);
+                    Catalog.RegisterItem(itemId, name);
                     if (!_currentSpecItemIdsByName.TryGetValue(name, out var itemIds))
                     {
                         itemIds = [];
@@ -1793,7 +1816,7 @@ public sealed class ModuleEditorControl : UserControl
         {
             foreach (var spellId in spellIds)
             {
-                var icon = SpellIconCatalog.Get(spellId);
+                var icon = Catalog.Get(spellId);
                 if (icon is not null)
                 {
                     return icon;
@@ -1805,7 +1828,7 @@ public sealed class ModuleEditorControl : UserControl
         {
             foreach (var itemId in itemIds)
             {
-                var icon = SpellIconCatalog.GetItem(itemId);
+                var icon = Catalog.GetItem(itemId);
                 if (icon is not null)
                 {
                     return icon;
@@ -1813,22 +1836,22 @@ public sealed class ModuleEditorControl : UserControl
             }
         }
 
-        if (SpellIconCatalog.TryParseItemReference(normalized, out var explicitItemId))
+        if (Catalog.TryParseItemReference(normalized, out var explicitItemId))
         {
-            var icon = SpellIconCatalog.GetItem(explicitItemId);
+            var icon = Catalog.GetItem(explicitItemId);
             if (icon is not null)
             {
                 return icon;
             }
         }
 
-        var officialItemIcon = SpellIconCatalog.GetItem(normalized);
+        var officialItemIcon = Catalog.GetItem(normalized);
         if (officialItemIcon is not null)
         {
             return officialItemIcon;
         }
 
-        return SpellIconCatalog.Get(normalized);
+        return Catalog.Get(normalized);
     }
 
     private void RefreshRuleSpellIcons()
@@ -2818,17 +2841,20 @@ public sealed class ModuleEditorControl : UserControl
         IReadOnlyList<string> SubConditions,
         int? DelayMs,
         int? LogicDelayMs,
-        bool? ContinueLogic);
+        bool? ContinueLogic,
+        int? MatchDelayMs = null);
 
     private sealed class RuleRowMetadata(
         IEnumerable<string>? subConditions = null,
         int? delayMs = null,
         int? logicDelayMs = null,
-        bool? continueLogic = null)
+        bool? continueLogic = null,
+        int? matchDelayMs = null)
     {
         public List<string> SubConditions { get; } = subConditions?.ToList() ?? new List<string>();
         public int? DelayMs { get; set; } = delayMs;
         public int? LogicDelayMs { get; set; } = logicDelayMs;
+        public int? MatchDelayMs { get; set; } = matchDelayMs;
         public bool? ContinueLogic { get; set; } = continueLogic;
     }
 
@@ -2912,6 +2938,20 @@ public sealed class ModuleEditorControl : UserControl
         }
 
         _rulesGrid.CurrentCell = cell;
+        if (ModuleSpecialActions.IsKeyPress(CellText(row, "Spell")))
+        {
+            if (_rulesGrid.Columns[columnIndex].Name == "Unit")
+            {
+                using var recorder = new KeyRecordingForm(CellText(row, "Unit"));
+                if (recorder.ShowDialog(FindForm()) == DialogResult.OK)
+                {
+                    RebuildUnitCell(row, recorder.Hotkey);
+                    _rulesGrid.InvalidateRow(rowIndex);
+                }
+                return;
+            }
+            if (_rulesGrid.Columns[columnIndex].Name == "MacroCondition") return;
+        }
         if (_relaxedRuleView)
         {
             _rulesGrid.HorizontalScrollingOffset = 0;
@@ -2978,7 +3018,7 @@ public sealed class ModuleEditorControl : UserControl
         var row = _rulesGrid.Rows[e.RowIndex];
         if (columnName == "SpellIcon" && row.IsNewRow)
         {
-            e.Value = SpellIconCatalog.GetLastRuleRowIcon();
+            e.Value = Catalog.GetLastRuleRowIcon();
             e.FormattingApplied = true;
             return;
         }
@@ -3011,7 +3051,8 @@ public sealed class ModuleEditorControl : UserControl
                 metadata.SubConditions,
                 metadata.DelayMs,
                 metadata.LogicDelayMs,
-                metadata.ContinueLogic);
+                metadata.ContinueLogic,
+                metadata.MatchDelayMs);
             e.FormattingApplied = true;
         }
     }
@@ -3215,7 +3256,8 @@ public sealed class ModuleEditorControl : UserControl
         IReadOnlyList<string>? subs,
         int? delayMs,
         int? logicDelayMs,
-        bool? continueLogic)
+        bool? continueLogic,
+        int? matchDelayMs = null)
     {
         var conditionText = FormatConditionExpressionForDisplay(main);
         if (subs is { Count: > 0 })
@@ -3238,6 +3280,13 @@ public sealed class ModuleEditorControl : UserControl
             conditionText = conditionText.Length == 0
                 ? $"逻辑延迟 {logicDelayMs.Value} ms"
                 : $"{conditionText}；逻辑延迟 {logicDelayMs.Value} ms";
+        }
+
+        if (matchDelayMs is > 0)
+        {
+            conditionText = conditionText.Length == 0
+                ? $"命中延迟 {matchDelayMs.Value} ms"
+                : $"{conditionText}；命中延迟 {matchDelayMs.Value} ms";
         }
 
         if (continueLogic is true)
@@ -3359,7 +3408,7 @@ public sealed class ModuleEditorControl : UserControl
             return localName;
         }
 
-        var catalogName = SpellIconCatalog.ResolveSuggestionName(spellId, null);
+        var catalogName = Catalog.ResolveSuggestionName(spellId, null);
         if (!string.IsNullOrWhiteSpace(catalogName))
         {
             return catalogName;
@@ -3565,7 +3614,7 @@ public sealed class ModuleEditorControl : UserControl
         PaintRelaxedCheckBox(graphics, regions.Enabled, enabled);
 
         var icon = row.IsNewRow
-            ? SpellIconCatalog.GetLastRuleRowIcon()
+            ? Catalog.GetLastRuleRowIcon()
             : GetRuleSpellIcon(CellText(row, "Spell"));
         if (icon is not null && regions.Icon.Width > 4 && regions.Icon.Height > 4)
         {
@@ -3592,7 +3641,8 @@ public sealed class ModuleEditorControl : UserControl
                 metadata.SubConditions,
                 metadata.DelayMs,
                 metadata.LogicDelayMs,
-                metadata.ContinueLogic);
+                metadata.ContinueLogic,
+                metadata.MatchDelayMs);
         PaintRelaxedValueField(
             graphics,
             regions.Condition,
@@ -4444,7 +4494,8 @@ public sealed class ModuleEditorControl : UserControl
                 metadata.SubConditions,
                 metadata.DelayMs,
                 metadata.LogicDelayMs,
-                metadata.ContinueLogic);
+                metadata.ContinueLogic,
+                metadata.MatchDelayMs);
             if (text.Length == 0)
             {
                 return "点击编辑条件 (当前: 始终命中)";
@@ -4816,7 +4867,7 @@ public sealed class ModuleEditorControl : UserControl
             conditionSpellsProvider: () => RefreshAndBuildConditionSpells(),
             items: RefreshAndBuildConditionItems(),
             conditionItemsProvider: () => RefreshAndBuildConditionItems(),
-            numberArrayNames: _numberArrays.Select(array => array.Name).ToArray());
+            numberArrayNames: _numberArrays.Select(array => array.Name).ToArray(), dataVersion: _resolveProfile().Version);
         if (editor.ShowDialog(FindForm()) != DialogResult.OK)
         {
             return;
@@ -5177,7 +5228,8 @@ public sealed class ModuleEditorControl : UserControl
             GetRuleMetadata(row).SubConditions,
             GetRuleMetadata(row).DelayMs,
             GetRuleMetadata(row).LogicDelayMs,
-            GetRuleMetadata(row).ContinueLogic);
+            GetRuleMetadata(row).ContinueLogic,
+            GetRuleMetadata(row).MatchDelayMs);
     }
 
     private void WriteRuleRow(DataGridViewRow row, RuleRowValues values)
@@ -5192,7 +5244,8 @@ public sealed class ModuleEditorControl : UserControl
             values.SubConditions,
             values.DelayMs,
             values.LogicDelayMs,
-            values.ContinueLogic);
+            values.ContinueLogic,
+            values.MatchDelayMs);
         RebuildUnitCell(row, values.UnitText);
         RebuildMacroConditionCell(row, values.MacroCondition);
     }
@@ -5213,6 +5266,7 @@ public sealed class ModuleEditorControl : UserControl
             allowSubConditions: true,
             delayMs: currentMetadata.DelayMs,
             logicDelayMs: currentMetadata.LogicDelayMs,
+            matchDelayMs: currentMetadata.MatchDelayMs,
             continueLogic: currentMetadata.ContinueLogic,
             allowRuleSettings: true,
             conditionFieldsProvider: () => RefreshAndBuildConditionFields(includeRuleSettings: true),
@@ -5220,7 +5274,7 @@ public sealed class ModuleEditorControl : UserControl
             conditionSpellsProvider: () => RefreshAndBuildConditionSpells(),
             items: items,
             conditionItemsProvider: () => RefreshAndBuildConditionItems(),
-            numberArrayNames: _numberArrays.Select(array => array.Name).ToArray());
+            numberArrayNames: _numberArrays.Select(array => array.Name).ToArray(), dataVersion: _resolveProfile().Version);
         if (editor.ShowDialog(FindForm()) != DialogResult.OK)
         {
             return;
@@ -5234,6 +5288,7 @@ public sealed class ModuleEditorControl : UserControl
                 || subs.Count > 0
                 || editor.DelayMs is > 0
                 || editor.LogicDelayMs is > 0
+                || editor.MatchDelayMs is > 0
                 || editor.ContinueLogic is true)
             {
                 var index = _rulesGrid.Rows.Add(true, null!, string.Empty, string.Empty, string.Empty, editor.ConditionText);
@@ -5241,14 +5296,15 @@ public sealed class ModuleEditorControl : UserControl
                     subs,
                     editor.DelayMs,
                     editor.LogicDelayMs,
-                    editor.ContinueLogic);
+                    editor.ContinueLogic,
+                    editor.MatchDelayMs);
             }
 
             return;
         }
 
         row.Cells["Condition"].Value = editor.ConditionText;
-        row.Tag = new RuleRowMetadata(subs, editor.DelayMs, editor.LogicDelayMs, editor.ContinueLogic);
+        row.Tag = new RuleRowMetadata(subs, editor.DelayMs, editor.LogicDelayMs, editor.ContinueLogic, editor.MatchDelayMs);
         // 让「条件」列的装饰显示(主条件 且任一(…))立即刷新。
         _rulesGrid.InvalidateRow(rowIndex);
     }
@@ -5324,6 +5380,12 @@ public sealed class ModuleEditorControl : UserControl
                 "继续逻辑",
                 ConditionFieldType.Bool,
                 ConditionFieldCategory.Shigure));
+        }
+
+        if (includeRuleSettings && seen.Add(ShigureConditionFields.MatchDelay))
+        {
+            fields.Add(new ConditionField(ShigureConditionFields.MatchDelay, "命中延迟 (ms)",
+                ConditionFieldType.Int, ConditionFieldCategory.Shigure));
         }
 
         foreach (var unit in _units)
@@ -5515,7 +5577,7 @@ public sealed class ModuleEditorControl : UserControl
                 Process.Start(new ProcessStartInfo
                 {
                     FileName = "explorer.exe",
-                    Arguments = $"/select,\"{filePath}\"",
+                    Arguments = $"/fulect,\"{filePath}\"",
                     UseShellExecute = true
                 });
                 return;
@@ -5706,6 +5768,7 @@ public sealed class ModuleEditorControl : UserControl
             var unitText = !string.IsNullOrWhiteSpace(rule.UnitName)
                 ? rule.UnitName!
                 : rule.Unit is { } unit ? ReservedUnit.ToDisplayText(unit) : string.Empty;
+            if (ModuleSpecialActions.IsKeyPress(rule.Spell)) unitText = rule.Hotkey;
             EnsureComboItem(_spellColumn, ruleSpellDisplay);
             // 先加行(目标先留空), 再按技能重建目标选项并写回目标值, 避免值不在选项内被吞掉。
             var index = _rulesGrid.Rows.Add(
@@ -5720,7 +5783,8 @@ public sealed class ModuleEditorControl : UserControl
                 rule.SubConditions,
                 rule.DelayMs,
                 rule.LogicDelayMs,
-                rule.ContinueLogic);
+                rule.ContinueLogic,
+                rule.MatchDelayMs);
             RebuildUnitCell(_rulesGrid.Rows[index], unitText);
             RebuildMacroConditionCell(_rulesGrid.Rows[index], rule.MacroCondition);
         }
@@ -6418,6 +6482,7 @@ public sealed class ModuleEditorControl : UserControl
         reserved.UnionWith(adjustments.Where(adjustment => !string.IsNullOrWhiteSpace(adjustment.Formula))
             .Select(adjustment => adjustment.Field));
         reserved.UnionWith(new[] { ShigureConditionFields.Delay, ShigureConditionFields.LogicDelay,
+            ShigureConditionFields.MatchDelay,
             ShigureConditionFields.ContinueLogic, ShigureConditionFields.TotalCombatTimeSeconds,
             "延迟 (ms)", "逻辑延迟 (ms)", "继续逻辑", "true", "false", "null", "nil" });
         var customTypes = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
@@ -6486,6 +6551,12 @@ public sealed class ModuleEditorControl : UserControl
             var unitText = CellText(row, "Unit");
             var macroCondition = CellText(row, "MacroCondition");
             var metadata = GetRuleMetadata(row);
+            var isKeyPress = ModuleSpecialActions.IsKeyPress(spell);
+            if (isKeyPress && !KeySender.IsValidHotkey(unitText))
+            {
+                error = $"规则第 {row.Index + 1} 行：请点击目标格录制按键。";
+                return false;
+            }
             if (string.IsNullOrWhiteSpace(condition)
                 && string.IsNullOrWhiteSpace(comment)
                 && string.IsNullOrWhiteSpace(spell)
@@ -6494,6 +6565,7 @@ public sealed class ModuleEditorControl : UserControl
                 && metadata.SubConditions.Count == 0
                 && metadata.DelayMs is not > 0
                 && metadata.LogicDelayMs is not > 0
+                && metadata.MatchDelayMs is not > 0
                 && metadata.ContinueLogic is not true)
             {
                 continue;
@@ -6510,15 +6582,16 @@ public sealed class ModuleEditorControl : UserControl
                 Enabled = CellBool(row, "Enabled", defaultValue: true),
                 Condition = condition,
                 Comment = comment,
-                Unit = isDynamic ? null : ReservedUnit.ParseDisplayText(unitText),
-                UnitName = isDynamic ? unitText : null,
+                Unit = isKeyPress || isDynamic ? null : ReservedUnit.ParseDisplayText(unitText),
+                UnitName = !isKeyPress && isDynamic ? unitText : null,
                 Spell = spell,
                 MacroCondition = MacroConditionText.ParseDisplayText(macroCondition),
-                Hotkey = string.Empty,
+                Hotkey = isKeyPress ? unitText : string.Empty,
                 Step = string.Empty,
                 SubConditions = subs is { Count: > 0 } ? subs : null,
                 DelayMs = metadata.DelayMs,
                 LogicDelayMs = metadata.LogicDelayMs,
+                MatchDelayMs = metadata.MatchDelayMs,
                 ContinueLogic = metadata.ContinueLogic
             });
         }

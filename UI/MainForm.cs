@@ -228,7 +228,8 @@ public sealed class MainForm : Form, IMessageFilter
         _statusForm.AttachModuleEditor(_moduleEditor);
         _classConfigEditor = new ClassConfigEditorControl(
             () => Path.Combine(_editorProfile.AddonRoot, "class"),
-            UpdateClassConfigAfterSaveAsync);
+            UpdateClassConfigAfterSaveAsync,
+            () => _editorProfile.Version);
         _statusForm.AttachConfigEditor(_classConfigEditor);
         _classConfigEditor.DirtyStateChanged += dirty =>
         {
@@ -237,7 +238,8 @@ public sealed class MainForm : Form, IMessageFilter
         };
         _classMacrosEditor = new ClassMacrosEditorControl(
             () => Path.Combine(_editorProfile.AddonRoot, "core", "classmacros.lua"),
-            UpdateClassConfigAfterSaveAsync);
+            UpdateClassConfigAfterSaveAsync,
+            () => _editorProfile.Version);
         _statusForm.AttachMacrosEditor(_classMacrosEditor);
         _classMacrosEditor.DirtyStateChanged += dirty =>
         {
@@ -2015,7 +2017,7 @@ public sealed class MainForm : Form, IMessageFilter
 
             var sizeText = $"{result.Size / 1024d / 1024d:F2} MiB";
             var hashText = result.Sha256[..Math.Min(12, result.Sha256.Length)];
-            var kind = SpellIconCatalog.IsItemDatabaseAvailable ? "完整包" : "仅技能旧包";
+            var kind = SpellIconCatalog.HasForever ? "两版数据包" : "Retail 旧包";
             if (result.UpToDate)
             {
                 _spellIconPackageStatusLabel.Text = $"已是最新（{kind}）：{sizeText}，SHA-256 {hashText}…";
@@ -2026,6 +2028,8 @@ public sealed class MainForm : Form, IMessageFilter
                 _spellIconPackageStatusLabel.Text = $"安装完成（{kind}）：{sizeText}，SHA-256 {hashText}…";
                 AppendLog("技能/物品图标数据包已下载、校验并热加载");
             }
+            _spellIconPackageStatusLabel.Text += Environment.NewLine + DescribeDataCatalog("Retail")
+                + Environment.NewLine + DescribeDataCatalog("Forever");
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -2089,9 +2093,9 @@ public sealed class MainForm : Form, IMessageFilter
         {
             var length = new FileInfo(packagePath).Length;
             var sizeText = $"{length / 1024d / 1024d:F2} MiB";
-            _spellIconPackageStatusLabel.Text = SpellIconCatalog.IsItemDatabaseAvailable
-                ? $"已安装完整包：{sizeText}。点击检查 GitHub 更新。"
-                : $"已安装仅技能旧包：{sizeText}。物品搜索库不可用，可检查更新以获取完整包。";
+            _spellIconPackageStatusLabel.Text = $"已安装：{sizeText}。点击检查 GitHub 更新。"
+                + Environment.NewLine + DescribeDataCatalog("Retail")
+                + Environment.NewLine + DescribeDataCatalog("Forever");
             _downloadSpellIconPackageButton.Text = "检查更新";
         }
         else if (File.Exists(packagePath))
@@ -2109,6 +2113,14 @@ public sealed class MainForm : Form, IMessageFilter
         _settingsToolTip.SetToolTip(
             _spellIconPackageStatusLabel,
             _spellIconPackageStatusLabel.Text);
+    }
+
+    private static string DescribeDataCatalog(string version)
+    {
+        var info = SpellIconCatalog.ForVersion(version).Info;
+        return info is null
+            ? $"{version}：未包含，请更新数据包。"
+            : $"{version}：构建 {info.Build ?? "未知（原包导入）"}，技能 {info.SpellCount:N0}，物品 {info.ItemCount:N0}";
     }
 
     private void OpenModuleWebsite()

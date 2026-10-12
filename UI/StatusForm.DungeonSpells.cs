@@ -40,7 +40,7 @@ public sealed partial class StatusForm
         list.Name = "dungeon-spells-list";
         _dungeonSpellList = list;
         UiTheme.SetListViewSubItemIconResolver(list, (item, column) =>
-            column == 0 && item.Tag is DungeonSpellInfo spell ? SpellIconCatalog.Get(spell.SpellId) : null);
+            column == 0 && item.Tag is DungeonSpellInfo spell ? Catalog.Get(spell.SpellId) : null);
 
         var fields = Enum.GetValues<DungeonSpellFilter>();
         string[] labels = ["副本", "首领", "类型", "NPC", "职业"];

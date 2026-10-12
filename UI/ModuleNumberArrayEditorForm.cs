@@ -6,6 +6,8 @@ namespace Shigure;
 /// <summary>模块数字数组编辑器；图标和名称始终从法术图标包按数字查询。</summary>
 public sealed class ModuleNumberArrayEditorForm : Form
 {
+    private VersionedSpellIconCatalog Catalog => SpellIconCatalog.ForVersion(_dataVersion);
+    private readonly string _dataVersion;
     private const int LookupPageSize = 20;
 
     private readonly UiDropDown _kindBox = new();
@@ -28,8 +30,9 @@ public sealed class ModuleNumberArrayEditorForm : Form
 
     public ModuleNumberArray? Result { get; private set; }
 
-    public ModuleNumberArrayEditorForm(ModuleNumberArray? source, IEnumerable<string> takenNames)
+    public ModuleNumberArrayEditorForm(ModuleNumberArray? source, IEnumerable<string> takenNames, string dataVersion = "Retail")
     {
+        _dataVersion = dataVersion;
         _takenNames = new HashSet<string>(takenNames, StringComparer.Ordinal);
         InitializeComponent();
         _nameBox.Text = source?.Name ?? string.Empty;
@@ -368,9 +371,9 @@ public sealed class ModuleNumberArrayEditorForm : Form
             return;
         }
 
-        if (!SpellIconCatalog.IsPackageAvailable)
+        if (!Catalog.IsPackageAvailable)
         {
-            ApplyLookupResults(SpellDatabaseResultSet.Empty, "未安装技能数据库");
+            ApplyLookupResults(SpellDatabaseResultSet.Empty, $"{Catalog.Version} 技能数据不可用，请更新数据包");
             return;
         }
 
@@ -396,17 +399,17 @@ public sealed class ModuleNumberArrayEditorForm : Form
         _lookupFilterTimer.Stop();
         _lookupFilterVersion++;
         CancelLookupFilter();
-        var packageAvailable = SpellIconCatalog.IsPackageAvailable;
+        var packageAvailable = Catalog.IsPackageAvailable;
         _lookupFilterBox.Enabled = packageAvailable;
         if (!packageAvailable)
         {
-            ApplyLookupResults(SpellDatabaseResultSet.Empty, "未安装技能数据库");
+            ApplyLookupResults(SpellDatabaseResultSet.Empty, $"{Catalog.Version} 技能数据不可用，请更新数据包");
             return;
         }
 
         if (string.IsNullOrWhiteSpace(_lookupFilterBox.Text))
         {
-            ApplyLookupResults(SpellDatabaseResultSet.FromAll(SpellIconCatalog.GetSuggestionsSnapshot()));
+            ApplyLookupResults(SpellDatabaseResultSet.FromAll(Catalog.GetSuggestionsSnapshot()));
             return;
         }
 
@@ -423,8 +426,8 @@ public sealed class ModuleNumberArrayEditorForm : Form
 
         var version = _lookupFilterVersion;
         var query = _lookupFilterBox.Text.Trim();
-        var snapshot = SpellIconCatalog.GetSuggestionsSnapshot();
-        var registeredNames = SpellIconCatalog.GetRegisteredSpellNamesSnapshot();
+        var snapshot = Catalog.GetSuggestionsSnapshot();
+        var registeredNames = Catalog.GetRegisteredSpellNamesSnapshot();
         if (string.IsNullOrEmpty(query))
         {
             ApplyLookupResults(SpellDatabaseResultSet.FromAll(snapshot));
@@ -558,10 +561,10 @@ public sealed class ModuleNumberArrayEditorForm : Form
         }
 
         var suggestion = _lookupResults[e.RowIndex];
-        var displayName = SpellIconCatalog.ResolveSuggestionName(suggestion.SpellId, suggestion.Name) ?? string.Empty;
+        var displayName = Catalog.ResolveSuggestionName(suggestion.SpellId, suggestion.Name) ?? string.Empty;
         e.Value = _lookupGrid.Columns[e.ColumnIndex].Name switch
         {
-            "Icon" => SpellIconCatalog.Get(suggestion.SpellId),
+            "Icon" => Catalog.Get(suggestion.SpellId),
             "SpellId" => suggestion.SpellId.ToString(CultureInfo.InvariantCulture),
             "Name" => displayName,
             "Add" => "添加至数组",
@@ -613,7 +616,7 @@ public sealed class ModuleNumberArrayEditorForm : Form
 
     private void OnSpellIconCatalogChanged()
     {
-        if (IsDisposed || Disposing || !IsHandleCreated)
+        if (IsDisposed || Disposing)
         {
             return;
         }
@@ -647,8 +650,8 @@ public sealed class ModuleNumberArrayEditorForm : Form
         switch (CurrentKind)
         {
             case ModuleNumberArrayKind.Spell:
-                row.Cells["Icon"].Value = SpellIconCatalog.Get(number);
-                row.Cells["Name"].Value = SpellIconCatalog.GetSpellName(number) ?? string.Empty;
+                row.Cells["Icon"].Value = Catalog.Get(number);
+                row.Cells["Name"].Value = Catalog.GetSpellName(number) ?? string.Empty;
                 break;
             case ModuleNumberArrayKind.Boss:
                 row.Cells["Name"].Value = _bossCatalog.FindName(number) ?? string.Empty;

@@ -30,7 +30,6 @@ Fuyutsui.ClassBlocks = {
                 "施法目标",
             },
             ["特殊"] = {
-                "神圣军备",
                 "自律",
             },
             ["能量"] = {
@@ -123,6 +122,9 @@ Fuyutsui.ClassBlocks = {
             { spellId = 155145, name = "奥术洪流" },
             { spellId = 393024, name = "强化清洁术" },
         },
+        override = {
+            [375576] = { overrideSpellID = { 432459, 432472 }, name = "神圣军备" },
+        },
         items = {
             [5512] = { name = "治疗石", isEquipped = false },
             [241304] = { name = "治疗药水", isEquipped = false },
@@ -166,7 +168,6 @@ Fuyutsui.ClassBlocks = {
             },
             ["特殊"] = {
                 "自律",
-                "神圣军备",
             },
             ["能量"] = {
                 "法力值",
@@ -460,15 +461,15 @@ Fuyutsui.spellsList = {
     [368970]  = { index = 253, name = "扫尾" },
     [357214]  = { index = 254, name = "飞翼打击" },
     [436344]  = { index = 255, name = "艾泽里特涌动" },
-    [53563] = { index = 36, name = "圣光道标" },
-    [393024] = { index = 37, name = "强化清洁术" },
-    [213644] = { index = 38, name = "清毒术" },
-    [31884] = { index = 39, name = "复仇之怒" },
-    [85673] = { index = 40, name = "荣耀圣令" },
-    [96231] = { index = 41, name = "责难" },
-    [465] = { index = 42, name = "虔诚光环" },
-    [432496] = { index = 43, name = "神圣壁垒" },
-    [432502] = { index = 44, name = "圣洁武器" },
+    [53563]   = { index = 36, name = "圣光道标" },
+    [393024]  = { index = 37, name = "强化清洁术" },
+    [213644]  = { index = 38, name = "清毒术" },
+    [31884]   = { index = 39, name = "复仇之怒" },
+    [85673]   = { index = 40, name = "荣耀圣令" },
+    [96231]   = { index = 41, name = "责难" },
+    [465]     = { index = 42, name = "虔诚光环" },
+    [432496]  = { index = 43, name = "神圣壁垒" },
+    [432502]  = { index = 44, name = "圣洁武器" },
 }
 
 Fuyutsui.itemsList = {

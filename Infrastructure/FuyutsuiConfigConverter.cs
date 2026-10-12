@@ -23,7 +23,7 @@ internal static class FuyutsuiConfigConverter
 
     private static readonly HashSet<string> BoolFieldNames = new(StringComparer.Ordinal)
     {
-        "锚点", "有效性", "移动"
+        "锚点", "有效性", "移动", "自动射击", "自动攻击"
     };
 
     private static readonly string[] StateCategoryOrder =
@@ -107,7 +107,8 @@ internal static class FuyutsuiConfigConverter
             }
             else
             {
-                CompileSpellMaps(spellsList, root, warnings, fileName);
+                CompileSpellMaps(spellsList, root, warnings, fileName,
+                    AddonLuaNames.Assignment(lua, "spellsList").StartsWith("Shingen.", StringComparison.Ordinal));
             }
 
             if (itemsList is null)
@@ -206,9 +207,11 @@ internal static class FuyutsuiConfigConverter
         TableValue spellsList,
         JsonObject target,
         List<string> warnings,
-        string label)
+        string label,
+        bool supportsRankGroups)
     {
         var oneKeySpells = new SortedDictionary<int, long>();
+        var representatives = new Dictionary<int, (long SpellId, int? Rank, string? Name)>();
 
         foreach (var (key, value) in spellsList.Entries)
         {
@@ -239,7 +242,25 @@ internal static class FuyutsuiConfigConverter
             }
 
             var index = (int)indexValue.Value;
+            var spellId = (long)spellIdValue.Value;
+            var rank = ClassBlocksStore.ReadSpellRank(spell);
+            var name = spell.GetString("name");
+            if (representatives.TryGetValue(index, out var existing)
+                && (supportsRankGroups || (rank is not null && existing.Rank is not null))
+                && string.Equals(name, existing.Name, StringComparison.Ordinal))
+            {
+                // 等级共享索引是合法技能组；用最低等级及最小 ID 稳定生成反向映射。
+                var candidateRank = rank ?? int.MaxValue;
+                var existingRank = existing.Rank ?? int.MaxValue;
+                if (candidateRank < existingRank || (candidateRank == existingRank && spellId < existing.SpellId))
+                {
+                    oneKeySpells[index] = spellId;
+                    representatives[index] = (spellId, rank, name);
+                }
+                continue;
+            }
             AddSpellMapEntry(oneKeySpells, index, (long)spellIdValue.Value, "一键法术", warnings, label);
+            representatives.TryAdd(index, (spellId, rank, name));
         }
 
         target[ModuleSpecialActions.OneKeySpell] = ToSpellMap(oneKeySpells);
@@ -370,7 +391,7 @@ internal static class FuyutsuiConfigConverter
                             ? category + stateName
                             : stateName;
                         AddStateField(result, key, index, skipCommon: true, category);
-                        if (IsRgbSpellState(category, stateName) && result[key] is JsonObject rgbField)
+                        if (IsRgbState(category, stateName) && result[key] is JsonObject rgbField)
                         {
                             rgbField["pixelFormat"] = "rgb24";
                             rgbField["payloadStep"] = index + 1;
@@ -399,7 +420,17 @@ internal static class FuyutsuiConfigConverter
                         index,
                         skipCommon: true,
                         ClassStateCatalog.FindCategory(stateName) ?? ClassStateCatalog.CategoryState);
-                    index++;
+                    if (stateName == "目标NPCID" && result[stateName] is JsonObject npcField)
+                    {
+                        npcField["category"] = ClassStateCatalog.CategoryTarget;
+                        npcField["pixelFormat"] = "rgb24";
+                        npcField["payloadStep"] = index + 1;
+                        index += 2;
+                    }
+                    else
+                    {
+                        index++;
+                    }
                 }
             }
         }
@@ -519,6 +550,14 @@ internal static class FuyutsuiConfigConverter
             }
         }
 
+        foreach (var entry in OverrideSpellLayout.Read(spec.GetTable("override")))
+        {
+            var field = Field(index++, "int", OverrideSpellLayout.Category);
+            field["displayName"] = entry.Name;
+            field["spellId"] = entry.OriginalId;
+            result[OverrideSpellLayout.FieldKey(entry.OriginalId)] = field;
+        }
+
         if (spec.GetTable("items") is { } items)
         {
             foreach (var item in ReadItems(items, warnings, label))
@@ -550,7 +589,7 @@ internal static class FuyutsuiConfigConverter
 
         if (rejectPixelOverflow && index - 1 > MainPixelLayout.MaxCapacity)
         {
-            throw new PixelCapacityExceededException(label, "状态、光环和冷却", index - 1);
+            throw new PixelCapacityExceededException(label, "状态、光环、冷却和替换技", index - 1);
         }
 
         // group
@@ -890,12 +929,13 @@ internal static class FuyutsuiConfigConverter
         return result;
     }
 
-    private static bool IsRgbSpellState(string category, string stateName)
-        => stateName == "施法技能" && category is
+    private static bool IsRgbState(string category, string stateName)
+        => (stateName == "NPCID" && category == ClassStateCatalog.CategoryTarget)
+           || (stateName == "施法技能" && category is
             ClassStateCatalog.CategoryTarget or ClassStateCatalog.CategoryFocus or
             ClassStateCatalog.CategoryBoss1 or ClassStateCatalog.CategoryBoss2 or
             ClassStateCatalog.CategoryBoss3 or ClassStateCatalog.CategoryBoss4 or
-            ClassStateCatalog.CategoryBoss5;
+            ClassStateCatalog.CategoryBoss5);
 
     private static void AddStateField(
         JsonObject result,

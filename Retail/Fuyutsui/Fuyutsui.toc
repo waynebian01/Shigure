@@ -1,4 +1,4 @@
-## Interface: 120100
+## Interface: 120105
 
 ## Title: Fuyutsui
 ## Version: 1.2.1.33

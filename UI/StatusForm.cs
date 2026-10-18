@@ -593,12 +593,13 @@ public sealed partial class StatusForm : Form
             new UiTheme.ListColumn("类型", 58, 2000, FixedWidth: true, RemainingWidthWeight: 1),
             new UiTheme.ListColumn("值", 64, 2000, FixedWidth: true, RemainingWidthWeight: 1));
 
-        _partyList = UiTheme.CreateListView(Font, "status-party-v4",
-            new UiTheme.ListColumn("单位", 64, 72, FixedWidth: true),
-            new UiTheme.ListColumn("生命值", 56, 64),
-            new UiTheme.ListColumn("治疗吸收", 72, 80),
-            new UiTheme.ListColumn("职责", 48, 56),
-            new UiTheme.ListColumn("职业", 96, 160),
+        // 基础信息列默认紧凑，允许拖动加宽并复用列宽缓存；光环占用剩余空间。
+        _partyList = UiTheme.CreateListView(Font, "status-party-v5",
+            new UiTheme.ListColumn("单位", 48, 2000, FixedWidth: true),
+            new UiTheme.ListColumn("生命值", 48, 2000, FixedWidth: true),
+            new UiTheme.ListColumn("治疗吸收", 64, 2000, FixedWidth: true),
+            new UiTheme.ListColumn("职责", 40, 2000, FixedWidth: true),
+            new UiTheme.ListColumn("职业", 64, 2000, FixedWidth: true),
             new UiTheme.ListColumn("魔法", 40, 48),
             new UiTheme.ListColumn("诅咒", 40, 48),
             new UiTheme.ListColumn("疾病", 40, 48),

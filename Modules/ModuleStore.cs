@@ -223,9 +223,11 @@ public sealed class ModuleRule
     public int? DelayMs { get; set; }
     // 此规则实际发送按键后，暂停整个逻辑循环的时长（毫秒）；null/0 表示不暂停。
     public int? LogicDelayMs { get; set; }
+    // 条件命中后，每次实际执行前等待的时长（毫秒）。
+    public int? HitDelayMs { get; set; }
     // 条件由命中变为不命中后，继续保持命中的时长（毫秒）。
     public int? MatchDelayMs { get; set; }
-    // 命中并发送后是否继续判断后续规则；null/false 表示命中后结束扫描。
+    // 命中后发送或等待延迟命中时是否继续判断后续规则；null/false 表示结束本轮判断。
     public bool? ContinueLogic { get; set; }
     public int? Unit { get; set; }
     public string? UnitName { get; set; }
@@ -249,6 +251,7 @@ public sealed class ModuleRule
             Comment = Comment,
             DelayMs = DelayMs,
             LogicDelayMs = LogicDelayMs,
+            HitDelayMs = HitDelayMs,
             MatchDelayMs = MatchDelayMs,
             ContinueLogic = ContinueLogic,
             Unit = Unit,
@@ -286,6 +289,7 @@ public sealed class ModuleValueAdjustment
     public string Operation { get; set; } = "+";
     public string? Value { get; set; }
     public bool IsCustom { get; set; }
+    public ModuleTeammateTarget? TeammateTarget { get; set; }
     public string Formula { get; set; } = string.Empty;
 
     internal string EffectiveOperation => IsCustom ? "=" : Operation;
@@ -339,6 +343,7 @@ public sealed class ModuleValueAdjustment
             Operation = Operation,
             Value = Value,
             IsCustom = IsCustom,
+            TeammateTarget = TeammateTarget?.Clone(),
             Formula = Formula
         };
     }
@@ -822,6 +827,12 @@ public sealed class ModuleStore
             adjustment.Field = adjustment.Field.Trim();
             adjustment.Condition = adjustment.Condition?.Trim() ?? string.Empty;
             adjustment.Formula = adjustment.Formula?.Trim() ?? string.Empty;
+            if (adjustment.TeammateTarget is { } teammateTarget)
+            {
+                teammateTarget.Field = teammateTarget.Field?.Trim();
+                teammateTarget.UnitName = teammateTarget.UnitName?.Trim();
+                adjustment.IsCustom = false;
+            }
             adjustment.Operation = adjustment.IsCustom ? "=" : adjustment.Operation?.Trim() ?? "+";
             adjustment.Value = adjustment.Value?.Trim();
         }
@@ -883,6 +894,7 @@ public sealed class ModuleStore
             }
             rule.DelayMs = rule.DelayMs is > 0 ? rule.DelayMs : null;
             rule.LogicDelayMs = rule.LogicDelayMs is > 0 ? rule.LogicDelayMs : null;
+            rule.HitDelayMs = rule.HitDelayMs is > 0 ? rule.HitDelayMs : null;
             rule.MatchDelayMs = rule.MatchDelayMs is > 0 ? rule.MatchDelayMs : null;
             rule.ContinueLogic = rule.ContinueLogic is true ? true : null;
             if (rule.SubConditions is null)
@@ -990,6 +1002,13 @@ public static class ModuleLogic
         IReadOnlyDictionary<string, long>? sentKeyRules = null,
         IReadOnlyDictionary<int, bool>? ruleMatches = null,
         IReadOnlyDictionary<int, long>? ruleSoundEvents = null)
+        => RunTracked(module, state, keymap, sentKeyRules, ruleMatches, ruleSoundEvents, null);
+
+    internal static IReadOnlyList<LogicDecision> RunTracked(ModuleDefinition module, GameState state, IKeymapResolver keymap,
+        IReadOnlyDictionary<string, long>? sentKeyRules,
+        IReadOnlyDictionary<int, bool>? ruleMatches,
+        IReadOnlyDictionary<int, long>? ruleSoundEvents,
+        RuleHitDelayTracker? hitDelays)
     {
         var info = CreateInfo(module, state);
         var spellIndices = keymap.GetCurrentSpellIndices();
@@ -1006,7 +1025,7 @@ public static class ModuleLogic
         {
             var rule = module.Rules[ruleIndex];
             var rateLimitKey = $"{module.Id}:{ruleIndex}";
-            if (!rule.Enabled)
+            if (!rule.Enabled || hitDelays?.CanEvaluate(rateLimitKey) == false)
             {
                 continue;
             }
@@ -1024,6 +1043,7 @@ public static class ModuleLogic
                 info["条件错误"] = error;
                 info["规则条件"] = rule.DescribeCondition();
                 AddRuleLogInfo(info, rule, ruleIndex, rateLimitKey, null);
+                hitDelays?.Clear();
                 return [new LogicDecision(null, $"{module.Name}: 条件错误", SnapshotInfo(info), module.Name)];
             }
 
@@ -1031,6 +1051,7 @@ public static class ModuleLogic
                 conditionMatched = trackedMatch;
             if (!conditionMatched)
             {
+                hitDelays?.Forget(rateLimitKey);
                 continue;
             }
 
@@ -1042,11 +1063,20 @@ public static class ModuleLogic
             var sendOnce = ModuleSpecialActions.IsKeyPress(rule.Spell) || soundEventId > 0;
             if (sendOnce && sentKeyRules is not null
                 && sentKeyRules.TryGetValue(rateLimitKey, out var sentEventId) && sentEventId == soundEventId)
+            {
+                hitDelays?.Forget(rateLimitKey);
                 continue;
+            }
             if (ModuleSpecialActions.IsKeyPress(rule.Spell) && string.IsNullOrWhiteSpace(rule.Hotkey)) continue;
 
             if (ModuleSpecialActions.IsPauseSpell(rule.Spell))
             {
+                if (AddHitDelayWait(null))
+                {
+                    if (rule.ContinueLogic is not true) return decisions;
+                    continue;
+                }
+                hitDelays?.Forget(rateLimitKey);
                 info["命中条件"] = string.IsNullOrWhiteSpace(rule.DescribeCondition()) ? "始终" : rule.DescribeCondition();
                 info["动作技能"] = ModuleSpecialActions.PauseSpell;
                 info["动作按键"] = "-";
@@ -1063,6 +1093,7 @@ public static class ModuleLogic
                 var slot = unitSlots.TryGetValue(rule.UnitName, out var s) ? s : null;
                 if (slot is null)
                 {
+                    hitDelays?.Forget(rateLimitKey);
                     continue;
                 }
 
@@ -1078,10 +1109,12 @@ public static class ModuleLogic
                 actionSpellId = ModuleSpecialActions.GetFailedSpell(state, failedSpells);
                 if (actionSpellId is null)
                 {
+                    hitDelays?.Forget(rateLimitKey);
                     continue;
                 }
                 if (!spellNames.TryGetValue(actionSpellId.Value, out actionSpellName))
                 {
+                    hitDelays?.Forget(rateLimitKey);
                     continue;
                 }
             }
@@ -1091,10 +1124,12 @@ public static class ModuleLogic
                 actionSpellId = ModuleSpecialActions.GetFailedItem(state, insertItems);
                 if (actionSpellId is null)
                 {
+                    hitDelays?.Forget(rateLimitKey);
                     continue;
                 }
                 if (!itemNames.TryGetValue(actionSpellId.Value, out actionSpellName))
                 {
+                    hitDelays?.Forget(rateLimitKey);
                     continue;
                 }
             }
@@ -1104,10 +1139,12 @@ public static class ModuleLogic
                 actionSpellId = ModuleSpecialActions.GetOneKeySpell(state, oneKeySpells);
                 if (actionSpellId is null)
                 {
+                    hitDelays?.Forget(rateLimitKey);
                     continue;
                 }
                 if (!spellNames.TryGetValue(actionSpellId.Value, out actionSpellName))
                 {
+                    hitDelays?.Forget(rateLimitKey);
                     continue;
                 }
 
@@ -1140,6 +1177,16 @@ public static class ModuleLogic
                 }
             }
 
+            if (string.IsNullOrWhiteSpace(hotkey))
+            {
+                hitDelays?.Forget(rateLimitKey);
+            }
+            else if (AddHitDelayWait(hotkey))
+            {
+                if (rule.ContinueLogic is not true) return decisions;
+                continue;
+            }
+
             var step = BuildStep(module, rule, hotkey, actionSpellName);
             info["命中条件"] = string.IsNullOrWhiteSpace(rule.Condition) ? "始终" : rule.Condition;
             info["动作技能"] = string.IsNullOrWhiteSpace(actionSpellName)
@@ -1166,6 +1213,21 @@ public static class ModuleLogic
             if (rule.ContinueLogic is not true)
             {
                 return decisions;
+            }
+
+            bool AddHitDelayWait(string? actionHotkey)
+            {
+                var remaining = hitDelays?.WaitRemaining(rateLimitKey, rule.HitDelayMs, soundEventId) ?? 0;
+                if (remaining <= 0) return false;
+                AddRuleLogInfo(info, rule, ruleIndex, rateLimitKey, actionHotkey);
+                info["命中条件"] = string.IsNullOrWhiteSpace(rule.DescribeCondition()) ? "始终" : rule.DescribeCondition();
+                info["动作技能"] = rule.Spell;
+                info["动作单位"] = rule.UnitName ?? rule.Unit?.ToString(CultureInfo.InvariantCulture) ?? "-";
+                info["延迟命中剩余"] = $"{remaining} ms";
+                decisions.Add(new LogicDecision(null, $"{module.Name}: 等待延迟命中 {remaining} ms",
+                    SnapshotInfo(info), module.Name));
+                info.Remove("延迟命中剩余");
+                return true;
             }
         }
 
@@ -1198,7 +1260,8 @@ public static class ModuleLogic
         info["动作按键"] = string.IsNullOrWhiteSpace(hotkey) ? "-" : hotkey;
         info["动作延迟"] = rule.DelayMs is > 0 ? $"{rule.DelayMs.Value} ms" : "-";
         info["逻辑延迟"] = rule.LogicDelayMs is > 0 ? $"{rule.LogicDelayMs.Value} ms" : "-";
-        info["命中延迟"] = rule.MatchDelayMs is > 0 ? $"{rule.MatchDelayMs.Value} ms" : "-";
+        info["延迟命中"] = rule.HitDelayMs is > 0 ? $"{rule.HitDelayMs.Value} ms" : "-";
+        info["持续命中"] = rule.MatchDelayMs is > 0 ? $"{rule.MatchDelayMs.Value} ms" : "-";
         info["继续逻辑"] = rule.ContinueLogic is true ? "是" : "-";
         info["规则编号"] = ruleIndex + 1;
         info["限流键"] = rateLimitKey;
@@ -1239,6 +1302,11 @@ public static class ModuleLogic
             spellIndices,
             itemIndices,
             adjustment => IsEarlyThresholdAdjustment(module, state, adjustment));
+        var earlyTeammateAdjustments = module.ValueAdjustments
+            .Where(adjustment => adjustment.Enabled && TeammateValueAdjustment.CanApplyBeforeSelection(module, adjustment))
+            .ToHashSet();
+        ApplyValueAdjustments(module, state, spellIndices, itemIndices, earlyTeammateAdjustments.Contains);
+        earlyAppliedAdjustments.UnionWith(earlyTeammateAdjustments);
         var unitSlots = ResolveUnits(module, state);
         ResolveCounts(module, state);
         ApplyValueAdjustments(
@@ -1345,7 +1413,9 @@ public static class ModuleLogic
                 continue;
             }
 
-            if (!ApplyValueAdjustment(state, adjustment, matched))
+            if (!(adjustment.TeammateTarget is not null
+                    ? TeammateValueAdjustment.Apply(module, state, adjustment, matched)
+                    : ApplyValueAdjustment(state, adjustment, matched)))
             {
                 continue;
             }
@@ -1362,7 +1432,7 @@ public static class ModuleLogic
         ModuleValueAdjustment adjustment)
     {
         var key = adjustment.Field.Trim();
-        return key.Length > 0
+        return adjustment.TeammateTarget is null && key.Length > 0
             && !key.Contains('.')
             && !key.StartsWith('$')
             && DynamicThresholdFields(module).Contains(key);

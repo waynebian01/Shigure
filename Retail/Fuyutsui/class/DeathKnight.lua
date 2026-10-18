@@ -146,8 +146,7 @@ Fuyutsui.ClassBlocks = {
             { spellId = 49028, name = "符文刃舞" },
         },
         override = {
-            [206930] = { overrideSpellID = { 433895 }, name = "吸血鬼打击1" },
-            [55090] = { overrideSpellID = { 433895 }, name = "吸血鬼打击2" },
+            [206930] = { overrideSpellID = { [1] = 433895, }, name = "吸血鬼打击" },
         },
         items = {
             [5512] = { name = "治疗石", isEquipped = false },
@@ -404,6 +403,9 @@ Fuyutsui.ClassBlocks = {
             { spellId = 47528, name = "心灵冰冻" },
             { spellId = 48792, name = "冰封之韧" },
             { spellId = 1271967, name = "瘟疫降临" },
+        },
+        override = {
+            [55090] = { overrideSpellID = { [1] = 433895, }, name = "吸血鬼打击" },
         },
         items = {
             [5512] = { name = "治疗石", isEquipped = false },

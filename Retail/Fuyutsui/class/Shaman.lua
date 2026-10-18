@@ -156,6 +156,9 @@ Fuyutsui.ClassBlocks = {
             [271883] = { name = "浓缩银月城治疗药水", isEquipped = false },
             [273796] = { name = "一瓶肮脏的烈性毒液", isEquipped = true },
         },
+        group = {
+            state = { "healthPercent", "role", "dispelCurse", },
+        },
         nameplates = {
             auras = {
                 { name = "烈焰震击", spellId = 188389, isPlayer = false, },
@@ -388,7 +391,7 @@ Fuyutsui.ClassBlocks = {
             [271884] = { name = "浓缩银月城治疗药水", isEquipped = false },
         },
         group = {
-            state = { "healthPercent", "role", "dispel", },
+            state = { "healthPercent", "role", "dispelMagic", "dispelCurse", "dispelDisease", "dispelPoison", "dispelBleed", },
             aura = {
                 { name = "激流", spellId = 61295, },
                 { name = "大地之盾", spellIds = { 974, 383648 }, },

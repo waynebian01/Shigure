@@ -104,6 +104,7 @@ Fuyutsui.ClassBlocks = {
                 { name = "萎缩药膏", spellId = 381637, isPlayer = true, },
                 { name = "毒伤", spellId = 32645, isPlayer = true, },
                 { name = "潜伏帷幕", spellId = 114018, isPlayer = true, },
+                { name = "钓取关注", spellId = 394009, isPlayer = true, },
             },
             target = {
                 harmful = {
@@ -153,6 +154,7 @@ Fuyutsui.ClassBlocks = {
             { spellId = 25046, name = "奥术洪流" },
         },
         items = {
+            [45984] = { name = "不寻常的指南针", isEquipped = true },
             [273797] = { name = "破损的阿曼尼旗帜", isEquipped = true },
         },
         nameplates = {
@@ -291,6 +293,8 @@ Fuyutsui.ClassBlocks = {
                 "队伍人数",
                 "首领战",
                 "难度",
+                "施法技能",
+                "公共冷却",
             },
             ["能量"] = {
                 "能量值",
@@ -310,6 +314,8 @@ Fuyutsui.ClassBlocks = {
                 "施法可打断",
                 "引导",
                 "引导可打断",
+                "生命值",
+                "距离",
             },
             ["焦点"] = {
                 "施法技能",
@@ -333,7 +339,7 @@ Fuyutsui.ClassBlocks = {
         },
         auras = {
             player = {
-                { name = "潜行", spellId = 17884, isPlayer = true, },
+                { name = "潜行", spellId = 1784, isPlayer = true, },
                 { name = "暗影之舞", spellId = 185422, isPlayer = true, },
                 { name = "杀意不移", spellId = 1248775, isPlayer = true, },
                 { name = "至黑之夜", spellId = 457280, isPlayer = true, },
@@ -343,11 +349,16 @@ Fuyutsui.ClassBlocks = {
                 { name = "诡谋承袭", spellId = 1269163, isPlayer = true, },
                 { name = "冷血", spellId = 1264297, isPlayer = true, },
                 { name = "静默风暴", spellId = 385727, isPlayer = true, },
-                { name = "潜行", spellId = 1784, isPlayer = true, },
+                { name = "预谋", spellId = 343173, isPlayer = true, },
+                { name = "诡诈", spellId = 115192, isPlayer = true, },
+                { name = "消失", spellId = 11327, isPlayer = true, },
+                { name = "速效药膏", spellId = 315584, isPlayer = true, },
+                { name = "萎缩药膏", spellId = 381637, isPlayer = true, },
             },
             target = {
                 harmful = {
                     { name = "死亡标记", spellId = 457129, maxApps = true, isPlayer = true, },
+                    { name = "惊慌", spellId = 441224, isPlayer = true, },
                 },
             },
         },
@@ -374,13 +385,33 @@ Fuyutsui.ClassBlocks = {
             { spellId = 196819, name = "刺骨" },
             { spellId = 315496, name = "切割" },
             { spellId = 53, name = "背刺" },
-            { spellId = 1784, name = "潜行" },
+            { spellId = 1784, name = "潜行", forcedKnown = true, inSpellBook = true },
             { spellId = 185438, name = "暗影打击" },
             { spellId = 426591, name = "赤喉之咬" },
             { spellId = 197835, name = "袖剑风暴" },
             { spellId = 319175, name = "黑火药" },
             { spellId = 132320, name = "潜行" },
             { spellId = 1329, name = "毁伤" },
+            { spellId = 441776, name = "致命一击" },
+            { spellId = 200758, name = "幽暗之刃" },
+            { spellId = 114014, name = "飞镖投掷" },
+            { spellId = 185565, name = "剧毒之刃" },
+            { spellId = 8676, name = "伏击" },
+            { spellId = 57934, name = "嫁祸诀窍", inSpellBook = true },
+            { spellId = 58984, name = "影遁" },
+        },
+        override = {
+            [196819] = { overrideSpellID = { [1] = 441776, }, name = "致命一击" },
+        },
+        items = {
+            [5512] = { name = "治疗石", isEquipped = false },
+            [241304] = { name = "银月城生命药水", isEquipped = false },
+            [271884] = { name = "浓缩银月城生命药水", isEquipped = false },
+        },
+        nameplates = {
+            threat = false,
+            castSpell = false,
+            castCountdown = false,
         },
     },
 }
@@ -429,7 +460,6 @@ Fuyutsui.spellsList = {
     [271877]  = { index = 41, name = "刀锋冲刺" },
     [185763]  = { index = 42, name = "手枪射击" },
     [13877]   = { index = 43, name = "剑刃乱舞" },
-    [195475]  = { index = 44, name = "抓钩" },
     [1214909] = { index = 45, name = "命运骨骰" },
     [2098]    = { index = 46, name = "斩击" },
     [381989]  = { index = 47, name = "时运继延" },
@@ -496,6 +526,11 @@ Fuyutsui.spellsList = {
     [196819]  = { index = 61, name = "刺骨" },
     [1784]    = { index = 62, name = "潜行" },
     [1298826] = { index = 63, name = "蓟叶茶" },
+    [195457]  = { index = 44, name = "抓钩" },
+    [115192]  = { index = 64, name = "诡诈" },
+    [441224]  = { index = 65, name = "惊慌" },
+    [11327]   = { index = 66, name = "消失" },
+    [185422] = { index = 67, name = "暗影之舞" },
 }
 
 Fuyutsui.itemsList = {
@@ -517,4 +552,5 @@ Fuyutsui.itemsList = {
     [245919] = { index = 16, name = "飞逝银月城生命药水" },
     [271883] = { index = 17, name = "浓缩银月城生命药水" },
     [271884] = { index = 18, name = "浓缩银月城生命药水" },
+    [45984] = { index = 19, name = "不寻常的指南针" },
 }

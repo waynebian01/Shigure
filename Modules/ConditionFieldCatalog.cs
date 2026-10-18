@@ -17,7 +17,8 @@ public enum ConditionFieldCategory
     Aura,
     Spell,
     DynamicUnit,
-    DynamicValue
+    DynamicValue,
+    DynamicTeammate
 }
 
 public static class ShigureConditionFields
@@ -29,11 +30,12 @@ public static class ShigureConditionFields
     // 仅供条件编辑器承载规则级配置，不会写入条件表达式参与状态求值。
     public const string Delay = "$shigure.delay";
     public const string LogicDelay = "$shigure.logicDelay";
+    public const string HitDelay = "$shigure.hitDelay";
     public const string MatchDelay = "$shigure.matchDelay";
     public const string ContinueLogic = "$shigure.continueLogic";
 
     public static bool IsRuleSetting(string? fieldName)
-        => fieldName is Delay or LogicDelay or MatchDelay or ContinueLogic;
+        => fieldName is Delay or LogicDelay or HitDelay or MatchDelay or ContinueLogic;
 }
 
 public sealed record ConditionField(
@@ -358,7 +360,8 @@ public sealed class ConditionFieldCatalog
     /// 返回指定职业/专精下 group 队伍成员的字段(生命值/职责/驱散 + 该专精光环字段), 带类型。
     /// 供动态单位编辑器选择光环、以及条件编辑器构造 单位.字段 选项使用。
     /// </summary>
-    public IReadOnlyList<ConditionField> GetGroupFields(int? classId, int? specId, bool includeLegacyDispel = false)
+    public IReadOnlyList<ConditionField> GetGroupFields(int? classId, int? specId, bool includeLegacyDispel = false,
+        bool includeDerived = true)
     {
         var fields = new List<ConditionField>();
         if (_config is null)
@@ -402,7 +405,7 @@ public sealed class ConditionFieldCatalog
                 fields.Add(new ConditionField(entry.LegacyFieldName, entry.FieldName, ConditionFieldType.Int));
 
         // 治疗吸收由网格扫描注入，不在 config 的 group 字段里声明。
-        if (seen.Add("治疗吸收"))
+        if (includeDerived && seen.Add("治疗吸收"))
         {
             fields.Add(new ConditionField("治疗吸收", "治疗吸收", ConditionFieldType.Int));
         }

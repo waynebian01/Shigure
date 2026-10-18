@@ -131,6 +131,8 @@ Fuyutsui.ClassBlocks = {
             { spellId = 132157, name = "神圣新星" },
             { spellId = 390632, name = "强化纯净术" },
             { spellId = 373446, name = "通透影像" },
+            { spellId = 1252217, name = "暗影愈合" },
+            { spellId = 528, name = "驱散魔法" },
         },
         items = {
             [5512] = { name = "治疗石", isEquipped = false },
@@ -142,7 +144,7 @@ Fuyutsui.ClassBlocks = {
             [271884] = { name = "浓缩银月城生命药水", isEquipped = false },
         },
         group = {
-            state = { "healthPercent", "role", "dispel", },
+            state = { "healthPercent", "role", "dispelMagic", "dispelCurse", "dispelDisease", "dispelPoison", "dispelBleed", "class", },
             aura = {
                 { name = "救赎", spellId = 194384, },
                 { name = "真言术：盾", spellIds = { 17, 1253593 }, },
@@ -294,7 +296,7 @@ Fuyutsui.ClassBlocks = {
             [271884] = { name = "浓缩银月城生命药水", isEquipped = false },
         },
         group = {
-            state = { "healthPercent", "role", "dispel", },
+            state = { "healthPercent", "role", "dispelMagic", "dispelCurse", "dispelDisease", "dispelPoison", "dispelBleed", },
             aura = {
                 { name = "恢复", spellId = 139, },
                 { name = "愈合祷言", spellId = 41635, },

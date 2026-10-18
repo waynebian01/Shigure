@@ -208,6 +208,7 @@ public sealed class ConditionEditorForm : Form
     public string ConditionText { get; private set; } = string.Empty;
     public int? DelayMs { get; private set; }
     public int? LogicDelayMs { get; private set; }
+    public int? HitDelayMs { get; private set; }
     public int? MatchDelayMs { get; private set; }
     public bool? ContinueLogic { get; private set; }
 
@@ -231,7 +232,8 @@ public sealed class ConditionEditorForm : Form
         Func<IReadOnlyList<ConditionItem>>? conditionItemsProvider = null,
         IReadOnlyList<string>? numberArrayNames = null,
         string dataVersion = "Retail",
-        int? matchDelayMs = null)
+        int? matchDelayMs = null,
+        int? hitDelayMs = null)
     {
         _dataVersion = dataVersion;
         // 保存独立快照，避免父级字段集合后续刷新时影响当前弹窗；子弹窗则通过 provider 取得最新目录。
@@ -282,6 +284,12 @@ public sealed class ConditionEditorForm : Form
                 ShigureConditionFields.LogicDelay,
                 "==",
                 logicDelayMs.Value.ToString(CultureInfo.InvariantCulture)));
+        }
+
+        if (_allowRuleSettings && hitDelayMs is > 0)
+        {
+            AddRow(new ConditionTerm(false, ShigureConditionFields.HitDelay, "==",
+                hitDelayMs.Value.ToString(CultureInfo.InvariantCulture)));
         }
 
         if (_allowRuleSettings && matchDelayMs is > 0)
@@ -623,7 +631,8 @@ public sealed class ConditionEditorForm : Form
         _conditionsGrid.Columns.Add(CreateComboColumn(ClassificationColumn, "分类", 130, 100));
 
         var fieldColumn = CreateComboColumn(FieldColumn, "字段", 260, 260);
-        fieldColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+        // 窗口宽度变化时由字段列占用剩余空间，便于显示完整字段名称。
+        fieldColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
         // 字段列始终保存唯一字段名，显示名称只负责界面文本。
         // 避免 DataGridView 在对象值与格式化字符串之间切换，导致预览丢行或跨行串值。
         fieldColumn.DisplayMember = nameof(FieldItem.Display);
@@ -638,8 +647,7 @@ public sealed class ConditionEditorForm : Form
             HeaderText = "值",
             Width = 140,
             MinimumWidth = 100,
-            // 值列只占剩余空间，避免缓存的较大列宽把右侧删除按钮挤出可视区。
-            AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill,
+            AutoSizeMode = DataGridViewAutoSizeColumnMode.None,
             SortMode = DataGridViewColumnSortMode.NotSortable
         });
         _conditionsGrid.Columns.Add(new DataGridViewButtonColumn
@@ -732,6 +740,7 @@ public sealed class ConditionEditorForm : Form
                 "插入物品" => "插入物品，条件保存物品列表中的 itemId",
                 "施法技能" => "施法技能，条件保存技能列表中的 spellId",
                 "上个技能" => "上个技能，条件保存技能列表中的 spellId",
+                ShigureConditionFields.HitDelay => "命中后每次执行前等待的时间；等待期间默认停止后续判断，设置继续逻辑则继续。条件失效且持续命中结束时取消等待。",
                 ShigureConditionFields.MatchDelay => "条件从命中变为不命中后，继续保持命中的时间；恢复命中会取消倒计时。",
                 _ => e.Value?.ToString() ?? string.Empty
             };
@@ -1425,6 +1434,11 @@ public sealed class ConditionEditorForm : Form
             return;
         }
 
+        if (!TryReadHitDelay(out var hitDelayMs))
+        {
+            return;
+        }
+
         if (!TryReadMatchDelay(out var matchDelayMs))
         {
             return;
@@ -1451,6 +1465,7 @@ public sealed class ConditionEditorForm : Form
         ConditionText = text;
         DelayMs = delayMs;
         LogicDelayMs = logicDelayMs;
+        HitDelayMs = hitDelayMs;
         MatchDelayMs = matchDelayMs;
         ContinueLogic = continueLogic;
         DialogResult = DialogResult.OK;
@@ -1670,7 +1685,18 @@ public sealed class ConditionEditorForm : Form
                          || string.Equals(
                              NormalizeClassification(field.Classification),
                              classification,
-                             StringComparison.Ordinal))))
+                             StringComparison.Ordinal)))
+                     .OrderBy(field => category == ConditionFieldCategory.Shigure ? field.Name switch
+                     {
+                         ShigureConditionFields.Delay => 0,
+                         ShigureConditionFields.LogicDelay => 1,
+                         ShigureConditionFields.HitDelay => 2,
+                         ShigureConditionFields.MatchDelay => 3,
+                         ShigureConditionFields.ContinueLogic => 4,
+                         ShigureConditionFields.VolumeRecognition => 5,
+                         ShigureConditionFields.SoundRecognition => 6,
+                         _ => 7
+                     } : 0))
         {
             cell.Items.Add(new FieldItem(
                 field.Name,
@@ -2262,15 +2288,16 @@ public sealed class ConditionEditorForm : Form
         _ = TryReadDelay(out var delayMs, showWarning: false);
         _ = TryReadLogicDelay(out var logicDelayMs, showWarning: false);
         _ = TryReadContinueLogic(out var continueLogic, showWarning: false);
+        _ = TryReadHitDelay(out var hitDelayMs, showWarning: false);
         _ = TryReadMatchDelay(out var matchDelayMs, showWarning: false);
-        var full = ComposePreview(CurrentConditionText(), delayMs, logicDelayMs, continueLogic, matchDelayMs);
+        var full = ComposePreview(CurrentConditionText(), delayMs, logicDelayMs, continueLogic, matchDelayMs, hitDelayMs);
         _previewLabel.Text = full.Length == 0 ? "预览: (无条件, 始终命中)" : $"预览: {full}";
         // 单行预览会被省略号截断, 悬停看完整表达式。
         _previewToolTip.SetToolTip(_previewLabel, full.Length == 0 ? string.Empty : full);
     }
 
     // 把主条件文本与子条件合成为可读的整体表达式(与 ModuleRule.DescribeCondition 同形)。
-    private string ComposePreview(string mainText, int? delayMs, int? logicDelayMs, bool? continueLogic, int? matchDelayMs)
+    private string ComposePreview(string mainText, int? delayMs, int? logicDelayMs, bool? continueLogic, int? matchDelayMs, int? hitDelayMs)
     {
         var conditionText = mainText;
         if (_subConditions.Count > 0)
@@ -2293,11 +2320,18 @@ public sealed class ConditionEditorForm : Form
                 : $"{conditionText}；逻辑延迟 {logicDelayMs.Value} ms";
         }
 
+        if (hitDelayMs is > 0)
+        {
+            conditionText = conditionText.Length == 0
+                ? $"延迟命中 {hitDelayMs.Value} ms"
+                : $"{conditionText}；延迟命中 {hitDelayMs.Value} ms";
+        }
+
         if (matchDelayMs is > 0)
         {
             conditionText = conditionText.Length == 0
-                ? $"命中延迟 {matchDelayMs.Value} ms"
-                : $"{conditionText}；命中延迟 {matchDelayMs.Value} ms";
+                ? $"持续命中 {matchDelayMs.Value} ms"
+                : $"{conditionText}；持续命中 {matchDelayMs.Value} ms";
         }
 
         if (continueLogic is true)
@@ -2328,8 +2362,11 @@ public sealed class ConditionEditorForm : Form
             showWarning);
     }
 
+    private bool TryReadHitDelay(out int? delayMs, bool showWarning = true)
+        => TryReadRuleSettingDelay(ShigureConditionFields.HitDelay, "延迟命中", out delayMs, showWarning);
+
     private bool TryReadMatchDelay(out int? delayMs, bool showWarning = true)
-        => TryReadRuleSettingDelay(ShigureConditionFields.MatchDelay, "命中延迟", out delayMs, showWarning);
+        => TryReadRuleSettingDelay(ShigureConditionFields.MatchDelay, "持续命中", out delayMs, showWarning);
 
     private bool TryReadContinueLogic(out bool? continueLogic, bool showWarning = true)
     {

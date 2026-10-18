@@ -74,9 +74,9 @@ end
 function Fuyutsui:OnInitialize()
     InitDB()
 
-    SLASH_FUYUTSUI1 = "/fu"
-    SLASH_FUYUTSUI2 = "/fuyutsui"
-    SlashCmdList["FUYUTSUI"] = function(msg, editbox)
+    SLASH_NOWAKI1 = "/fu"
+    SLASH_NOWAKI2 = "/fuyutsui"
+    SlashCmdList["NOWAKI"] = function(msg, editbox)
         Fuyutsui:SlashCommand(msg, editbox)
     end
 

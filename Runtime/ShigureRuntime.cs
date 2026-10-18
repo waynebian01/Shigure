@@ -176,6 +176,7 @@ public sealed class ShigureRuntime
         }
         finally
         {
+            ResetSoundTriggers();
             _enabled = false;
             _clickPending = false;
             _logicPausedUntil = DateTimeOffset.MinValue;
@@ -192,6 +193,10 @@ public sealed class ShigureRuntime
         switch (_options.Mode)
         {
             case SendMode.Click:
+                ResetSoundTriggers();
+                _lastRuleSentAt.Clear();
+                _logicPausedUntil = DateTimeOffset.MinValue;
+                _logic.BeginSingleTrigger();
                 _enabled = true;
                 _clickPending = true;
                 _currentStep = "单击触发";
@@ -298,9 +303,12 @@ public sealed class ShigureRuntime
                 TrySendDecisions(decisions, _latestTargetWindowHandle);
             }
 
-            _enabled = false;
-            _clickPending = false;
-            ResetSoundTriggers();
+            if (!evaluation.HasPendingHitDelay || !_logic.HasPendingHitDelay)
+            {
+                _enabled = false;
+                _clickPending = false;
+                ResetSoundTriggers();
+            }
             return;
         }
 
@@ -371,6 +379,11 @@ public sealed class ShigureRuntime
     {
         _logic.ResetTriggers();
         _soundInput?.Configure([], false);
+        if (_options.Mode == SendMode.Click)
+        {
+            _enabled = false;
+            _clickPending = false;
+        }
     }
 
     private void RecordSent(LogicDecision decision, DateTimeOffset now)

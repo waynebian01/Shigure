@@ -53,8 +53,9 @@ Fuyutsui.ClassMacros = {
             "挫志怒吼",
             "无视苦痛",
             "破坏者",
-            "拳击",
+            "[@target]拳击",
             "[@focus]拳击",
+            "毁灭打击",
         },
         specialSpells = {},
     },
@@ -245,11 +246,44 @@ Fuyutsui.ClassMacros = {
             "[@focus]脚踢",
             "[@target]脚踢",
             "奥术洪流",
+            "钓鱼",
+            "凿击",
+            "迟钝药膏",
+            "扰乱",
+            "闷棍",
+            "/cast 冲动\n/use 13", -- 冲动
+            "影舞步",
+            "正中眉心",
+            "刀锋冲刺",
+            "手枪射击",
+            "剑刃乱舞",
+            "抓钩",
+            "命运骨骰",
+            "斩击",
+            "时运继延",
+            "伺机待发",
+            "/cast 暗影之刃\n/use 13", -- 暗影之刃
+            "影袭",
+            "致命一击",
+            "银月城生命药水",
         },
         specialSpells = {
             "/castsequence reset=1 潜行,x", -- 潜行
             "/use 13", -- 饰品1
             "/cast 死亡印记\n/use 13", -- 死亡饰品
+            "/use 不寻常的指南针", -- 不寻常的指南针
+            "/castsequence reset=target/combat/12 刀扇,锁喉,割裂,null", -- 刺杀AOE起手
+            "/stopcasting\n/cast [target=focus,harm,nodead][target=mouseover,harm,nodead][harm,nodead] 致盲", -- 致盲
+            "/cancelaura [stance:0] 1269163\n/cast 刺骨", -- 取消诡谋刺骨
+            "/cancelaura [stance:0] 1269163\n/cast 黑火药", -- 取消诡谋黑火药
+            "/use item:5512", -- 低血回血5512
+            "/use item:241304", -- 低血回血241304
+            "/use item:241305", -- 低血回血241305
+            "/use item:271884", -- 低血回血271884
+            "/use item:271883", -- 低血回血271883
+            "/stopattack\n/cast 影遁\n/cast !潜行", -- 刺杀影遁潜行
+            "/cast [nocombat,nostealth,nomounted,nochanneling] !潜行", -- 盗贼脱战潜行
+            "/click TankMDButton1 LeftButton 1\n/click TankMDButton1 LeftButton 0", -- 盗贼坦克嫁祸
         },
     },
 
@@ -682,6 +716,9 @@ Fuyutsui.ClassMacros = {
             "[@player]愈合",
             "[@player]生命绽放",
             "[@player]迅捷治愈",
+            "[nostance:2]猎豹形态(变形)",
+            "[nostance:1]熊形态(变形)",
+            "野性印记",
         },
         specialSpells = {
             "/cancelaura [spec:4]猎豹形态\n/cast 万灵之召", -- 人形万灵
@@ -737,6 +774,8 @@ Fuyutsui.ClassMacros = {
             "收割者战刃",
             "灵魂裂劈",
             "破裂",
+            "[@cursor]烈焰咒符",
+            "[@cursor]锁链咒符",
         },
         specialSpells = {
             "/castsequence reset=0.5 恶魔变形,x", -- 恶魔变形

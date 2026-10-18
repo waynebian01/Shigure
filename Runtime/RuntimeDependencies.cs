@@ -26,8 +26,10 @@ internal interface IRuntimeStateBuilder
 
 internal interface IRuntimeLogic
 {
+    bool HasPendingHitDelay => false;
     void DecisionSent(LogicDecision decision) { }
     void ResetTriggers() { }
+    void BeginSingleTrigger() { }
     LogicEvaluation Evaluate(
         int? classId,
         int? specId,
@@ -52,7 +54,8 @@ internal interface IRuntimeVolumeInput
 
 internal readonly record struct VolumePeakSample(double? PeakPercent, string? FailureReason = null);
 
-public sealed record LogicEvaluation(string? ModuleName, IReadOnlyList<LogicDecision> Decisions)
+public sealed record LogicEvaluation(string? ModuleName, IReadOnlyList<LogicDecision> Decisions,
+    bool HasPendingHitDelay = false)
 {
     public LogicDecision? Decision => Decisions.Count == 0 ? null : Decisions[^1];
 }

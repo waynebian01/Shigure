@@ -1,6 +1,6 @@
 # Boss 战斗时间轴 API 与像素输出
 
-> 适用范围：正式服 12.0+ 的 `EncounterTimeline` / `EncounterEvents` API。本文按 2026-09-25 的接口资料整理，并结合当前 Fuyutsui 的顶部像素协议说明可行性。接口可能随补丁调整，上线前应在目标客户端中用 `/api` 再确认一次。
+> 适用范围：正式服 12.0+ 的 `EncounterTimeline` / `EncounterEvents` API。本文按 2026-09-25 的接口资料整理，并结合当前 Shigure 的顶部像素协议说明可行性。接口可能随补丁调整，上线前应在目标客户端中用 `/api` 再确认一次。
 
 ## 结论
 
@@ -102,7 +102,7 @@
 错误示例：
 
 ```lua
-function Fuyutsui:ENCOUNTER_TIMELINE_EVENT_ADDED(_, eventInfo)
+function Shigure:ENCOUNTER_TIMELINE_EVENT_ADDED(_, eventInfo)
     -- Boss 事件中 spellID 是秘密值；比较会报错。
     if eventInfo.spellID == 123456 then
         self:CreateTexture(100, 1)
@@ -170,7 +170,7 @@ local function PaintEventColor(slot, eventID)
     timelineTextures[slot]:SetColorTexture(r, g, b, 1)
 end
 
-function Fuyutsui:ENCOUNTER_TIMELINE_EVENT_ADDED(_, eventInfo)
+function Shigure:ENCOUNTER_TIMELINE_EVENT_ADDED(_, eventInfo)
     local eventID = eventInfo.id -- NeverSecret
     local slot = self:AcquireTimelinePixelSlot(eventID)
     if not slot then return end
@@ -179,14 +179,14 @@ function Fuyutsui:ENCOUNTER_TIMELINE_EVENT_ADDED(_, eventInfo)
     PaintEventColor(slot, eventID)
 end
 
-function Fuyutsui:ENCOUNTER_TIMELINE_EVENT_COLOR_CHANGED(_, eventID)
+function Shigure:ENCOUNTER_TIMELINE_EVENT_COLOR_CHANGED(_, eventID)
     local slot = eventSlotByID[eventID]
     if slot then
         PaintEventColor(slot, eventID)
     end
 end
 
-function Fuyutsui:ENCOUNTER_TIMELINE_EVENT_REMOVED(_, eventID)
+function Shigure:ENCOUNTER_TIMELINE_EVENT_REMOVED(_, eventID)
     local slot = eventSlotByID[eventID]
     if not slot then return end
 
@@ -198,9 +198,9 @@ end
 
 上例是结构示意，`AcquireTimelinePixelSlot`、纹理创建、计时更新和清理仍需实现。纹理应在非战斗阶段预先创建并固定锚点，战斗中只更新允许变化的颜色值。
 
-### 与当前 Fuyutsui 像素协议的关系
+### 与当前 Shigure 像素协议的关系
 
-当前 `Fuyutsui:CreateTexture(i, b)` 的含义是：
+当前 `Shigure:CreateTexture(i, b)` 的含义是：
 
 - R/G 编码状态索引；
 - B 编码该状态的数值；

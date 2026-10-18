@@ -65,16 +65,16 @@ Fuyutsui.ClassBlocks = {
         },
         auras = {
             player = {
-                { name = "先发制人", spellId = 388108, isPlayer = true,},
-                { name = "能量放射", spellId = 208628, isPlayer = true,},
-                { name = "冲撞惯性", spellId = 427640, isPlayer = true,},
-                { name = "恶魔变形", spellId = 162264, isPlayer = true,},
+                { name = "先发制人", spellId = 388108, isPlayer = true, },
+                { name = "能量放射", spellId = 208628, isPlayer = true, },
+                { name = "冲撞惯性", spellId = 427640, isPlayer = true, },
+                { name = "恶魔变形", spellId = 162264, isPlayer = true, },
             },
             target = {
                 harmful = {
-                    { name = "精华破碎", spellIds = { 320338, 258860 }, isPlayer = true,},
-                    { name = "能量放射", spellId = 208628, isPlayer = true,},
-                    { name = "冲撞惯性", spellId = 427640, isPlayer = true,},
+                    { name = "精华破碎", spellIds = { 320338, 258860 }, isPlayer = true, },
+                    { name = "能量放射", spellId = 208628, isPlayer = true, },
+                    { name = "冲撞惯性", spellId = 427640, isPlayer = true, },
                 },
             },
         },
@@ -167,21 +167,21 @@ Fuyutsui.ClassBlocks = {
         },
         auras = {
             player = {
-                { name = "恶魔尖刺", spellId = 203819, isPlayer = true,},
-                { name = "烈火烙印", spellId = 207771, isPlayer = true,},
-                { name = "灵魂残片", spellId = 203981, maxApps = true, isPlayer = true,},
-                { name = "献祭光环", spellId = 258920, isPlayer = true,},
-                { name = "战刃绝技", spellId = 444661, maxApps = true, isPlayer = true,},
-                { name = "撕裂猛击", spellId = 442442, isPlayer = true,},
-                { name = "战刃乱舞", spellId = 442435, isPlayer = true,},
-                { name = "酣战热血", spellId = 442695, isPlayer = true,},
-                { name = "沸腾怒意", spellId = 1270547, maxApps = true, isPlayer = true,},
-                { name = "无羁邪怒", spellId = 1270476, isPlayer = true,},
+                { name = "恶魔尖刺", spellId = 203819, isPlayer = true, },
+                { name = "烈火烙印", spellId = 207771, isPlayer = true, },
+                { name = "灵魂残片", spellId = 203981, maxApps = true, isPlayer = true, },
+                { name = "献祭光环", spellId = 258920, isPlayer = true, },
+                { name = "战刃绝技", spellId = 444661, maxApps = true, isPlayer = true, },
+                { name = "撕裂猛击", spellId = 442442, isPlayer = true, },
+                { name = "战刃乱舞", spellId = 442435, isPlayer = true, },
+                { name = "酣战热血", spellId = 442695, isPlayer = true, },
+                { name = "沸腾怒意", spellId = 1270547, maxApps = true, isPlayer = true, },
+                { name = "无羁邪怒", spellId = 1270476, isPlayer = true, },
             },
             target = {
                 harmful = {
-                    { name = "烈焰咒符", spellId = 204598, isPlayer = true,},
-                    { name = "脆弱", spellId = 247456, isPlayer = true,},
+                    { name = "烈焰咒符", spellId = 204598, isPlayer = true, },
+                    { name = "脆弱", spellId = 247456, isPlayer = true, },
                 },
             },
         },
@@ -207,6 +207,7 @@ Fuyutsui.ClassBlocks = {
             { spellId = 179057, name = "混乱新星" },
             { spellId = 207407, name = "灵魂切削" },
             { spellId = 202137, name = "沉默咒符" },
+            { spellId = 202138, name = "锁链咒符" },
         },
         items = {
             [5512] = { name = "治疗石", isEquipped = false },
@@ -407,6 +408,7 @@ Fuyutsui.spellsList = {
     [357214]  = { index = 254, name = "飞翼打击" },
     [436344]  = { index = 255, name = "艾泽里特涌动" },
 
+    [202138] = { index = 65, name = "锁链咒符" },
 }
 
 Fuyutsui.itemsList = {

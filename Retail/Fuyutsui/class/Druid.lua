@@ -339,9 +339,10 @@ Fuyutsui.ClassBlocks = {
             { spellId = 102342, name = "铁木树皮" },
             { spellId = 132158, name = "自然迅捷" },
             { spellId = 1261867, name = "野性之心" },
+            { spellId = 392378, name = "强化自然之愈" },
         },
         group = {
-            state = { "healthPercent", "role", "dispel", "class", },
+            state = { "healthPercent", "role", "dispelMagic", "dispelCurse", "dispelDisease", "dispelPoison", "dispelBleed", "class", },
             aura = {
                 { name = "生命绽放", spellId = 33763, },
                 { name = "回春术", spellId = 774, },
@@ -483,6 +484,7 @@ Fuyutsui.spellsList = {
     [106898] = { index = 73, name = "狂奔怒吼" },
     [117679] = { index = 74, name = "化身" },
     [33891] = { index = 75, name = "化身：生命之树" },
+    [392378] = { index = 76, name = "强化自然之愈" },
 }
 
 Fuyutsui.itemsList = {

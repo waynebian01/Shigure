@@ -76,6 +76,7 @@ public sealed class StateBuilder : IRuntimeStateBuilder
         {
             var group = BuildGroup(groupConfig, rowData, barData, healAbsorbData);
             result["group"] = group;
+            result["$groupFieldAliases"] = BuildGroupFieldAliases(groupConfig);
         }
 
         if (JsonHelpers.Get(stateConfig, "nameplates") is JsonObject nameplateConfig)
@@ -255,6 +256,22 @@ public sealed class StateBuilder : IRuntimeStateBuilder
         }
 
         return values;
+    }
+
+    private static Dictionary<string, string[]> BuildGroupFieldAliases(JsonObject config)
+    {
+        var result = new Dictionary<string, string[]>(StringComparer.Ordinal);
+        foreach (var (key, node) in config)
+        {
+            if (node is not JsonObject field || !field.ContainsKey("step")) continue;
+            var id = JsonHelpers.GetLong(field["spellId"]);
+            var metric = JsonHelpers.GetString(field["metric"]);
+            if (id is not > 0 || string.IsNullOrWhiteSpace(metric) || field["spellIds"] is not JsonArray aliases) continue;
+            result[key] = aliases.Select(JsonHelpers.GetLong)
+                .Where(alias => alias is > 0 && alias != id)
+                .Select(alias => SpellFieldKey.AuraMember(alias!.Value, metric)).ToArray();
+        }
+        return result;
     }
 
     private static Dictionary<string, IReadOnlyDictionary<string, object?>> BuildGroup(

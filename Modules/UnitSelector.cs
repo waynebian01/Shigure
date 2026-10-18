@@ -585,6 +585,8 @@ public static class UnitSelector
         => TryInt(GetField(data, SpellFieldKey.AuraMember(auraSpellId)), out var duration) ? duration : 0;
 
     // 职责为 None/无法解析时视为不跳过(返回 true), 与 utils.py 的 _role_not_zero 一致。
+    internal static bool IsValidTeammate(IReadOnlyDictionary<string, object?> data) => RoleNotZero(data);
+
     private static bool RoleNotZero(IReadOnlyDictionary<string, object?> data)
     {
         var role = GetField(data, "职责");

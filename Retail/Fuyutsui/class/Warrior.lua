@@ -406,6 +406,7 @@ Fuyutsui.spellsList = {
     [368970]  = { index = 253, name = "扫尾" },
     [357214]  = { index = 254, name = "飞翼打击" },
     [436344]  = { index = 255, name = "艾泽里特涌动" },
+    [20243] = { index = 41, name = "毁灭打击" },
 }
 
 Fuyutsui.itemsList = {

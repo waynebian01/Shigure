@@ -123,7 +123,7 @@ Fuyutsui.ClassBlocks = {
             { spellId = 393024, name = "强化清洁术" },
         },
         override = {
-            [375576] = { overrideSpellID = { 432459, 432472 }, name = "神圣军备" },
+            [375576] = { overrideSpellID = { [1] = 432459, [2] = 432472, }, name = "神圣军备" },
         },
         items = {
             [5512] = { name = "治疗石", isEquipped = false },
@@ -132,7 +132,7 @@ Fuyutsui.ClassBlocks = {
             [271884] = { name = "浓缩银月城生命药水", isEquipped = false },
         },
         group = {
-            state = { "healthPercent", "role", "dispel", "class", },
+            state = { "healthPercent", "role", "dispelMagic", "dispelCurse", "dispelDisease", "dispelPoison", "dispelBleed", "class", },
             aura = {
                 { name = "圣光道标", spellIds = { 53563, 156910, 1244893 }, },
                 { name = "永恒之火", spellId = 156322, },
@@ -263,6 +263,9 @@ Fuyutsui.ClassBlocks = {
             { spellId = 465, name = "虔诚光环" },
             { spellId = 204018, name = "破咒祝福" },
             { spellId = 433568, name = "圣言祭礼" },
+        },
+        override = {
+            [432459] = { overrideSpellID = { [1] = 432472, }, name = "神圣军备" },
         },
         items = {
             [5512] = { name = "治疗石", isEquipped = false },

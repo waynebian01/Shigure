@@ -19,8 +19,9 @@ public sealed class ModuleNumberArrayEditorForm : Form
     private readonly Label _lookupStatusLabel = new();
     private readonly System.Windows.Forms.Timer _lookupFilterTimer = new() { Interval = 150 };
     private readonly HashSet<string> _takenNames;
-    private readonly NumberCatalog _bossCatalog = NumberCatalog.LoadBosses();
-    private readonly NumberCatalog _mapCatalog = NumberCatalog.LoadMaps();
+    private readonly NumberCatalog _bossCatalog;
+    private readonly NumberCatalog _dungeonCatalog;
+    private readonly NumberCatalog _raidCatalog;
     private SpellDatabaseResultSet _lookupResults = SpellDatabaseResultSet.Empty;
     private List<NumberCatalogEntry> _catalogMatches = [];
     private int _lookupVisibleCount;
@@ -33,19 +34,23 @@ public sealed class ModuleNumberArrayEditorForm : Form
     public ModuleNumberArrayEditorForm(ModuleNumberArray? source, IEnumerable<string> takenNames, string dataVersion = "Retail")
     {
         _dataVersion = dataVersion;
+        _bossCatalog = NumberCatalog.LoadBosses(dataVersion);
+        _dungeonCatalog = NumberCatalog.LoadDungeons(dataVersion);
+        _raidCatalog = NumberCatalog.LoadRaids(dataVersion);
         _takenNames = new HashSet<string>(takenNames, StringComparer.Ordinal);
         InitializeComponent();
         _nameBox.Text = source?.Name ?? string.Empty;
+        _kindBox.SelectedIndexChanged += (_, _) => ApplyKind();
+        if (source?.Kind is ModuleNumberArrayKind kind && kind != ModuleNumberArrayKind.Spell)
+        {
+            _kindBox.SelectedIndex = _kindBox.Items.Cast<UiDropDownOption>()
+                .ToList().FindIndex(option => Equals(option.Value, kind));
+        }
+
         foreach (var number in source?.Numbers ?? [])
         {
             var index = _grid.Rows.Add(null!, string.Empty, number.ToString(CultureInfo.InvariantCulture));
             UpdateRowInfo(_grid.Rows[index]);
-        }
-
-        _kindBox.SelectedIndexChanged += (_, _) => ApplyKind();
-        if (source?.Kind is ModuleNumberArrayKind kind && kind != ModuleNumberArrayKind.Spell)
-        {
-            _kindBox.SelectedIndex = (int)kind;
         }
 
         SpellIconCatalog.CatalogChanged += OnSpellIconCatalogChanged;
@@ -178,7 +183,8 @@ public sealed class ModuleNumberArrayEditorForm : Form
         _kindBox.Margin = new Padding(0, 6, 8, 6);
         _kindBox.Items.Add(new UiDropDownOption(ModuleNumberArrayKind.Spell, "技能列表"));
         _kindBox.Items.Add(new UiDropDownOption(ModuleNumberArrayKind.Boss, "首领列表"));
-        _kindBox.Items.Add(new UiDropDownOption(ModuleNumberArrayKind.Map, "地图"));
+        _kindBox.Items.Add(new UiDropDownOption(ModuleNumberArrayKind.Map, "地下城"));
+        _kindBox.Items.Add(new UiDropDownOption(ModuleNumberArrayKind.Raid, "团队副本"));
         _kindBox.Items.Add(new UiDropDownOption(ModuleNumberArrayKind.Other, "其他"));
         _kindBox.SelectedIndex = 0;
         nameRow.Controls.Add(_kindBox, 0, 0);
@@ -553,7 +559,7 @@ public sealed class ModuleNumberArrayEditorForm : Form
             e.Value = _lookupGrid.Columns[e.ColumnIndex].Name switch
             {
                 "SpellId" => entry.Id.ToString(CultureInfo.InvariantCulture),
-                "Name" => entry.Name,
+                "Name" => entry.DisplayName,
                 "Add" => "添加",
                 _ => null
             };
@@ -657,7 +663,10 @@ public sealed class ModuleNumberArrayEditorForm : Form
                 row.Cells["Name"].Value = _bossCatalog.FindName(number) ?? string.Empty;
                 break;
             case ModuleNumberArrayKind.Map:
-                row.Cells["Name"].Value = _mapCatalog.FindName(number) ?? string.Empty;
+                row.Cells["Name"].Value = _dungeonCatalog.FindName(number) ?? string.Empty;
+                break;
+            case ModuleNumberArrayKind.Raid:
+                row.Cells["Name"].Value = _raidCatalog.FindName(number) ?? string.Empty;
                 break;
         }
     }
@@ -675,14 +684,16 @@ public sealed class ModuleNumberArrayEditorForm : Form
         nameColumn.HeaderText = kind switch
         {
             ModuleNumberArrayKind.Boss => "首领名称",
-            ModuleNumberArrayKind.Map => "地图名称",
+            ModuleNumberArrayKind.Map => "地下城名称",
+            ModuleNumberArrayKind.Raid => "团队副本名称",
             _ => "名称"
         };
         var numberColumn = _grid.Columns["Number"]!;
         numberColumn.HeaderText = kind switch
         {
             ModuleNumberArrayKind.Boss => "索引ID",
-            ModuleNumberArrayKind.Map => "地图ID",
+            ModuleNumberArrayKind.Map => "地下城编号",
+            ModuleNumberArrayKind.Raid => "团队副本编号",
             _ => "数字"
         };
         if (kind == ModuleNumberArrayKind.Other)
@@ -699,13 +710,15 @@ public sealed class ModuleNumberArrayEditorForm : Form
         _lookupGrid.Columns["SpellId"]!.HeaderText = kind switch
         {
             ModuleNumberArrayKind.Boss => "索引ID",
-            ModuleNumberArrayKind.Map => "地图ID",
+            ModuleNumberArrayKind.Map => "地下城编号",
+            ModuleNumberArrayKind.Raid => "团队副本编号",
             _ => "spellId"
         };
         _lookupGrid.Columns["Name"]!.HeaderText = kind switch
         {
             ModuleNumberArrayKind.Boss => "首领名称",
-            ModuleNumberArrayKind.Map => "地图名称",
+            ModuleNumberArrayKind.Map => "地下城名称",
+            ModuleNumberArrayKind.Raid => "团队副本名称",
             _ => "名称"
         };
         var addText = spellLike ? "添加至数组" : "添加";
@@ -715,7 +728,8 @@ public sealed class ModuleNumberArrayEditorForm : Form
         _lookupFilterBox.PlaceholderText = kind switch
         {
             ModuleNumberArrayKind.Boss => "名称或索引ID",
-            ModuleNumberArrayKind.Map => "名称或地图ID",
+            ModuleNumberArrayKind.Map => "名称或地下城编号",
+            ModuleNumberArrayKind.Raid => "名称或团队副本编号",
             _ => "spellId 或名称"
         };
         if (_lookupTitle is not null)
@@ -723,7 +737,8 @@ public sealed class ModuleNumberArrayEditorForm : Form
             _lookupTitle.Text = kind switch
             {
                 ModuleNumberArrayKind.Boss => "首领列表",
-                ModuleNumberArrayKind.Map => "地图列表",
+                ModuleNumberArrayKind.Map => "地下城列表",
+                ModuleNumberArrayKind.Raid => "团队副本列表",
                 _ => "技能查找"
             };
         }
@@ -742,7 +757,12 @@ public sealed class ModuleNumberArrayEditorForm : Form
 
     private void ApplyCatalogFilter()
     {
-        var catalog = CurrentKind == ModuleNumberArrayKind.Boss ? _bossCatalog : _mapCatalog;
+        var catalog = CurrentKind switch
+        {
+            ModuleNumberArrayKind.Boss => _bossCatalog,
+            ModuleNumberArrayKind.Raid => _raidCatalog,
+            _ => _dungeonCatalog
+        };
         if (catalog.Error is not null)
         {
             ShowCatalogMatches([], catalog.Error);
@@ -790,13 +810,14 @@ public sealed class ModuleNumberArrayEditorForm : Form
             : ModuleNumberArrayKind.Spell;
 
     private bool UsesCatalogLookup
-        => CurrentKind is ModuleNumberArrayKind.Boss or ModuleNumberArrayKind.Map;
+        => CurrentKind is ModuleNumberArrayKind.Boss or ModuleNumberArrayKind.Map or ModuleNumberArrayKind.Raid;
 
     private string LookupNoun
         => CurrentKind switch
         {
             ModuleNumberArrayKind.Boss => "首领",
-            ModuleNumberArrayKind.Map => "地图",
+            ModuleNumberArrayKind.Map => "地下城",
+            ModuleNumberArrayKind.Raid => "团队副本",
             _ => "技能"
         };
 

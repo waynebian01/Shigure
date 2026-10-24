@@ -9,7 +9,7 @@
   <Identity
     Name="ArasakaCorporation.Shigure"
     Publisher="CN=Arasaka Corporation"
-    Version="1.2.1.35"
+    Version="1.2.1.36"
     ProcessorArchitecture="neutral" />
   <Properties>
     <DisplayName>Shigure</DisplayName>

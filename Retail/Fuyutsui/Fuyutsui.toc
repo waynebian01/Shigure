@@ -1,10 +1,10 @@
 ## Interface: 120100, 120105
 
 ## Title: Fuyutsui
-## Version: 1.2.1.35
+## Version: 1.2.1.36
 ## Author: Wayne
 ## IconTexture: Interface\AddOns\Fuyutsui\core\Spell_Misc_EmotionHappy.blp
-## OptionalDeps: LibRangeCheck-3.0, BigWigs, EXBoss
+## OptionalDeps: LibRangeCheck-3.0
 ## SavedVariables: FuyutsuiADB
 
 ## Category-enUS: Combat
@@ -32,8 +32,6 @@ core/curves.lua
 core/block.lua
 core/nameplates.lua
 core/stateblocks.lua
-core/exboss.lua
-core/bigwigs.lua
 core/commands.lua
 core/quickbutton.lua
 core/macro.lua
@@ -59,5 +57,6 @@ core/spells.lua
 unit/target.lua
 unit/group.lua
 unit/boss.lua
+core/encountertimeline.lua
 core/events.lua
 main.lua

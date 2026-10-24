@@ -1,3 +1,4 @@
+using System.Collections.Frozen;
 using System.Globalization;
 using System.Text.Encodings.Web;
 using System.Text.Json;
@@ -33,10 +34,29 @@ public sealed class ModuleDefinition
     [JsonIgnore]
     public string? FilePath { get; set; }
 
+    private Lazy<IReadOnlyDictionary<string, IReadOnlySet<long>>>? _numberArrayCache;
+
+    internal void ResetNumberArrayCache() => _numberArrayCache = null;
+
+    private Lazy<IReadOnlyDictionary<string, IReadOnlySet<long>>> GetNumberArrayCache()
+    {
+        if (_numberArrayCache is not null) return _numberArrayCache;
+        // 捕获快照，与可编辑的数组列表隔离；克隆共享延迟载入结果。
+        var definitions = NumberArrays.Select(array => array.Clone()).ToArray();
+        return _numberArrayCache = new(() => definitions
+            .Where(array => !string.IsNullOrWhiteSpace(array.Name))
+            .GroupBy(array => array.Name, StringComparer.Ordinal)
+            .ToFrozenDictionary(group => group.Key,
+                group => (IReadOnlySet<long>)group.First().Numbers.ToFrozenSet(), StringComparer.Ordinal));
+    }
+
+    internal IReadOnlyDictionary<string, IReadOnlySet<long>> GetNumberArrays() => GetNumberArrayCache().Value;
+
     public ModuleDefinition Clone()
     {
         return new ModuleDefinition
         {
+            _numberArrayCache = GetNumberArrayCache(),
             Id = Id,
             Name = Name,
             Author = Author,
@@ -80,7 +100,9 @@ public enum ModuleNumberArrayKind
     [JsonStringEnumMemberName("map")]
     Map,
     [JsonStringEnumMemberName("other")]
-    Other
+    Other,
+    [JsonStringEnumMemberName("raid")]
+    Raid
 }
 
 public sealed class ModuleNumberArray
@@ -225,7 +247,7 @@ public sealed class ModuleRule
     public int? LogicDelayMs { get; set; }
     // 条件命中后，每次实际执行前等待的时长（毫秒）。
     public int? HitDelayMs { get; set; }
-    // 条件由命中变为不命中后，继续保持命中的时长（毫秒）。
+    // 条件由命中变为不命中后，继续保持命中的时长（毫秒）；未继续逻辑时锁定已执行的规则。
     public int? MatchDelayMs { get; set; }
     // 命中后发送或等待延迟命中时是否继续判断后续规则；null/false 表示结束本轮判断。
     public bool? ContinueLogic { get; set; }
@@ -289,12 +311,15 @@ public sealed class ModuleValueAdjustment
     public string Operation { get; set; } = "+";
     public string? Value { get; set; }
     public bool IsCustom { get; set; }
+    // 省略时沿用初次调整；最终调整在自定义之后、逻辑之前执行。
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public bool IsPostAdjustment { get; set; }
     public ModuleTeammateTarget? TeammateTarget { get; set; }
     public string Formula { get; set; } = string.Empty;
 
     internal string EffectiveOperation => IsCustom ? "=" : Operation;
     internal bool IsConditionBoolean => string.IsNullOrWhiteSpace(Formula)
-        && string.Equals(Value?.Trim(), ConditionBooleanValue, StringComparison.Ordinal);
+        && (IsCustom || string.Equals(Value?.Trim(), ConditionBooleanValue, StringComparison.Ordinal));
 
     // 旧模块只保存 Delta；新模块的调整值保留文本，以区分整数与布尔值。
     internal bool TryGetOperand(out object? value)
@@ -303,6 +328,12 @@ public sealed class ModuleValueAdjustment
         if (EffectiveOperation is not ("+" or "-" or "="))
         {
             return false;
+        }
+
+        if (EffectiveOperation == "=" && IsConditionBoolean)
+        {
+            value = false;
+            return true;
         }
 
         if (Value is null)
@@ -314,12 +345,6 @@ public sealed class ModuleValueAdjustment
         if (int.TryParse(Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var number))
         {
             value = number;
-            return true;
-        }
-
-        if (EffectiveOperation == "=" && IsConditionBoolean)
-        {
-            value = false;
             return true;
         }
 
@@ -343,6 +368,7 @@ public sealed class ModuleValueAdjustment
             Operation = Operation,
             Value = Value,
             IsCustom = IsCustom,
+            IsPostAdjustment = IsPostAdjustment,
             TeammateTarget = TeammateTarget?.Clone(),
             Formula = Formula
         };
@@ -785,6 +811,7 @@ public sealed class ModuleStore
             array.Name = array.Name.Trim();
             array.Numbers = (array.Numbers ?? []).Distinct().ToList();
         }
+        module.ResetNumberArrayCache();
         foreach (var unit in module.Units)
         {
             unit.Name = unit.Name.Trim();
@@ -833,8 +860,15 @@ public sealed class ModuleStore
                 teammateTarget.UnitName = teammateTarget.UnitName?.Trim();
                 adjustment.IsCustom = false;
             }
+            if (adjustment.IsCustom || !string.IsNullOrWhiteSpace(adjustment.Formula))
+                adjustment.IsPostAdjustment = false;
             adjustment.Operation = adjustment.IsCustom ? "=" : adjustment.Operation?.Trim() ?? "+";
             adjustment.Value = adjustment.Value?.Trim();
+            if (adjustment.IsCustom && string.IsNullOrWhiteSpace(adjustment.Formula))
+            {
+                adjustment.Value = ModuleValueAdjustment.ConditionBooleanValue;
+                adjustment.Delta = 0;
+            }
         }
 
         module.Rules ??= new List<ModuleRule>();
@@ -1008,7 +1042,8 @@ public static class ModuleLogic
         IReadOnlyDictionary<string, long>? sentKeyRules,
         IReadOnlyDictionary<int, bool>? ruleMatches,
         IReadOnlyDictionary<int, long>? ruleSoundEvents,
-        RuleHitDelayTracker? hitDelays)
+        RuleHitDelayTracker? hitDelays,
+        RuleMatchTracker? matchTracker = null)
     {
         var info = CreateInfo(module, state);
         var spellIndices = keymap.GetCurrentSpellIndices();
@@ -1029,6 +1064,9 @@ public static class ModuleLogic
             {
                 continue;
             }
+            // 已执行的持续命中规则独占后续轮次，上方规则也不能抢占。
+            if (matchTracker?.LockedRuleKey is { } lockedKey && lockedKey != rateLimitKey)
+                continue;
 
             if (!ModuleConditionEvaluator.TryEvaluateRule(
                     rule,
@@ -1065,12 +1103,23 @@ public static class ModuleLogic
                 && sentKeyRules.TryGetValue(rateLimitKey, out var sentEventId) && sentEventId == soundEventId)
             {
                 hitDelays?.Forget(rateLimitKey);
+                if (rule.MatchDelayMs is > 0 && rule.ContinueLogic is not true)
+                {
+                    LockMatchedRule();
+                    AddRuleLogInfo(info, rule, ruleIndex, rateLimitKey, null);
+                    info["命中条件"] = rule.DescribeCondition();
+                    info["动作技能"] = rule.Spell;
+                    decisions.Add(new LogicDecision(null, $"{module.Name}: 持续命中（已发送）",
+                        SnapshotInfo(info), module.Name));
+                    return decisions;
+                }
                 continue;
             }
             if (ModuleSpecialActions.IsKeyPress(rule.Spell) && string.IsNullOrWhiteSpace(rule.Hotkey)) continue;
 
             if (ModuleSpecialActions.IsPauseSpell(rule.Spell))
             {
+                LockMatchedRule();
                 if (AddHitDelayWait(null))
                 {
                     if (rule.ContinueLogic is not true) return decisions;
@@ -1181,10 +1230,14 @@ public static class ModuleLogic
             {
                 hitDelays?.Forget(rateLimitKey);
             }
-            else if (AddHitDelayWait(hotkey))
+            else
             {
-                if (rule.ContinueLogic is not true) return decisions;
-                continue;
+                LockMatchedRule();
+                if (AddHitDelayWait(hotkey))
+                {
+                    if (rule.ContinueLogic is not true) return decisions;
+                    continue;
+                }
             }
 
             var step = BuildStep(module, rule, hotkey, actionSpellName);
@@ -1213,6 +1266,12 @@ public static class ModuleLogic
             if (rule.ContinueLogic is not true)
             {
                 return decisions;
+            }
+
+            void LockMatchedRule()
+            {
+                if (rule.MatchDelayMs is > 0 && rule.ContinueLogic is not true)
+                    matchTracker?.Lock(rateLimitKey);
             }
 
             bool AddHitDelayWait(string? actionHotkey)
@@ -1284,37 +1343,21 @@ public static class ModuleLogic
             return existingUnits;
         }
 
-        state.Values["$numberArrays"] = module.NumberArrays
-            .Where(array => !string.IsNullOrWhiteSpace(array.Name))
-            .GroupBy(array => array.Name, StringComparer.Ordinal)
-            .ToDictionary(group => group.Key, group => (IReadOnlySet<long>)group.First().Numbers.ToHashSet(), StringComparer.Ordinal);
-        // 自建字段每帧从默认值开始，条件未命中时也能参与后续条件求值。
-        foreach (var adjustment in module.ValueAdjustments.Where(adjustment => adjustment.IsCustom))
-        {
-            if (adjustment.TryGetOperand(out var operand))
-            {
-                SetDynamicValue(state, adjustment.Field, operand is bool ? false : 0);
-            }
-        }
-        var earlyAppliedAdjustments = ApplyValueAdjustments(
-            module,
-            state,
-            spellIndices,
-            itemIndices,
-            adjustment => IsEarlyThresholdAdjustment(module, state, adjustment));
-        var earlyTeammateAdjustments = module.ValueAdjustments
-            .Where(adjustment => adjustment.Enabled && TeammateValueAdjustment.CanApplyBeforeSelection(module, adjustment))
-            .ToHashSet();
-        ApplyValueAdjustments(module, state, spellIndices, itemIndices, earlyTeammateAdjustments.Contains);
-        earlyAppliedAdjustments.UnionWith(earlyTeammateAdjustments);
-        var unitSlots = ResolveUnits(module, state);
-        ResolveCounts(module, state);
-        ApplyValueAdjustments(
-            module,
-            state,
-            spellIndices,
-            itemIndices,
-            adjustment => !earlyAppliedAdjustments.Contains(adjustment));
+        state.Values["$numberArrays"] = module.GetNumberArrays();
+        var stages = new ModuleComputationStages(module);
+        ApplyValueAdjustments(module, state, spellIndices, itemIndices,
+            value => !value.IsCustom && !value.IsPostAdjustment && string.IsNullOrWhiteSpace(value.Formula), stages);
+        var unitSlots = ResolveUnits(module, state, stages);
+        ResolveCounts(module, state, stages);
+        ApplyValueAdjustments(module, state, spellIndices, itemIndices,
+            value => !string.IsNullOrWhiteSpace(value.Formula), stages);
+        // 自定义每帧从默认值开始，禁止把默认值暴露给前面的计算阶段。
+        foreach (var value in module.ValueAdjustments.Where(value => value.IsCustom && string.IsNullOrWhiteSpace(value.Formula)))
+            SetDynamicValue(state, value.Field, false);
+        ApplyValueAdjustments(module, state, spellIndices, itemIndices,
+            value => value.IsCustom && string.IsNullOrWhiteSpace(value.Formula), stages);
+        ApplyValueAdjustments(module, state, spellIndices, itemIndices,
+            value => value.IsPostAdjustment && !value.IsCustom && string.IsNullOrWhiteSpace(value.Formula), stages);
         state.Values["$dynamicModuleId"] = module.Id;
         return unitSlots;
     }
@@ -1325,7 +1368,7 @@ public static class ModuleLogic
             && string.Equals(value?.ToString(), module.Id, StringComparison.OrdinalIgnoreCase);
     }
 
-    private static Dictionary<string, string?> ResolveUnits(ModuleDefinition module, GameState state)
+    private static Dictionary<string, string?> ResolveUnits(ModuleDefinition module, GameState state, ModuleComputationStages stages)
     {
         var unitSlots = new Dictionary<string, string?>(StringComparer.Ordinal);
         // 值名称 → 所选单位目标字段值(未解析则为 null), 供条件直接按名引用。
@@ -1337,7 +1380,7 @@ public static class ModuleLogic
                 continue;
             }
 
-            var slot = UnitSelector.Resolve(unit, state);
+            var slot = stages.FilterError(unit.FilterGroups) is null ? UnitSelector.Resolve(unit, state) : null;
             unitSlots[unit.Name] = slot;
 
             if (!string.IsNullOrWhiteSpace(unit.ValueName))
@@ -1351,14 +1394,14 @@ public static class ModuleLogic
         return unitSlots;
     }
 
-    private static void ResolveCounts(ModuleDefinition module, GameState state)
+    private static void ResolveCounts(ModuleDefinition module, GameState state, ModuleComputationStages stages)
     {
         var counts = new Dictionary<string, int>(StringComparer.Ordinal);
         foreach (var count in module.Counts)
         {
             if (!string.IsNullOrWhiteSpace(count.Name))
             {
-                counts[count.Name] = UnitSelector.Resolve(count, state);
+                counts[count.Name] = stages.FilterError(count.FilterGroups) is null ? UnitSelector.Resolve(count, state) : 0;
             }
         }
 
@@ -1366,7 +1409,7 @@ public static class ModuleLogic
         {
             if (!string.IsNullOrWhiteSpace(count.Name))
             {
-                counts[count.Name] = UnitSelector.Resolve(count, state);
+                counts[count.Name] = stages.FilterError(count.FilterGroups) is null ? UnitSelector.Resolve(count, state) : 0;
             }
         }
 
@@ -1374,29 +1417,25 @@ public static class ModuleLogic
         {
             if (!string.IsNullOrWhiteSpace(field.Name))
             {
-                counts[field.Name] = UnitSelector.Resolve(field, state);
+                counts[field.Name] = stages.FilterError(field.FilterGroups) is null ? UnitSelector.Resolve(field, state) : 0;
             }
         }
 
         state.Values["$counts"] = counts;
     }
 
-    private static HashSet<ModuleValueAdjustment> ApplyValueAdjustments(
+    private static void ApplyValueAdjustments(
         ModuleDefinition module,
         GameState state,
         IReadOnlyDictionary<long, int>? spellIndices,
         IReadOnlyDictionary<long, int>? itemIndices = null,
-        Func<ModuleValueAdjustment, bool>? include = null)
+        Func<ModuleValueAdjustment, bool>? include = null,
+        ModuleComputationStages? stages = null)
     {
-        var applied = new HashSet<ModuleValueAdjustment>();
         foreach (var adjustment in module.ValueAdjustments.Where(adjustment => adjustment.Enabled))
         {
-            if (string.IsNullOrWhiteSpace(adjustment.Field))
-            {
-                continue;
-            }
-
-            if (include is not null && !include(adjustment))
+            if (include is not null && !include(adjustment)) continue;
+            if (string.IsNullOrWhiteSpace(adjustment.Field) || stages?.AdjustmentError(adjustment) is not null)
             {
                 continue;
             }
@@ -1413,68 +1452,10 @@ public static class ModuleLogic
                 continue;
             }
 
-            if (!(adjustment.TeammateTarget is not null
-                    ? TeammateValueAdjustment.Apply(module, state, adjustment, matched)
-                    : ApplyValueAdjustment(state, adjustment, matched)))
-            {
-                continue;
-            }
-
-            applied.Add(adjustment);
-        }
-
-        return applied;
-    }
-
-    private static bool IsEarlyThresholdAdjustment(
-        ModuleDefinition module,
-        GameState state,
-        ModuleValueAdjustment adjustment)
-    {
-        var key = adjustment.Field.Trim();
-        return adjustment.TeammateTarget is null && key.Length > 0
-            && !key.Contains('.')
-            && !key.StartsWith('$')
-            && DynamicThresholdFields(module).Contains(key);
-    }
-
-    private static HashSet<string> DynamicThresholdFields(ModuleDefinition module)
-    {
-        var fields = new HashSet<string>(StringComparer.Ordinal);
-        foreach (var unit in module.Units)
-        {
-            AddCountConditionValueFields(fields, unit.FilterGroups);
-        }
-
-        foreach (var count in module.Counts)
-        {
-            AddCountConditionValueFields(fields, count.FilterGroups);
-        }
-
-        foreach (var count in module.EnemyCounts)
-        {
-            AddCountConditionValueFields(fields, count.FilterGroups);
-        }
-
-        foreach (var field in module.AverageHealthFields)
-        {
-            AddCountConditionValueFields(fields, field.FilterGroups);
-        }
-
-        return fields;
-    }
-
-    private static void AddCountConditionValueFields(
-        ISet<string> fields,
-        IReadOnlyList<ModuleCountConditionGroup> groups)
-    {
-        foreach (var condition in groups
-                     .SelectMany(group => group.Conditions)
-                     .Where(condition => condition.Enabled
-                         && condition.ValueKind == CountConditionValueKind.StateField
-                         && !string.IsNullOrWhiteSpace(condition.ValueField)))
-        {
-            fields.Add(condition.ValueField!.Trim());
+            if (adjustment.TeammateTarget is not null)
+                TeammateValueAdjustment.Apply(module, state, adjustment, matched);
+            else
+                ApplyValueAdjustment(state, adjustment, matched);
         }
     }
 
@@ -1719,6 +1700,31 @@ public static class ModuleConditionEvaluator
         IReadOnlyDictionary<long, int>? itemIndices = null,
         IReadOnlyDictionary<int, long>? insertItems = null)
     {
+        if (!HasAnyTimelineReference(expression))
+            return TryEvaluateBound(expression, state, out matched, out error,
+                failedSpells, spellIndices, itemIndices, insertItems, null);
+        matched = false;
+        error = null;
+        foreach (var slot in TimelineCandidates(state))
+        {
+            if (!TryEvaluateBound(expression, state, out matched, out error,
+                    failedSpells, spellIndices, itemIndices, insertItems, slot)) return false;
+            if (matched) return true;
+        }
+        return true;
+    }
+
+    private static bool TryEvaluateBound(
+        string? expression,
+        GameState state,
+        out bool matched,
+        out string? error,
+        IReadOnlyDictionary<int, long>? failedSpells,
+        IReadOnlyDictionary<long, int>? spellIndices,
+        IReadOnlyDictionary<long, int>? itemIndices,
+        IReadOnlyDictionary<int, long>? insertItems,
+        int? timelineSlot)
+    {
         matched = false;
         error = null;
 
@@ -1741,7 +1747,8 @@ public static class ModuleConditionEvaluator
                         failedSpells,
                         spellIndices,
                         itemIndices,
-                        insertItems))
+                        insertItems,
+                        timelineSlot))
                 {
                     return false;
                 }
@@ -1776,7 +1783,35 @@ public static class ModuleConditionEvaluator
         IReadOnlyDictionary<long, int>? itemIndices = null,
         IReadOnlyDictionary<int, long>? insertItems = null)
     {
-        if (!TryEvaluate(rule.Condition, state, out matched, out error, failedSpells, spellIndices, itemIndices, insertItems))
+        matched = false;
+        error = null;
+        var needsTimeline = HasAnyTimelineReference(rule.Condition)
+            || rule.SubConditions?.Any(HasAnyTimelineReference) == true;
+        if (!needsTimeline)
+            return TryEvaluateRuleBound(rule, state, out matched, out error,
+                failedSpells, spellIndices, itemIndices, insertItems, null);
+        // 事件绑定覆盖整条规则，主条件与命中的子条件不能各自挑选不同事件。
+        foreach (var slot in TimelineCandidates(state))
+        {
+            if (!TryEvaluateRuleBound(rule, state, out matched, out error,
+                    failedSpells, spellIndices, itemIndices, insertItems, slot)) return false;
+            if (matched) return true;
+        }
+        return true;
+    }
+
+    private static bool TryEvaluateRuleBound(
+        ModuleRule rule,
+        GameState state,
+        out bool matched,
+        out string? error,
+        IReadOnlyDictionary<int, long>? failedSpells,
+        IReadOnlyDictionary<long, int>? spellIndices,
+        IReadOnlyDictionary<long, int>? itemIndices,
+        IReadOnlyDictionary<int, long>? insertItems,
+        int? timelineSlot)
+    {
+        if (!TryEvaluateBound(rule.Condition, state, out matched, out error, failedSpells, spellIndices, itemIndices, insertItems, timelineSlot))
         {
             return false;
         }
@@ -1793,7 +1828,7 @@ public static class ModuleConditionEvaluator
                 continue;
             }
 
-            if (!TryEvaluate(sub, state, out var subMatched, out error, failedSpells, spellIndices, itemIndices, insertItems))
+            if (!TryEvaluateBound(sub, state, out var subMatched, out error, failedSpells, spellIndices, itemIndices, insertItems, timelineSlot))
             {
                 matched = false;
                 return false;
@@ -1808,6 +1843,42 @@ public static class ModuleConditionEvaluator
 
         matched = false;
         return true;
+    }
+
+    private static IEnumerable<int?> TimelineCandidates(GameState state)
+    {
+        var found = false;
+        for (var slot = 1; slot <= EncounterTimelineStateLayout.SlotCount; slot++)
+        {
+            if (state.GetInt(EncounterTimelineStateLayout.SpellIdField(slot)) <= 0) continue;
+            found = true;
+            yield return slot;
+        }
+        // 无事件时仍求值一次：任意时间轴项不命中，普通「或」分支仍可成立。
+        if (!found) yield return null;
+    }
+
+    private static bool HasAnyTimelineReference(string? expression)
+    {
+        if (string.IsNullOrWhiteSpace(expression)
+            || !expression.Contains("timeline.any.", StringComparison.OrdinalIgnoreCase)) return false;
+        foreach (var term in Regex.Split(expression, @"\s*(?:\|\||&&)\s*"))
+        {
+            var inMatch = InRegex.Match(term);
+            if (inMatch.Success)
+            {
+                if (EncounterTimelineStateLayout.IsAnyField(inMatch.Groups["field"].Value)) return true;
+                continue;
+            }
+            var comparison = ComparisonRegex.Match(term);
+            if (comparison.Success)
+            {
+                if (EncounterTimelineStateLayout.IsAnyField(comparison.Groups["field"].Value)
+                    || EncounterTimelineStateLayout.IsAnyField(comparison.Groups["value"].Value)) return true;
+            }
+            else if (EncounterTimelineStateLayout.IsAnyField(term.Trim().TrimStart('!'))) return true;
+        }
+        return false;
     }
 
     public static bool TryResolveInt(GameState state, string fieldName, out int value)
@@ -1833,7 +1904,8 @@ public static class ModuleConditionEvaluator
         IReadOnlyDictionary<int, long>? failedSpells,
         IReadOnlyDictionary<long, int>? spellIndices,
         IReadOnlyDictionary<long, int>? itemIndices,
-        IReadOnlyDictionary<int, long>? insertItems)
+        IReadOnlyDictionary<int, long>? insertItems,
+        int? timelineSlot)
     {
         matched = false;
         error = null;
@@ -1854,11 +1926,12 @@ public static class ModuleConditionEvaluator
                 return false;
             }
 
-            var inLeft = ResolveValue(state, inField, failedSpells, insertItems);
+            var inLeft = ResolveValue(state, inField, failedSpells, insertItems, timelineSlot);
             if (inLeft is null && (inField is ShigureConditionFields.VolumeRecognition or "state.音量识别"
                 || IsStructuredSpellReference(inField)
                 || NameplateStateLayout.IsComputedTtdField(inField)
-                || NameplateStateLayout.IsCastCountdownField(inField)))
+                || NameplateStateLayout.IsCastCountdownField(inField)
+                || EncounterTimelineStateLayout.IsAnyField(inField)))
             {
                 matched = false;
                 return true;
@@ -1910,11 +1983,12 @@ public static class ModuleConditionEvaluator
         {
             var invert = trimmed.StartsWith('!');
             var fieldName = invert ? trimmed[1..].Trim() : trimmed;
-            var value = ResolveValue(state, fieldName, failedSpells, insertItems);
+            var value = ResolveValue(state, fieldName, failedSpells, insertItems, timelineSlot);
             if (value is null && (fieldName is ShigureConditionFields.VolumeRecognition or "state.音量识别"
                 || IsStructuredSpellReference(fieldName)
                 || NameplateStateLayout.IsComputedTtdField(fieldName)
-                || NameplateStateLayout.IsCastCountdownField(fieldName)))
+                || NameplateStateLayout.IsCastCountdownField(fieldName)
+                || EncounterTimelineStateLayout.IsAnyField(fieldName)))
             {
                 matched = false;
                 return true;
@@ -1924,17 +1998,20 @@ public static class ModuleConditionEvaluator
         }
 
         var comparisonField = comparison.Groups["field"].Value.Trim();
-        var left = ResolveValue(state, comparisonField, failedSpells, insertItems);
+        var left = ResolveValue(state, comparisonField, failedSpells, insertItems, timelineSlot);
         if (left is null && (comparisonField is ShigureConditionFields.VolumeRecognition or "state.音量识别"
             || IsStructuredSpellReference(comparisonField)
             || NameplateStateLayout.IsComputedTtdField(comparisonField)
-            || NameplateStateLayout.IsCastCountdownField(comparisonField)))
+            || NameplateStateLayout.IsCastCountdownField(comparisonField)
+            || EncounterTimelineStateLayout.IsAnyField(comparisonField)))
         {
             matched = false;
             return true;
         }
         var op = comparison.Groups["op"].Value;
         var rawRight = comparison.Groups["value"].Value.Trim();
+        if (EncounterTimelineStateLayout.IsAnyField(rawRight)
+            && ResolveValue(state, rawRight, failedSpells, insertItems, timelineSlot) is null) return true;
         var right = ParseLiteral(rawRight);
         if (comparisonField is ShigureConditionFields.SoundRecognition or "state.声音识别")
         {
@@ -1983,7 +2060,7 @@ public static class ModuleConditionEvaluator
 
             right = localItemIndex;
         }
-        else if (TryResolveValueReference(state, left, rawRight, right, failedSpells, insertItems, out var referenced))
+        else if (TryResolveValueReference(state, left, rawRight, right, failedSpells, insertItems, timelineSlot, out var referenced))
         {
             right = referenced;
         }
@@ -2000,6 +2077,7 @@ public static class ModuleConditionEvaluator
         object? literal,
         IReadOnlyDictionary<int, long>? failedSpells,
         IReadOnlyDictionary<int, long>? insertItems,
+        int? timelineSlot,
         out object? value)
     {
         value = null;
@@ -2014,7 +2092,7 @@ public static class ModuleConditionEvaluator
             return false;
         }
 
-        var resolved = ResolveValue(state, name, failedSpells, insertItems);
+        var resolved = ResolveValue(state, name, failedSpells, insertItems, timelineSlot);
         // 布尔量除外: 右侧写状态名时仍按原来的字符串比较处理。
         if (resolved is null or bool || !TryToDouble(resolved, out _))
         {
@@ -2065,12 +2143,21 @@ public static class ModuleConditionEvaluator
         GameState state,
         string fieldName,
         IReadOnlyDictionary<int, long>? failedSpells = null,
-        IReadOnlyDictionary<int, long>? insertItems = null)
+        IReadOnlyDictionary<int, long>? insertItems = null,
+        int? timelineSlot = null)
     {
         var key = fieldName.Trim();
         if (key.StartsWith("state.", StringComparison.OrdinalIgnoreCase))
         {
             key = key["state.".Length..];
+        }
+
+        if (EncounterTimelineStateLayout.IsAnyField(key))
+        {
+            if (timelineSlot is not { } slot) return null;
+            EncounterTimelineStateLayout.TryParseField(key, out _, out var remaining);
+            return state.GetValue(remaining ? EncounterTimelineStateLayout.RemainingField(slot)
+                : EncounterTimelineStateLayout.SpellIdField(slot));
         }
 
         if (key.StartsWith("spells.", StringComparison.OrdinalIgnoreCase))

@@ -16,10 +16,6 @@
       },
       {
         "category": "玩家",
-        "field": "地图"
-      },
-      {
-        "category": "玩家",
         "field": "战斗时间"
       },
       {
@@ -51,11 +47,11 @@
         "field": "队伍人数"
       },
       {
-        "category": "玩家",
+        "category": "区域",
         "field": "首领战"
       },
       {
-        "category": "玩家",
+        "category": "区域",
         "field": "难度"
       },
       {
@@ -120,42 +116,6 @@
       },
       {
         "category": "特殊",
-        "field": "EX首领技能类型"
-      },
-      {
-        "category": "特殊",
-        "field": "EX首领技能事件"
-      },
-      {
-        "category": "特殊",
-        "field": "EX首领技能倒计时"
-      },
-      {
-        "category": "特殊",
-        "field": "EX小怪技能类型"
-      },
-      {
-        "category": "特殊",
-        "field": "EX小怪技能事件"
-      },
-      {
-        "category": "特殊",
-        "field": "EX小怪技能倒计时"
-      },
-      {
-        "category": "特殊",
-        "field": "BigWigs首领技能类型"
-      },
-      {
-        "category": "特殊",
-        "field": "BigWigs首领技能事件"
-      },
-      {
-        "category": "特殊",
-        "field": "BigWigs首领技能倒计时"
-      },
-      {
-        "category": "特殊",
         "field": "酒池"
       },
       {
@@ -197,6 +157,10 @@
       {
         "category": "特殊",
         "field": "强化锁喉"
+      },
+      {
+        "category": "特殊",
+        "field": "隐秘之刃"
       },
       {
         "category": "特殊",
@@ -287,16 +251,28 @@
         "field": "增压层数"
       },
       {
+        "category": "区域",
+        "field": "地图"
+      },
+      {
+        "category": "区域",
+        "field": "地下城"
+      },
+      {
+        "category": "区域",
+        "field": "团队副本"
+      },
+      {
         "category": "配置开关",
         "field": "爆发开关"
       },
       {
         "category": "配置开关",
-        "field": "AOE开关"
+        "field": "次要爆发"
       },
       {
         "category": "配置开关",
-        "field": "输出模式"
+        "field": "自定义模式"
       },
       {
         "category": "配置开关",

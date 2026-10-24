@@ -3,12 +3,13 @@ namespace Shigure;
 internal sealed class RuleMatchTracker(TimeProvider timeProvider)
 {
     private readonly Dictionary<string, MatchState> _matches = new(StringComparer.Ordinal);
+    public string? LockedRuleKey { get; private set; }
 
     public (bool Matched, long SoundEventId) Apply(string key, int? delayMs, bool matched, long soundEventId)
     {
         if (delayMs is not > 0)
         {
-            _matches.Remove(key);
+            Forget(key);
             return (matched, soundEventId);
         }
         if (matched)
@@ -23,7 +24,7 @@ internal sealed class RuleMatchTracker(TimeProvider timeProvider)
         var missedAt = previous.MissedAt ?? now;
         if (timeProvider.GetElapsedTime(missedAt, now) >= TimeSpan.FromMilliseconds(delayMs.Value))
         {
-            _matches.Remove(key);
+            Forget(key);
             return (false, 0);
         }
         _matches[key] = previous with { MissedAt = missedAt };
@@ -31,8 +32,22 @@ internal sealed class RuleMatchTracker(TimeProvider timeProvider)
         return (true, previous.SoundEventId);
     }
 
-    public void Forget(string key) => _matches.Remove(key);
-    public void Clear() => _matches.Clear();
+    public void Lock(string key)
+    {
+        if (_matches.ContainsKey(key)) LockedRuleKey = key;
+    }
+
+    public void Forget(string key)
+    {
+        _matches.Remove(key);
+        if (LockedRuleKey == key) LockedRuleKey = null;
+    }
+
+    public void Clear()
+    {
+        _matches.Clear();
+        LockedRuleKey = null;
+    }
 
     private readonly record struct MatchState(long? MissedAt, long SoundEventId);
 }

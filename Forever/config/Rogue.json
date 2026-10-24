@@ -106,50 +106,72 @@
       "type": "int",
       "category": "能量"
     },
-    "目标施法技能": {
+    "地图": {
       "step": 16,
       "type": "int",
-      "category": "目标",
+      "category": "区域",
       "pixelFormat": "rgb24",
       "payloadStep": 17
     },
-    "目标类型": {
+    "地下城": {
       "step": 18,
       "type": "int",
-      "category": "目标"
+      "category": "区域"
     },
-    "目标生命值": {
+    "团队副本": {
       "step": 19,
       "type": "int",
-      "category": "目标"
+      "category": "区域"
     },
-    "目标距离": {
+    "首领战": {
       "step": 20,
       "type": "int",
-      "category": "目标"
+      "category": "区域"
     },
-    "目标NPCID": {
+    "目标施法技能": {
       "step": 21,
       "type": "int",
       "category": "目标",
       "pixelFormat": "rgb24",
       "payloadStep": 22
     },
-    "焦点施法技能": {
+    "目标类型": {
       "step": 23,
+      "type": "int",
+      "category": "目标"
+    },
+    "目标生命值": {
+      "step": 24,
+      "type": "int",
+      "category": "目标"
+    },
+    "目标距离": {
+      "step": 25,
+      "type": "int",
+      "category": "目标"
+    },
+    "目标NPCID": {
+      "step": 26,
+      "type": "int",
+      "category": "目标",
+      "pixelFormat": "rgb24",
+      "payloadStep": 27
+    },
+    "焦点施法技能": {
+      "step": 28,
       "type": "int",
       "category": "焦点",
       "pixelFormat": "rgb24",
-      "payloadStep": 24
+      "payloadStep": 29
     },
     "焦点生命值": {
-      "step": 25,
+      "step": 30,
       "type": "int",
       "category": "焦点"
     },
     "spells": {
       "1776.cooldown": {
-        "step": 26,
+        "step": 31,
         "type": "int",
         "displayName": "凿击",
         "spellId": 1776,
@@ -157,7 +179,7 @@
         "displayType": "冷却"
       },
       "5277.cooldown": {
-        "step": 27,
+        "step": 32,
         "type": "int",
         "displayName": "闪避",
         "spellId": 5277,
@@ -165,7 +187,7 @@
         "displayType": "冷却"
       },
       "2983.cooldown": {
-        "step": 28,
+        "step": 33,
         "type": "int",
         "displayName": "疾跑",
         "spellId": 2983,
@@ -173,7 +195,7 @@
         "displayType": "冷却"
       },
       "1766.cooldown": {
-        "step": 29,
+        "step": 34,
         "type": "int",
         "displayName": "脚踢",
         "spellId": 1766,
@@ -181,7 +203,7 @@
         "displayType": "冷却"
       },
       "1856.cooldown": {
-        "step": 30,
+        "step": 35,
         "type": "int",
         "displayName": "消失",
         "spellId": 1856,
@@ -189,7 +211,7 @@
         "displayType": "冷却"
       },
       "408.cooldown": {
-        "step": 31,
+        "step": 36,
         "type": "int",
         "displayName": "肾击",
         "spellId": 408,
@@ -197,7 +219,7 @@
         "displayType": "冷却"
       },
       "2094.cooldown": {
-        "step": 32,
+        "step": 37,
         "type": "int",
         "displayName": "致盲",
         "spellId": 2094,
@@ -205,7 +227,7 @@
         "displayType": "冷却"
       },
       "14177.cooldown": {
-        "step": 33,
+        "step": 38,
         "type": "int",
         "displayName": "冷血",
         "spellId": 14177,
@@ -213,7 +235,7 @@
         "displayType": "冷却"
       },
       "13877.cooldown": {
-        "step": 34,
+        "step": 39,
         "type": "int",
         "displayName": "剑刃乱舞",
         "spellId": 13877,
@@ -221,7 +243,7 @@
         "displayType": "冷却"
       },
       "13750.cooldown": {
-        "step": 35,
+        "step": 40,
         "type": "int",
         "displayName": "冲动",
         "spellId": 13750,
@@ -229,7 +251,7 @@
         "displayType": "冷却"
       },
       "14185.cooldown": {
-        "step": 36,
+        "step": 41,
         "type": "int",
         "displayName": "伺机待发",
         "spellId": 14185,
@@ -237,7 +259,7 @@
         "displayType": "冷却"
       },
       "16511.cooldown": {
-        "step": 37,
+        "step": 42,
         "type": "int",
         "displayName": "出血",
         "spellId": 16511,
@@ -245,7 +267,7 @@
         "displayType": "冷却"
       },
       "14278.cooldown": {
-        "step": 38,
+        "step": 43,
         "type": "int",
         "displayName": "鬼魅攻击",
         "spellId": 14278,
@@ -254,7 +276,7 @@
       }
     },
     "group": {
-      "start": 39,
+      "start": 44,
       "生命值": {
         "step": 1,
         "type": "int"

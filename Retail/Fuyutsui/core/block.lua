@@ -127,6 +127,20 @@ function Fuyutsui:CreateTexture(i, b)
     end
 end
 
+-- 普通整数沿用两格 RGB 协议，避免地图 ID 被单个蓝通道截断。
+function Fuyutsui:CreateNumberTexture(index, value)
+    if not index or index < 1 or index + 1 > BLOCK_FIX_CONFIG.capacity then return end
+    value = math.max(0, math.min(0xFFFFFF, math.floor(tonumber(value) or 0)))
+    local scheme = math.floor((index - 1) / BLOCK_SCHEME_SPAN)
+    local position = index - scheme * BLOCK_SCHEME_SPAN
+    local marker = createTextureByIndex(index)
+    marker:SetColorTexture((4 + scheme) / 255, position / 255,
+        (BLOCK_FIX_CONFIG.capacity / BLOCK_SCHEME_SPAN) / 255, 1)
+    local payload = createTextureByIndex(index + 1)
+    payload:SetColorTexture(math.floor(value / 65536) / 255,
+        (math.floor(value / 256) % 256) / 255, (value % 256) / 255, 1)
+end
+
 local rgbSpellPixels = {}
 
 -- 两格 RGB 施法协议：定位格 (R=4..7, G=格号, B=容量档位)，下一格绘制原始 spellID。
@@ -154,7 +168,7 @@ function Fuyutsui:ClearAllRgbSpellPixels()
     wipe(rgbSpellPixels)
 end
 
-function Fuyutsui:RefreshRgbSpellPixel(index, unit)
+local function RefreshRgbPixelText(index, hasText, formatted)
     if not index or index < 1 or index + 1 > BLOCK_FIX_CONFIG.capacity then return end
     local entry = rgbSpellPixels[index]
     if not entry then
@@ -187,13 +201,23 @@ function Fuyutsui:RefreshRgbSpellPixel(index, unit)
     local payload = createTextureByIndex(index + 1)
     payload:SetColorTexture(0, 0, 0, 1)
 
-    local hasText, formatted = SpellRgbText(unit)
     if hasText then
         entry.glyph:SetText(formatted)
         frame:Show()
     else
         frame:Hide()
     end
+end
+
+function Fuyutsui:RefreshRgbSpellPixel(index, unit)
+    local hasText, formatted = SpellRgbText(unit)
+    RefreshRgbPixelText(index, hasText, formatted)
+end
+
+-- 秘密数字只交给原生字符串格式化和字体绘制，不比较、不拆分 RGB 通道。
+function Fuyutsui:RefreshRgbNumberPixel(index, value)
+    local ok, formatted = pcall(string.format, "|cFF%06X█|r", value)
+    RefreshRgbPixelText(index, ok, formatted)
 end
 
 -- 姓名板单位不存在时清除索引通道，读取端由索引是否存在判断单位存在。

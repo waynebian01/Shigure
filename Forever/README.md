@@ -6,3 +6,5 @@
 
 `core/classmacros.lua` 使用 `"#法术ID"` 保存技能，并在同行注释中保留中文名称，供 keymap 转换器显示。插件运行时调用 `C_Spell.GetSpellName` 获取当前客户端语言的技能名。修改职业 Lua 后，用 `dotnet run --project .\Shigure.csproj -- --update-config` 与 `--update-keymap` 重新生成 `Forever/config`、`Forever/keymap`。
 
+
+副本编号见[副本列表](副本列表.md)，按推荐等级由低到高排列；`config/dungeons.json` / `config/raids.json` 分别保存列表与来源，`core/config.lua` 的 `dungeonIndex` / `raidIndex` 保存已核实的游戏副本 ID 到编号的映射。

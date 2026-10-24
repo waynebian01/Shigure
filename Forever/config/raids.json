@@ -1,0 +1,107 @@
+[
+  {
+    "name": "安其拉神殿",
+    "englishName": "Ahn'Qiraj Temple",
+    "minLevel": 60,
+    "maxLevel": 60,
+    "sourceId": 531,
+    "type": "团队副本",
+    "levelSource": "https://www.wowhead.com/forever/cn/zones/instances/raids",
+    "id": 1,
+    "mapIdSource": "https://wago.tools/db2/Map?build=1.60.1.70245"
+  },
+  {
+    "name": "Barrow Deeps",
+    "englishName": "Barrow Deeps",
+    "minLevel": 60,
+    "maxLevel": 60,
+    "sourceId": 3052,
+    "type": "团队副本",
+    "levelSource": "https://www.wowhead.com/forever/cn/guide/raids-overview-hub-dates-locations",
+    "id": 2,
+    "mapIdSource": "https://wago.tools/db2/Achievement?build=1.60.1.70245",
+    "achievementIds": [
+      63581
+    ]
+  },
+  {
+    "name": "黑翼之巢",
+    "englishName": "Blackwing Lair",
+    "minLevel": 60,
+    "maxLevel": 60,
+    "sourceId": 469,
+    "type": "团队副本",
+    "levelSource": "https://www.wowhead.com/forever/cn/zones/instances/raids",
+    "id": 3,
+    "mapIdSource": "https://wago.tools/db2/Map?build=1.60.1.70245"
+  },
+  {
+    "name": "Hyjal Summit",
+    "englishName": "Hyjal Summit",
+    "minLevel": 60,
+    "maxLevel": 60,
+    "sourceId": 2981,
+    "type": "团队副本",
+    "levelSource": "https://www.wowhead.com/forever/cn/guide/raids-overview-hub-dates-locations",
+    "id": 4,
+    "mapIdSource": "https://wago.tools/db2/Achievement?build=1.60.1.70245",
+    "achievementIds": [
+      63580
+    ]
+  },
+  {
+    "name": "熔火之心",
+    "englishName": "Molten Core",
+    "minLevel": 60,
+    "maxLevel": 60,
+    "sourceId": 409,
+    "type": "团队副本",
+    "levelSource": "https://www.wowhead.com/forever/cn/zones/instances/raids",
+    "id": 5,
+    "mapIdSource": "https://wago.tools/db2/Map?build=1.60.1.70245"
+  },
+  {
+    "name": "纳克萨玛斯",
+    "englishName": "Naxxramas",
+    "minLevel": 60,
+    "maxLevel": 60,
+    "sourceId": 533,
+    "type": "团队副本",
+    "levelSource": "https://www.wowhead.com/forever/cn/zones/instances/raids",
+    "id": 6,
+    "mapIdSource": "https://wago.tools/db2/Map?build=1.60.1.70245"
+  },
+  {
+    "name": "奥妮克希亚的巢穴",
+    "englishName": "Onyxia's Lair",
+    "minLevel": 60,
+    "maxLevel": 60,
+    "sourceId": 249,
+    "type": "团队副本",
+    "levelSource": "https://www.wowhead.com/forever/cn/guide/raids-overview-hub-dates-locations",
+    "id": 7,
+    "mapIdSource": "https://wago.tools/db2/Map?build=1.60.1.70245"
+  },
+  {
+    "name": "安其拉废墟",
+    "englishName": "Ruins of Ahn'Qiraj",
+    "minLevel": 60,
+    "maxLevel": 60,
+    "sourceId": 509,
+    "type": "团队副本",
+    "levelSource": "https://www.wowhead.com/forever/cn/zones/instances/raids",
+    "id": 8,
+    "mapIdSource": "https://wago.tools/db2/Map?build=1.60.1.70245"
+  },
+  {
+    "name": "祖尔格拉布",
+    "englishName": "Zul'Gurub",
+    "minLevel": 60,
+    "maxLevel": 60,
+    "sourceId": 309,
+    "type": "团队副本",
+    "levelSource": "https://www.wowhead.com/forever/cn/zones/instances/raids",
+    "id": 9,
+    "mapIdSource": "https://wago.tools/db2/Map?build=1.60.1.70245"
+  }
+]

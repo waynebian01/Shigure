@@ -146,6 +146,9 @@ public sealed class ConfigService
             }
         }
 
+        if (merged.Remove("难度", out var legacyDifficulty) && !merged.ContainsKey("首领战难度"))
+            merged["首领战难度"] = legacyDifficulty;
+
         return merged;
     }
 

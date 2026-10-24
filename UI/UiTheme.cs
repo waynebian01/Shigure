@@ -42,8 +42,8 @@ internal static class UiTheme
     public const int LayoutResizeDebounceMs = 80;
     /// <summary>职业/专精图标条相邻格间距。</summary>
     public const int IconStripCellGap = 4;
-    /// <summary>EX/BW 事件页卡片宽（通用 1200 × 1.3，与编辑页宽度解耦）。</summary>
-    public const int EventPageWidth = 1200 + 1200 * 3 / 10;
+    /// <summary>参考页卡片宽（通用 1200 × 1.3，与编辑页宽度解耦）。</summary>
+    public const int ReferencePageWidth = 1200 + 1200 * 3 / 10;
     /// <summary>职业/专精图标逻辑边长（对齐 StyleSpecIconListBox(iconSize)）。</summary>
     public const int ClassSpecIconSize = 40;
     /// <summary>职业/专精图标格逻辑边长（iconSize + 8）。</summary>
@@ -1497,6 +1497,7 @@ internal static class UiTheme
             ClassStateCatalog.CategoryState => Accent,
             ClassStateCatalog.CategorySpecial => Warning,
             ClassStateCatalog.CategoryResource => Success,
+            ClassStateCatalog.CategoryRegion => Accent,
             ClassStateCatalog.CategoryConfig => CategoryConfig,
             ClassStateCatalog.CategoryItem => CategoryItem,
             ClassStateCatalog.CategoryTarget => Danger,

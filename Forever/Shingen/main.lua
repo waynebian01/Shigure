@@ -19,6 +19,8 @@ function Shingen:RefreshPlayerState()
     self:RefreshFocusTypeState()
     self:RefreshGroupTypeState()
     self:RefreshGroupCountState()
+    self:RefreshPlayerMapState()
+    self:RefreshMythicPlusState()
     self:RefreshPlayerBars()
     self:RefreshShapeshiftFormState()
     self:UpdatePlayerStagger()
@@ -57,21 +59,22 @@ function Shingen:LoadPlayerBlocks(specIndex)
 
     local index = 1
 
-    -- states 支持分类表：状态/特殊/能量/配置开关/目标/焦点/鼠标/宠物/首领1-5
+    -- states 支持分类表：状态/特殊/能量/区域/配置开关/目标/焦点/鼠标/宠物/首领1-5
     -- blocks.state 键：基础分类用名称本身；单位分类用 分类..名称（如 目标生命值）
     if type(t.states) == "table" then
         local stateCategoryOrder = {
-            "状态", "特殊", "能量", "配置开关", "目标", "焦点", "鼠标", "宠物",
+            "状态", "特殊", "能量", "区域", "配置开关", "目标", "焦点", "鼠标", "宠物",
             "首领1", "首领2", "首领3", "首领4", "首领5",
         }
         local bareKeyCategories = {
             ["状态"] = true,
             ["特殊"] = true,
             ["能量"] = true,
+            ["区域"] = true,
             ["配置开关"] = true,
         }
         local nested = t.states["状态"] or t.states["特殊"] or t.states["能量"]
-            or t.states["配置开关"] or t.states["目标"] or t.states["焦点"] or t.states["鼠标"]
+            or t.states["区域"] or t.states["配置开关"] or t.states["目标"] or t.states["焦点"] or t.states["鼠标"]
             or t.states["宠物"]
             or t.states["首领1"] or t.states["首领2"] or t.states["首领3"]
             or t.states["首领4"] or t.states["首领5"]
@@ -81,9 +84,11 @@ function Shingen:LoadPlayerBlocks(specIndex)
                 if type(list) == "table" then
                     for _, name in ipairs(list) do
                         if name then
-                            local key = bareKeyCategories[category] and name or (category .. name)
+                            local stateName = name == "难度" and "首领战难度" or name
+                            local key = bareKeyCategories[category] and stateName or (category .. stateName)
                             blocks.state[key] = index
                             local rgbState = (name == "NPCID" and category == "目标")
+                                or (name == "地图" and category == "区域")
                                 or name == "施法技能" and (category == "目标" or category == "焦点"
                                 or category == "首领1" or category == "首领2" or category == "首领3"
                                 or category == "首领4" or category == "首领5")
@@ -95,8 +100,8 @@ function Shingen:LoadPlayerBlocks(specIndex)
         else
             for _, name in ipairs(t.states) do
                 if name then
-                    blocks.state[name] = index
-                    index = index + (name == "目标NPCID" and 2 or 1)
+                    blocks.state[name == "难度" and "首领战难度" or name] = index
+                    index = index + ((name == "目标NPCID" or name == "地图") and 2 or 1)
                 end
             end
         end

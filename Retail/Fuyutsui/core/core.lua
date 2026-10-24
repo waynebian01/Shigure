@@ -85,12 +85,6 @@ end
 
 function Fuyutsui:OnEnable()
     self:InitializeSpecializationState()
-    if self.InitializeExBossTimelineBridge then
-        self:InitializeExBossTimelineBridge()
-    end
-    if self.InitializeBigWigsTimelineBridge then
-        self:InitializeBigWigsTimelineBridge()
-    end
     self:UpdateSpellKnown()
     self:RefreshPlayerState()
     self:ReadKeybindings()
@@ -100,6 +94,9 @@ function Fuyutsui:OnEnable()
     self:RegisterEvent("ZONE_CHANGED_INDOORS")
     self:RegisterEvent("ZONE_CHANGED_NEW_AREA")
     self:RegisterEvent("PLAYER_ENTERING_WORLD")
+    self:RegisterEvent("CHALLENGE_MODE_START")
+    self:RegisterEvent("CHALLENGE_MODE_COMPLETED")
+    self:RegisterEvent("CHALLENGE_MODE_RESET")
     self:RegisterEvent("PLAYER_TALENT_UPDATE")
     self:RegisterEvent("PLAYER_DEAD")
     self:RegisterEvent("PLAYER_ALIVE")
@@ -153,13 +150,13 @@ function Fuyutsui:OnEnable()
     self:RegisterEvent("ITEM_COUNT_CHANGED")
     self:RegisterEvent("BAG_UPDATE")
     self:RegisterEvent("PLAYERBANKSLOTS_CHANGED")
-    self:RegisterEvent("ENCOUNTER_TIMELINE_EVENT_ADDED")
-    self:RegisterEvent("ENCOUNTER_TIMELINE_EVENT_REMOVED")
-    self:RegisterEvent("ENCOUNTER_TIMELINE_EVENT_STATE_CHANGED")
     self:RegisterEvent("CINEMATIC_STOP")
     self:RegisterEvent("STOP_MOVIE")
     self:RegisterEvent("START_PLAYER_COUNTDOWN")
     self:RegisterEvent("CANCEL_PLAYER_COUNTDOWN")
+    if self.EnableEncounterTimeline then
+        self:EnableEncounterTimeline()
+    end
     if self.StartFrameUpdates then
         self:StartFrameUpdates()
     end
@@ -200,9 +197,9 @@ Fuyutsui.defaults = {
     },
     char = {
         level = 0,
-        aoeMode = 0,
         cooldowns = 0,
-        dpsMode = 0,
+        minorCooldowns = 0,
+        customMode = 0,
         delay = 0,
         potion = 0,
         quickButtonCX = 180,

@@ -1,0 +1,319 @@
+[
+  {
+    "name": "怒焰裂谷",
+    "englishName": "Ragefire Chasm",
+    "minLevel": 13,
+    "maxLevel": 18,
+    "sourceId": 389,
+    "type": "地下城",
+    "levelSource": "https://www.wowhead.com/forever/cn/guide/dungeons-overview-locations-details",
+    "id": 1,
+    "mapIdSource": "https://wago.tools/db2/Map?build=1.60.1.70245"
+  },
+  {
+    "name": "领主大厅",
+    "englishName": "The Hall of Thanes",
+    "minLevel": 13,
+    "maxLevel": 18,
+    "sourceId": 3065,
+    "type": "地下城",
+    "levelSource": "https://www.wowhead.com/forever/cn/guide/dungeons-overview-locations-details",
+    "id": 2,
+    "mapIdSource": "https://wago.tools/db2/Map?build=1.60.1.70245"
+  },
+  {
+    "name": "洛丹伦废墟",
+    "englishName": "Ruins of Lordaeron",
+    "minLevel": 15,
+    "maxLevel": 20,
+    "sourceId": 2999,
+    "type": "地下城",
+    "levelSource": "https://www.wowhead.com/forever/cn/guide/dungeons-overview-locations-details",
+    "id": 3,
+    "mapIdSource": "https://wago.tools/db2/Map?build=1.60.1.70245"
+  },
+  {
+    "name": "哀嚎洞穴",
+    "englishName": "Wailing Caverns",
+    "minLevel": 15,
+    "maxLevel": 25,
+    "sourceId": 43,
+    "type": "地下城",
+    "levelSource": "https://www.wowhead.com/forever/cn/guide/dungeons-overview-locations-details",
+    "id": 4,
+    "mapIdSource": "https://wago.tools/db2/Map?build=1.60.1.70245"
+  },
+  {
+    "name": "死亡矿井",
+    "englishName": "The Deadmines",
+    "minLevel": 18,
+    "maxLevel": 23,
+    "sourceId": 36,
+    "type": "地下城",
+    "levelSource": "https://www.wowhead.com/forever/cn/guide/dungeons-overview-locations-details",
+    "id": 5,
+    "mapIdSource": "https://wago.tools/db2/Map?build=1.60.1.70245"
+  },
+  {
+    "name": "影牙城堡",
+    "englishName": "Shadowfang Keep",
+    "minLevel": 22,
+    "maxLevel": 30,
+    "sourceId": 33,
+    "type": "地下城",
+    "levelSource": "https://www.wowhead.com/forever/cn/guide/dungeons-overview-locations-details",
+    "id": 6,
+    "mapIdSource": "https://wago.tools/db2/Map?build=1.60.1.70245"
+  },
+  {
+    "name": "暴风城监狱",
+    "englishName": "The Stockade",
+    "minLevel": 22,
+    "maxLevel": 30,
+    "sourceId": 34,
+    "type": "地下城",
+    "levelSource": "https://www.wowhead.com/forever/cn/guide/dungeons-overview-locations-details",
+    "id": 7,
+    "mapIdSource": "https://wago.tools/db2/Map?build=1.60.1.70245"
+  },
+  {
+    "name": "挖掘场：湿地",
+    "englishName": "Excavation Site: Wetlands",
+    "minLevel": 24,
+    "maxLevel": 29,
+    "sourceId": 2998,
+    "type": "地下城",
+    "levelSource": "https://www.wowhead.com/forever/cn/guide/dungeons-overview-locations-details",
+    "id": 8,
+    "mapIdSource": "https://wago.tools/db2/Map?build=1.60.1.70245"
+  },
+  {
+    "name": "黑暗深渊",
+    "englishName": "Blackfathom Deeps",
+    "minLevel": 24,
+    "maxLevel": 32,
+    "sourceId": 48,
+    "type": "地下城",
+    "levelSource": "https://www.wowhead.com/forever/cn/guide/dungeons-overview-locations-details",
+    "id": 9,
+    "mapIdSource": "https://wago.tools/db2/Map?build=1.60.1.70245"
+  },
+  {
+    "name": "达拉然城",
+    "englishName": "City of Dalaran",
+    "minLevel": 28,
+    "maxLevel": 33,
+    "sourceId": 2959,
+    "type": "地下城",
+    "levelSource": "https://www.wowhead.com/forever/cn/guide/dungeons-overview-locations-details",
+    "id": 10,
+    "mapIdSource": "https://wago.tools/db2/Map?build=1.60.1.70245"
+  },
+  {
+    "name": "血色修道院",
+    "englishName": "Scarlet Monastery",
+    "minLevel": 28,
+    "maxLevel": 45,
+    "sourceId": 189,
+    "type": "地下城",
+    "levelSource": "https://www.wowhead.com/forever/cn/guide/dungeons-overview-locations-details",
+    "id": 11,
+    "mapIdSource": "https://wago.tools/db2/Map?build=1.60.1.70245"
+  },
+  {
+    "name": "诺莫瑞根",
+    "englishName": "Gnomeregan",
+    "minLevel": 29,
+    "maxLevel": 38,
+    "sourceId": 90,
+    "type": "地下城",
+    "levelSource": "https://www.wowhead.com/forever/cn/guide/dungeons-overview-locations-details",
+    "id": 12,
+    "mapIdSource": "https://wago.tools/db2/Map?build=1.60.1.70245"
+  },
+  {
+    "name": "剃刀沼泽",
+    "englishName": "Razorfen Kraul",
+    "minLevel": 30,
+    "maxLevel": 40,
+    "sourceId": 47,
+    "type": "地下城",
+    "levelSource": "https://www.wowhead.com/forever/cn/guide/dungeons-overview-locations-details",
+    "id": 13,
+    "mapIdSource": "https://wago.tools/db2/Map?build=1.60.1.70245"
+  },
+  {
+    "name": "The Drowned City",
+    "englishName": "The Drowned City",
+    "minLevel": 35,
+    "maxLevel": 40,
+    "sourceId": 0,
+    "type": "地下城",
+    "levelSource": "https://www.wowhead.com/forever/cn/guide/dungeons-overview-locations-details",
+    "id": 14,
+    "mapIdSource": "https://wago.tools/db2/Map?build=1.60.1.70245"
+  },
+  {
+    "name": "Krol'dok Stronghold",
+    "englishName": "Krol'dok Stronghold",
+    "minLevel": 40,
+    "maxLevel": 45,
+    "sourceId": 0,
+    "type": "地下城",
+    "levelSource": "https://www.wowhead.com/forever/cn/guide/dungeons-overview-locations-details",
+    "id": 15,
+    "mapIdSource": "https://wago.tools/db2/Map?build=1.60.1.70245"
+  },
+  {
+    "name": "剃刀高地",
+    "englishName": "Razorfen Downs",
+    "minLevel": 40,
+    "maxLevel": 50,
+    "sourceId": 129,
+    "type": "地下城",
+    "levelSource": "https://www.wowhead.com/forever/cn/guide/dungeons-overview-locations-details",
+    "id": 16,
+    "mapIdSource": "https://wago.tools/db2/Map?build=1.60.1.70245"
+  },
+  {
+    "name": "奥达曼",
+    "englishName": "Uldaman",
+    "minLevel": 42,
+    "maxLevel": 52,
+    "sourceId": 70,
+    "type": "地下城",
+    "levelSource": "https://www.wowhead.com/forever/cn/guide/dungeons-overview-locations-details",
+    "id": 17,
+    "mapIdSource": "https://wago.tools/db2/Map?build=1.60.1.70245"
+  },
+  {
+    "name": "祖尔法拉克",
+    "englishName": "Zul'Farrak",
+    "minLevel": 44,
+    "maxLevel": 54,
+    "sourceId": 209,
+    "type": "地下城",
+    "levelSource": "https://www.wowhead.com/forever/cn/guide/dungeons-overview-locations-details",
+    "id": 18,
+    "mapIdSource": "https://wago.tools/db2/Map?build=1.60.1.70245"
+  },
+  {
+    "name": "玛拉顿",
+    "englishName": "Maraudon",
+    "minLevel": 45,
+    "maxLevel": 57,
+    "sourceId": 349,
+    "type": "地下城",
+    "levelSource": "https://www.wowhead.com/forever/cn/guide/dungeons-overview-locations-details",
+    "id": 19,
+    "mapIdSource": "https://wago.tools/db2/Map?build=1.60.1.70245"
+  },
+  {
+    "name": "奥卡兹监狱",
+    "englishName": "Alcaz Prison",
+    "minLevel": 48,
+    "maxLevel": 53,
+    "sourceId": 2994,
+    "type": "地下城",
+    "levelSource": "https://www.wowhead.com/forever/cn/guide/dungeons-overview-locations-details",
+    "id": 20,
+    "mapIdSource": "https://wago.tools/db2/Achievement?build=1.60.1.70245",
+    "achievementIds": [
+      63575
+    ]
+  },
+  {
+    "name": "阿塔哈卡神庙",
+    "englishName": "Sunken Temple",
+    "minLevel": 50,
+    "maxLevel": 60,
+    "sourceId": 109,
+    "type": "地下城",
+    "levelSource": "https://www.wowhead.com/forever/cn/guide/dungeons-overview-locations-details",
+    "id": 21,
+    "mapIdSource": "https://wago.tools/db2/Map?build=1.60.1.70245"
+  },
+  {
+    "name": "黑石深渊",
+    "englishName": "Blackrock Depths",
+    "minLevel": 52,
+    "maxLevel": 60,
+    "sourceId": 230,
+    "type": "地下城",
+    "levelSource": "https://www.wowhead.com/forever/cn/guide/dungeons-overview-locations-details",
+    "id": 22,
+    "mapIdSource": "https://wago.tools/db2/Map?build=1.60.1.70245"
+  },
+  {
+    "name": "Blackmaw Hold",
+    "englishName": "Blackmaw Hold",
+    "minLevel": 55,
+    "maxLevel": 60,
+    "sourceId": 0,
+    "type": "地下城",
+    "levelSource": "https://www.wowhead.com/forever/cn/guide/dungeons-overview-locations-details",
+    "id": 23,
+    "mapIdSource": "https://wago.tools/db2/Map?build=1.60.1.70245"
+  },
+  {
+    "name": "黑石塔",
+    "englishName": "Blackrock Spire",
+    "minLevel": 55,
+    "maxLevel": 60,
+    "sourceId": 229,
+    "type": "地下城",
+    "levelSource": "https://www.wowhead.com/forever/cn/guide/dungeons-overview-locations-details",
+    "id": 24,
+    "mapIdSource": "https://wago.tools/db2/Map?build=1.60.1.70245"
+  },
+  {
+    "name": "厄运之槌",
+    "englishName": "Dire Maul",
+    "minLevel": 58,
+    "maxLevel": 60,
+    "sourceId": 429,
+    "type": "地下城",
+    "levelSource": "https://www.wowhead.com/forever/cn/guide/dungeons-overview-locations-details",
+    "id": 25,
+    "mapIdSource": "https://wago.tools/db2/Map?build=1.60.1.70245"
+  },
+  {
+    "name": "通灵学院",
+    "englishName": "Scholomance",
+    "minLevel": 58,
+    "maxLevel": 60,
+    "sourceId": 289,
+    "type": "地下城",
+    "levelSource": "https://www.wowhead.com/forever/cn/guide/dungeons-overview-locations-details",
+    "id": 26,
+    "mapIdSource": "https://wago.tools/db2/Map?build=1.60.1.70245"
+  },
+  {
+    "name": "塑造者之台",
+    "englishName": "Shaper's Terrace",
+    "minLevel": 58,
+    "maxLevel": 60,
+    "sourceId": 3001,
+    "type": "地下城",
+    "levelSource": "https://www.wowhead.com/forever/cn/guide/dungeons-overview-locations-details",
+    "id": 27,
+    "mapIdSource": "https://wago.tools/db2/Achievement?build=1.60.1.70245",
+    "achievementIds": [
+      63574,
+      63590,
+      63592,
+      63593
+    ]
+  },
+  {
+    "name": "斯坦索姆",
+    "englishName": "Stratholme",
+    "minLevel": 58,
+    "maxLevel": 60,
+    "sourceId": 329,
+    "type": "地下城",
+    "levelSource": "https://www.wowhead.com/forever/cn/guide/dungeons-overview-locations-details",
+    "id": 28,
+    "mapIdSource": "https://wago.tools/db2/Map?build=1.60.1.70245"
+  }
+]

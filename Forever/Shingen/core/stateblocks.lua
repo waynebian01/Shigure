@@ -119,6 +119,7 @@ local bareKeyCategories = {
     ["状态"] = true,
     ["特殊"] = true,
     ["能量"] = true,
+    ["区域"] = true,
     ["配置开关"] = true,
 }
 
@@ -129,7 +130,7 @@ end
 
 local function GetConfigPixel(self, key)
     local c = self.db and self.db.char
-    return c and (c[key] / 255) or 0
+    return c and ((c[key] or 0) / 255) or 0
 end
 
 local function GetSpellCooldownPixel(spellID, curve)
@@ -143,6 +144,16 @@ end
 
 -- stateBlockGetters[分类][名称]
 local stateBlockGetters = {
+    ["区域"] = {
+        ["大秘境层数"] = function() return state.mythicPlusLevel or 0 end,
+        ["大秘境时间(分)"] = function() return state.mythicPlusMinutes or 0 end,
+        ["大秘境时间(秒)"] = function() return state.mythicPlusSeconds or 0 end,
+        ["首领战难度"] = function() return (state.encounterDifficultyID or 0) / 255 end,
+        ["副本难度"] = function() return (state.instanceDifficultyID or 0) / 255 end,
+        ["首领战"] = function() return state.bossID or 0 end,
+        ["地下城"] = function() return (state.dungeonIndex or 0) / 255 end,
+        ["团队副本"] = function() return (state.raidIndex or 0) / 255 end,
+    },
     ["状态"] = {
         ["职业"] = function(self) return self.state.classId / 255 end,
         ["专精"] = function(self) return self.state.specIndex / 255 end,
@@ -155,8 +166,6 @@ local stateBlockGetters = {
         ["插入物品"] = function() return state.insertItem or 0 end,
         ["队伍类型"] = function() return state.groupType or 0 end,
         ["队伍人数"] = function() return state.groupCount or 0 end,
-        ["首领战"] = function() return state.bossID or 0 end,
-        ["难度"] = function() return (state.difficultyID or 0) / 255 end,
         ["施法目标"] = function() return state.castTargetIndex or 0 end,
         ["施法技能"] = function() return state.castingSpell or 0 end,
         ["技能等级"] = function() return state.castingSpellRank or 0 end,
@@ -167,8 +176,8 @@ local stateBlockGetters = {
 
         -- 配置开关
         ["爆发开关"] = function(self) return GetConfigPixel(self, "cooldowns") end,
-        ["AOE开关"] = function(self) return GetConfigPixel(self, "aoeMode") end,
-        ["输出模式"] = function(self) return GetConfigPixel(self, "dpsMode") end,
+        ["次要爆发"] = function(self) return GetConfigPixel(self, "minorCooldowns") end,
+        ["自定义模式"] = function(self) return GetConfigPixel(self, "customMode") end,
         ["爆发药水开关"] = function(self) return GetConfigPixel(self, "potion") end,
         ["延迟"] = function(self) return GetConfigPixel(self, "delay") end,
 
@@ -233,15 +242,6 @@ local stateBlockGetters = {
         ["计时器"] = function() return state.timer or 0 end,
         ["循环计时器"] = function() return state.loopTimer or 0 end,
         ["倒数"] = function() return state.playerCountdown or 0 end,
-        ["EX首领技能类型"] = function() return state.exBossSkillType or 0 end,
-        ["EX首领技能事件"] = function() return state.exBossSkillEvent or 0 end,
-        ["EX首领技能倒计时"] = function() return state.exBossSkillCountdown or 0 end,
-        ["EX小怪技能类型"] = function() return state.exTrashSkillType or 0 end,
-        ["EX小怪技能事件"] = function() return state.exTrashSkillEvent or 0 end,
-        ["EX小怪技能倒计时"] = function() return state.exTrashSkillCountdown or 0 end,
-        ["BigWigs首领技能类型"] = function() return state.bigWigsBossSkillType or 0 end,
-        ["BigWigs首领技能事件"] = function() return state.bigWigsBossSkillEvent or 0 end,
-        ["BigWigs首领技能倒计时"] = function() return state.bigWigsBossSkillCountdown or 0 end,
         ["战斗计时(秒)"] = function() return state.combatTimerSec or 0 end,
         ["战斗计时(分)"] = function() return state.combatTimerMin or 0 end,
         ["酒池"] = function() return state.staggerPercent or 0 end,
@@ -264,8 +264,8 @@ local stateBlockGetters = {
     },
     ["配置开关"] = {
         ["爆发开关"] = function(self) return GetConfigPixel(self, "cooldowns") end,
-        ["AOE开关"] = function(self) return GetConfigPixel(self, "aoeMode") end,
-        ["输出模式"] = function(self) return GetConfigPixel(self, "dpsMode") end,
+        ["次要爆发"] = function(self) return GetConfigPixel(self, "minorCooldowns") end,
+        ["自定义模式"] = function(self) return GetConfigPixel(self, "customMode") end,
         ["爆发药水开关"] = function(self) return GetConfigPixel(self, "potion") end,
         ["延迟"] = function(self) return GetConfigPixel(self, "delay") end,
     },
@@ -374,6 +374,12 @@ local rgbSpellUnits = {
 }
 
 function Shingen:UpdateStateBlock(category, name)
+    if category == "区域" and name == "地图" then
+        local blocks = self.blocks
+        local index = blocks and blocks.state and blocks.state[name]
+        if index then self:CreateNumberTexture(index, state.mapID or 0) end
+        return
+    end
     if category == "目标" and name == "NPCID" then
         local blocks = self.blocks
         local index = blocks and blocks.state and blocks.state["目标NPCID"]

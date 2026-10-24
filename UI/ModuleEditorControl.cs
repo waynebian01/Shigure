@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 
 namespace Shigure;
 
-public sealed class ModuleEditorControl : UserControl
+public sealed partial class ModuleEditorControl : UserControl
 {
     private VersionedSpellIconCatalog Catalog => SpellIconCatalog.ForVersion(_resolveProfile().Version);
     private const string ModuleWebsiteUrl = "https://www.shigure.club";
@@ -38,8 +38,6 @@ public sealed class ModuleEditorControl : UserControl
     private readonly DataGridViewComboBoxColumn _macroConditionColumn = new();
     private ToolStripDropDown? _rulesComboDropDown;
     private ToolStripDropDown? _adjustmentComboDropDown;
-    private readonly DataGridViewTextBoxColumn _adjustmentFieldColumn = new();
-    private readonly DataGridViewComboBoxColumn _adjustmentTypeColumn = new();
     private readonly ListView _unitsList = new UiThemedListView();
     private readonly ListView _numberArraysList = new UiThemedListView();
     private readonly Label _pathLabel = new();
@@ -108,10 +106,7 @@ public sealed class ModuleEditorControl : UserControl
         ("状态", ConditionFieldCategory.State),
         ("技能", ConditionFieldCategory.Spell),
         ("光环", ConditionFieldCategory.Aura),
-        ("动态队友", ConditionFieldCategory.DynamicTeammate),
-        ("动态单位", ConditionFieldCategory.DynamicUnit),
-        ("动态数值", ConditionFieldCategory.DynamicValue),
-        ("自建", ConditionFieldCategory.Shigure)
+        ("动态队友", ConditionFieldCategory.DynamicTeammate)
     ];
 
     internal ModuleEditorControl(
@@ -233,6 +228,8 @@ public sealed class ModuleEditorControl : UserControl
             NumberArrays = _numberArrays,
             Rules = GridRows(_rulesGrid),
             Adjustments = GridRows(_adjustmentsGrid),
+            PostAdjustments = GridRows(_postAdjustmentsGrid),
+            CustomConditions = GridRows(_customConditionsGrid),
             FormulaAdjustments = GridRows(_formulaAdjustmentsGrid)
         });
     }
@@ -640,15 +637,15 @@ public sealed class ModuleEditorControl : UserControl
         {
             Dock = DockStyle.Fill,
             BackColor = UiTheme.Surface,
-            ColumnCount = 4,
+            ColumnCount = 7,
             RowCount = 1,
             Margin = new Padding(0, 0, 0, 8),
             Padding = new Padding(0)
         };
         tabBar.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-        for (var i = 0; i < 4; i++)
+        for (var i = 0; i < 7; i++)
         {
-            tabBar.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
+            tabBar.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F / 7));
         }
 
         var contentCard = new UiCardPanel
@@ -675,9 +672,12 @@ public sealed class ModuleEditorControl : UserControl
         var pages = new[]
         {
             BuildRulesPanel(),
+            CreateEditorCardPage("列表", BuildNumberArraysPanel()),
             BuildAdjustmentsPanel(),
             BuildUnitsPanel(),
-            BuildFormulaArraysPanel(),
+            CreateEditorCardPage("公式", BuildFormulaAdjustmentsGrid()),
+            CreateEditorCardPage("自定义", BuildCustomConditionsGrid()),
+            CreateEditorCardPage("最终调整", BuildAdjustmentsGrid(postAdjustment: true)),
         };
         foreach (var page in pages)
         {
@@ -695,7 +695,7 @@ public sealed class ModuleEditorControl : UserControl
         contentHost.Controls.Add(_editorEmptyHint);
         _editorEmptyHint.BringToFront();
 
-        var tabs = new UiPillTab[4];
+        var tabs = new UiPillTab[7];
         var selectedIndex = -1;
 
         void SelectTab(int index)
@@ -718,7 +718,7 @@ public sealed class ModuleEditorControl : UserControl
             }
         }
 
-        var titles = new[] { "逻辑编辑", "数值调整", "动态单位", "公式列表" };
+        var titles = new[] { "逻辑", "列表", "初次调整", "动态数值", "公式", "自定义", "最终调整" };
         for (var i = 0; i < titles.Length; i++)
         {
             var index = i;
@@ -735,29 +735,7 @@ public sealed class ModuleEditorControl : UserControl
     }
 
     private Control BuildAdjustmentsPanel()
-        => CreateEditorCardPage("数值调整", BuildAdjustmentsGrid());
-
-    private Control BuildFormulaArraysPanel()
-    {
-        var gap = UiTheme.PageGap;
-        var panel = new TableLayoutPanel
-        {
-            Dock = DockStyle.Fill,
-            BackColor = UiTheme.Surface,
-            ColumnCount = 3,
-            RowCount = 1,
-            Padding = Padding.Empty,
-            Margin = new Padding(0)
-        };
-
-        panel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
-        panel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, gap));
-        panel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50));
-        panel.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
-        panel.Controls.Add(CreateEditorSectionCard("公式动态数值", BuildFormulaAdjustmentsGrid()), 0, 0);
-        panel.Controls.Add(CreateEditorSectionCard("数组", BuildNumberArraysPanel()), 2, 0);
-        return panel;
-    }
+        => CreateEditorCardPage("初次调整", BuildAdjustmentsGrid());
 
     private Control CreateEditorCardPage(string title, Control body)
     {
@@ -960,7 +938,7 @@ public sealed class ModuleEditorControl : UserControl
         buttons.Controls.Add(deleteButton);
         panel.Controls.Add(buttons, 1, 0);
 
-        return CreateEditorCardPage("动态单位", panel);
+        return CreateEditorCardPage("动态数值", panel);
     }
 
     private Control BuildNameRow()
@@ -1097,15 +1075,18 @@ public sealed class ModuleEditorControl : UserControl
         return row;
     }
 
-    private Control BuildAdjustmentsGrid()
+    private Control BuildAdjustmentsGrid(bool postAdjustment = false)
     {
-        UiTheme.StyleDataGridView(_adjustmentsGrid);
-        _adjustmentsGrid.AllowUserToAddRows = true;
-        _adjustmentsGrid.AllowUserToDeleteRows = false;
-        _adjustmentsGrid.AllowUserToResizeColumns = true;
-        _adjustmentsGrid.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None;
+        var grid = postAdjustment ? _postAdjustmentsGrid : _adjustmentsGrid;
+        var fieldColumn = new DataGridViewTextBoxColumn();
+        var typeColumn = new DataGridViewComboBoxColumn();
+        UiTheme.StyleDataGridView(grid);
+        grid.AllowUserToAddRows = true;
+        grid.AllowUserToDeleteRows = false;
+        grid.AllowUserToResizeColumns = true;
+        grid.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None;
 
-        _adjustmentsGrid.Columns.Add(new DataGridViewCheckBoxColumn
+        grid.Columns.Add(new DataGridViewCheckBoxColumn
         {
             Name = "Enabled",
             HeaderText = "启用",
@@ -1113,15 +1094,15 @@ public sealed class ModuleEditorControl : UserControl
             AutoSizeMode = DataGridViewAutoSizeColumnMode.None
         });
 
-        _adjustmentFieldColumn.Name = "Field";
-        _adjustmentFieldColumn.HeaderText = "字段";
-        _adjustmentFieldColumn.ReadOnly = true;
-        _adjustmentFieldColumn.Width = 260;
-        _adjustmentFieldColumn.MinimumWidth = 200;
-        _adjustmentFieldColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
-        _adjustmentsGrid.Columns.Add(_adjustmentFieldColumn);
+        fieldColumn.Name = "Field";
+        fieldColumn.HeaderText = "字段";
+        fieldColumn.ReadOnly = true;
+        fieldColumn.Width = 260;
+        fieldColumn.MinimumWidth = 200;
+        fieldColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+        grid.Columns.Add(fieldColumn);
 
-        _adjustmentsGrid.Columns.Add(new DataGridViewTextBoxColumn
+        grid.Columns.Add(new DataGridViewTextBoxColumn
         {
             Name = "Delta",
             HeaderText = "调整",
@@ -1129,31 +1110,31 @@ public sealed class ModuleEditorControl : UserControl
             Width = 110,
             AutoSizeMode = DataGridViewAutoSizeColumnMode.None
         });
-        _adjustmentsGrid.Columns.Add(new DataGridViewTextBoxColumn
+        grid.Columns.Add(new DataGridViewTextBoxColumn
         {
             Name = "Condition",
             HeaderText = "条件 (点击编辑)",
             AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill,
             ReadOnly = true
         });
-        AddDeleteColumn(_adjustmentsGrid);
+        AddDeleteColumn(grid);
 
         // 新列加在集合末尾以保留 Rows.Add 的位置参数(启用/字段/调整/条件), 再用 DisplayIndex 排序。
-        _adjustmentTypeColumn.Name = "Type";
-        _adjustmentTypeColumn.HeaderText = "类型";
-        _adjustmentTypeColumn.Width = 140;
-        _adjustmentTypeColumn.MinimumWidth = 100;
-        _adjustmentTypeColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
-        _adjustmentTypeColumn.FlatStyle = FlatStyle.Flat;
-        _adjustmentTypeColumn.DisplayStyle = DataGridViewComboBoxDisplayStyle.DropDownButton;
-        _adjustmentTypeColumn.ReadOnly = true;
-        foreach (var option in AdjustmentTypeOptions)
+        typeColumn.Name = "Type";
+        typeColumn.HeaderText = "类型";
+        typeColumn.Width = 140;
+        typeColumn.MinimumWidth = 100;
+        typeColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
+        typeColumn.FlatStyle = FlatStyle.Flat;
+        typeColumn.DisplayStyle = DataGridViewComboBoxDisplayStyle.DropDownButton;
+        typeColumn.ReadOnly = true;
+        foreach (var option in postAdjustment ? PostAdjustmentTypeOptions : AdjustmentTypeOptions)
         {
-            _adjustmentTypeColumn.Items.Add(option.Text);
+            typeColumn.Items.Add(option.Text);
         }
-        _adjustmentsGrid.Columns.Add(_adjustmentTypeColumn);
-        _adjustmentTypeColumn.DisplayIndex = 1;
-        _adjustmentsGrid.Columns.Add(new DataGridViewTextBoxColumn
+        grid.Columns.Add(typeColumn);
+        typeColumn.DisplayIndex = 1;
+        grid.Columns.Add(new DataGridViewTextBoxColumn
         {
             Name = "Operation",
             HeaderText = "调整方式",
@@ -1162,9 +1143,9 @@ public sealed class ModuleEditorControl : UserControl
             DefaultCellStyle = new DataGridViewCellStyle { NullValue = "+" },
             AutoSizeMode = DataGridViewAutoSizeColumnMode.None
         });
-        _adjustmentsGrid.Columns["Operation"]!.DisplayIndex = 3;
+        grid.Columns["Operation"]!.DisplayIndex = 3;
         // 继续保留前四列的集合索引，目标只改变显示位置。
-        _adjustmentsGrid.Columns.Add(new DataGridViewTextBoxColumn
+        grid.Columns.Add(new DataGridViewTextBoxColumn
         {
             Name = "Target",
             HeaderText = "目标",
@@ -1172,34 +1153,34 @@ public sealed class ModuleEditorControl : UserControl
             ReadOnly = true,
             AutoSizeMode = DataGridViewAutoSizeColumnMode.None
         });
-        _adjustmentsGrid.Columns["Target"]!.DisplayIndex = 2;
+        grid.Columns["Target"]!.DisplayIndex = 2;
 
-        _adjustmentsGrid.CellClick += OnAdjustmentsGridCellClick;
-        _adjustmentsGrid.CellFormatting += OnAdjustmentsGridCellFormatting;
-        _adjustmentsGrid.CellPainting += OnAdjustmentsGridCellPainting;
-        _adjustmentsGrid.CellValueChanged += OnAdjustmentsGridCellValueChanged;
-        _adjustmentsGrid.CellEndEdit += (_, _) => RefreshAdjustmentFieldColumn();
-        _adjustmentsGrid.DefaultValuesNeeded += (_, e) =>
+        grid.CellClick += OnAdjustmentsGridCellClick;
+        grid.CellFormatting += OnAdjustmentsGridCellFormatting;
+        grid.CellPainting += OnAdjustmentsGridCellPainting;
+        grid.CellValueChanged += OnAdjustmentsGridCellValueChanged;
+        grid.CellEndEdit += (_, _) => RefreshAdjustmentFieldColumn();
+        grid.DefaultValuesNeeded += (_, e) =>
         {
             e.Row.Cells["Enabled"].Value = true;
             e.Row.Cells["Operation"].Value = "+";
             e.Row.Cells["Delta"].Value = "0";
         };
-        _adjustmentsGrid.DataError += (_, e) => e.ThrowException = false;
-        _adjustmentsGrid.EditingControlShowing += OnAdjustmentsGridEditingControlShowing;
-        _adjustmentsGrid.KeyDown += OnAdjustmentsGridKeyDown;
-        _adjustmentsGrid.CellBeginEdit += (_, _) => CloseAdjustmentComboDropDown();
-        _adjustmentsGrid.Disposed += (_, _) => CloseAdjustmentComboDropDown();
-        _adjustmentsGrid.CurrentCellDirtyStateChanged += (_, _) =>
+        grid.DataError += (_, e) => e.ThrowException = false;
+        grid.EditingControlShowing += OnAdjustmentsGridEditingControlShowing;
+        grid.KeyDown += OnAdjustmentsGridKeyDown;
+        grid.CellBeginEdit += (_, _) => CloseAdjustmentComboDropDown();
+        grid.Disposed += (_, _) => CloseAdjustmentComboDropDown();
+        grid.CurrentCellDirtyStateChanged += (_, _) =>
         {
-            if (_adjustmentsGrid.IsCurrentCellDirty && _adjustmentsGrid.CurrentCell is DataGridViewCheckBoxCell)
+            if (grid.IsCurrentCellDirty && grid.CurrentCell is DataGridViewCheckBoxCell)
             {
-                _adjustmentsGrid.CommitEdit(DataGridViewDataErrorContexts.Commit);
+                grid.CommitEdit(DataGridViewDataErrorContexts.Commit);
             }
         };
         RefreshAdjustmentFieldColumn();
-        UiTheme.CacheDataGridViewColumnWidths(_adjustmentsGrid, "module-adjustments");
-        return _adjustmentsGrid;
+        UiTheme.CacheDataGridViewColumnWidths(grid, postAdjustment ? "module-post-adjustments" : "module-adjustments");
+        return grid;
     }
 
     private Control BuildFormulaAdjustmentsGrid()
@@ -1886,7 +1867,7 @@ public sealed class ModuleEditorControl : UserControl
 
     private void RefreshAdjustmentFieldColumn()
     {
-        foreach (DataGridViewRow row in _adjustmentsGrid.Rows)
+        foreach (var row in AdjustmentRows())
         {
             if (!row.IsNewRow)
             {
@@ -1898,12 +1879,14 @@ public sealed class ModuleEditorControl : UserControl
         // 动态数值也是可用于条件的字段；新增、改名或删除后立即刷新规则行的缺失字段提示。
         InvalidateConditionFieldValidation();
         RefreshAdjustmentValidation();
+        RefreshUnitsList();
     }
 
     private void RefreshAdjustmentValidation()
     {
         var structuredFields = BuildStructuredFieldSet();
-        foreach (DataGridViewRow row in _adjustmentsGrid.Rows)
+        var stages = GetEditorStages();
+        foreach (var row in AdjustmentRows().Concat(_customConditionsGrid.Rows.Cast<DataGridViewRow>()))
         {
             if (row.IsNewRow)
             {
@@ -1917,6 +1900,7 @@ public sealed class ModuleEditorControl : UserControl
             }
             else AddMissingStructuredField(CellText(row, "Field"), "调整目标", structuredFields, messages);
             AddMissingConditionReferences(CellText(row, "Condition"), structuredFields, messages);
+            if (stages.AdjustmentError(ReadComputationRow(row)) is { } stageError) messages.Add(stageError);
             ApplyAdjustmentValidationStyle(row, messages);
         }
 
@@ -1935,6 +1919,7 @@ public sealed class ModuleEditorControl : UserControl
             {
                 AddMissingStructuredField(match.Value, "公式字段", structuredFields, messages);
             }
+            if (stages.AdjustmentError(ReadComputationRow(row)) is { } stageError) messages.Add(stageError);
             ApplyAdjustmentValidationStyle(row, messages);
         }
     }
@@ -1942,7 +1927,7 @@ public sealed class ModuleEditorControl : UserControl
     private void ValidateTeammateAdjustmentRow(DataGridViewRow row, ICollection<string> messages)
     {
         var target = CellText(row, "Target");
-        if (!GetTeammateTargetOptions().Any(option => string.Equals(option.Value?.ToString(), target, StringComparison.Ordinal)))
+        if (!GetTeammateTargetOptions(IsPostAdjustmentRow(row)).Any(option => string.Equals(option.Value?.ToString(), target, StringComparison.Ordinal)))
             AddUnique(messages, string.IsNullOrWhiteSpace(target) ? "请选择队友目标" : $"队友目标不存在：{FormatTeammateTarget(target)}");
         var field = CellText(row, "Field");
         if (!GetTeammateAdjustmentFields().Any(candidate => candidate.Name == field))
@@ -2074,9 +2059,10 @@ public sealed class ModuleEditorControl : UserControl
         }
         desiredValue ??= cell.Value?.ToString();
         var category = ReadAdjustmentType(row);
+        var stages = GetEditorStages();
         var isAvailable = !string.IsNullOrEmpty(desiredValue)
             && BuildAdjustmentFields().Any(field =>
-                (category is null ? field.Category != ConditionFieldCategory.DynamicTeammate : field.Category == category)
+                stages.IsAvailable(field.Name, GetAdjustmentStage(row.DataGridView!)) && (category is null ? field.Category != ConditionFieldCategory.DynamicTeammate : field.Category == category)
                 && string.Equals(field.Name, desiredValue, StringComparison.Ordinal));
         if (string.IsNullOrEmpty(desiredValue) || isAvailable || keepCustom)
         {
@@ -2086,24 +2072,26 @@ public sealed class ModuleEditorControl : UserControl
         {
             cell.Value = string.Empty;
         }
+        NormalizePostBooleanTarget(row);
     }
 
     private static bool IsCustomAdjustmentRow(DataGridViewRow? row)
-        => row is not null && CellText(row, "Type") == "自建";
+        => row?.DataGridView?.Name == "CustomConditions";
 
     private static bool IsTeammateAdjustmentRow(DataGridViewRow? row)
-        => row is not null && CellText(row, "Type") == "动态队友";
+        => row is not null && !IsCustomAdjustmentRow(row) && CellText(row, "Type") == "动态队友";
 
     private IReadOnlyList<ConditionField> GetTeammateAdjustmentFields()
         => _fieldCatalog.GetGroupFields(ReadMatchCombo(_classBox), ReadMatchCombo(_specBox), includeDerived: false)
             .Where(field => field.Type is ConditionFieldType.Int or ConditionFieldType.Bool).ToArray();
 
-    private List<UiDropDownOption> GetTeammateTargetOptions()
+    private List<UiDropDownOption> GetTeammateTargetOptions(bool includeDynamicUnits = false)
         => Enumerable.Range(1, GroupStateLayout.SlotCount)
             .Select(slot => new UiDropDownOption($"slot:{slot}", slot.ToString(CultureInfo.InvariantCulture)))
             .Concat(new[] { "施法目标", "队伍类型" }.Select(field => new UiDropDownOption($"state:{field}", field)))
-            .Concat(_units.Where(unit => !string.IsNullOrWhiteSpace(unit.Name))
-                .Select(unit => new UiDropDownOption($"unit:{unit.Name}", unit.Name))).ToList();
+            .Concat(includeDynamicUnits ? _units.Where(unit => !string.IsNullOrWhiteSpace(unit.Name))
+                .Select(unit => new UiDropDownOption($"unit:{unit.Name}", unit.Name)) : [])
+            .ToList();
 
     private static string FormatTeammateTarget(string value)
         => value.StartsWith("slot:", StringComparison.Ordinal) || value.StartsWith("unit:", StringComparison.Ordinal)
@@ -2114,20 +2102,19 @@ public sealed class ModuleEditorControl : UserControl
             : string.IsNullOrWhiteSpace(CellText(row, "Operation")) ? "+" : CellText(row, "Operation");
 
     private static bool CanSelectAdjustmentBoolean(DataGridViewRow? row)
-        => row is not null && ReadAdjustmentOperation(row) == "=";
+        => row is not null && !IsCustomAdjustmentRow(row) && ReadAdjustmentOperation(row) == "=";
 
     private IEnumerable<ConditionField> GetCustomAdjustmentFields()
     {
-        foreach (DataGridViewRow row in _adjustmentsGrid.Rows)
+        foreach (DataGridViewRow row in _customConditionsGrid.Rows)
         {
             if (!row.IsNewRow && IsCustomAdjustmentRow(row)
                 && !string.IsNullOrWhiteSpace(CellText(row, "Field")))
             {
                 var name = CellText(row, "Field");
                 yield return new ConditionField(name, name,
-                    CellText(row, "Delta") == ModuleValueAdjustment.ConditionBooleanValue
-                        || bool.TryParse(CellText(row, "Delta"), out _) ? ConditionFieldType.Bool : ConditionFieldType.Int,
-                    ConditionFieldCategory.Shigure);
+                    ConditionFieldType.Bool,
+                    ConditionFieldCategory.Custom);
             }
         }
     }
@@ -2151,7 +2138,7 @@ public sealed class ModuleEditorControl : UserControl
     private static ConditionFieldCategory? ReadAdjustmentType(DataGridViewRow row)
     {
         var text = CellText(row, "Type");
-        foreach (var option in AdjustmentTypeOptions)
+        foreach (var option in PostAdjustmentTypeOptions)
         {
             if (string.Equals(option.Text, text, StringComparison.Ordinal))
             {
@@ -2165,7 +2152,7 @@ public sealed class ModuleEditorControl : UserControl
 
     private static string AdjustmentTypeText(ConditionFieldCategory category)
     {
-        foreach (var option in AdjustmentTypeOptions)
+        foreach (var option in PostAdjustmentTypeOptions)
         {
             if (option.Category == category)
             {
@@ -2209,34 +2196,36 @@ public sealed class ModuleEditorControl : UserControl
 
     private void OnAdjustmentsGridCellValueChanged(object? sender, DataGridViewCellEventArgs e)
     {
+        if (sender is not DataGridView grid) return;
         if (_suppressAdjustmentTypeChange || e.RowIndex < 0 || e.ColumnIndex < 0)
         {
             return;
         }
 
         // 用户切换"类型": 重建字段选项, 仅保留仍属于该类型的现值, 否则清空让其重选。
-        if (_adjustmentsGrid.Columns[e.ColumnIndex].Name == "Type")
+        if (grid.Columns[e.ColumnIndex].Name == "Type")
         {
-            var row = _adjustmentsGrid.Rows[e.RowIndex];
+            var row = grid.Rows[e.RowIndex];
             if (!IsTeammateAdjustmentRow(row)) row.Cells["Target"].Value = string.Empty;
             RebuildAdjustmentFieldCell(row, null, keepCustom: false);
-            _adjustmentsGrid.InvalidateRow(e.RowIndex);
+            grid.InvalidateRow(e.RowIndex);
         }
 
-        if (_adjustmentsGrid.Columns[e.ColumnIndex].Name == "Operation")
+        if (grid.Columns[e.ColumnIndex].Name == "Operation")
         {
-            var row = _adjustmentsGrid.Rows[e.RowIndex];
+            var row = grid.Rows[e.RowIndex];
             var value = CellText(row, "Delta");
             if (!CanSelectAdjustmentBoolean(row)
                 && (value == ModuleValueAdjustment.ConditionBooleanValue || bool.TryParse(value, out _)))
             {
                 row.Cells["Delta"].Value = "0";
             }
-            _adjustmentsGrid.InvalidateCell(row.Cells["Delta"]);
+            grid.InvalidateCell(row.Cells["Delta"]);
         }
 
-        if (_adjustmentsGrid.Columns[e.ColumnIndex].Name is "Field" or "Delta" or "Type")
+        if (grid.Columns[e.ColumnIndex].Name is "Field" or "Delta" or "Type")
         {
+            if (grid.Columns[e.ColumnIndex].Name is "Field" or "Type") NormalizePostBooleanTarget(grid.Rows[e.RowIndex]);
             InvalidateConditionFieldValidation();
         }
 
@@ -2245,18 +2234,19 @@ public sealed class ModuleEditorControl : UserControl
 
     private void OnAdjustmentsGridCellFormatting(object? sender, DataGridViewCellFormattingEventArgs e)
     {
+        if (sender is not DataGridView grid) return;
         if (e.RowIndex < 0
             || e.ColumnIndex < 0
-            || _adjustmentsGrid.Rows[e.RowIndex].IsNewRow)
+            || grid.Rows[e.RowIndex].IsNewRow)
         {
             return;
         }
 
-        var columnName = _adjustmentsGrid.Columns[e.ColumnIndex].Name;
+        var columnName = grid.Columns[e.ColumnIndex].Name;
         if (columnName == "Field")
         {
             // 调整目标只显示字段名称；单元格底层继续保存结构化 spellId 键。
-            e.Value = IsTeammateAdjustmentRow(_adjustmentsGrid.Rows[e.RowIndex])
+            e.Value = IsTeammateAdjustmentRow(grid.Rows[e.RowIndex])
                 ? GetTeammateAdjustmentFields().FirstOrDefault(field => field.Name == e.Value?.ToString())?.DisplayName
                     ?? e.Value?.ToString()
                 : FormatAdjustmentFieldForDisplay(e.Value?.ToString());
@@ -2264,7 +2254,7 @@ public sealed class ModuleEditorControl : UserControl
         }
         else if (columnName == "Target")
         {
-            e.Value = IsTeammateAdjustmentRow(_adjustmentsGrid.Rows[e.RowIndex])
+            e.Value = IsTeammateAdjustmentRow(grid.Rows[e.RowIndex])
                 ? FormatTeammateTarget(e.Value?.ToString() ?? string.Empty) : string.Empty;
             e.FormattingApplied = true;
         }
@@ -2301,9 +2291,14 @@ public sealed class ModuleEditorControl : UserControl
         foreach (var field in _fieldCatalog.GetFields(ReadMatchCombo(_classBox), ReadMatchCombo(_specBox)))
         {
             // 状态支持整数运算与布尔赋值；技能/光环保留其原有类型。
-            if (field.Category == ConditionFieldCategory.State && field.Type is ConditionFieldType.Int or ConditionFieldType.Bool)
+            if (field.Category is ConditionFieldCategory.State or ConditionFieldCategory.Timeline
+                && !EncounterTimelineStateLayout.IsAnyField(field.Name)
+                && field.Type is ConditionFieldType.Int or ConditionFieldType.Bool)
             {
-                AddAdjustmentField(fields, seen, field.Name, field.DisplayName, ConditionFieldCategory.State, field.Type);
+                // 固定槽保留原有数值调整能力；任意事件只在条件求值期间有绑定。
+                AddAdjustmentField(fields, seen, field.Name,
+                    field.Category == ConditionFieldCategory.Timeline ? field.Name : field.DisplayName,
+                    ConditionFieldCategory.State, field.Type);
             }
             else if (field.Category == ConditionFieldCategory.Spell
                      && string.Equals(
@@ -2378,7 +2373,7 @@ public sealed class ModuleEditorControl : UserControl
     private IEnumerable<string> GetAdjustmentTargetFields()
     {
         var seen = new HashSet<string>(StringComparer.Ordinal);
-        foreach (DataGridViewRow row in _adjustmentsGrid.Rows)
+        foreach (var row in AdjustmentRows().Concat(_customConditionsGrid.Rows.Cast<DataGridViewRow>()))
         {
             if (row.IsNewRow || IsTeammateAdjustmentRow(row))
             {
@@ -2438,7 +2433,7 @@ public sealed class ModuleEditorControl : UserControl
             GetAuraFields(),
             GetNameplateAuraFields(),
             GetThresholdFields(),
-            GetFormulaValueNames(),
+            Array.Empty<string>(),
             CollectTakenNames(),
             null,
             null,
@@ -2499,7 +2494,7 @@ public sealed class ModuleEditorControl : UserControl
             GetAuraFields(),
             GetNameplateAuraFields(),
             GetThresholdFields(),
-            GetFormulaValueNames(),
+            Array.Empty<string>(),
             CollectTakenNames(ownName, ownValueName),
             existingUnit,
             existingCount,
@@ -2520,7 +2515,7 @@ public sealed class ModuleEditorControl : UserControl
         RemoveUnitRow(kind, index);
 
         if (existingUnit is not null && editor.ResultUnit is { } renamedUnit && ownName != renamedUnit.Name)
-            foreach (DataGridViewRow row in _adjustmentsGrid.Rows)
+            foreach (var row in AdjustmentRows())
                 if (!row.IsNewRow && IsTeammateAdjustmentRow(row) && CellText(row, "Target") == $"unit:{ownName}")
                     row.Cells["Target"].Value = $"unit:{renamedUnit.Name}";
 
@@ -2717,6 +2712,16 @@ public sealed class ModuleEditorControl : UserControl
             _unitsList.Items.Add(item);
         }
 
+        var stages = GetEditorStages();
+        var filters = GetDynamicFilters(GetEditorComputationModule()).ToList();
+        for (var index = 0; index < filters.Count && index < _unitsList.Items.Count; index++)
+        {
+            if (stages.FilterError(filters[index].Groups) is not { } stageError) continue;
+            var item = _unitsList.Items[index];
+            item.BackColor = UiTheme.DangerSoft;
+            item.ForeColor = UiTheme.Danger;
+            item.ToolTipText += $"\n{stageError}";
+        }
         _unitsList.EndUpdate();
         _unitsEmptyHint.Visible = _unitsList.Items.Count == 0;
     }
@@ -2782,8 +2787,10 @@ public sealed class ModuleEditorControl : UserControl
 
     private IReadOnlyList<string> GetThresholdFields()
     {
-        // 阈值字段取状态/动态单位/动态数值/自建中的整数，排除技能/光环字段。
+        // 动态数值阈值只提供本阶段及之前可用的整数，排除后续公式和自定义。
+        var stages = GetEditorStages();
         return BuildAdjustmentFields()
+            .Where(field => stages.IsAvailable(field.Name, ModuleComputationStage.DynamicValue))
             .Where(field => field.Type == ConditionFieldType.Int && field.Category is ConditionFieldCategory.State
                 or ConditionFieldCategory.DynamicUnit
                 or ConditionFieldCategory.DynamicValue
@@ -2791,27 +2798,6 @@ public sealed class ModuleEditorControl : UserControl
             .Select(field => field.Name)
             .Where(name => !string.IsNullOrWhiteSpace(name))
             .ToList();
-    }
-
-    private IReadOnlyList<string> GetFormulaValueNames()
-    {
-        var names = new List<string>();
-        var seen = new HashSet<string>(StringComparer.Ordinal);
-        foreach (DataGridViewRow row in _formulaAdjustmentsGrid.Rows)
-        {
-            if (row.IsNewRow)
-            {
-                continue;
-            }
-
-            if (TryGetAdjustmentField(CellText(row, "Field"), CellText(row, "Formula"), out var field)
-                && seen.Add(field))
-            {
-                names.Add(field);
-            }
-        }
-
-        return names;
     }
 
     // 名称查重集合: 其它单位/数量(含生命值名) + 当前职业/专精的状态字段与 group 字段; 排除正在编辑项自身的名称。
@@ -3385,6 +3371,7 @@ public sealed class ModuleEditorControl : UserControl
             return source;
         }
 
+        var bossInstanceId = BossCatalog.ResolveInstance(_resolveProfile().Version, terms);
         return ConditionExpression.Build(terms.Select(term =>
         {
             var field = FormatConditionFieldForDisplay(term.Field);
@@ -3394,7 +3381,7 @@ public sealed class ModuleEditorControl : UserControl
                 : ItemIdConditionFields.Contains(term.Field)
                     ? FormatConditionItemValueForDisplay(term.Value)
                 : string.Equals(NormalizeConditionFieldName(term.Field), "首领战", StringComparison.Ordinal)
-                    ? FormatBossValueForDisplay(term.Value)
+                    ? FormatBossValueForDisplay(term.Value, bossInstanceId)
                 : term.Value;
             return term with { Field = field, Value = value };
         }));
@@ -3453,7 +3440,7 @@ public sealed class ModuleEditorControl : UserControl
         return string.IsNullOrWhiteSpace(name) ? value : name;
     }
 
-    private static string FormatBossValueForDisplay(string value)
+    private string FormatBossValueForDisplay(string value, int? instanceId)
     {
         var normalized = value.Trim();
         if (!int.TryParse(normalized, NumberStyles.Integer, CultureInfo.InvariantCulture, out var bossNumber))
@@ -3466,9 +3453,7 @@ public sealed class ModuleEditorControl : UserControl
             return "非首领战";
         }
 
-        return StatusForm.GetBossNumberOptions()
-                   .FirstOrDefault(option => option.Number == bossNumber)?.Name
-               ?? value;
+        return BossCatalog.Load(_resolveProfile().Version).DescribeNumber(bossNumber, instanceId);
     }
 
     private string? ResolveConditionSpellName(long spellId, string? normalizedField)
@@ -4608,19 +4593,20 @@ public sealed class ModuleEditorControl : UserControl
 
     private void OnAdjustmentsGridCellPainting(object? sender, DataGridViewCellPaintingEventArgs e)
     {
+        if (sender is not DataGridView grid) return;
         if (e.RowIndex < 0 || e.ColumnIndex < 0)
         {
             return;
         }
 
-        var columnName = _adjustmentsGrid.Columns[e.ColumnIndex].Name;
+        var columnName = grid.Columns[e.ColumnIndex].Name;
         if (columnName == "Type"
-            || (columnName == "Target" && IsTeammateAdjustmentRow(_adjustmentsGrid.Rows[e.RowIndex]))
-            || (columnName == "Delta" && CanSelectAdjustmentBoolean(_adjustmentsGrid.Rows[e.RowIndex]))
-            || (columnName == "Operation" && !IsCustomAdjustmentRow(_adjustmentsGrid.Rows[e.RowIndex]))
-            || (columnName == "Field" && !IsCustomAdjustmentRow(_adjustmentsGrid.Rows[e.RowIndex])))
+            || (columnName == "Target" && IsTeammateAdjustmentRow(grid.Rows[e.RowIndex]))
+            || (columnName == "Delta" && CanSelectAdjustmentBoolean(grid.Rows[e.RowIndex]))
+            || (columnName == "Operation" && !IsCustomAdjustmentRow(grid.Rows[e.RowIndex]))
+            || (columnName == "Field" && !IsCustomAdjustmentRow(grid.Rows[e.RowIndex])))
         {
-            UiTheme.PaintDataGridViewComboBoxCell(_adjustmentsGrid, e);
+            UiTheme.PaintDataGridViewComboBoxCell(grid, e);
             return;
         }
 
@@ -4704,29 +4690,30 @@ public sealed class ModuleEditorControl : UserControl
 
     private void OnAdjustmentsGridCellClick(object? sender, DataGridViewCellEventArgs e)
     {
+        if (sender is not DataGridView grid) return;
         if (e.RowIndex < 0 || e.ColumnIndex < 0)
         {
             return;
         }
 
-        var columnName = _adjustmentsGrid.Columns[e.ColumnIndex].Name;
-        var row = _adjustmentsGrid.Rows[e.RowIndex];
+        var columnName = grid.Columns[e.ColumnIndex].Name;
+        var row = grid.Rows[e.RowIndex];
         if (columnName == "Type"
             || (columnName == "Target" && IsTeammateAdjustmentRow(row))
             || (columnName == "Operation" && !IsCustomAdjustmentRow(row))
             || (columnName == "Field" && !IsCustomAdjustmentRow(row)))
         {
-            ShowAdjustmentComboDropDown(e.RowIndex, e.ColumnIndex);
+            ShowAdjustmentComboDropDown(grid, e.RowIndex, e.ColumnIndex);
             return;
         }
 
         if (columnName == "Delta" && CanSelectAdjustmentBoolean(row))
         {
-            var bounds = _adjustmentsGrid.GetCellDisplayRectangle(e.ColumnIndex, e.RowIndex, true);
-            var button = UiTheme.GetDropDownButtonBounds(_adjustmentsGrid, bounds);
-            if (button.Contains(_adjustmentsGrid.PointToClient(Cursor.Position)))
+            var bounds = grid.GetCellDisplayRectangle(e.ColumnIndex, e.RowIndex, true);
+            var button = UiTheme.GetDropDownButtonBounds(grid, bounds);
+            if (button.Contains(grid.PointToClient(Cursor.Position)))
             {
-                ShowAdjustmentComboDropDown(e.RowIndex, e.ColumnIndex);
+                ShowAdjustmentComboDropDown(grid, e.RowIndex, e.ColumnIndex);
                 return;
             }
         }
@@ -4734,15 +4721,15 @@ public sealed class ModuleEditorControl : UserControl
         CloseAdjustmentComboDropDown();
         if (IsCustomAdjustmentRow(row) && columnName is "Field" or "Delta")
         {
-            _adjustmentsGrid.CurrentCell = row.Cells[e.ColumnIndex];
-            _adjustmentsGrid.BeginEdit(selectAll: false);
+            grid.CurrentCell = row.Cells[e.ColumnIndex];
+            grid.BeginEdit(selectAll: false);
             return;
         }
         if (columnName == "Delete")
         {
             if (!row.IsNewRow)
             {
-                _adjustmentsGrid.Rows.RemoveAt(e.RowIndex);
+                grid.Rows.RemoveAt(e.RowIndex);
                 RefreshAdjustmentFieldColumn();
             }
 
@@ -4751,13 +4738,14 @@ public sealed class ModuleEditorControl : UserControl
 
         if (columnName == "Condition")
         {
-            OpenAdjustmentConditionEditor(e.RowIndex);
+            OpenAdjustmentConditionEditor(grid, e.RowIndex);
         }
     }
 
     private void OnAdjustmentsGridKeyDown(object? sender, KeyEventArgs e)
     {
-        var cell = _adjustmentsGrid.CurrentCell;
+        if (sender is not DataGridView grid) return;
+        var cell = grid.CurrentCell;
         if (cell is null
             || cell.OwningColumn?.Name is not ("Type" or "Field" or "Operation" or "Delta" or "Target")
             || (cell.OwningColumn.Name == "Target" && !IsTeammateAdjustmentRow(cell.OwningRow))
@@ -4777,23 +4765,23 @@ public sealed class ModuleEditorControl : UserControl
 
         e.Handled = true;
         e.SuppressKeyPress = true;
-        ShowAdjustmentComboDropDown(cell.RowIndex, cell.ColumnIndex);
+        ShowAdjustmentComboDropDown(grid, cell.RowIndex, cell.ColumnIndex);
     }
 
-    private void ShowAdjustmentComboDropDown(int rowIndex, int columnIndex)
+    private void ShowAdjustmentComboDropDown(DataGridView grid, int rowIndex, int columnIndex)
     {
         CloseAdjustmentComboDropDown();
-        _adjustmentsGrid.EndEdit();
-        if (rowIndex < 0 || rowIndex >= _adjustmentsGrid.Rows.Count)
+        grid.EndEdit();
+        if (rowIndex < 0 || rowIndex >= grid.Rows.Count)
         {
             return;
         }
 
-        var row = _adjustmentsGrid.Rows[rowIndex];
+        var row = grid.Rows[rowIndex];
         if (row.IsNewRow)
         {
-            rowIndex = _adjustmentsGrid.Rows.Add(true, string.Empty, 0, string.Empty);
-            row = _adjustmentsGrid.Rows[rowIndex];
+            rowIndex = grid.Rows.Add(true, string.Empty, 0, string.Empty);
+            row = grid.Rows[rowIndex];
         }
 
         var cell = row.Cells[columnIndex];
@@ -4807,24 +4795,25 @@ public sealed class ModuleEditorControl : UserControl
             return;
         }
 
-        _adjustmentsGrid.CurrentCell = cell;
+        grid.CurrentCell = cell;
         var currentValue = cell.Value?.ToString() ?? string.Empty;
         List<UiDropDownOption> options;
         if (columnName == "Type")
         {
-            options = AdjustmentTypeOptions
+            options = (IsPostAdjustmentGrid(grid) ? PostAdjustmentTypeOptions : AdjustmentTypeOptions)
                 .Select(option => new UiDropDownOption(option.Text, option.Text))
                 .ToList();
         }
         else if (columnName == "Target")
         {
-            options = GetTeammateTargetOptions();
+            options = GetTeammateTargetOptions(IsPostAdjustmentGrid(grid));
             if (currentValue.Length > 0 && !options.Any(option => option.Value?.ToString() == currentValue))
                 options.Insert(0, new UiDropDownOption(currentValue, FormatTeammateTarget(currentValue)));
         }
         else if (columnName == "Operation")
         {
-            options = new[] { "+", "-", "=" }.Select(value => new UiDropDownOption(value, value)).ToList();
+            options = (IsCustomBooleanTarget(row) ? new[] { "=" } : new[] { "+", "-", "=" })
+                .Select(value => new UiDropDownOption(value, value)).ToList();
         }
         else if (columnName == "Delta")
         {
@@ -4834,7 +4823,9 @@ public sealed class ModuleEditorControl : UserControl
         else
         {
             var category = ReadAdjustmentType(row);
+            var stages = GetEditorStages();
             var fields = BuildAdjustmentFields()
+                .Where(field => stages.IsAvailable(field.Name, GetAdjustmentStage(grid)))
                 .Where(field => category is null ? field.Category != ConditionFieldCategory.DynamicTeammate : field.Category == category)
                 .GroupBy(field => field.Name, StringComparer.Ordinal)
                 .Select(group => group.First())
@@ -4854,17 +4845,17 @@ public sealed class ModuleEditorControl : UserControl
             }
         }
 
-        var cellBounds = _adjustmentsGrid.GetCellDisplayRectangle(columnIndex, rowIndex, cutOverflow: true);
+        var cellBounds = grid.GetCellDisplayRectangle(columnIndex, rowIndex, cutOverflow: true);
         ToolStripDropDown? dropDown = null;
         dropDown = UiDropDownPopup.Show(
-            _adjustmentsGrid,
+            grid,
             cellBounds,
             options,
             currentValue,
             selected =>
             {
                 cell.Value = selected.Value?.ToString() ?? string.Empty;
-                _adjustmentsGrid.InvalidateCell(cell);
+                grid.InvalidateCell(cell);
             },
             minimumWidth: columnName == "Type" ? 120 : 180,
             closed: () =>
@@ -4925,7 +4916,8 @@ public sealed class ModuleEditorControl : UserControl
 
     private void OnAdjustmentsGridEditingControlShowing(object? sender, DataGridViewEditingControlShowingEventArgs e)
     {
-        if (_adjustmentsGrid.CurrentCell?.OwningColumn?.Name is not ("Field" or "Delta")
+        if (sender is not DataGridView grid) return;
+        if (grid.CurrentCell?.OwningColumn?.Name is not ("Field" or "Delta")
             || e.Control is not TextBox textBox)
         {
             return;
@@ -4936,15 +4928,15 @@ public sealed class ModuleEditorControl : UserControl
         textBox.BorderStyle = BorderStyle.None;
     }
 
-    private void OpenAdjustmentConditionEditor(int rowIndex)
+    private void OpenAdjustmentConditionEditor(DataGridView grid, int rowIndex)
     {
-        var row = _adjustmentsGrid.Rows[rowIndex];
+        var row = grid.Rows[rowIndex];
         var current = row.IsNewRow ? string.Empty : CellText(row, "Condition");
 
         using var editor = new ConditionEditorForm(
-            RefreshAndBuildConditionFields(),
+            GetStageConditionFields(GetAdjustmentStage(grid)),
             current,
-            conditionFieldsProvider: () => RefreshAndBuildConditionFields(),
+            conditionFieldsProvider: () => GetStageConditionFields(GetAdjustmentStage(grid)),
             spells: RefreshAndBuildConditionSpells(),
             conditionSpellsProvider: () => RefreshAndBuildConditionSpells(),
             items: RefreshAndBuildConditionItems(),
@@ -4959,7 +4951,7 @@ public sealed class ModuleEditorControl : UserControl
         {
             if (!string.IsNullOrWhiteSpace(editor.ConditionText))
             {
-                _adjustmentsGrid.Rows.Add(true, string.Empty, 0, editor.ConditionText);
+                grid.Rows.Add(true, string.Empty, 0, editor.ConditionText);
                 RefreshAdjustmentFieldColumn();
             }
 
@@ -5802,46 +5794,41 @@ public sealed class ModuleEditorControl : UserControl
         RefreshUnitsList();
         _pathLabel.Text = module.FilePath ?? "尚未保存";
         _adjustmentsGrid.Rows.Clear();
+        _postAdjustmentsGrid.Rows.Clear();
         _formulaAdjustmentsGrid.Rows.Clear();
+        _customConditionsGrid.Rows.Clear();
         RefreshAdjustmentFieldColumn();
         foreach (var adjustment in _valueAdjustments)
         {
-            if (string.IsNullOrWhiteSpace(adjustment.Formula))
+            if (adjustment.IsCustom && string.IsNullOrWhiteSpace(adjustment.Formula))
             {
-                var index = _adjustmentsGrid.Rows.Add(adjustment.Enabled, adjustment.Field,
+                _customConditionsGrid.Rows.Add(adjustment.Enabled, adjustment.Field,
+                    ModuleValueAdjustment.ConditionBooleanValue, adjustment.Condition);
+            }
+            else if (string.IsNullOrWhiteSpace(adjustment.Formula))
+            {
+                var grid = adjustment.IsPostAdjustment ? _postAdjustmentsGrid : _adjustmentsGrid;
+                var index = grid.Rows.Add(adjustment.Enabled, adjustment.Field,
                     adjustment.Value ?? adjustment.Delta.ToString(System.Globalization.CultureInfo.InvariantCulture), adjustment.Condition);
-                _adjustmentsGrid.Rows[index].Cells["Operation"].Value = adjustment.Operation;
+                grid.Rows[index].Cells["Operation"].Value = adjustment.Operation;
                 // 新数据恢复自建标记，旧数据由字段名回填类型。
                 if (adjustment.TeammateTarget is { } teammateTarget)
                 {
                     _suppressAdjustmentTypeChange = true;
                     try
                     {
-                        _adjustmentsGrid.Rows[index].Cells["Type"].Value = "动态队友";
-                        _adjustmentsGrid.Rows[index].Cells["Target"].Value = teammateTarget.ToSelectionValue();
+                        grid.Rows[index].Cells["Type"].Value = "动态队友";
+                        grid.Rows[index].Cells["Target"].Value = teammateTarget.ToSelectionValue();
                     }
                     finally
                     {
                         _suppressAdjustmentTypeChange = false;
                     }
-                    RebuildAdjustmentFieldCell(_adjustmentsGrid.Rows[index], adjustment.Field, keepCustom: true);
-                }
-                else if (adjustment.IsCustom)
-                {
-                    _suppressAdjustmentTypeChange = true;
-                    try
-                    {
-                        _adjustmentsGrid.Rows[index].Cells["Type"].Value = "自建";
-                    }
-                    finally
-                    {
-                        _suppressAdjustmentTypeChange = false;
-                    }
-                    RebuildAdjustmentFieldCell(_adjustmentsGrid.Rows[index], adjustment.Field, keepCustom: true);
+                    RebuildAdjustmentFieldCell(grid.Rows[index], adjustment.Field, keepCustom: true);
                 }
                 else
                 {
-                    ApplyAdjustmentRowType(_adjustmentsGrid.Rows[index], adjustment.Field);
+                    ApplyAdjustmentRowType(grid.Rows[index], adjustment.Field);
                 }
             }
             else
@@ -5911,7 +5898,9 @@ public sealed class ModuleEditorControl : UserControl
         SelectHeroTalent(null);
         _pathLabel.Text = "无模块";
         _adjustmentsGrid.Rows.Clear();
+        _postAdjustmentsGrid.Rows.Clear();
         _formulaAdjustmentsGrid.Rows.Clear();
+        _customConditionsGrid.Rows.Clear();
         RefreshAdjustmentFieldColumn();
         HideRelaxedCommentEditors();
         _rulesGrid.Rows.Clear();
@@ -6044,6 +6033,8 @@ public sealed class ModuleEditorControl : UserControl
             // 先提交当前单元格，再读取尚未保存的编辑，避免批量刷新时丢失。
             _rulesGrid.EndEdit();
             _adjustmentsGrid.EndEdit();
+            _postAdjustmentsGrid.EndEdit();
+            _customConditionsGrid.EndEdit();
             _formulaAdjustmentsGrid.EndEdit();
             if (!TryReadModule(out editedModule))
             {
@@ -6149,6 +6140,11 @@ public sealed class ModuleEditorControl : UserControl
 
     private bool TryReadModule(out ModuleDefinition module)
     {
+        _rulesGrid.EndEdit();
+        _adjustmentsGrid.EndEdit();
+        _postAdjustmentsGrid.EndEdit();
+        _formulaAdjustmentsGrid.EndEdit();
+        _customConditionsGrid.EndEdit();
         module = _selectedModule!.Clone();
         module.Name = string.IsNullOrWhiteSpace(_nameBox.Text) ? "新模块" : _nameBox.Text.Trim();
         module.Author = _authorBox.Text.Trim();
@@ -6177,6 +6173,13 @@ public sealed class ModuleEditorControl : UserControl
 
         module.ValueAdjustments = valueAdjustments;
         module.NumberArrays = _numberArrays.Select(array => array.Clone()).ToList();
+        var stages = new ModuleComputationStages(module);
+        foreach (var (name, groups) in GetDynamicFilters(module))
+        {
+            if (stages.FilterError(groups) is not { } stageError) continue;
+            MessageBox.Show($"动态数值“{name}”：{stageError}", "Shigure", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return false;
+        }
         if (!TryReadRules(out var rules, out var rulesError))
         {
             MessageBox.Show(rulesError, "Shigure", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -6471,7 +6474,7 @@ public sealed class ModuleEditorControl : UserControl
         var adjustmentRowNumbers = new Dictionary<ModuleValueAdjustment, int>();
         error = string.Empty;
 
-        foreach (DataGridViewRow row in _adjustmentsGrid.Rows)
+        foreach (var row in AdjustmentRows().Concat(_customConditionsGrid.Rows.Cast<DataGridViewRow>()))
         {
             if (row.IsNewRow)
             {
@@ -6480,7 +6483,7 @@ public sealed class ModuleEditorControl : UserControl
 
             var field = CellText(row, "Field");
             var condition = CellText(row, "Condition");
-            var value = CellText(row, "Delta");
+            var value = IsCustomAdjustmentRow(row) ? ModuleValueAdjustment.ConditionBooleanValue : CellText(row, "Delta");
             if (string.IsNullOrWhiteSpace(field)
                 && string.IsNullOrWhiteSpace(condition)
                 && (string.IsNullOrWhiteSpace(value) || value == "0")
@@ -6491,7 +6494,7 @@ public sealed class ModuleEditorControl : UserControl
 
             if (string.IsNullOrWhiteSpace(field))
             {
-                error = $"数值调整第 {row.Index + 1} 行缺少字段。";
+                error = $"{AdjustmentPageLabel(row)}第 {row.Index + 1} 行缺少字段。";
                 return false;
             }
 
@@ -6502,6 +6505,7 @@ public sealed class ModuleEditorControl : UserControl
                 Operation = ReadAdjustmentOperation(row),
                 Value = value,
                 IsCustom = IsCustomAdjustmentRow(row),
+                IsPostAdjustment = IsPostAdjustmentRow(row),
                 TeammateTarget = IsTeammateAdjustmentRow(row)
                     ? ModuleTeammateTarget.ParseSelectionValue(CellText(row, "Target")) : null,
                 Formula = string.Empty,
@@ -6513,20 +6517,20 @@ public sealed class ModuleEditorControl : UserControl
                 ValidateTeammateAdjustmentRow(row, messages);
                 if (adjustment.TeammateTarget is null || messages.Count > 0)
                 {
-                    error = $"数值调整第 {row.Index + 1} 行：{string.Join("；", messages)}";
+                    error = $"{AdjustmentPageLabel(row)}第 {row.Index + 1} 行：{string.Join("；", messages)}";
                     return false;
                 }
             }
             if (!adjustment.TryGetOperand(out var operand))
             {
-                error = $"数值调整第 {row.Index + 1} 行：调整必须是整数或布尔值，布尔值只能使用“=”。";
+                error = $"{AdjustmentPageLabel(row)}第 {row.Index + 1} 行：调整必须是整数或布尔值，布尔值只能使用“=”。";
                 return false;
             }
             if (adjustment.TeammateTarget is null && operand is bool && (_counts.Any(count => count.Name == field)
                                     || _enemyCounts.Any(count => count.Name == field)
                                     || _averageHealthFields.Any(item => item.Name == field)))
             {
-                error = $"数值调整第 {row.Index + 1} 行：数量和平均血量字段只能赋整数。";
+                error = $"{AdjustmentPageLabel(row)}第 {row.Index + 1} 行：数量和平均血量字段只能赋整数。";
                 return false;
             }
             adjustment.Delta = operand is int number ? number : 0;
@@ -6595,30 +6599,30 @@ public sealed class ModuleEditorControl : UserControl
             ShigureConditionFields.HitDelay, ShigureConditionFields.MatchDelay,
             ShigureConditionFields.ContinueLogic, ShigureConditionFields.TotalCombatTimeSeconds,
             "延迟 (ms)", "逻辑延迟 (ms)", "延迟命中 (ms)", "持续命中 (ms)", "继续逻辑", "true", "false", "null", "nil" });
-        var customTypes = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
+        var customNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var adjustment in adjustments.Where(adjustment => adjustment.IsCustom))
         {
             var rowNumber = adjustmentRowNumbers[adjustment];
             var name = adjustment.Field;
             if (name.Contains('.') || name.Contains('$') || double.TryParse(name, out _) || reserved.Contains(name))
             {
-                error = $"数值调整第 {rowNumber} 行：自建字段名称“{name}”无效或已被其它字段占用。";
+                error = $"自定义第 {rowNumber} 行：自定义字段名称“{name}”无效或已被其它字段占用。";
                 return false;
             }
-            adjustment.TryGetOperand(out var operand);
-            var isBoolean = operand is bool;
-            if (customTypes.TryGetValue(name, out var existingType) && existingType != isBoolean)
-            {
-                error = $"数值调整第 {rowNumber} 行：自建字段“{name}”不能混用整数与布尔值。";
-                return false;
-            }
-            customTypes[name] = isBoolean;
+            customNames.Add(name);
         }
-        foreach (var adjustment in adjustments.Where(adjustment => !adjustment.IsCustom
+        foreach (var adjustment in adjustments.Where(adjustment => !adjustment.IsCustom && !adjustment.IsPostAdjustment
                      && adjustment.TeammateTarget is null
-                     && string.IsNullOrWhiteSpace(adjustment.Formula) && customTypes.ContainsKey(adjustment.Field)))
+                     && string.IsNullOrWhiteSpace(adjustment.Formula) && customNames.Contains(adjustment.Field)))
         {
-            error = $"自建字段“{adjustment.Field}”的调整行请选择“自建”类型。";
+            error = $"自定义字段“{adjustment.Field}”只能在“自定义”页赋值。";
+            return false;
+        }
+        var stages = GetEditorStages();
+        foreach (var adjustment in adjustments)
+        {
+            if (stages.AdjustmentError(adjustment) is not { } stageError) continue;
+            error = $"字段“{adjustment.Field}”：{stageError}";
             return false;
         }
         return true;

@@ -4,16 +4,16 @@
   "savedAt": "2026-10-01",
   "purpose": "当前参考页数据快照",
   "usage": "仅保存数据；程序仍使用现有读取逻辑，修改此目录不会改变当前界面。",
-  "sourceNote": "当前 Retail 和 Forever 的参考页共用这套数据。分别保存到各版本目录以便独立维护；Forever 快照中的正式服副本和事件属于现有界面共用数据，不代表已采集永久服专属数据。",
+  "sourceNote": "当前 Retail 和 Forever 的参考页共用这套数据。分别保存到各版本目录以便独立维护；Forever 快照中的正式服副本属于现有界面共用数据，不代表已采集永久服专属数据。",
   "files": [
     {
       "file": "首领.json",
       "page": "首领",
-      "count": 80,
+      "count": 1113,
       "source": [
-        "UI/StatusForm.cs：BossNumberGroups、CurrentSeasonDungeonNames"
+        "Retail/config/bosses.json"
       ],
-      "description": "按当前赛季、第一赛季保存副本、首领顺序、名称和像素编号"
+      "description": "按副本保存首领名称、游戏 Encounter ID 和每副本从 1 开始的局部编号"
     },
     {
       "file": "副本技能.json",
@@ -21,44 +21,14 @@
       "count": 779,
       "source": [
         "Retail/spell_icons.json",
-        "Retail/Fuyutsui/core/config.lua：mapIndex、bossID"
+        "Retail/config/dungeons.json、Retail/config/raids.json、Retail/config/bosses.json"
       ],
-      "description": "spells 保留原始技能数据；mapNames、bossNames 使用插件表中的像素编号作为键"
-    },
-    {
-      "file": "EX首领事件.json",
-      "page": "EX 事件",
-      "count": 247,
-      "source": [
-        "wiki/EXBoss技能分类.json",
-        "Infrastructure/ExBossEventCatalog.cs：MechanicTypes"
-      ],
-      "description": "保留完整原始目录与 eventKeyTable，附加 mechanicTypes 类型编码"
-    },
-    {
-      "file": "EX小怪事件.json",
-      "page": "EX 事件",
-      "count": 136,
-      "source": [
-        "wiki/EX小怪技能分类.json",
-        "Infrastructure/ExBossEventCatalog.cs：MechanicTypes"
-      ],
-      "description": "保留完整原始目录、位置数据与 eventKeyTable，附加 mechanicTypes 类型编码"
-    },
-    {
-      "file": "BW事件.json",
-      "page": "BW 事件",
-      "count": 193,
-      "source": [
-        "wiki/BigWigs团队首领事件.json",
-        "Infrastructure/BigWigsEventCatalog.cs：EventTypes"
-      ],
-      "description": "保留完整原始目录与 eventKeyTable，附加 eventTypes 类型编码"
+      "description": "技能按 instanceId、encounterId 关联新目录；instanceNames 显示副本类型与编号，encounterNames 显示副本内首领序号与名称"
     },
     {
       "file": "字段.json",
       "page": "字段",
-      "count": 188,
+      "count": 180,
       "source": [
         "UI/StatusForm.cs：EnumerateCatalogFieldRows、EnumerateNameplateFieldRows",
         "Infrastructure/ClassStateCatalog.cs",

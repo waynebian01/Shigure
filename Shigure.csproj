@@ -10,9 +10,9 @@
     <AssemblyName>Shigure</AssemblyName>
     <RootNamespace>Shigure</RootNamespace>
     <Company>Arasaka Corporation</Company>
-    <Version>1.2.1.35</Version>
-    <AssemblyVersion>1.2.1.35</AssemblyVersion>
-    <FileVersion>1.2.1.35</FileVersion>
+    <Version>1.2.1.36</Version>
+    <AssemblyVersion>1.2.1.36</AssemblyVersion>
+    <FileVersion>1.2.1.36</FileVersion>
     <ApplicationIcon>Assets\arasaka-icon.ico</ApplicationIcon>
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
   </PropertyGroup>
@@ -36,9 +36,6 @@
          icon catalog is downloaded by the user into data\SpellIcons.shgpack. -->
     <EmbeddedResource Include="Assets\Spell\*.jpg" Exclude="Assets\Spell\icon-*.jpg" />
     <EmbeddedResource Include="Assets\Spell\*.png" />
-    <EmbeddedResource Include="wiki\EXBoss技能分类.json" />
-    <EmbeddedResource Include="wiki\EX小怪技能分类.json" />
-    <EmbeddedResource Include="wiki\BigWigs团队首领事件.json" />
     <None Update="Retail\**\*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
     <None Update="Forever\**\*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
     <None Include="game_profiles.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />

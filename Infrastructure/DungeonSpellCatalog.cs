@@ -4,23 +4,38 @@ using System.Text.Json;
 namespace Shigure;
 
 internal sealed record DungeonSpellInfo(
-    string Name, long SpellId, int? Boss, int? MapId, string Type,
+    string Name, long SpellId, int? EncounterId, int? InstanceId, string Type,
     string IconName, long IconId, IReadOnlyList<string> Npcs, IReadOnlyList<string> Classes);
+
+internal sealed record DungeonSpellInstance(NumberCatalogEntry Entry, bool IsRaid)
+{
+    public string DisplayName => $"{(IsRaid ? "团队副本" : "地下城")} {Entry.Id} · {Entry.DisplayName}";
+}
 
 internal sealed record DungeonSpellData(
     IReadOnlyList<DungeonSpellInfo> Spells,
-    IReadOnlyDictionary<int, string> MapNames,
-    IReadOnlyDictionary<int, string> BossNames,
+    IReadOnlyDictionary<int, DungeonSpellInstance> Instances,
+    IReadOnlyDictionary<int, BossCatalogEntry> Bosses,
     string? Error);
 
-internal enum DungeonSpellFilter { Map, Boss, Type, Npc, Class }
+internal enum DungeonSpellFilter { Instance, Boss, Type, Npc, Class }
 
-/// <summary>副本技能参考数据；编号使用 Lua 表的值，而非地图或遭遇的原始 ID。</summary>
+/// <summary>技能按实例 ID、Encounter ID 关联新目录；界面显示副本编号和副本内首领序号。</summary>
 internal static class DungeonSpellCatalog
 {
     public static DungeonSpellData Load(string baseDirectory)
     {
-        var (maps, bosses) = LoadNames(Path.Combine(baseDirectory, "Retail", "Fuyutsui", "core", "config.lua"));
+        var instances = new Dictionary<int, DungeonSpellInstance>();
+        var dungeons = NumberCatalog.LoadDungeons("Retail", baseDirectory);
+        var raids = NumberCatalog.LoadRaids("Retail", baseDirectory);
+        var bossCatalog = BossCatalog.Load("Retail", baseDirectory);
+        var bosses = bossCatalog.Entries.SelectMany(entry => (entry.EncounterIds ?? [entry.SourceId])
+            .Select(id => (Id: id, Entry: entry))).ToDictionary(pair => pair.Id, pair => pair.Entry);
+        if (dungeons.Error is not null || raids.Error is not null || bossCatalog.Error is not null)
+            return new([], instances, bosses, dungeons.Error ?? raids.Error ?? bossCatalog.Error);
+        foreach (var (catalog, isRaid) in new[] { (dungeons, false), (raids, true) })
+            foreach (var entry in catalog.Entries.Where(entry => entry.SourceId is > 0 and <= int.MaxValue))
+                instances[(int)entry.SourceId] = new(entry, isRaid);
         try
         {
             using var stream = File.OpenRead(Path.Combine(baseDirectory, "Retail", "spell_icons.json"));
@@ -35,22 +50,22 @@ internal static class DungeonSpellCatalog
                     throw new InvalidDataException("副本技能数据结构错误：技能记录应为对象。");
                 spells.Add(new DungeonSpellInfo(
                     ReadText(item, "name"), ReadId(item, "spellId"),
-                    ReadNullableId(item, "boss"), ReadNullableId(item, "mapId"), ReadText(item, "Type"),
+                    ReadNullableId(item, "encounterId"), ReadNullableId(item, "instanceId"), ReadText(item, "Type"),
                     ReadText(item, "iconName"), ReadId(item, "iconId"),
                     ReadNames(item, "npc"), ReadNames(item, "class")));
             }
 
-            return new(spells.OrderBy(item => item.MapId is null).ThenBy(item => item.MapId)
-                .ThenBy(item => item.Boss is null).ThenBy(item => item.Boss)
-                .ThenBy(item => item.SpellId).ToArray(), maps, bosses, null);
+            return new(spells.OrderBy(item => InstanceOrder(item.InstanceId, instances))
+                .ThenBy(item => item.EncounterId is null).ThenBy(item => BossOrder(item.EncounterId, bosses))
+                .ThenBy(item => item.SpellId).ToArray(), instances, bosses, null);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
         {
-            return new([], maps, bosses, "无法读取副本技能数据，请检查 Retail/spell_icons.json 是否存在且格式正确。");
+            return new([], instances, bosses, "无法读取副本技能数据，请检查 Retail/spell_icons.json 是否存在且格式正确。");
         }
         catch (InvalidDataException ex)
         {
-            return new([], maps, bosses, ex.Message);
+            return new([], instances, bosses, ex.Message);
         }
     }
 
@@ -99,41 +114,12 @@ internal static class DungeonSpellCatalog
         throw new InvalidDataException($"副本技能数据结构错误：{field} 应为文本、文本数组或空值。");
     }
 
-    private static (Dictionary<int, string> Maps, Dictionary<int, string> Bosses) LoadNames(string path)
-    {
-        var maps = new Dictionary<int, string>();
-        var bosses = new Dictionary<int, string>();
-        try
-        {
-            var source = File.ReadAllText(path);
-            ReadTable("Fuyutsui.mapIndex", maps);
-            ReadTable("Fuyutsui.bossID", bosses);
-
-            void ReadTable(string assignment, Dictionary<int, string> names)
-            {
-                if (!LuaLiteParser.TryExtractAssignedTable(source, assignment, out var table, out _, out _))
-                    return;
-                foreach (var (key, value) in table.Entries)
-                {
-                    if (key is not null && value is LuaLiteParser.NumberValue number
-                        && table.GetTrailingComment(key) is { Length: > 0 } comment)
-                        names[number.AsInt()] = comment;
-                }
-            }
-        }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or FormatException)
-        {
-            // 名称缺失时仍可用 JSON 中的编号浏览技能。
-        }
-        return (maps, bosses);
-    }
-
     // null 表示“全部”；空字符串表示“未指定”，两者不可合并。
     public static IReadOnlyList<string> Values(DungeonSpellInfo spell, DungeonSpellFilter field)
         => field switch
         {
-            DungeonSpellFilter.Map => [spell.MapId?.ToString(CultureInfo.InvariantCulture) ?? ""],
-            DungeonSpellFilter.Boss => [spell.Boss?.ToString(CultureInfo.InvariantCulture) ?? ""],
+            DungeonSpellFilter.Instance => [spell.InstanceId?.ToString(CultureInfo.InvariantCulture) ?? ""],
+            DungeonSpellFilter.Boss => [spell.EncounterId?.ToString(CultureInfo.InvariantCulture) ?? ""],
             DungeonSpellFilter.Type => [spell.Type],
             DungeonSpellFilter.Npc => spell.Npcs.Count == 0 ? [""] : spell.Npcs,
             DungeonSpellFilter.Class => spell.Classes.Count == 0 ? [""] : spell.Classes,
@@ -145,9 +131,22 @@ internal static class DungeonSpellCatalog
         => selections.All(pair => pair.Key == except || pair.Value is null
             || Values(spell, pair.Key).Contains(pair.Value, StringComparer.Ordinal));
 
-    public static string DescribeNumber(int? number, IReadOnlyDictionary<int, string> names)
-        => number is not { } id ? "未指定"
-            : names.TryGetValue(id, out var name) ? $"{id} · {name}" : id.ToString(CultureInfo.InvariantCulture);
+    public static string DescribeBoss(int? encounterId, IReadOnlyDictionary<int, BossCatalogEntry> bosses)
+        => encounterId is not { } id ? "未指定"
+            : bosses.TryGetValue(id, out var boss) ? $"{boss.Id} · {boss.Name}" : $"首领战 {id}";
+
+    public static int BossOrder(int? encounterId, IReadOnlyDictionary<int, BossCatalogEntry> bosses)
+        => encounterId is { } id && bosses.TryGetValue(id, out var boss) ? boss.Id : int.MaxValue;
+
+    public static string DescribeInstance(int? instanceId, IReadOnlyDictionary<int, DungeonSpellInstance> instances)
+        => instanceId is not { } id ? "未指定"
+            : instances.TryGetValue(id, out var instance) ? instance.DisplayName : $"实例 {id}";
+
+    public static (int Type, long Number) InstanceOrder(int? instanceId,
+        IReadOnlyDictionary<int, DungeonSpellInstance> instances)
+        => instanceId is not { } id ? (3, 0)
+            : instances.TryGetValue(id, out var instance) ? (instance.IsRaid ? 1 : 0, instance.Entry.Id)
+            : (2, id);
 
     public static string DescribeType(string type) => type switch
     {

@@ -16,6 +16,7 @@ internal static class ClassBlocksStore
         ClassStateCatalog.CategoryState,
         ClassStateCatalog.CategorySpecial,
         ClassStateCatalog.CategoryResource,
+        ClassStateCatalog.CategoryRegion,
         ClassStateCatalog.CategoryConfig,
         ClassStateCatalog.CategoryTarget,
         ClassStateCatalog.CategoryFocus,
@@ -73,6 +74,7 @@ internal static class ClassBlocksStore
             [ClassStateCatalog.CategoryState] = new List<string>(),
             [ClassStateCatalog.CategorySpecial] = new List<string>(),
             [ClassStateCatalog.CategoryResource] = new List<string>(),
+            [ClassStateCatalog.CategoryRegion] = new List<string>(),
             [ClassStateCatalog.CategoryConfig] = new List<string>(),
             [ClassStateCatalog.CategoryTarget] = new List<string>(),
             [ClassStateCatalog.CategoryFocus] = new List<string>(),
@@ -98,6 +100,7 @@ internal static class ClassBlocksStore
         public List<AuraEntry> Boss5HarmfulAuras { get; } = new();
         public List<SpellEntry> Spells { get; } = new();
         public List<OverrideEntry> Overrides { get; } = new();
+        public bool? Timeline { get; set; }
         public GroupBlocks? Group { get; set; }
         public NameplateBlocks? Nameplates { get; set; }
     }
@@ -325,7 +328,8 @@ internal static class ClassBlocksStore
             ClassNames.GetConfigFileName(item.Id).Equals(Path.GetFileNameWithoutExtension(document.FilePath), StringComparison.OrdinalIgnoreCase)).Id;
         foreach (var (specId, spec) in document.Specs)
             FuyutsuiConfigConverter.EnsurePixelCapacity(spec, $"{Path.GetFileName(document.FilePath)}[{specId}]",
-                NameplateStateLayout.SupportsImprovedGarrote(classDirectory, classId, specId));
+                NameplateStateLayout.SupportsImprovedGarrote(classDirectory, classId, specId),
+                EncounterTimelineStateLayout.IsSupported(classDirectory));
 
         var updated = UpdateSpellsListEntries(
             document.SourceText,
@@ -606,6 +610,7 @@ internal static class ClassBlocksStore
             || spec.GetTable("auras") is not null
             || spec.GetTable("spells") is not null
             || spec.GetTable("override") is not null
+            || spec.GetBool("timeline") is not null
             || spec.GetTable("items") is not null
             || spec.GetTable("group") is not null
             || spec.GetTable("nameplates") is not null;
@@ -638,7 +643,7 @@ internal static class ClassBlocksStore
                     }
                 }
 
-                RelocateSpecialStateFields(result);
+                RelocateStateFields(result);
             }
             else
             {
@@ -646,7 +651,7 @@ internal static class ClassBlocksStore
                 {
                     if (item is StringValue name && !string.IsNullOrWhiteSpace(name.Value))
                     {
-                        result.FlatStates.Add(name.Value);
+                        result.FlatStates.Add(ClassStateCatalog.NormalizeName(name.Value));
                     }
                 }
             }
@@ -715,6 +720,7 @@ internal static class ClassBlocksStore
         }
 
         result.Overrides.AddRange(OverrideSpellLayout.Read(spec.GetTable("override")));
+        result.Timeline = spec.GetBool("timeline");
 
         if (spec.GetTable("items") is { } items)
         {
@@ -877,7 +883,7 @@ internal static class ClassBlocksStore
 
     private static void WriteSpec(StringBuilder sb, SpecBlocks spec, string indent)
     {
-        RelocateSpecialStateFields(spec);
+        RelocateStateFields(spec);
         ValidateItemsForSerialization(spec);
         OverrideSpellLayout.Validate(spec.Overrides);
 
@@ -986,6 +992,9 @@ internal static class ClassBlocksStore
             sb.Append(indent).AppendLine("},");
         }
 
+        if (spec.Timeline is { } timeline)
+            sb.Append(indent).Append("timeline = ").Append(timeline ? "true" : "false").AppendLine(",");
+
         // items
         if (spec.Items.Count > 0)
         {
@@ -1079,12 +1088,15 @@ internal static class ClassBlocksStore
         }
     }
 
-    internal static void RelocateSpecialStateFields(SpecBlocks spec)
+    internal static void RelocateStateFields(SpecBlocks spec)
     {
+        ClassStateCatalog.NormalizeNames(spec.FlatStates);
         if (!spec.NestedStates)
         {
             return;
         }
+
+        ClassStateCatalog.RelocateRegionFields(spec.CategorizedStates);
 
         if (!spec.CategorizedStates.TryGetValue(ClassStateCatalog.CategoryState, out var stateList)
             || !spec.CategorizedStates.TryGetValue(ClassStateCatalog.CategorySpecial, out var specialList))
@@ -1127,6 +1139,7 @@ internal static class ClassBlocksStore
                          ClassStateCatalog.CategoryState,
                          ClassStateCatalog.CategorySpecial,
                          ClassStateCatalog.CategoryResource,
+                         ClassStateCatalog.CategoryRegion,
                          ClassStateCatalog.CategoryConfig
                      })
             {
@@ -1157,7 +1170,7 @@ internal static class ClassBlocksStore
 
             if (bareNames.Contains(item.Name))
             {
-                throw new InvalidOperationException($"物品名称“{item.Name}”与状态、特殊、能量或配置开关字段重名。");
+                throw new InvalidOperationException($"物品名称“{item.Name}”与状态、特殊、能量、区域或配置开关字段重名。");
             }
         }
     }

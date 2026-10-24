@@ -1,7 +1,28 @@
 [
   {
     "title": "玩家与资源",
-    "fields": []
+    "fields": [
+      {
+        "category": "区域",
+        "field": "地图"
+      },
+      {
+        "category": "区域",
+        "field": "地下城"
+      },
+      {
+        "category": "区域",
+        "field": "团队副本"
+      },
+      {
+        "category": "区域",
+        "field": "首领战"
+      },
+      {
+        "category": "区域",
+        "field": "难度"
+      }
+    ]
   },
   {
     "title": "单位字段",

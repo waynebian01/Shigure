@@ -270,20 +270,7 @@ Fuyutsui.ClassMacros = {
         specialSpells = {
             "/castsequence reset=1 潜行,x", -- 潜行
             "/use 13", -- 饰品1
-            "/cast 死亡印记\n/use 13", -- 死亡饰品
-            "/use 不寻常的指南针", -- 不寻常的指南针
-            "/castsequence reset=target/combat/12 刀扇,锁喉,割裂,null", -- 刺杀AOE起手
-            "/stopcasting\n/cast [target=focus,harm,nodead][target=mouseover,harm,nodead][harm,nodead] 致盲", -- 致盲
-            "/cancelaura [stance:0] 1269163\n/cast 刺骨", -- 取消诡谋刺骨
-            "/cancelaura [stance:0] 1269163\n/cast 黑火药", -- 取消诡谋黑火药
-            "/use item:5512", -- 低血回血5512
-            "/use item:241304", -- 低血回血241304
-            "/use item:241305", -- 低血回血241305
-            "/use item:271884", -- 低血回血271884
-            "/use item:271883", -- 低血回血271883
-            "/stopattack\n/cast 影遁\n/cast !潜行", -- 刺杀影遁潜行
-            "/cast [nocombat,nostealth,nomounted,nochanneling] !潜行", -- 盗贼脱战潜行
-            "/click TankMDButton1 LeftButton 1\n/click TankMDButton1 LeftButton 0", -- 盗贼坦克嫁祸
+            "/use 14", -- 饰品2
         },
     },
 

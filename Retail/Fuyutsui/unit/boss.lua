@@ -44,8 +44,8 @@ function Fuyutsui:SetEncounterState(encounterID, difficultyID)
     state.encounterID = encounterID
     local bossIndex = self.bossID and self.bossID[encounterID] or 0
     state.bossID = bossIndex / 255
-    self:UpdateStateBlock("状态", "首领战")
+    self:UpdateStateBlock("区域", "首领战")
 
-    state.difficultyID = difficultyID
-    self:UpdateStateBlock("状态", "难度")
+    state.encounterDifficultyID = difficultyID
+    self:UpdateStateBlock("区域", "首领战难度")
 end

@@ -2,9 +2,12 @@ using System.Text.Json;
 
 namespace Shigure;
 
-internal sealed record NumberCatalogEntry(string Name, long Id, long SourceId);
+internal sealed record NumberCatalogEntry(string Name, long Id, long SourceId, string? Note = null)
+{
+    public string DisplayName => string.IsNullOrWhiteSpace(Note) ? Name : $"{Name}（{Note}）";
+}
 
-internal sealed record NumberCatalog(IReadOnlyList<NumberCatalogEntry> Entries, string? Error)
+internal sealed record NumberCatalog(IReadOnlyList<NumberCatalogEntry> Entries, string? Error, bool UsesBossSequence = false)
 {
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -14,19 +17,30 @@ internal sealed record NumberCatalog(IReadOnlyList<NumberCatalogEntry> Entries, 
         AllowTrailingCommas = true
     };
 
-    public static NumberCatalog LoadBosses() => Load("bosses.json");
+    public static NumberCatalog LoadBosses(string version = "Retail")
+    {
+        var bosses = BossCatalog.Load(version);
+        return new(bosses.Entries.Select(entry => new NumberCatalogEntry(entry.Name, entry.Id,
+            entry.SourceId, entry.InstanceName)).ToArray(), bosses.Error, UsesBossSequence: true);
+    }
 
-    public static NumberCatalog LoadMaps() => Load("maps.json");
+    public static NumberCatalog LoadDungeons(string version = "Retail", string? baseDirectory = null)
+        => Load("dungeons.json", version, baseDirectory);
+
+    public static NumberCatalog LoadRaids(string version = "Retail", string? baseDirectory = null)
+        => Load("raids.json", version, baseDirectory);
 
     public string? FindName(long id)
-        => Entries.FirstOrDefault(entry => entry.Id == id)?.Name;
+        => UsesBossSequence ? $"{id}号首领（副本内序号）"
+            : Entries.FirstOrDefault(entry => entry.Id == id)?.DisplayName;
 
-    private static NumberCatalog Load(string fileName)
+    private static NumberCatalog Load(string fileName, string version = "Retail", string? baseDirectory = null)
     {
-        var path = Path.Combine(AppContext.BaseDirectory, "Retail", "config", fileName);
+        var dataVersion = version.Equals("Forever", StringComparison.OrdinalIgnoreCase) ? "Forever" : "Retail";
+        var path = Path.Combine(baseDirectory ?? AppContext.BaseDirectory, dataVersion, "config", fileName);
         if (!File.Exists(path))
         {
-            return new NumberCatalog([], $"未找到 Retail/config/{fileName}");
+            return new NumberCatalog([], $"未找到 {dataVersion}/config/{fileName}");
         }
 
         try
@@ -43,7 +57,7 @@ internal sealed record NumberCatalog(IReadOnlyList<NumberCatalogEntry> Entries, 
         }
         catch (Exception ex) when (ex is JsonException or IOException or UnauthorizedAccessException)
         {
-            return new NumberCatalog([], $"Retail/config/{fileName} 格式不正确");
+            return new NumberCatalog([], $"{dataVersion}/config/{fileName} 格式不正确");
         }
     }
 }

@@ -65,7 +65,7 @@ function Shingen:CANCEL_PLAYER_COUNTDOWN(_, initiatedBy, informChat, initiatedBy
 end
 
 function Shingen:RefreshZoneState()
-    state.mapID = C_Map.GetBestMapForUnit("player") or 0
+    self:RefreshPlayerMapState()
     state.mapInfo = C_Map.GetMapInfo(state.mapID)
     state.subzone = GetSubZoneText()
     if GetBindLocation() == state.subzone then
@@ -81,9 +81,15 @@ function Shingen:ZONE_CHANGED_INDOORS()
     self:RefreshZoneState()
 end
 
+function Shingen:ZONE_CHANGED_NEW_AREA()
+    self:RefreshZoneState()
+end
+
 function Shingen:PLAYER_ENTERING_WORLD()
+    state.mythicPlusStopped = false
+    self:RefreshMythicPlusState()
     self:RefreshOverrideSpells()
-    state.mapID = C_Map.GetBestMapForUnit("player") or 0
+    self:RefreshPlayerMapState()
     self:CacheCollectedMountSpells()
     self:RefreshChargedComboPoints()
     C_Timer.After(2, function()
@@ -91,6 +97,21 @@ function Shingen:PLAYER_ENTERING_WORLD()
         self:RebuildGroupRoster()
         self:LoadPlayerMacros()
     end)
+end
+
+function Shingen:CHALLENGE_MODE_START()
+    state.mythicPlusStopped = false
+    self:RefreshMythicPlusState()
+end
+
+function Shingen:CHALLENGE_MODE_COMPLETED()
+    -- 事件发生时接口可能仍返回旧数据，锁定零值直到下一次开本或进入世界。
+    state.mythicPlusStopped = true
+    self:RefreshMythicPlusState()
+end
+
+function Shingen:CHALLENGE_MODE_RESET()
+    self:CHALLENGE_MODE_COMPLETED()
 end
 
 function Shingen:PLAYER_TALENT_UPDATE()
@@ -530,20 +551,11 @@ function Shingen:UPDATE_SHAPESHIFT_FORMS()
 end
 
 function Shingen:ENCOUNTER_START(_, encounterID, encounterName, difficultyID, groupSize)
-    if self.ResetExBossTimelinePixels then
-        self:ResetExBossTimelinePixels()
-    end
     self:SetEncounterState(encounterID, difficultyID)
     self:RefreshBossAuraContainers()
 end
 
 function Shingen:ENCOUNTER_END(_, encounterID, encounterName, difficultyID, groupSize, success)
-    if self.ResetExBossTimelinePixels then
-        self:ResetExBossTimelinePixels()
-    end
-    if self.ResetBigWigsTimelinePixels then
-        self:ResetBigWigsTimelinePixels()
-    end
     self:SetEncounterState(0, 0)
     self:RefreshBossAuraContainers()
 end
@@ -620,15 +632,13 @@ function Shingen:OnUpdate(elapsed)
 
         RunUpdateSafely(self, "RefreshNameplatePixels")
         RunUpdateSafely(self, "UpdateItemCooldown")
-        RunUpdateSafely(self, "RefreshExBossTimelinePixels")
-        RunUpdateSafely(self, "RefreshExTrashTimelinePixels")
-        RunUpdateSafely(self, "RefreshBigWigsTimelinePixels")
         self.timeElapsed = 0
     end
 
     self.timeElapsed1 = self.timeElapsed1 + elapsed
     if self.timeElapsed1 >= 1 then
         RunUpdateSafely(self, "RefreshPlayerCombatDuration")
+        RunUpdateSafely(self, "RefreshMythicPlusState")
         self.timeElapsed1 = 0
     end
 

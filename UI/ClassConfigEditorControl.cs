@@ -35,6 +35,8 @@ public sealed class ClassConfigEditorControl : UserControl
     private readonly DataGridView _aurasGrid = new UiThemedDataGridView();
     private readonly DataGridView _spellsGrid = new UiThemedDataGridView();
     private readonly DataGridView _overridesGrid = new UiThemedDataGridView();
+    private readonly CheckBox _timelineEnabledBox = new();
+    private readonly Label _timelineHint = new();
     private readonly TextBox _spellsSearchBox = new UiThemedTextBox();
     private readonly DataGridView _itemsGrid = new UiThemedDataGridView();
     private readonly TextBox _itemsSearchBox = new UiThemedTextBox();
@@ -354,14 +356,14 @@ public sealed class ClassConfigEditorControl : UserControl
         {
             Dock = DockStyle.Fill,
             BackColor = UiTheme.SurfaceRaised,
-            ColumnCount = 8,
+            ColumnCount = 9,
             RowCount = 1,
             Margin = new Padding(0, 0, 0, 8),
             Padding = new Padding(0)
         };
-        for (var i = 0; i < 8; i++)
+        for (var i = 0; i < 9; i++)
         {
-            tabBar.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F / 8));
+            tabBar.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F / 9));
         }
 
         var contentCard = new UiCardPanel
@@ -390,6 +392,7 @@ public sealed class ClassConfigEditorControl : UserControl
             BuildAurasPage(),
             WrapInDarkSectionCard(BuildSpellsPage()),
             WrapInDarkSectionCard(BuildOverridesPage()),
+            WrapInDarkSectionCard(BuildTimelinePage()),
             WrapInDarkSectionCard(BuildGroupPage()),
             WrapInDarkSectionCard(BuildNameplatesPage()),
             WrapInDarkSectionCard(BuildSpellsListPage()),
@@ -404,7 +407,7 @@ public sealed class ClassConfigEditorControl : UserControl
             contentHost.Controls.Add(page);
         }
 
-        var tabs = new UiPillTab[8];
+        var tabs = new UiPillTab[pages.Length];
         void SelectTab(int index)
         {
             if (_editorTabIndex == index)
@@ -423,13 +426,13 @@ public sealed class ClassConfigEditorControl : UserControl
             if (!_suppressUi && _editorTabIndex == 3)
                 _overridesGrid.EndEdit();
 
-            if (!_suppressUi && _editorTabIndex == 5)
+            if (!_suppressUi && _editorTabIndex == 6)
             {
                 _nameplateAurasGrid.EndEdit();
                 WriteBackNameplates();
             }
 
-            if (!_suppressUi && _editorTabIndex == 7)
+            if (!_suppressUi && _editorTabIndex == 8)
             {
                 _itemsListGrid.EndEdit();
                 WriteBackItemsList();
@@ -448,7 +451,7 @@ public sealed class ClassConfigEditorControl : UserControl
             }
         }
 
-        var titles = new[] { "状态", "光环", "冷却", "替换技", "队伍", "姓名板", "技能列表", "物品列表" };
+        var titles = new[] { "状态", "光环", "冷却", "替换技", "时间轴", "队伍", "姓名板", "技能列表", "物品列表" };
         for (var i = 0; i < titles.Length; i++)
         {
             var index = i;
@@ -1473,6 +1476,48 @@ public sealed class ClassConfigEditorControl : UserControl
             Padding = new Padding(leftPadding, 0, 0, 0)
         };
 
+    private Control BuildTimelinePage()
+    {
+        var panel = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 1,
+            RowCount = 2,
+            BackColor = UiTheme.Surface,
+            Margin = Padding.Empty
+        };
+        panel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 112));
+        panel.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        _timelineEnabledBox.Text = "启用";
+        _timelineEnabledBox.AutoSize = true;
+        _timelineEnabledBox.ForeColor = UiTheme.Text;
+        _timelineEnabledBox.CheckedChanged += (_, _) =>
+        {
+            if (_suppressUi || IsForever || _currentSpec is null) return;
+            _currentSpec.Timeline = _timelineEnabledBox.Checked;
+            MarkDirty();
+        };
+        var card = CreateGroupCard("TIMELINE", _timelineEnabledBox);
+        card.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+        panel.Controls.Add(card, 0, 0);
+        _timelineHint.Dock = DockStyle.Fill;
+        _timelineHint.ForeColor = UiTheme.Muted;
+        _timelineHint.TextAlign = ContentAlignment.TopLeft;
+        _timelineHint.Padding = new Padding(8);
+        panel.Controls.Add(_timelineHint, 0, 1);
+        return panel;
+    }
+
+    private void FillTimelineEditors()
+    {
+        _timelineEnabledBox.Enabled = !IsForever && _currentSpec is not null;
+        _timelineEnabledBox.Checked = !IsForever && _currentSpec?.Timeline == true;
+        _timelineHint.Text = IsForever
+            ? "时间轴仅支持正式服。"
+            : "按剩余时间从短到长显示 5 个事件：技能 ID、剩余时间。\n剩余时间精确到 0.1 秒，最大显示 25.5 秒；不足 5 个事件时补零。\n启用后占用 15 格像素，关闭后释放。";
+    }
+
     private Control BuildGroupPage()
     {
         var panel = new TableLayoutPanel
@@ -2398,7 +2443,7 @@ public sealed class ClassConfigEditorControl : UserControl
         _currentSpecId = spec.Id;
         if (!_currentDocument.Specs.TryGetValue(spec.Id, out var blocks))
         {
-            blocks = new ClassBlocksStore.SpecBlocks();
+            blocks = new ClassBlocksStore.SpecBlocks { Timeline = IsForever ? null : true };
             _currentDocument.Specs[spec.Id] = blocks;
         }
 
@@ -2416,6 +2461,7 @@ public sealed class ClassConfigEditorControl : UserControl
             FillAurasGrid();
             FillSpellsGrid();
             FillOverridesGrid();
+            FillTimelineEditors();
             FillItemsGrid();
             FillGroupEditors();
             FillNameplateEditors();
@@ -4109,6 +4155,7 @@ public sealed class ClassConfigEditorControl : UserControl
                              ClassStateCatalog.CategoryState,
                              ClassStateCatalog.CategorySpecial,
                              ClassStateCatalog.CategoryResource,
+                             ClassStateCatalog.CategoryRegion,
                              ClassStateCatalog.CategoryConfig
                          })
                 {
@@ -4153,7 +4200,7 @@ public sealed class ClassConfigEditorControl : UserControl
 
                 if (bareNames.Contains(item.Name))
                 {
-                    error = $"专精 {specId} 的物品名称“{item.Name}”与状态、特殊、能量或配置开关字段重名。";
+                    error = $"专精 {specId} 的物品名称“{item.Name}”与状态、特殊、能量、区域或配置开关字段重名。";
                     return false;
                 }
             }
@@ -4611,6 +4658,7 @@ public sealed class ClassConfigEditorControl : UserControl
 
     private void ClearGrids()
     {
+        FillTimelineEditors();
         _statesGrid.Rows.Clear();
         _aurasGrid.Rows.Clear();
         _spellsGrid.Rows.Clear();

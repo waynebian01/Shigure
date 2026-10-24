@@ -143,50 +143,72 @@
       "type": "int",
       "category": "能量"
     },
-    "目标施法技能": {
+    "地图": {
       "step": 18,
       "type": "int",
-      "category": "目标",
+      "category": "区域",
       "pixelFormat": "rgb24",
       "payloadStep": 19
     },
-    "目标类型": {
+    "地下城": {
       "step": 20,
       "type": "int",
-      "category": "目标"
+      "category": "区域"
     },
-    "目标生命值": {
+    "团队副本": {
       "step": 21,
       "type": "int",
-      "category": "目标"
+      "category": "区域"
     },
-    "目标距离": {
+    "首领战": {
       "step": 22,
       "type": "int",
-      "category": "目标"
+      "category": "区域"
     },
-    "目标NPCID": {
+    "目标施法技能": {
       "step": 23,
       "type": "int",
       "category": "目标",
       "pixelFormat": "rgb24",
       "payloadStep": 24
     },
-    "焦点施法技能": {
+    "目标类型": {
       "step": 25,
+      "type": "int",
+      "category": "目标"
+    },
+    "目标生命值": {
+      "step": 26,
+      "type": "int",
+      "category": "目标"
+    },
+    "目标距离": {
+      "step": 27,
+      "type": "int",
+      "category": "目标"
+    },
+    "目标NPCID": {
+      "step": 28,
+      "type": "int",
+      "category": "目标",
+      "pixelFormat": "rgb24",
+      "payloadStep": 29
+    },
+    "焦点施法技能": {
+      "step": 30,
       "type": "int",
       "category": "焦点",
       "pixelFormat": "rgb24",
-      "payloadStep": 26
+      "payloadStep": 31
     },
     "焦点生命值": {
-      "step": 27,
+      "step": 32,
       "type": "int",
       "category": "焦点"
     },
     "spells": {
       "22845.cooldown": {
-        "step": 28,
+        "step": 33,
         "type": "int",
         "displayName": "狂暴回复",
         "spellId": 22845,
@@ -194,7 +216,7 @@
         "displayType": "冷却"
       },
       "5229.cooldown": {
-        "step": 29,
+        "step": 34,
         "type": "int",
         "displayName": "激怒",
         "spellId": 5229,
@@ -202,7 +224,7 @@
         "displayType": "冷却"
       },
       "5211.cooldown": {
-        "step": 30,
+        "step": 35,
         "type": "int",
         "displayName": "猛击",
         "spellId": 5211,
@@ -210,7 +232,7 @@
         "displayType": "冷却"
       },
       "20484.cooldown": {
-        "step": 31,
+        "step": 36,
         "type": "int",
         "displayName": "复生",
         "spellId": 20484,
@@ -218,7 +240,7 @@
         "displayType": "冷却"
       },
       "1850.cooldown": {
-        "step": 32,
+        "step": 37,
         "type": "int",
         "displayName": "急奔",
         "spellId": 1850,
@@ -226,7 +248,7 @@
         "displayType": "冷却"
       },
       "5209.cooldown": {
-        "step": 33,
+        "step": 38,
         "type": "int",
         "displayName": "挑战咆哮",
         "spellId": 5209,
@@ -234,7 +256,7 @@
         "displayType": "冷却"
       },
       "740.cooldown": {
-        "step": 34,
+        "step": 39,
         "type": "int",
         "displayName": "宁静",
         "spellId": 740,
@@ -242,7 +264,7 @@
         "displayType": "冷却"
       },
       "29166.cooldown": {
-        "step": 35,
+        "step": 40,
         "type": "int",
         "displayName": "激活",
         "spellId": 29166,
@@ -250,7 +272,7 @@
         "displayType": "冷却"
       },
       "22812.cooldown": {
-        "step": 36,
+        "step": 41,
         "type": "int",
         "displayName": "树皮术",
         "spellId": 22812,
@@ -258,7 +280,7 @@
         "displayType": "冷却"
       },
       "17116.cooldown": {
-        "step": 37,
+        "step": 42,
         "type": "int",
         "displayName": "自然迅捷",
         "spellId": 17116,
@@ -266,7 +288,7 @@
         "displayType": "冷却"
       },
       "18562.cooldown": {
-        "step": 38,
+        "step": 43,
         "type": "int",
         "displayName": "迅捷治愈",
         "spellId": 18562,
@@ -274,7 +296,7 @@
         "displayType": "冷却"
       },
       "24858.cooldown": {
-        "step": 39,
+        "step": 44,
         "type": "int",
         "displayName": "枭兽形态",
         "spellId": 24858,
@@ -282,7 +304,7 @@
         "displayType": "冷却"
       },
       "5570.cooldown": {
-        "step": 40,
+        "step": 45,
         "type": "int",
         "displayName": "虫群",
         "spellId": 5570,
@@ -290,7 +312,7 @@
         "displayType": "冷却"
       },
       "16979.cooldown": {
-        "step": 41,
+        "step": 46,
         "type": "int",
         "displayName": "野性冲锋（熊）",
         "spellId": 16979,
@@ -299,7 +321,7 @@
       }
     },
     "group": {
-      "start": 42,
+      "start": 47,
       "生命值": {
         "step": 1,
         "type": "int"

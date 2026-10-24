@@ -416,6 +416,7 @@ public sealed class StateBuilder : IRuntimeStateBuilder
         {
             "bool" => raw.GetValueOrDefault() != 0,
             "string" => raw?.ToString() ?? string.Empty,
+            "deciseconds" => raw.GetValueOrDefault() / 10d,
             _ => raw.GetValueOrDefault()
         };
     }

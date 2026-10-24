@@ -9,9 +9,9 @@ end
 function Shingen:NormalizeCharConfig()
     local c = self:GetCharConfig()
     if not c then return end
-    c.aoeMode = c.aoeMode or 0
     c.cooldowns = c.cooldowns or 0
-    c.dpsMode = c.dpsMode or 0
+    c.minorCooldowns = c.minorCooldowns or 0
+    c.customMode = c.customMode or 0
     c.delay = c.delay or 0
     c.potion = c.potion or 0
 end
@@ -40,15 +40,6 @@ function Shingen:SwitchCooldown()
         "|cff00ff00[Shingen]|r 爆发已|cffff0000关闭|r",
         "|cff00ff00[Shingen]|r 爆发已|cff00ff00开启|r",
         "爆发开关"
-    )
-end
-
-function Shingen:SwitchAoeMode()
-    self:SwitchCharFlag(
-        "aoeMode",
-        "|cff00ff00[Shingen]|r 已切换|cff00ff00自动|r模式！",
-        "|cff00ff00[Shingen]|r 已切换|cff00ff00单体|r模式！",
-        "AOE开关"
     )
 end
 
@@ -294,18 +285,51 @@ function Shingen:InsertItemCommand(rest)
     self:SetInsertItem(index, itemName, itemId)
 end
 
---- /sh cd 系列命令统一动作：写 Shingen.BurstTime 唯一真相 + 镜像 c.cooldowns + 打印
---- 含时长文案 + 刷新 stateblock「爆发开关」像素 + 刷新快捷按钮显示态（不调用 SwitchCooldown）
-local function SetBurstTime(c, seconds, cooldown, text)
-    Shingen.BurstTime = GetTime() + seconds
-    c.cooldowns = cooldown
-    print(text)
-    if Shingen.UpdateBareStateBlock then
-        Shingen:UpdateBareStateBlock("爆发开关", { "配置开关", "状态" })
+-- 主爆发与次要爆发共用写入入口，命令和快捷条点击保持同样的计时与像素语义。
+function Shingen:SetBurstTime(seconds, minor, silent)
+    local c = self:GetCharConfig()
+    if not c then return end
+    local deadline = minor and "MinorBurstTime" or "BurstTime"
+    local key = minor and "minorCooldowns" or "cooldowns"
+    local blockName = minor and "次要爆发" or "爆发开关"
+    local label = minor and "次要爆发" or "爆发"
+    self[deadline] = GetTime() + (seconds > 0 and seconds or -1)
+    c[key] = seconds > 0 and 1 or 0
+    if not silent then
+        if seconds > 0 then
+            print("|cff00ff00[Shingen]|r " .. label .. "已开启（" .. seconds .. " 秒）")
+        else
+            print("|cff00ff00[Shingen]|r " .. label .. "已关闭")
+        end
     end
-    if Shingen.RefreshQuickToggleAppearance then
-        Shingen:RefreshQuickToggleAppearance()
+    if self.UpdateBareStateBlock then
+        self:UpdateBareStateBlock(blockName, { "配置开关", "状态" })
     end
+    if self.RefreshQuickToggleAppearance then
+        self:RefreshQuickToggleAppearance()
+    end
+end
+
+-- 两种爆发均支持：省略参数 15 秒、on 3600 秒、off 或非正数关闭。
+function Shingen:HandleBurstCommand(command)
+    local name, arg = command:match("^(%S+)%s*(.*)$")
+    if name ~= "cd" and name ~= "mcd" then return false end
+    local seconds
+    if arg == "" then
+        seconds = 15
+    elseif arg == "on" then
+        seconds = 3600
+    elseif arg == "off" then
+        seconds = 0
+    else
+        seconds = tonumber(arg)
+    end
+    if not seconds or seconds ~= seconds or math.abs(seconds) == math.huge then
+        print("|cff00ff00[Shingen]|r 无效秒数；用法: /sh " .. name .. " [on|off|秒数]")
+    else
+        self:SetBurstTime(seconds, name == "mcd")
+    end
+    return true
 end
 
 function Shingen:SlashCommand(input, editbox)
@@ -313,38 +337,20 @@ function Shingen:SlashCommand(input, editbox)
     local command = string.lower(input)
 
     local c = self:GetCharConfig()
-    if command == "cd" then
+    if self:HandleBurstCommand(command) then
+        return
+    elseif command == "custom" or command:match("^custom%s+") then
         if not c then return end
-        SetBurstTime(c, 15, 1, "|cff00ff00[Shingen]|r 爆发已开启（15 秒）")
-    elseif command == "cd on" then
-        if not c then return end
-        SetBurstTime(c, 3600, 1, "|cff00ff00[Shingen]|r 爆发已开启（3600 秒）")
-    elseif command == "cd off" then
-        if not c then return end
-        SetBurstTime(c, -1, 0, "|cff00ff00[Shingen]|r 爆发已关闭")
-    elseif command:match("^cd%s+") then
-        if not c then return end
-        local secStr = command:match("^cd%s+(.+)$")
-        local sec = tonumber(strtrim(secStr or ""))
-        if not sec then
-            print("|cff00ff00[Shingen]|r 无效秒数；请输入数字（例如 /sh cd 30），或使用 /sh cd on / /sh cd off。")
-        elseif sec > 0 then
-            SetBurstTime(c, sec, 1, "|cff00ff00[Shingen]|r 爆发已开启（" .. sec .. " 秒）")
-        else
-            SetBurstTime(c, -1, 0, "|cff00ff00[Shingen]|r 爆发已关闭")
+        local value = tonumber(command:match("^custom%s+(.+)$") or "")
+        if not value or value < 0 or value > 255 or value % 1 ~= 0 then
+            print("|cff00ff00[Shingen]|r 用法: /sh custom x（x 为 0-255 的整数）")
+            return
         end
-    elseif command == "aoemode" then
-        if not c then return end
-        c.aoeMode = (c.aoeMode == 0) and 1 or 0
-        self:SwitchAoeMode()
-    elseif command == "aoemode auto" then
-        if not c then return end
-        c.aoeMode = 0
-        self:SwitchAoeMode()
-    elseif command == "aoemode aoe" then
-        if not c then return end
-        c.aoeMode = 1
-        self:SwitchAoeMode()
+        c.customMode = value
+        if self.UpdateBareStateBlock then
+            self:UpdateBareStateBlock("自定义模式", { "配置开关", "状态" })
+        end
+        print("|cff00ff00[Shingen]|r 自定义模式已设为 " .. value .. " / 255")
     elseif command == "potion" then
         if not c then return end
         c.potion = (c.potion == 0) and 1 or 0
@@ -436,9 +442,11 @@ function Shingen:SlashCommand(input, editbox)
         print("|cff00ff00开启|r爆发（长计时 3600 秒）: /sh cd on")
         print("|cffff0000关闭|r爆发: /sh cd off")
         print("按秒开启爆发: /sh cd xx（xx 为秒数，<=0 等同关闭）")
-        print("切换AOE模式: /sh aoemode")
-        print("切换AOE为|cff00ff00自动|r: /sh aoemode auto")
-        print("切换AOE为|cff00ff00单体|r: /sh aoemode aoe")
+        print("次要爆发（开启 15 秒）: /sh mcd")
+        print("开启次要爆发（3600 秒）: /sh mcd on")
+        print("关闭次要爆发: /sh mcd off")
+        print("按秒开启次要爆发: /sh mcd xx（<=0 等同关闭）")
+        print("自定义模式（像素值 x / 255）: /sh custom x（0-255 整数）")
         print("爆发药水开关: /sh potion")
         print("|cff00ff00开启|r药水: /sh potion on")
         print("|cffff0000关闭|r药水: /sh potion off")

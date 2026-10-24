@@ -18,7 +18,9 @@ public enum ConditionFieldCategory
     Spell,
     DynamicUnit,
     DynamicValue,
-    DynamicTeammate
+    DynamicTeammate,
+    Timeline,
+    Custom
 }
 
 public static class ShigureConditionFields
@@ -184,6 +186,13 @@ public sealed class ConditionFieldCatalog
 
             if (node is JsonObject field && field.ContainsKey("step"))
             {
+                if (EncounterTimelineStateLayout.TryParseField(key, out var timelineSlot, out var remaining))
+                {
+                    AddField(fields, seen, key, remaining ? "剩余时间" : "spellID",
+                        remaining ? ConditionFieldType.Number : ConditionFieldType.Int,
+                        ConditionFieldCategory.Timeline, EncounterTimelineStateLayout.Classification(timelineSlot));
+                    continue;
+                }
                 var classification = ReadClassification(field)
                     ?? sourceClassifications.GetValueOrDefault(key)
                     ?? InferStateClassification(key);
@@ -214,6 +223,24 @@ public sealed class ConditionFieldCatalog
                     classification,
                     itemId);
             }
+        }
+
+        if (fields.Any(field => field.Category == ConditionFieldCategory.Timeline)
+            || classId is > 0 && specId is > 0
+                && EncounterTimelineStateLayout.IsSupported(Path.Combine(_addonRoot, "class")))
+        {
+            // 开关关闭时仍允许编辑已有条件；运行时没有事件时「任意时间轴」自然不命中。
+            for (var slot = 1; slot <= EncounterTimelineStateLayout.SlotCount; slot++)
+            {
+                AddField(fields, seen, EncounterTimelineStateLayout.SpellIdField(slot), "spellID", ConditionFieldType.Int,
+                    ConditionFieldCategory.Timeline, EncounterTimelineStateLayout.Classification(slot));
+                AddField(fields, seen, EncounterTimelineStateLayout.RemainingField(slot), "剩余时间", ConditionFieldType.Number,
+                    ConditionFieldCategory.Timeline, EncounterTimelineStateLayout.Classification(slot));
+            }
+            AddField(fields, seen, EncounterTimelineStateLayout.AnySpellIdField, "spellID", ConditionFieldType.Int,
+                ConditionFieldCategory.Timeline, EncounterTimelineStateLayout.AnyClassification);
+            AddField(fields, seen, EncounterTimelineStateLayout.AnyRemainingField, "剩余时间", ConditionFieldType.Number,
+                ConditionFieldCategory.Timeline, EncounterTimelineStateLayout.AnyClassification);
         }
 
         if (HasStateField(stateConfig, "战斗计时(分)")
@@ -685,7 +712,7 @@ public sealed class ConditionFieldCatalog
     private static string NormalizeStateName(string name)
         => string.Equals(name, "法术失败", StringComparison.Ordinal)
             ? ModuleSpecialActions.InsertSpellState
-            : name;
+            : ClassStateCatalog.NormalizeName(name);
 
     private static ConditionFieldType ReadType(JsonObject field)
     {
@@ -693,6 +720,7 @@ public sealed class ConditionFieldCatalog
         {
             "bool" => ConditionFieldType.Bool,
             "string" => ConditionFieldType.String,
+            "deciseconds" => ConditionFieldType.Number,
             _ => ConditionFieldType.Int
         };
     }

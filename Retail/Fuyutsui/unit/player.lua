@@ -66,11 +66,55 @@ function Fuyutsui:RebuildSpecializationState()
     self:UpdateStateBlock("特殊", "战斗计时(分)")
 end
 
--- mapIndex 使用副本地图 ID，与 C_Map 的界面地图 ID 分开。
+-- 地下城和团队副本使用各自的编号；地图输出原始界面地图 ID。
 function Fuyutsui:RefreshPlayerMapState()
-    local _, _, _, _, _, _, _, instanceID = GetInstanceInfo()
-    state.mapIndex = self.mapIndex[instanceID] or 0
-    self:UpdateStateBlock("状态", "地图")
+    local _, instanceType, difficultyID, _, _, _, _, instanceID = GetInstanceInfo()
+    state.dungeonIndex = instanceType == "party" and (self.dungeonIndex[instanceID] or 0) or 0
+    state.raidIndex = instanceType == "raid" and (self.raidIndex[instanceID] or 0) or 0
+    state.mapID = C_Map.GetBestMapForUnit("player") or 0
+    state.instanceDifficultyID = instanceType ~= "none" and (difficultyID or 0) or 0
+    self:UpdateStateBlock("区域", "地下城")
+    self:UpdateStateBlock("区域", "团队副本")
+    self:UpdateStateBlock("区域", "地图")
+    self:UpdateStateBlock("区域", "副本难度")
+end
+
+-- 使用游戏的挑战计时器，登录/重载后也能恢复已用时间；不以本地登录时间起算。
+local function GetMythicPlusElapsedSeconds()
+    local timerType = Enum and Enum.WorldElapsedTimerTypes and Enum.WorldElapsedTimerTypes.ChallengeMode
+        or LE_WORLD_ELAPSED_TIMER_TYPE_CHALLENGE_MODE
+    if not timerType or not GetWorldElapsedTimers or not GetWorldElapsedTime then return 0 end
+
+    for _, timerID in ipairs({ GetWorldElapsedTimers() }) do
+        local _, elapsed, kind = GetWorldElapsedTime(timerID)
+        if not issecretvalue(kind) and kind == timerType and not issecretvalue(elapsed) then
+            return math.max(0, math.floor(tonumber(elapsed) or 0))
+        end
+    end
+    return 0
+end
+
+function Fuyutsui:RefreshMythicPlusState()
+    local level, elapsed = 0, 0
+    local api = C_ChallengeMode
+    if not state.mythicPlusStopped and api and api.IsChallengeModeActive and api.GetActiveKeystoneInfo then
+        local active = api.IsChallengeModeActive()
+        if not issecretvalue(active) and active then
+            local activeLevel = api.GetActiveKeystoneInfo()
+            if not issecretvalue(activeLevel) then
+                level = math.max(0, math.floor(tonumber(activeLevel) or 0))
+            end
+            elapsed = GetMythicPlusElapsedSeconds()
+        end
+    end
+
+    -- 三个字段各用一个蓝通道，秒数是分钟内的 0–59 秒。
+    state.mythicPlusLevel = math.min(255, level) / 255
+    state.mythicPlusMinutes = math.min(255, math.floor(elapsed / 60)) / 255
+    state.mythicPlusSeconds = (elapsed % 60) / 255
+    self:UpdateStateBlock("区域", "大秘境层数")
+    self:UpdateStateBlock("区域", "大秘境时间(分)")
+    self:UpdateStateBlock("区域", "大秘境时间(秒)")
 end
 
 function Fuyutsui:RefreshPlayerValidity()
@@ -296,7 +340,7 @@ end
 
 function Fuyutsui:RefreshPlayerConfigStateBlocks()
     if not (self.db and self.db.char) then return end
-    local names = { "爆发开关", "AOE开关", "输出模式", "爆发药水开关" }
+    local names = { "爆发开关", "次要爆发", "自定义模式", "爆发药水开关" }
     for i = 1, #names do
         self:UpdateBareStateBlock(names[i], { "配置开关", "状态" })
     end
@@ -608,4 +652,18 @@ function Fuyutsui:UpdateActiveTotemRemainingTime(spellID)
             RefreshActiveTotemState(self)
         end)
     end
+end
+
+local unseenBladeCount = 0
+
+function Fuyutsui:UpdateUnseenBladeCount(spellID) -- 隐秘之刃
+    if spellID == 280719 then
+        unseenBladeCount = 2
+    elseif spellID == 185438 or spellID == 197835 or spellID == 53 then
+        unseenBladeCount = math.max(0, unseenBladeCount - 1)
+    else
+        return
+    end
+    state.unseenBladeCount = unseenBladeCount / 255
+    self:UpdateStateBlock("特殊", "隐秘之刃")
 end

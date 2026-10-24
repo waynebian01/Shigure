@@ -127,6 +127,20 @@ function Shingen:CreateTexture(i, b)
     end
 end
 
+-- 普通整数沿用两格 RGB 协议，避免地图 ID 被单个蓝通道截断。
+function Shingen:CreateNumberTexture(index, value)
+    if not index or index < 1 or index + 1 > BLOCK_FIX_CONFIG.capacity then return end
+    value = math.max(0, math.min(0xFFFFFF, math.floor(tonumber(value) or 0)))
+    local scheme = math.floor((index - 1) / BLOCK_SCHEME_SPAN)
+    local position = index - scheme * BLOCK_SCHEME_SPAN
+    local marker = createTextureByIndex(index)
+    marker:SetColorTexture((4 + scheme) / 255, position / 255,
+        (BLOCK_FIX_CONFIG.capacity / BLOCK_SCHEME_SPAN) / 255, 1)
+    local payload = createTextureByIndex(index + 1)
+    payload:SetColorTexture(math.floor(value / 65536) / 255,
+        (math.floor(value / 256) % 256) / 255, (value % 256) / 255, 1)
+end
+
 local rgbSpellPixels = {}
 local npcIdPixelIndex = nil
 

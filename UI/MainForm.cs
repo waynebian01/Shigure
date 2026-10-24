@@ -1895,6 +1895,13 @@ public sealed class MainForm : Form, IMessageFilter
             }
 
             syncingContentLayout = true;
+            // 先批量调整行和卡片宽度，再由内向外布局，避免每次修改都重算整页。
+            scrollHost.SuspendLayout();
+            stack.SuspendLayout();
+            foreach (var card in settingCards)
+            {
+                card.SuspendLayout();
+            }
             try
             {
                 var viewWidth = Math.Max(1, scrollHost.ClientSize.Width);
@@ -1964,7 +1971,19 @@ public sealed class MainForm : Form, IMessageFilter
             }
             finally
             {
-                syncingContentLayout = false;
+                try
+                {
+                    foreach (var card in settingCards)
+                    {
+                        card.ResumeLayout(true);
+                    }
+                    stack.ResumeLayout(true);
+                    scrollHost.ResumeLayout(true);
+                }
+                finally
+                {
+                    syncingContentLayout = false;
+                }
             }
         }
 

@@ -152,6 +152,8 @@ public sealed class ConditionEditorForm : Form
 {
     private VersionedSpellIconCatalog Catalog => SpellIconCatalog.ForVersion(_dataVersion);
     private readonly string _dataVersion;
+    private readonly NumberCatalog _dungeonCatalog;
+    private readonly NumberCatalog _raidCatalog;
     private const string ConnectorColumn = "Connector";
     private const string TypeColumn = "Type";
     private const string ClassificationColumn = "Classification";
@@ -159,12 +161,6 @@ public sealed class ConditionEditorForm : Form
     private const string OperatorColumn = "Operator";
     private const string ValueColumn = "Value";
     private const string DeleteColumn = "Delete";
-    private const string ExBossTypeField = "EX首领技能类型";
-    private const string ExBossEventField = "EX首领技能事件";
-    private const string ExTrashTypeField = "EX小怪技能类型";
-    private const string ExTrashEventField = "EX小怪技能事件";
-    private const string BigWigsTypeField = "BigWigs首领技能类型";
-    private const string BigWigsEventField = "BigWigs首领技能事件";
     private const string Unclassified = "未分类";
     private const int ConditionRowHeight = 46;
 
@@ -179,8 +175,10 @@ public sealed class ConditionEditorForm : Form
         new("Shigure", ConditionFieldCategory.Shigure),
         new("光环", ConditionFieldCategory.Aura),
         new("冷却", ConditionFieldCategory.Spell),
+        new("时间轴", ConditionFieldCategory.Timeline),
         new("动态单位", ConditionFieldCategory.DynamicUnit),
-        new("动态数值", ConditionFieldCategory.DynamicValue)
+        new("动态数值", ConditionFieldCategory.DynamicValue),
+        new("自定义", ConditionFieldCategory.Custom)
     ];
 
     private readonly IReadOnlyList<ConditionField> _fields;
@@ -236,6 +234,8 @@ public sealed class ConditionEditorForm : Form
         int? hitDelayMs = null)
     {
         _dataVersion = dataVersion;
+        _dungeonCatalog = NumberCatalog.LoadDungeons(dataVersion);
+        _raidCatalog = NumberCatalog.LoadRaids(dataVersion);
         // 保存独立快照，避免父级字段集合后续刷新时影响当前弹窗；子弹窗则通过 provider 取得最新目录。
         _fields = fields.ToArray();
         _valueReferenceFields = _fields
@@ -741,54 +741,19 @@ public sealed class ConditionEditorForm : Form
                 "施法技能" => "施法技能，条件保存技能列表中的 spellId",
                 "上个技能" => "上个技能，条件保存技能列表中的 spellId",
                 ShigureConditionFields.HitDelay => "命中后每次执行前等待的时间；等待期间默认停止后续判断，设置继续逻辑则继续。条件失效且持续命中结束时取消等待。",
-                ShigureConditionFields.MatchDelay => "条件从命中变为不命中后，继续保持命中的时间；恢复命中会取消倒计时。",
+                ShigureConditionFields.MatchDelay => "条件从命中变为不命中后，继续保持命中的时间；恢复命中会取消倒计时。未设置继续逻辑时，执行或等待期间锁定本规则，其他规则不能抢占。",
                 _ => e.Value?.ToString() ?? string.Empty
             };
             return;
         }
 
         if (e.ColumnIndex == _conditionsGrid.Columns[ValueColumn]!.Index
-            && cell is ExBossTypeValueCell or ExTrashTypeValueCell
-            && ExBossEventCatalog.FindMechanicType(e.Value?.ToString()) is { } mechanicType)
+            && cell is InstanceValueCell)
         {
-            cell.ToolTipText = $"类型 {mechanicType.Value}: {mechanicType.Name}";
-            return;
-        }
-
-        if (e.ColumnIndex == _conditionsGrid.Columns[ValueColumn]!.Index
-            && cell is BigWigsTypeValueCell
-            && BigWigsEventCatalog.FindEventType(e.Value?.ToString()) is { } bigWigsType)
-        {
-            cell.ToolTipText = $"类型 {bigWigsType.Value}: {bigWigsType.Name}";
-            return;
-        }
-
-        if (e.ColumnIndex == _conditionsGrid.Columns[ValueColumn]!.Index
-            && cell is BigWigsEventValueCell
-            && BigWigsEventCatalog.FindEvent(e.Value?.ToString()) is { } bigWigsEvent)
-        {
-            var location = bigWigsEvent.MapName.Length > 0
-                ? $" · {bigWigsEvent.MapName} / {bigWigsEvent.BossName}"
-                : string.Empty;
-            cell.ToolTipText = $"spellID {bigWigsEvent.SpellId}{location}";
-            return;
-        }
-
-        if (e.ColumnIndex == _conditionsGrid.Columns[ValueColumn]!.Index
-            && cell is ExBossEventValueCell
-            && ExBossEventCatalog.FindEvent(e.Value?.ToString()) is { } eventInfo)
-        {
-            cell.ToolTipText = $"eventID {eventInfo.EventId} · spellID {eventInfo.SpellId} · {eventInfo.MechanicType} · {eventInfo.MapName} / {eventInfo.BossName}";
-            return;
-        }
-
-        if (e.ColumnIndex == _conditionsGrid.Columns[ValueColumn]!.Index
-            && cell is ExTrashEventValueCell
-            && ExBossEventCatalog.FindTrashEvent(e.Value?.ToString()) is { } trashEvent)
-        {
-            var locations = string.Join("；", trashEvent.Locations.Select(location =>
-                $"{location.MapName} / {location.MobName}"));
-            cell.ToolTipText = $"spellID {trashEvent.SpellId} · {trashEvent.MechanicType} · {locations}";
+            var catalog = SelectedField(_conditionsGrid.Rows[e.RowIndex])?.Name == "地下城" ? _dungeonCatalog : _raidCatalog;
+            cell.ToolTipText = catalog.Error ?? (long.TryParse(e.Value?.ToString(), out var number)
+                ? catalog.FindName(number) ?? "可手填副本编号，或从下拉菜单选择。"
+                : "可手填副本编号，或从下拉菜单选择。");
             return;
         }
 
@@ -848,10 +813,7 @@ public sealed class ConditionEditorForm : Form
         }
 
         var cell = _conditionsGrid.Rows[e.RowIndex].Cells[e.ColumnIndex];
-        if (cell is BossValueCell or ReferenceValueCell
-            or ExBossTypeValueCell or ExBossEventValueCell
-            or ExTrashTypeValueCell or ExTrashEventValueCell
-            or BigWigsTypeValueCell or BigWigsEventValueCell)
+        if (cell is BossValueCell or InstanceValueCell or ReferenceValueCell)
         {
             var buttonBounds = UiTheme.GetDropDownButtonBounds(
                 _conditionsGrid,
@@ -862,11 +824,9 @@ public sealed class ConditionEditorForm : Form
                 {
                     ShowBossNumberDropDown(e.RowIndex, e.ColumnIndex);
                 }
-                else if (cell is ExBossTypeValueCell or ExBossEventValueCell
-                    or ExTrashTypeValueCell or ExTrashEventValueCell
-                    or BigWigsTypeValueCell or BigWigsEventValueCell)
+                else if (cell is InstanceValueCell)
                 {
-                    ShowExBossValueDropDown(e.RowIndex, e.ColumnIndex);
+                    ShowInstanceNumberDropDown(e.RowIndex, e.ColumnIndex);
                 }
                 else
                 {
@@ -900,16 +860,12 @@ public sealed class ConditionEditorForm : Form
 
     private void OnConditionsGridKeyDown(object? sender, KeyEventArgs e)
     {
-        if (_conditionsGrid.CurrentCell is ExBossTypeValueCell or ExBossEventValueCell
-                or ExTrashTypeValueCell or ExTrashEventValueCell
-                or BigWigsTypeValueCell or BigWigsEventValueCell
+        if (_conditionsGrid.CurrentCell is InstanceValueCell instanceCell
             && (e.KeyCode == Keys.F4 || e.KeyCode == Keys.Down && e.Alt))
         {
             e.Handled = true;
             e.SuppressKeyPress = true;
-            ShowExBossValueDropDown(
-                _conditionsGrid.CurrentCell.RowIndex,
-                _conditionsGrid.CurrentCell.ColumnIndex);
+            ShowInstanceNumberDropDown(instanceCell.RowIndex, instanceCell.ColumnIndex);
             return;
         }
 
@@ -1050,6 +1006,39 @@ public sealed class ConditionEditorForm : Form
         _conditionComboDropDown = dropDown;
     }
 
+    private void ShowInstanceNumberDropDown(int rowIndex, int columnIndex)
+    {
+        CloseConditionComboDropDown();
+        _conditionsGrid.EndEdit();
+        if (rowIndex < 0 || rowIndex >= _conditionsGrid.Rows.Count
+            || _conditionsGrid.Rows[rowIndex].Cells[columnIndex] is not InstanceValueCell cell)
+            return;
+
+        var field = SelectedField(_conditionsGrid.Rows[rowIndex])?.Name;
+        var catalog = field == "地下城" ? _dungeonCatalog : _raidCatalog;
+        var options = new List<UiDropDownOption> { new("0", $"非{field} / 未匹配", LeadingText: "0") };
+        options.AddRange(catalog.Entries.Select(entry => new UiDropDownOption(
+            entry.Id.ToString(CultureInfo.InvariantCulture), entry.DisplayName,
+            LeadingText: entry.Id.ToString(CultureInfo.InvariantCulture))));
+        _conditionsGrid.CurrentCell = cell;
+        ToolStripDropDown? dropDown = null;
+        dropDown = UiDropDownPopup.Show(_conditionsGrid,
+            _conditionsGrid.GetCellDisplayRectangle(columnIndex, rowIndex, cutOverflow: true),
+            options, cell.Value?.ToString()?.Trim() ?? string.Empty,
+            selected =>
+            {
+                cell.Value = selected.Value?.ToString() ?? string.Empty;
+                _conditionsGrid.InvalidateCell(cell);
+                UpdatePreview();
+            },
+            preferredWidth: 390,
+            closed: () =>
+            {
+                if (ReferenceEquals(_conditionComboDropDown, dropDown)) _conditionComboDropDown = null;
+            });
+        _conditionComboDropDown = dropDown;
+    }
+
     private void ShowBossNumberDropDown(int rowIndex, int columnIndex)
     {
         CloseConditionComboDropDown();
@@ -1065,7 +1054,8 @@ public sealed class ConditionEditorForm : Form
         {
             new("0", "非首领战 / -", LeadingText: "0")
         };
-        options.AddRange(StatusForm.GetBossNumberOptions().Select(boss => new UiDropDownOption(
+        var instanceId = BossCatalog.ResolveInstance(_dataVersion, CollectTerms());
+        options.AddRange(StatusForm.GetBossNumberOptions(_dataVersion, instanceId).Select(boss => new UiDropDownOption(
             boss.Number.ToString(CultureInfo.InvariantCulture),
             $"{boss.Dungeon} / {boss.Name}",
             LeadingText: boss.Number.ToString(CultureInfo.InvariantCulture))));
@@ -1085,102 +1075,6 @@ public sealed class ConditionEditorForm : Form
                 UpdatePreview();
             },
             preferredWidth: 390,
-            closed: () =>
-            {
-                if (ReferenceEquals(_conditionComboDropDown, dropDown))
-                {
-                    _conditionComboDropDown = null;
-                }
-            });
-        _conditionComboDropDown = dropDown;
-    }
-
-    private void ShowExBossValueDropDown(int rowIndex, int columnIndex)
-    {
-        CloseConditionComboDropDown();
-        _conditionsGrid.EndEdit();
-        if (rowIndex < 0 || rowIndex >= _conditionsGrid.Rows.Count)
-        {
-            return;
-        }
-
-        var cell = _conditionsGrid.Rows[rowIndex].Cells[columnIndex];
-        if (cell is not (ExBossTypeValueCell or ExBossEventValueCell
-            or ExTrashTypeValueCell or ExTrashEventValueCell
-            or BigWigsTypeValueCell or BigWigsEventValueCell))
-        {
-            return;
-        }
-
-        _conditionsGrid.CurrentCell = cell;
-        List<UiDropDownOption> options;
-        var preferredWidth = 320;
-        if (cell is BigWigsTypeValueCell)
-        {
-            options = BigWigsEventCatalog.EventTypes
-                .Select(item => new UiDropDownOption(
-                    item.Value.ToString(CultureInfo.InvariantCulture),
-                    item.Name,
-                    LeadingText: item.Value.ToString(CultureInfo.InvariantCulture)))
-                .ToList();
-        }
-        else if (cell is ExBossTypeValueCell or ExTrashTypeValueCell)
-        {
-            options = ExBossEventCatalog.MechanicTypes
-                .Select(item => new UiDropDownOption(
-                    item.Value.ToString(CultureInfo.InvariantCulture),
-                    item.Name,
-                    LeadingText: item.Value.ToString(CultureInfo.InvariantCulture)))
-                .ToList();
-        }
-        else
-        {
-            preferredWidth = 680;
-            options =
-            [
-                new UiDropDownOption("0", "无事件 / 未安装 EXBoss", LeadingText: "0")
-            ];
-            if (cell is BigWigsEventValueCell)
-            {
-                options[0] = new UiDropDownOption("0", "无事件 / 未安装 BigWigs", LeadingText: "0");
-                options.AddRange(BigWigsEventCatalog.Events.Select(item => new UiDropDownOption(
-                    item.Key.ToString(CultureInfo.InvariantCulture),
-                    item.MapName.Length > 0
-                        ? $"{item.Name} · spellID {item.SpellId} · {item.MapName} / {item.BossName}"
-                        : $"{item.Name} · spellID {item.SpellId}",
-                    LeadingText: item.Key.ToString(CultureInfo.InvariantCulture))));
-            }
-            else if (cell is ExTrashEventValueCell)
-            {
-                options.AddRange(ExBossEventCatalog.TrashEvents.Select(item => new UiDropDownOption(
-                    item.Key.ToString(CultureInfo.InvariantCulture),
-                    $"{item.Name} · {item.MechanicType} · {string.Join("；", item.Locations.Select(location => $"{location.MapName} / {location.MobName}").Distinct(StringComparer.Ordinal))}",
-                    LeadingText: item.Key.ToString(CultureInfo.InvariantCulture))));
-            }
-            else
-            {
-                options.AddRange(ExBossEventCatalog.Events.Select(item => new UiDropDownOption(
-                    item.Key.ToString(CultureInfo.InvariantCulture),
-                    $"{item.Name} · {item.MechanicType} · {item.MapName} / {item.BossName}",
-                    LeadingText: item.Key.ToString(CultureInfo.InvariantCulture))));
-            }
-        }
-
-        var currentValue = cell.Value?.ToString()?.Trim() ?? string.Empty;
-        var cellBounds = _conditionsGrid.GetCellDisplayRectangle(columnIndex, rowIndex, cutOverflow: true);
-        ToolStripDropDown? dropDown = null;
-        dropDown = UiDropDownPopup.Show(
-            _conditionsGrid,
-            cellBounds,
-            options,
-            currentValue,
-            selected =>
-            {
-                cell.Value = selected.Value?.ToString() ?? string.Empty;
-                _conditionsGrid.InvalidateCell(cell);
-                UpdatePreview();
-            },
-            preferredWidth,
             closed: () =>
             {
                 if (ReferenceEquals(_conditionComboDropDown, dropDown))
@@ -1229,10 +1123,7 @@ public sealed class ConditionEditorForm : Form
 
 
         var cell = _conditionsGrid.Rows[e.RowIndex].Cells[e.ColumnIndex];
-        if (cell is BossValueCell or ReferenceValueCell
-            or ExBossTypeValueCell or ExBossEventValueCell
-            or ExTrashTypeValueCell or ExTrashEventValueCell
-            or BigWigsTypeValueCell or BigWigsEventValueCell)
+        if (cell is BossValueCell or InstanceValueCell or ReferenceValueCell)
         {
             UiTheme.PaintDataGridViewComboBoxCell(_conditionsGrid, e, showButton: true);
             return;
@@ -1486,6 +1377,12 @@ public sealed class ConditionEditorForm : Form
 
     private DataGridViewRow AddRow(ConditionTerm? term)
     {
+        if (term is not null && EncounterTimelineStateLayout.TryParseField(term.Field, out var slot, out var remaining))
+        {
+            term = term with { Field = slot == 0
+                ? remaining ? EncounterTimelineStateLayout.AnyRemainingField : EncounterTimelineStateLayout.AnySpellIdField
+                : remaining ? EncounterTimelineStateLayout.RemainingField(slot) : EncounterTimelineStateLayout.SpellIdField(slot) };
+        }
         var index = _conditionsGrid.Rows.Add();
         var row = _conditionsGrid.Rows[index];
         row.Height = _conditionsGrid.RowTemplate.Height;
@@ -1604,6 +1501,7 @@ public sealed class ConditionEditorForm : Form
         var cell = (DataGridViewComboBoxCell)row.Cells[ClassificationColumn];
         cell.Items.Clear();
         var enabled = category is ConditionFieldCategory.State
+            or ConditionFieldCategory.Timeline
             or ConditionFieldCategory.Aura
             or ConditionFieldCategory.Spell;
         cell.ReadOnly = !enabled;
@@ -1616,7 +1514,9 @@ public sealed class ConditionEditorForm : Form
             return;
         }
 
-        var options = category == ConditionFieldCategory.State
+        var options = category == ConditionFieldCategory.Timeline
+            ? EncounterTimelineStateLayout.Classifications.ToList()
+            : category == ConditionFieldCategory.State
             ? ClassStateCatalog.TopCategories.ToList()
             : category == ConditionFieldCategory.Spell
                 ? new List<string>
@@ -1680,6 +1580,7 @@ public sealed class ConditionEditorForm : Form
                      field.Category == category
                      && (_allowRuleSettings || !ShigureConditionFields.IsRuleSetting(field.Name))
                      && (category is not (ConditionFieldCategory.State
+                             or ConditionFieldCategory.Timeline
                              or ConditionFieldCategory.Aura
                              or ConditionFieldCategory.Spell)
                          || string.Equals(
@@ -1742,6 +1643,7 @@ public sealed class ConditionEditorForm : Form
 
     private ConditionFieldCategory ResolveCategory(string? fieldName)
     {
+        if (EncounterTimelineStateLayout.TryParseField(fieldName, out _, out _)) return ConditionFieldCategory.Timeline;
         if (string.IsNullOrWhiteSpace(fieldName))
         {
             return ConditionFieldCategory.State;
@@ -1771,6 +1673,8 @@ public sealed class ConditionEditorForm : Form
 
     private string? ResolveClassification(string? fieldName, ConditionFieldCategory category)
     {
+        if (EncounterTimelineStateLayout.TryParseField(fieldName, out var slot, out _))
+            return EncounterTimelineStateLayout.Classification(slot);
         var field = FindField(fieldName);
         return field?.Classification
             ?? (category == ConditionFieldCategory.Aura
@@ -1863,24 +1767,11 @@ public sealed class ConditionEditorForm : Form
             return;
         }
 
-        if (field?.Name is ExBossTypeField or ExBossEventField or ExTrashTypeField or ExTrashEventField
-            or BigWigsTypeField or BigWigsEventField)
+        if (field?.Name is "地下城" or "团队副本"
+            && !ConditionExpression.IsInOperator(row.Cells[OperatorColumn].Value?.ToString()))
         {
             var value = rawValue?.Trim() ?? string.Empty;
-            if (value.Length == 0)
-            {
-                value = "0";
-            }
-
-            row.Cells[ValueColumn] = field.Name switch
-            {
-                ExBossTypeField => new ExBossTypeValueCell { Value = value },
-                ExBossEventField => new ExBossEventValueCell { Value = value },
-                ExTrashTypeField => new ExTrashTypeValueCell { Value = value },
-                ExTrashEventField => new ExTrashEventValueCell { Value = value },
-                BigWigsTypeField => new BigWigsTypeValueCell { Value = value },
-                _ => new BigWigsEventValueCell { Value = value }
-            };
+            row.Cells[ValueColumn] = new InstanceValueCell { Value = value.Length == 0 ? "0" : value };
             return;
         }
 
@@ -2548,14 +2439,7 @@ public sealed class ConditionEditorForm : Form
     }
 
     private sealed class BossValueCell : DataGridViewTextBoxCell;
-
-    // EX 事件值保留文本框编辑能力，右侧按钮同时提供已知类型/事件目录。
-    private sealed class ExBossTypeValueCell : DataGridViewTextBoxCell;
-    private sealed class ExBossEventValueCell : DataGridViewTextBoxCell;
-    private sealed class ExTrashTypeValueCell : DataGridViewTextBoxCell;
-    private sealed class ExTrashEventValueCell : DataGridViewTextBoxCell;
-    private sealed class BigWigsTypeValueCell : DataGridViewTextBoxCell;
-    private sealed class BigWigsEventValueCell : DataGridViewTextBoxCell;
+    private sealed class InstanceValueCell : DataGridViewTextBoxCell;
 
     // 值列: 可手填数字, 也可从动态数值字段中选一个作为引用。
     private sealed class ReferenceValueCell : DataGridViewTextBoxCell;

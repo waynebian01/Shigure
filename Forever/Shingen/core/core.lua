@@ -85,12 +85,6 @@ end
 
 function Shingen:OnEnable()
     self:InitializeSpecializationState()
-    if self.InitializeExBossTimelineBridge then
-        self:InitializeExBossTimelineBridge()
-    end
-    if self.InitializeBigWigsTimelineBridge then
-        self:InitializeBigWigsTimelineBridge()
-    end
     self:UpdateSpellKnown()
     self:RefreshPlayerState()
     self:ReadKeybindings()
@@ -98,7 +92,11 @@ function Shingen:OnEnable()
 
     self:RegisterEvent("ZONE_CHANGED")
     self:RegisterEvent("ZONE_CHANGED_INDOORS")
+    self:RegisterEvent("ZONE_CHANGED_NEW_AREA")
     self:RegisterEvent("PLAYER_ENTERING_WORLD")
+    self:RegisterEvent("CHALLENGE_MODE_START")
+    self:RegisterEvent("CHALLENGE_MODE_COMPLETED")
+    self:RegisterEvent("CHALLENGE_MODE_RESET")
     self:RegisterEvent("PLAYER_TALENT_UPDATE")
     self:RegisterEvent("PLAYER_DEAD")
     self:RegisterEvent("PLAYER_ALIVE")
@@ -201,9 +199,9 @@ Shingen.defaults = {
     },
     char = {
         level = 0,
-        aoeMode = 0,
         cooldowns = 0,
-        dpsMode = 0,
+        minorCooldowns = 0,
+        customMode = 0,
         delay = 0,
         potion = 0,
         quickButtonCX = 180,

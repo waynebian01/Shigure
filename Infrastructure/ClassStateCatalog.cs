@@ -12,6 +12,7 @@ internal static class ClassStateCatalog
     public const string CategoryConfig = "配置开关";
     public const string CategoryItem = "物品";
     public const string CategoryResource = "能量";
+    public const string CategoryRegion = "区域";
     public const string CategoryTarget = "目标";
     public const string CategoryFocus = "焦点";
     public const string CategoryMouseover = "鼠标";
@@ -37,6 +38,7 @@ internal static class ClassStateCatalog
         CategoryState,
         CategorySpecial,
         CategoryResource,
+        CategoryRegion,
         CategoryConfig,
         CategoryTarget,
         CategoryFocus,
@@ -53,9 +55,9 @@ internal static class ClassStateCatalog
     [
         (CategoryState,
         [
-            "职业", "专精", "等级", "有效性", "地图", "战斗时间", "移动",
+            "职业", "专精", "等级", "有效性", "战斗时间", "移动",
             "生命值", "一键辅助", "插入法术", "插入物品", "队伍类型", "队伍人数",
-            "首领战", "难度", "英雄天赋", "施法目标", "施法技能", "技能等级", "生物类型",
+            "英雄天赋", "施法目标", "施法技能", "技能等级", "生物类型",
             "施法(正计时)", "施法(倒计时)", "引导", "蓄力", "蓄力层数",
             "上个技能", "公共冷却", "自动射击", "自动攻击",
             "魔法", "诅咒", "疾病", "中毒", "流血",
@@ -63,22 +65,25 @@ internal static class ClassStateCatalog
         (CategorySpecial,
         [
             "计时器", "循环计时器", "战斗计时(秒)", "战斗计时(分)",
-            "倒数", "EX首领技能类型", "EX首领技能事件", "EX首领技能倒计时",
-            "EX小怪技能类型", "EX小怪技能事件", "EX小怪技能倒计时",
-            "BigWigs首领技能类型", "BigWigs首领技能事件", "BigWigs首领技能倒计时",
+            "倒数",
             "酒池", "符文", "姿态", "自律", "天启骑士数量",
-            "英勇打击", "收割者战刃", "沸点", "强化锁喉",
+            "英勇打击", "收割者战刃", "沸点", "强化锁喉", "隐秘之刃",
             "风暴涌流图腾", "风暴涌流图腾数量", "治疗之泉图腾", "治疗之泉图腾数量",
         ]),
         (CategoryConfig,
         [
-            "爆发开关", "AOE开关", "输出模式", "爆发药水开关", "延迟"
+            "爆发开关", "次要爆发", "自定义模式", "爆发药水开关", "延迟"
         ]),
         (CategoryResource,
         [
             "法力值", "怒气值", "集中值", "能量值", "符文", "符文能量",
             "星界能量", "漩涡值", "狂乱值", "奥术充能", "恶魔之怒", "痛苦值",
             "连击点", "神圣能量", "精华能量", "灵魂碎片", "真气", "增压层数"
+        ]),
+        (CategoryRegion,
+        [
+            "地图", "地下城", "团队副本", "首领战", "首领战难度", "副本难度",
+            "大秘境层数", "大秘境时间(分)", "大秘境时间(秒)"
         ]),
         (CategoryTarget,
         [
@@ -146,6 +151,38 @@ internal static class ClassStateCatalog
     public static bool IsKnown(string category, string name)
         => !string.IsNullOrWhiteSpace(name)
            && GetNames(category).Contains(name, StringComparer.Ordinal);
+
+    // 旧“难度”始终表示首领战难度，不能迁移为新增的副本难度。
+    public static string NormalizeName(string name)
+        => name == "难度" ? "首领战难度" : name;
+
+    public static void NormalizeNames(List<string> names)
+    {
+        for (var index = 0; index < names.Count; index++)
+            names[index] = NormalizeName(names[index]);
+    }
+
+    // 旧配置和模块依赖中的区域字段原先位于“状态”，载入时迁移并去重。
+    public static void RelocateRegionFields(IDictionary<string, List<string>> categorizedStates)
+    {
+        foreach (var names in categorizedStates.Values)
+            if (names is not null) NormalizeNames(names);
+
+        if (!categorizedStates.TryGetValue(CategoryState, out var stateFields) || stateFields is null)
+            return;
+        var fields = stateFields.Where(name => IsKnown(CategoryRegion, name)).ToArray();
+        if (fields.Length == 0) return;
+        if (!categorizedStates.TryGetValue(CategoryRegion, out var regionFields) || regionFields is null)
+        {
+            regionFields = [];
+            categorizedStates[CategoryRegion] = regionFields;
+        }
+        foreach (var name in fields)
+        {
+            stateFields.Remove(name);
+            if (!regionFields.Contains(name, StringComparer.Ordinal)) regionFields.Add(name);
+        }
+    }
 
     public static string? FindCategory(string name)
     {

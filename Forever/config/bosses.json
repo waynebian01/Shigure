@@ -1,0 +1,5539 @@
+[
+  {
+    "name": "奥格弗林特",
+    "id": 1,
+    "sourceId": 2732,
+    "instanceId": 389,
+    "instanceName": "怒焰裂谷",
+    "instanceType": "地下城",
+    "instanceNumber": 1,
+    "encounterIds": [
+      2732
+    ],
+    "englishName": "Oggleflint",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2437",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "饥饿者塔拉加曼",
+    "id": 2,
+    "sourceId": 2733,
+    "instanceId": 389,
+    "instanceName": "怒焰裂谷",
+    "instanceType": "地下城",
+    "instanceNumber": 1,
+    "encounterIds": [
+      2733
+    ],
+    "englishName": "Taragaman the Hungerer",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2437",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "祈求者耶戈什",
+    "id": 3,
+    "sourceId": 2734,
+    "instanceId": 389,
+    "instanceName": "怒焰裂谷",
+    "instanceType": "地下城",
+    "instanceNumber": 1,
+    "encounterIds": [
+      2734
+    ],
+    "englishName": "Jergosh the Invoker",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2437",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "巴扎兰",
+    "id": 4,
+    "sourceId": 2735,
+    "instanceId": 389,
+    "instanceName": "怒焰裂谷",
+    "instanceType": "地下城",
+    "instanceNumber": 1,
+    "encounterIds": [
+      2735
+    ],
+    "englishName": "Bazzalan",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2437",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "法德林·安威玛尔",
+    "id": 1,
+    "sourceId": 3493,
+    "instanceId": 3065,
+    "instanceName": "领主大厅",
+    "instanceType": "地下城",
+    "instanceNumber": 2,
+    "encounterIds": [
+      3493
+    ],
+    "englishName": "Faldrim Anvilmar",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "note": "新增副本客户端记录；Wowhead 首领名单尚未核对",
+    "expansion": 12,
+    "expansionName": "Forever"
+  },
+  {
+    "name": "茵弗努斯",
+    "id": 2,
+    "sourceId": 3495,
+    "instanceId": 3065,
+    "instanceName": "领主大厅",
+    "instanceType": "地下城",
+    "instanceNumber": 2,
+    "encounterIds": [
+      3495
+    ],
+    "englishName": "Infurnus",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "note": "新增副本客户端记录；Wowhead 首领名单尚未核对",
+    "expansion": 12,
+    "expansionName": "Forever"
+  },
+  {
+    "name": "劫掠者",
+    "id": 3,
+    "sourceId": 3494,
+    "instanceId": 3065,
+    "instanceName": "领主大厅",
+    "instanceType": "地下城",
+    "instanceNumber": 2,
+    "encounterIds": [
+      3494
+    ],
+    "englishName": "Plunder",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "note": "新增副本客户端记录；Wowhead 首领名单尚未核对",
+    "expansion": 12,
+    "expansionName": "Forever"
+  },
+  {
+    "name": "杜根·挽锤",
+    "id": 4,
+    "sourceId": 3496,
+    "instanceId": 3065,
+    "instanceName": "领主大厅",
+    "instanceType": "地下城",
+    "instanceNumber": 2,
+    "encounterIds": [
+      3496
+    ],
+    "englishName": "Durgen Dirgehammer",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "note": "新增副本客户端记录；Wowhead 首领名单尚未核对",
+    "expansion": 12,
+    "expansionName": "Forever"
+  },
+  {
+    "name": "枯牙",
+    "id": 1,
+    "sourceId": 3353,
+    "instanceId": 2999,
+    "instanceName": "洛丹伦废墟",
+    "instanceType": "地下城",
+    "instanceNumber": 3,
+    "encounterIds": [
+      3353
+    ],
+    "englishName": "Witherfang",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "note": "新增副本客户端记录；Wowhead 首领名单尚未核对",
+    "expansion": 12,
+    "expansionName": "Forever"
+  },
+  {
+    "name": "被遗弃者",
+    "id": 2,
+    "sourceId": 3357,
+    "instanceId": 2999,
+    "instanceName": "洛丹伦废墟",
+    "instanceType": "地下城",
+    "instanceNumber": 3,
+    "encounterIds": [
+      3357
+    ],
+    "englishName": "The Abandoned",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "note": "新增副本客户端记录；Wowhead 首领名单尚未核对",
+    "expansion": 12,
+    "expansionName": "Forever"
+  },
+  {
+    "name": "屠夫",
+    "id": 3,
+    "sourceId": 3355,
+    "instanceId": 2999,
+    "instanceName": "洛丹伦废墟",
+    "instanceType": "地下城",
+    "instanceNumber": 3,
+    "encounterIds": [
+      3355
+    ],
+    "englishName": "The Butcher",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "note": "新增副本客户端记录；Wowhead 首领名单尚未核对",
+    "expansion": 12,
+    "expansionName": "Forever"
+  },
+  {
+    "name": "拉斯玛尔",
+    "id": 4,
+    "sourceId": 3354,
+    "instanceId": 2999,
+    "instanceName": "洛丹伦废墟",
+    "instanceType": "地下城",
+    "instanceNumber": 3,
+    "encounterIds": [
+      3354
+    ],
+    "englishName": "Rath'mael",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "note": "新增副本客户端记录；Wowhead 首领名单尚未核对",
+    "expansion": 12,
+    "expansionName": "Forever"
+  },
+  {
+    "name": "洛丹伦上尉",
+    "id": 5,
+    "sourceId": 3408,
+    "instanceId": 2999,
+    "instanceName": "洛丹伦废墟",
+    "instanceType": "地下城",
+    "instanceNumber": 3,
+    "encounterIds": [
+      3408
+    ],
+    "englishName": "Lordaeron Captain",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "note": "新增副本客户端记录；Wowhead 首领名单尚未核对",
+    "expansion": 12,
+    "expansionName": "Forever"
+  },
+  {
+    "name": "邪恶的维克多",
+    "id": 6,
+    "sourceId": 3411,
+    "instanceId": 2999,
+    "instanceName": "洛丹伦废墟",
+    "instanceType": "地下城",
+    "instanceNumber": 3,
+    "encounterIds": [
+      3411
+    ],
+    "englishName": "Viktor the Vile",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "note": "新增副本客户端记录；Wowhead 首领名单尚未核对",
+    "expansion": 12,
+    "expansionName": "Forever"
+  },
+  {
+    "name": "比约克",
+    "id": 7,
+    "sourceId": 3412,
+    "instanceId": 2999,
+    "instanceName": "洛丹伦废墟",
+    "instanceType": "地下城",
+    "instanceNumber": 3,
+    "encounterIds": [
+      3412
+    ],
+    "englishName": "Bjork",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "note": "新增副本客户端记录；Wowhead 首领名单尚未核对",
+    "expansion": 12,
+    "expansionName": "Forever"
+  },
+  {
+    "name": "安娜科德拉",
+    "id": 1,
+    "sourceId": 585,
+    "instanceId": 43,
+    "instanceName": "哀嚎洞穴",
+    "instanceType": "地下城",
+    "instanceNumber": 4,
+    "encounterIds": [
+      585
+    ],
+    "englishName": "Lady Anacondra",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=718",
+    "wowheadNpcIds": [
+      3671
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "考布莱恩",
+    "id": 2,
+    "sourceId": 586,
+    "instanceId": 43,
+    "instanceName": "哀嚎洞穴",
+    "instanceType": "地下城",
+    "instanceNumber": 4,
+    "encounterIds": [
+      586
+    ],
+    "englishName": "Lord Cobrahn",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=718",
+    "wowheadNpcIds": [
+      3669
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "克雷什",
+    "id": 3,
+    "sourceId": 587,
+    "instanceId": 43,
+    "instanceName": "哀嚎洞穴",
+    "instanceType": "地下城",
+    "instanceNumber": 4,
+    "encounterIds": [
+      587
+    ],
+    "englishName": "Kresh",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=718",
+    "wowheadNpcIds": [
+      3653
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "皮萨斯",
+    "id": 4,
+    "sourceId": 588,
+    "instanceId": 43,
+    "instanceName": "哀嚎洞穴",
+    "instanceType": "地下城",
+    "instanceNumber": 4,
+    "encounterIds": [
+      588
+    ],
+    "englishName": "Lord Pythas",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=718",
+    "wowheadNpcIds": [
+      3670
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "斯卡姆",
+    "id": 5,
+    "sourceId": 589,
+    "instanceId": 43,
+    "instanceName": "哀嚎洞穴",
+    "instanceType": "地下城",
+    "instanceNumber": 4,
+    "encounterIds": [
+      589
+    ],
+    "englishName": "Skum",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=718",
+    "wowheadNpcIds": [
+      3674
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "瑟芬迪斯",
+    "id": 6,
+    "sourceId": 590,
+    "instanceId": 43,
+    "instanceName": "哀嚎洞穴",
+    "instanceType": "地下城",
+    "instanceNumber": 4,
+    "encounterIds": [
+      590
+    ],
+    "englishName": "Lord Serpentis",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=718",
+    "wowheadNpcIds": [
+      3673
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "永生者沃尔丹",
+    "id": 7,
+    "sourceId": 591,
+    "instanceId": 43,
+    "instanceName": "哀嚎洞穴",
+    "instanceType": "地下城",
+    "instanceNumber": 4,
+    "encounterIds": [
+      591
+    ],
+    "englishName": "Verdan the Everliving",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=718",
+    "wowheadNpcIds": [
+      5775
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "吞噬者穆坦努斯",
+    "id": 8,
+    "sourceId": 592,
+    "instanceId": 43,
+    "instanceName": "哀嚎洞穴",
+    "instanceType": "地下城",
+    "instanceNumber": 4,
+    "encounterIds": [
+      592
+    ],
+    "englishName": "Mutanus the Devourer",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=718",
+    "wowheadNpcIds": [
+      3654
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "拉克佐",
+    "id": 1,
+    "sourceId": 2741,
+    "instanceId": 36,
+    "instanceName": "死亡矿井",
+    "instanceType": "地下城",
+    "instanceNumber": 5,
+    "encounterIds": [
+      2741
+    ],
+    "englishName": "Rhahk'Zor",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1581",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "斯尼德",
+    "id": 2,
+    "sourceId": 2742,
+    "instanceId": 36,
+    "instanceName": "死亡矿井",
+    "instanceType": "地下城",
+    "instanceNumber": 5,
+    "encounterIds": [
+      2742
+    ],
+    "englishName": "Sneed",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1581",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "Miner Johnson",
+    "id": 3,
+    "sourceId": 3676,
+    "instanceId": 36,
+    "instanceName": "死亡矿井",
+    "instanceType": "地下城",
+    "instanceNumber": 5,
+    "encounterIds": [
+      3676
+    ],
+    "englishName": "Miner Johnson",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1581",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "基尔尼格",
+    "id": 4,
+    "sourceId": 2743,
+    "instanceId": 36,
+    "instanceName": "死亡矿井",
+    "instanceType": "地下城",
+    "instanceNumber": 5,
+    "encounterIds": [
+      2743
+    ],
+    "englishName": "Gilnid",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1581",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "绿皮船长",
+    "id": 5,
+    "sourceId": 2744,
+    "instanceId": 36,
+    "instanceName": "死亡矿井",
+    "instanceType": "地下城",
+    "instanceNumber": 5,
+    "encounterIds": [
+      2744
+    ],
+    "englishName": "Captain Greenskin",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1581",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "重拳先生",
+    "id": 6,
+    "sourceId": 2745,
+    "instanceId": 36,
+    "instanceName": "死亡矿井",
+    "instanceType": "地下城",
+    "instanceNumber": 5,
+    "encounterIds": [
+      2745
+    ],
+    "englishName": "Mr. Smite",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1581",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "曲奇",
+    "id": 7,
+    "sourceId": 2746,
+    "instanceId": 36,
+    "instanceName": "死亡矿井",
+    "instanceType": "地下城",
+    "instanceNumber": 5,
+    "encounterIds": [
+      2746
+    ],
+    "englishName": "Cookie",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1581",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "艾德温·范克里夫",
+    "id": 8,
+    "sourceId": 2747,
+    "instanceId": 36,
+    "instanceName": "死亡矿井",
+    "instanceType": "地下城",
+    "instanceNumber": 5,
+    "encounterIds": [
+      2747
+    ],
+    "englishName": "Edwin VanCleef",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1581",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "雷希戈尔",
+    "id": 1,
+    "sourceId": 2748,
+    "instanceId": 33,
+    "instanceName": "影牙城堡",
+    "instanceType": "地下城",
+    "instanceNumber": 6,
+    "encounterIds": [
+      2748
+    ],
+    "englishName": "Rethilgore",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=209",
+    "wowheadNpcIds": [
+      3914
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "屠夫拉佐克劳",
+    "id": 2,
+    "sourceId": 2749,
+    "instanceId": 33,
+    "instanceName": "影牙城堡",
+    "instanceType": "地下城",
+    "instanceNumber": 6,
+    "encounterIds": [
+      2749
+    ],
+    "englishName": "Razorclaw the Butcher",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=209",
+    "wowheadNpcIds": [
+      3886
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "席瓦莱恩男爵",
+    "id": 3,
+    "sourceId": 2750,
+    "instanceId": 33,
+    "instanceName": "影牙城堡",
+    "instanceType": "地下城",
+    "instanceNumber": 6,
+    "encounterIds": [
+      2750
+    ],
+    "englishName": "Baron Silverlaine",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=209",
+    "wowheadNpcIds": [
+      3887
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "指挥官斯普林瓦尔",
+    "id": 4,
+    "sourceId": 2751,
+    "instanceId": 33,
+    "instanceName": "影牙城堡",
+    "instanceType": "地下城",
+    "instanceNumber": 6,
+    "encounterIds": [
+      2751
+    ],
+    "englishName": "Commander Springvale",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=209",
+    "wowheadNpcIds": [
+      4278
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "盲眼守卫奥杜",
+    "id": 5,
+    "sourceId": 2752,
+    "instanceId": 33,
+    "instanceName": "影牙城堡",
+    "instanceType": "地下城",
+    "instanceNumber": 6,
+    "encounterIds": [
+      2752
+    ],
+    "englishName": "Odo the Blindwatcher",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=209",
+    "wowheadNpcIds": [
+      4279
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "吞噬者芬鲁斯",
+    "id": 6,
+    "sourceId": 2753,
+    "instanceId": 33,
+    "instanceName": "影牙城堡",
+    "instanceType": "地下城",
+    "instanceNumber": 6,
+    "encounterIds": [
+      2753
+    ],
+    "englishName": "Fenrus the Devourer",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=209",
+    "wowheadNpcIds": [
+      4274
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "狼王南杜斯",
+    "id": 7,
+    "sourceId": 2754,
+    "instanceId": 33,
+    "instanceName": "影牙城堡",
+    "instanceType": "地下城",
+    "instanceNumber": 6,
+    "encounterIds": [
+      2754
+    ],
+    "englishName": "Wolf Master Nandos",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=209",
+    "wowheadNpcIds": [
+      3927
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "大法师阿鲁高",
+    "id": 8,
+    "sourceId": 2755,
+    "instanceId": 33,
+    "instanceName": "影牙城堡",
+    "instanceType": "地下城",
+    "instanceNumber": 6,
+    "encounterIds": [
+      2755
+    ],
+    "englishName": "Archmage Arugal",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=209",
+    "wowheadNpcIds": [
+      4275
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "可怕的塔格尔",
+    "id": 1,
+    "sourceId": 2756,
+    "instanceId": 34,
+    "instanceName": "暴风城监狱",
+    "instanceType": "地下城",
+    "instanceNumber": 7,
+    "encounterIds": [
+      2756
+    ],
+    "englishName": "Targorr the Dread",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=717",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "卡姆·深怒",
+    "id": 2,
+    "sourceId": 2757,
+    "instanceId": 34,
+    "instanceName": "暴风城监狱",
+    "instanceType": "地下城",
+    "instanceNumber": 7,
+    "encounterIds": [
+      2757
+    ],
+    "englishName": "Kam Deepfury",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=717",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "哈姆霍克",
+    "id": 3,
+    "sourceId": 2758,
+    "instanceId": 34,
+    "instanceName": "暴风城监狱",
+    "instanceType": "地下城",
+    "instanceNumber": 7,
+    "encounterIds": [
+      2758
+    ],
+    "englishName": "Hamhock",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=717",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "迪克斯特·瓦德",
+    "id": 4,
+    "sourceId": 2759,
+    "instanceId": 34,
+    "instanceName": "暴风城监狱",
+    "instanceType": "地下城",
+    "instanceNumber": 7,
+    "encounterIds": [
+      2759
+    ],
+    "englishName": "Dextren Ward",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=717",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "巴吉尔·特雷德",
+    "id": 5,
+    "sourceId": 2760,
+    "instanceId": 34,
+    "instanceName": "暴风城监狱",
+    "instanceType": "地下城",
+    "instanceNumber": 7,
+    "encounterIds": [
+      2760
+    ],
+    "englishName": "Bazil Thredd",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=717",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "盐脊",
+    "id": 1,
+    "sourceId": 3480,
+    "instanceId": 2998,
+    "instanceName": "挖掘场：湿地",
+    "instanceType": "地下城",
+    "instanceNumber": 8,
+    "encounterIds": [
+      3480
+    ],
+    "englishName": "Saltspine",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "note": "新增副本客户端记录；Wowhead 首领名单尚未核对",
+    "expansion": 12,
+    "expansionName": "Forever"
+  },
+  {
+    "name": "暗齿",
+    "id": 2,
+    "sourceId": 3481,
+    "instanceId": 2998,
+    "instanceName": "挖掘场：湿地",
+    "instanceType": "地下城",
+    "instanceNumber": 8,
+    "encounterIds": [
+      3481
+    ],
+    "englishName": "Shadetooth",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "note": "新增副本客户端记录；Wowhead 首领名单尚未核对",
+    "expansion": 12,
+    "expansionName": "Forever"
+  },
+  {
+    "name": "高地恐魔",
+    "id": 3,
+    "sourceId": 3644,
+    "instanceId": 2998,
+    "instanceName": "挖掘场：湿地",
+    "instanceType": "地下城",
+    "instanceNumber": 8,
+    "encounterIds": [
+      3644
+    ],
+    "englishName": "Highland Horror",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "note": "新增副本客户端记录；Wowhead 首领名单尚未核对",
+    "expansion": 12,
+    "expansionName": "Forever"
+  },
+  {
+    "name": "遗迹守卫者",
+    "id": 4,
+    "sourceId": 3482,
+    "instanceId": 2998,
+    "instanceName": "挖掘场：湿地",
+    "instanceType": "地下城",
+    "instanceNumber": 8,
+    "encounterIds": [
+      3482
+    ],
+    "englishName": "Relic Guardian",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "note": "新增副本客户端记录；Wowhead 首领名单尚未核对",
+    "expansion": 12,
+    "expansionName": "Forever"
+  },
+  {
+    "name": "加摩拉",
+    "id": 1,
+    "sourceId": 2916,
+    "instanceId": 48,
+    "instanceName": "黑暗深渊",
+    "instanceType": "地下城",
+    "instanceNumber": 9,
+    "encounterIds": [
+      2916
+    ],
+    "englishName": "Ghamoo-ra",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=719",
+    "wowheadNpcIds": [
+      201722
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "萨利维丝",
+    "id": 2,
+    "sourceId": 2915,
+    "instanceId": 48,
+    "instanceName": "黑暗深渊",
+    "instanceType": "地下城",
+    "instanceNumber": 9,
+    "encounterIds": [
+      2915
+    ],
+    "englishName": "Lady Sarevess",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=719",
+    "wowheadNpcIds": [
+      204068
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "格里哈斯特",
+    "id": 3,
+    "sourceId": 2914,
+    "instanceId": 48,
+    "instanceName": "黑暗深渊",
+    "instanceType": "地下城",
+    "instanceNumber": 9,
+    "encounterIds": [
+      2914
+    ],
+    "englishName": "Geilhast",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=719",
+    "wowheadNpcIds": [
+      204921
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "洛古斯·杰特",
+    "id": 4,
+    "sourceId": 2913,
+    "instanceId": 48,
+    "instanceName": "黑暗深渊",
+    "instanceType": "地下城",
+    "instanceNumber": 9,
+    "encounterIds": [
+      2913
+    ],
+    "englishName": "Lorgus Jett",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=719",
+    "wowheadNpcIds": [
+      207356
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "瑟拉吉斯",
+    "id": 5,
+    "sourceId": 2912,
+    "instanceId": 48,
+    "instanceName": "黑暗深渊",
+    "instanceType": "地下城",
+    "instanceNumber": 9,
+    "encounterIds": [
+      2912
+    ],
+    "englishName": "Old Serra'kis",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=719",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "暮光领主克尔里斯",
+    "id": 6,
+    "sourceId": 2911,
+    "instanceId": 48,
+    "instanceName": "黑暗深渊",
+    "instanceType": "地下城",
+    "instanceNumber": 9,
+    "encounterIds": [
+      2911
+    ],
+    "englishName": "Twilight Lord Kelris",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=719",
+    "wowheadNpcIds": [
+      209678
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "阿库麦尔",
+    "id": 7,
+    "sourceId": 2910,
+    "instanceId": 48,
+    "instanceName": "黑暗深渊",
+    "instanceType": "地下城",
+    "instanceNumber": 9,
+    "encounterIds": [
+      2910
+    ],
+    "englishName": "Aku'mai",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=719",
+    "wowheadNpcIds": [
+      213334
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "奥术畸体",
+    "id": 1,
+    "sourceId": 3298,
+    "instanceId": 2959,
+    "instanceName": "达拉然城",
+    "instanceType": "地下城",
+    "instanceNumber": 10,
+    "encounterIds": [
+      3298
+    ],
+    "englishName": "Arcane Anomaly",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "note": "新增副本客户端记录；Wowhead 首领名单尚未核对",
+    "expansion": 12,
+    "expansionName": "Forever"
+  },
+  {
+    "name": "邪能古树",
+    "id": 2,
+    "sourceId": 3299,
+    "instanceId": 2959,
+    "instanceName": "达拉然城",
+    "instanceType": "地下城",
+    "instanceNumber": 10,
+    "encounterIds": [
+      3299
+    ],
+    "englishName": "Fel Ancient",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "note": "新增副本客户端记录；Wowhead 首领名单尚未核对",
+    "expansion": 12,
+    "expansionName": "Forever"
+  },
+  {
+    "name": "法力吞噬者",
+    "id": 3,
+    "sourceId": 3300,
+    "instanceId": 2959,
+    "instanceName": "达拉然城",
+    "instanceType": "地下城",
+    "instanceNumber": 10,
+    "encounterIds": [
+      3300
+    ],
+    "englishName": "Mana Devourer",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "note": "新增副本客户端记录；Wowhead 首领名单尚未核对",
+    "expansion": 12,
+    "expansionName": "Forever"
+  },
+  {
+    "name": "法力元素",
+    "id": 4,
+    "sourceId": 3301,
+    "instanceId": 2959,
+    "instanceName": "达拉然城",
+    "instanceType": "地下城",
+    "instanceNumber": 10,
+    "encounterIds": [
+      3301
+    ],
+    "englishName": "Mana Elemental",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "note": "新增副本客户端记录；Wowhead 首领名单尚未核对",
+    "expansion": 12,
+    "expansionName": "Forever"
+  },
+  {
+    "name": "不稳定的哨兵",
+    "id": 5,
+    "sourceId": 3302,
+    "instanceId": 2959,
+    "instanceName": "达拉然城",
+    "instanceType": "地下城",
+    "instanceNumber": 10,
+    "encounterIds": [
+      3302
+    ],
+    "englishName": "Unstable Sentinel",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "note": "新增副本客户端记录；Wowhead 首领名单尚未核对",
+    "expansion": 12,
+    "expansionName": "Forever"
+  },
+  {
+    "name": "大法师之影",
+    "id": 6,
+    "sourceId": 3303,
+    "instanceId": 2959,
+    "instanceName": "达拉然城",
+    "instanceType": "地下城",
+    "instanceNumber": 10,
+    "encounterIds": [
+      3303
+    ],
+    "englishName": "Shade of the Archmage",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "note": "新增副本客户端记录；Wowhead 首领名单尚未核对",
+    "expansion": 12,
+    "expansionName": "Forever"
+  },
+  {
+    "name": "被无视的琳恩",
+    "id": 7,
+    "sourceId": 3310,
+    "instanceId": 2959,
+    "instanceName": "达拉然城",
+    "instanceType": "地下城",
+    "instanceNumber": 10,
+    "encounterIds": [
+      3310
+    ],
+    "englishName": "Lyn the Ignored",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "note": "新增副本客户端记录；Wowhead 首领名单尚未核对",
+    "expansion": 12,
+    "expansionName": "Forever"
+  },
+  {
+    "name": "墓穴骑士阿特雷克斯",
+    "id": 8,
+    "sourceId": 3311,
+    "instanceId": 2959,
+    "instanceName": "达拉然城",
+    "instanceType": "地下城",
+    "instanceNumber": 10,
+    "encounterIds": [
+      3311
+    ],
+    "englishName": "Atrexis the Grave Knight",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "note": "新增副本客户端记录；Wowhead 首领名单尚未核对",
+    "expansion": 12,
+    "expansionName": "Forever"
+  },
+  {
+    "name": "法力怨魂",
+    "id": 9,
+    "sourceId": 3312,
+    "instanceId": 2959,
+    "instanceName": "达拉然城",
+    "instanceType": "地下城",
+    "instanceNumber": 10,
+    "encounterIds": [
+      3312
+    ],
+    "englishName": "Mana Wraith",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "note": "新增副本客户端记录；Wowhead 首领名单尚未核对",
+    "expansion": 12,
+    "expansionName": "Forever"
+  },
+  {
+    "name": "审讯员韦沙斯",
+    "id": 1,
+    "sourceId": 444,
+    "instanceId": 189,
+    "instanceName": "血色修道院",
+    "instanceType": "地下城",
+    "instanceNumber": 11,
+    "encounterIds": [
+      444
+    ],
+    "englishName": "Interrogator Vishas",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=796",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "血法师萨尔诺斯",
+    "id": 2,
+    "sourceId": 2779,
+    "instanceId": 189,
+    "instanceName": "血色修道院",
+    "instanceType": "地下城",
+    "instanceNumber": 11,
+    "encounterIds": [
+      2779
+    ],
+    "englishName": "Bloodmage Thalnos",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=796",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "驯犬者洛克希",
+    "id": 3,
+    "sourceId": 446,
+    "instanceId": 189,
+    "instanceName": "血色修道院",
+    "instanceType": "地下城",
+    "instanceNumber": 11,
+    "encounterIds": [
+      446
+    ],
+    "englishName": "Houndmaster Loksey",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=796",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "奥法师杜安",
+    "id": 4,
+    "sourceId": 447,
+    "instanceId": 189,
+    "instanceName": "血色修道院",
+    "instanceType": "地下城",
+    "instanceNumber": 11,
+    "encounterIds": [
+      447
+    ],
+    "englishName": "Arcanist Doan",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=796",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "赫洛德",
+    "id": 5,
+    "sourceId": 448,
+    "instanceId": 189,
+    "instanceName": "血色修道院",
+    "instanceType": "地下城",
+    "instanceNumber": 11,
+    "encounterIds": [
+      448
+    ],
+    "englishName": "Herod",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=796",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "大检察官法尔班克斯",
+    "id": 6,
+    "sourceId": 449,
+    "instanceId": 189,
+    "instanceName": "血色修道院",
+    "instanceType": "地下城",
+    "instanceNumber": 11,
+    "encounterIds": [
+      449
+    ],
+    "englishName": "High Inquisitor Fairbanks",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=796",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "大检察官怀特迈恩",
+    "id": 7,
+    "sourceId": 450,
+    "instanceId": 189,
+    "instanceName": "血色修道院",
+    "instanceType": "地下城",
+    "instanceNumber": 11,
+    "encounterIds": [
+      450
+    ],
+    "englishName": "High Inquisitor Whitemane",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=796",
+    "wowheadNpcIds": [
+      3977
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "鲁古格",
+    "id": 1,
+    "sourceId": 2773,
+    "instanceId": 47,
+    "instanceName": "剃刀沼泽",
+    "instanceType": "地下城",
+    "instanceNumber": 13,
+    "encounterIds": [
+      2773
+    ],
+    "englishName": "Roogug",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=491",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "阿格姆",
+    "id": 2,
+    "sourceId": 2774,
+    "instanceId": 47,
+    "instanceName": "剃刀沼泽",
+    "instanceType": "地下城",
+    "instanceNumber": 13,
+    "encounterIds": [
+      2774
+    ],
+    "englishName": "Aggem Thorncurse",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=491",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "亡语者贾格巴",
+    "id": 3,
+    "sourceId": 2775,
+    "instanceId": 47,
+    "instanceName": "剃刀沼泽",
+    "instanceType": "地下城",
+    "instanceNumber": 13,
+    "encounterIds": [
+      2775
+    ],
+    "englishName": "Death Speaker Jargba",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=491",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "主宰拉姆塔斯",
+    "id": 4,
+    "sourceId": 2776,
+    "instanceId": 47,
+    "instanceName": "剃刀沼泽",
+    "instanceType": "地下城",
+    "instanceNumber": 13,
+    "encounterIds": [
+      2776
+    ],
+    "englishName": "Overlord Ramtusk",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=491",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "暴怒的阿迦赛罗斯",
+    "id": 5,
+    "sourceId": 2777,
+    "instanceId": 47,
+    "instanceName": "剃刀沼泽",
+    "instanceType": "地下城",
+    "instanceNumber": 13,
+    "encounterIds": [
+      2777
+    ],
+    "englishName": "Agathelos the Raging",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=491",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "卡尔加·刺肋",
+    "id": 6,
+    "sourceId": 2778,
+    "instanceId": 47,
+    "instanceName": "剃刀沼泽",
+    "instanceType": "地下城",
+    "instanceNumber": 13,
+    "encounterIds": [
+      2778
+    ],
+    "englishName": "Charlga Razorflank",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=491",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "图特卡什",
+    "id": 1,
+    "sourceId": 2780,
+    "instanceId": 129,
+    "instanceName": "剃刀高地",
+    "instanceType": "地下城",
+    "instanceNumber": 16,
+    "encounterIds": [
+      2780
+    ],
+    "englishName": "Tuten'kash",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=722",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "腐烂的普雷莫尔",
+    "id": 2,
+    "sourceId": 2781,
+    "instanceId": 129,
+    "instanceName": "剃刀高地",
+    "instanceType": "地下城",
+    "instanceNumber": 16,
+    "encounterIds": [
+      2781
+    ],
+    "englishName": "Plaguemaw the Rotting",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=722",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "火眼莫德雷斯",
+    "id": 3,
+    "sourceId": 2782,
+    "instanceId": 129,
+    "instanceName": "剃刀高地",
+    "instanceType": "地下城",
+    "instanceNumber": 16,
+    "encounterIds": [
+      2782
+    ],
+    "englishName": "Mordresh Fire Eye",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=722",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "拉戈斯诺特",
+    "id": 4,
+    "sourceId": 2783,
+    "instanceId": 129,
+    "instanceName": "剃刀高地",
+    "instanceType": "地下城",
+    "instanceNumber": 16,
+    "encounterIds": [
+      2783
+    ],
+    "englishName": "Ragglesnout",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=722",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "暴食者",
+    "id": 5,
+    "sourceId": 2784,
+    "instanceId": 129,
+    "instanceName": "剃刀高地",
+    "instanceType": "地下城",
+    "instanceNumber": 16,
+    "encounterIds": [
+      2784
+    ],
+    "englishName": "Glutton",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=722",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "寒冰之王亚门纳尔",
+    "id": 6,
+    "sourceId": 2785,
+    "instanceId": 129,
+    "instanceName": "剃刀高地",
+    "instanceType": "地下城",
+    "instanceNumber": 16,
+    "encounterIds": [
+      2785
+    ],
+    "englishName": "Amnennar the Coldbringer",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=722",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "鲁维罗什",
+    "id": 1,
+    "sourceId": 547,
+    "instanceId": 70,
+    "instanceName": "奥达曼",
+    "instanceType": "地下城",
+    "instanceNumber": 17,
+    "encounterIds": [
+      547
+    ],
+    "englishName": "Revelosh",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1337",
+    "wowheadNpcIds": [
+      6910
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "失踪的矮人",
+    "id": 2,
+    "sourceId": 548,
+    "instanceId": 70,
+    "instanceName": "奥达曼",
+    "instanceType": "地下城",
+    "instanceNumber": 17,
+    "encounterIds": [
+      548
+    ],
+    "englishName": "The Lost Dwarves",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1337",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "艾隆纳亚",
+    "id": 3,
+    "sourceId": 549,
+    "instanceId": 70,
+    "instanceName": "奥达曼",
+    "instanceType": "地下城",
+    "instanceNumber": 17,
+    "encounterIds": [
+      549
+    ],
+    "englishName": "Ironaya",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1337",
+    "wowheadNpcIds": [
+      7228
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "黑曜石哨兵",
+    "id": 4,
+    "sourceId": 1887,
+    "instanceId": 70,
+    "instanceName": "奥达曼",
+    "instanceType": "地下城",
+    "instanceNumber": 17,
+    "encounterIds": [
+      1887
+    ],
+    "englishName": "Obsidian Sentinel",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1337",
+    "wowheadNpcIds": [
+      7023
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "古代的石头看守者",
+    "id": 5,
+    "sourceId": 551,
+    "instanceId": 70,
+    "instanceName": "奥达曼",
+    "instanceType": "地下城",
+    "instanceNumber": 17,
+    "encounterIds": [
+      551
+    ],
+    "englishName": "Ancient Stone Keeper",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1337",
+    "wowheadNpcIds": [
+      7206
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "加加恩·火锤",
+    "id": 6,
+    "sourceId": 552,
+    "instanceId": 70,
+    "instanceName": "奥达曼",
+    "instanceType": "地下城",
+    "instanceNumber": 17,
+    "encounterIds": [
+      552
+    ],
+    "englishName": "Galgann Firehammer",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1337",
+    "wowheadNpcIds": [
+      7291
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "格瑞姆洛克",
+    "id": 7,
+    "sourceId": 553,
+    "instanceId": 70,
+    "instanceName": "奥达曼",
+    "instanceType": "地下城",
+    "instanceNumber": 17,
+    "encounterIds": [
+      553
+    ],
+    "englishName": "Grimlok",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1337",
+    "wowheadNpcIds": [
+      4854
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "阿扎达斯",
+    "id": 8,
+    "sourceId": 554,
+    "instanceId": 70,
+    "instanceName": "奥达曼",
+    "instanceType": "地下城",
+    "instanceNumber": 17,
+    "encounterIds": [
+      554
+    ],
+    "englishName": "Archaedas",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1337",
+    "wowheadNpcIds": [
+      2748
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "水占师维蕾萨",
+    "id": 1,
+    "sourceId": 593,
+    "instanceId": 209,
+    "instanceName": "祖尔法拉克",
+    "instanceType": "地下城",
+    "instanceNumber": 18,
+    "encounterIds": [
+      593
+    ],
+    "englishName": "Hydromancer Velratha",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1176",
+    "wowheadNpcIds": [
+      7795
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "加兹瑞拉",
+    "id": 2,
+    "sourceId": 594,
+    "instanceId": 209,
+    "instanceName": "祖尔法拉克",
+    "instanceType": "地下城",
+    "instanceNumber": 18,
+    "encounterIds": [
+      594
+    ],
+    "englishName": "Gahz'rilla",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1176",
+    "wowheadNpcIds": [
+      7273
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "安图苏尔",
+    "id": 3,
+    "sourceId": 595,
+    "instanceId": 209,
+    "instanceName": "祖尔法拉克",
+    "instanceType": "地下城",
+    "instanceNumber": 18,
+    "encounterIds": [
+      595
+    ],
+    "englishName": "Antu'sul",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1176",
+    "wowheadNpcIds": [
+      8127
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "殉教者塞卡",
+    "id": 4,
+    "sourceId": 596,
+    "instanceId": 209,
+    "instanceName": "祖尔法拉克",
+    "instanceType": "地下城",
+    "instanceNumber": 18,
+    "encounterIds": [
+      596
+    ],
+    "englishName": "Theka the Martyr",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1176",
+    "wowheadNpcIds": [
+      7272
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "巫医祖穆拉恩",
+    "id": 5,
+    "sourceId": 597,
+    "instanceId": 209,
+    "instanceName": "祖尔法拉克",
+    "instanceType": "地下城",
+    "instanceNumber": 18,
+    "encounterIds": [
+      597
+    ],
+    "englishName": "Witch Doctor Zum'rah",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1176",
+    "wowheadNpcIds": [
+      7271
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "耐克鲁姆",
+    "id": 6,
+    "sourceId": 598,
+    "instanceId": 209,
+    "instanceName": "祖尔法拉克",
+    "instanceType": "地下城",
+    "instanceNumber": 18,
+    "encounterIds": [
+      598
+    ],
+    "englishName": "Nekrum Gutchewer",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1176",
+    "wowheadNpcIds": [
+      7796
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "暗影祭司塞瑟斯",
+    "id": 7,
+    "sourceId": 599,
+    "instanceId": 209,
+    "instanceName": "祖尔法拉克",
+    "instanceType": "地下城",
+    "instanceNumber": 18,
+    "encounterIds": [
+      599
+    ],
+    "englishName": "Shadowpriest Sezz'ziz",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1176",
+    "wowheadNpcIds": [
+      7275
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "乌克兹·沙顶",
+    "id": 8,
+    "sourceId": 600,
+    "instanceId": 209,
+    "instanceName": "祖尔法拉克",
+    "instanceType": "地下城",
+    "instanceNumber": 18,
+    "encounterIds": [
+      600
+    ],
+    "englishName": "Chief Ukorz Sandscalp",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1176",
+    "wowheadNpcIds": [
+      7267
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "诺克赛恩",
+    "id": 1,
+    "sourceId": 422,
+    "instanceId": 349,
+    "instanceName": "玛拉顿",
+    "instanceType": "地下城",
+    "instanceNumber": 19,
+    "encounterIds": [
+      422
+    ],
+    "englishName": "Noxxion",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2100",
+    "wowheadNpcIds": [
+      13282
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "锐刺鞭笞者",
+    "id": 2,
+    "sourceId": 423,
+    "instanceId": 349,
+    "instanceName": "玛拉顿",
+    "instanceType": "地下城",
+    "instanceNumber": 19,
+    "encounterIds": [
+      423
+    ],
+    "englishName": "Razorlash",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2100",
+    "wowheadNpcIds": [
+      12258
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "工匠吉兹洛克",
+    "id": 3,
+    "sourceId": 427,
+    "instanceId": 349,
+    "instanceName": "玛拉顿",
+    "instanceType": "地下城",
+    "instanceNumber": 19,
+    "encounterIds": [
+      427
+    ],
+    "englishName": "Tinkerer Gizlock",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2100",
+    "wowheadNpcIds": [
+      13601
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "维利塔恩",
+    "id": 4,
+    "sourceId": 424,
+    "instanceId": 349,
+    "instanceName": "玛拉顿",
+    "instanceType": "地下城",
+    "instanceNumber": 19,
+    "encounterIds": [
+      424
+    ],
+    "englishName": "Lord Vyletongue",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2100",
+    "wowheadNpcIds": [
+      12236
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "被诅咒的塞雷布拉斯",
+    "id": 5,
+    "sourceId": 425,
+    "instanceId": 349,
+    "instanceName": "玛拉顿",
+    "instanceType": "地下城",
+    "instanceNumber": 19,
+    "encounterIds": [
+      425
+    ],
+    "englishName": "Celebras the Cursed",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2100",
+    "wowheadNpcIds": [
+      12225
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "兰斯利德",
+    "id": 6,
+    "sourceId": 426,
+    "instanceId": 349,
+    "instanceName": "玛拉顿",
+    "instanceType": "地下城",
+    "instanceNumber": 19,
+    "encounterIds": [
+      426
+    ],
+    "englishName": "Landslide",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2100",
+    "wowheadNpcIds": [
+      12203
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "洛特格里普",
+    "id": 7,
+    "sourceId": 428,
+    "instanceId": 349,
+    "instanceName": "玛拉顿",
+    "instanceType": "地下城",
+    "instanceNumber": 19,
+    "encounterIds": [
+      428
+    ],
+    "englishName": "Rotgrip",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2100",
+    "wowheadNpcIds": [
+      13596
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "瑟莱德丝公主",
+    "id": 8,
+    "sourceId": 429,
+    "instanceId": 349,
+    "instanceName": "玛拉顿",
+    "instanceType": "地下城",
+    "instanceNumber": 19,
+    "encounterIds": [
+      429
+    ],
+    "englishName": "Princess Theradras",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2100",
+    "wowheadNpcIds": [
+      12201
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "阿塔拉利恩",
+    "id": 1,
+    "sourceId": 3582,
+    "instanceId": 109,
+    "instanceName": "阿塔哈卡神庙",
+    "instanceType": "地下城",
+    "instanceNumber": 21,
+    "encounterIds": [
+      3582
+    ],
+    "englishName": "Atal'alarion",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1477",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "哈卡的化身",
+    "id": 2,
+    "sourceId": 3583,
+    "instanceId": 109,
+    "instanceName": "阿塔哈卡神庙",
+    "instanceType": "地下城",
+    "instanceNumber": 21,
+    "encounterIds": [
+      3583
+    ],
+    "englishName": "Avatar of Hakkar",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1477",
+    "wowheadNpcIds": [
+      8443
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "伊兰尼库斯的阴影",
+    "id": 3,
+    "sourceId": 3584,
+    "instanceId": 109,
+    "instanceName": "阿塔哈卡神庙",
+    "instanceType": "地下城",
+    "instanceNumber": 21,
+    "encounterIds": [
+      3584
+    ],
+    "englishName": "Shade of Eranikus",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1477",
+    "wowheadNpcIds": [
+      5709
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "哈扎斯",
+    "id": 4,
+    "sourceId": 3585,
+    "instanceId": 109,
+    "instanceName": "阿塔哈卡神庙",
+    "instanceType": "地下城",
+    "instanceNumber": 21,
+    "encounterIds": [
+      3585
+    ],
+    "englishName": "Hazzas",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1477",
+    "wowheadNpcIds": [
+      5722
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "摩弗拉斯",
+    "id": 5,
+    "sourceId": 3586,
+    "instanceId": 109,
+    "instanceName": "阿塔哈卡神庙",
+    "instanceType": "地下城",
+    "instanceNumber": 21,
+    "encounterIds": [
+      3586
+    ],
+    "englishName": "Morphaz",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1477",
+    "wowheadNpcIds": [
+      5719
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "德拉维沃尔",
+    "id": 6,
+    "sourceId": 3587,
+    "instanceId": 109,
+    "instanceName": "阿塔哈卡神庙",
+    "instanceType": "地下城",
+    "instanceNumber": 21,
+    "encounterIds": [
+      3587
+    ],
+    "englishName": "Weaver",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1477",
+    "wowheadNpcIds": [
+      5720
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "德姆塞卡尔",
+    "id": 7,
+    "sourceId": 3588,
+    "instanceId": 109,
+    "instanceName": "阿塔哈卡神庙",
+    "instanceType": "地下城",
+    "instanceNumber": 21,
+    "encounterIds": [
+      3588
+    ],
+    "englishName": "Dreamscythe",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1477",
+    "wowheadNpcIds": [
+      5721
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "预言者迦玛兰",
+    "id": 8,
+    "sourceId": 3589,
+    "instanceId": 109,
+    "instanceName": "阿塔哈卡神庙",
+    "instanceType": "地下城",
+    "instanceNumber": 21,
+    "encounterIds": [
+      3589
+    ],
+    "englishName": "Jammal'an the Prophet",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1477",
+    "wowheadNpcIds": [
+      5710
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "审讯官格斯塔恩",
+    "id": 1,
+    "sourceId": 227,
+    "instanceId": 230,
+    "instanceName": "黑石深渊",
+    "instanceType": "地下城",
+    "instanceNumber": 22,
+    "encounterIds": [
+      227
+    ],
+    "englishName": "High Interrogator Gerstahn",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1584",
+    "wowheadNpcIds": [
+      9018
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "洛考尔",
+    "id": 2,
+    "sourceId": 228,
+    "instanceId": 230,
+    "instanceName": "黑石深渊",
+    "instanceType": "地下城",
+    "instanceNumber": 22,
+    "encounterIds": [
+      228
+    ],
+    "englishName": "Lord Roccor",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1584",
+    "wowheadNpcIds": [
+      9025
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "驯犬者格雷布玛尔",
+    "id": 3,
+    "sourceId": 229,
+    "instanceId": 230,
+    "instanceName": "黑石深渊",
+    "instanceType": "地下城",
+    "instanceNumber": 22,
+    "encounterIds": [
+      229
+    ],
+    "englishName": "Houndmaster Grebmar",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1584",
+    "wowheadNpcIds": [
+      9319
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "秩序竞技场",
+    "id": 4,
+    "sourceId": 230,
+    "instanceId": 230,
+    "instanceName": "黑石深渊",
+    "instanceType": "地下城",
+    "instanceNumber": 22,
+    "encounterIds": [
+      230
+    ],
+    "englishName": "Ring of Law",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1584",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "控火师罗格雷恩",
+    "id": 5,
+    "sourceId": 231,
+    "instanceId": 230,
+    "instanceName": "黑石深渊",
+    "instanceType": "地下城",
+    "instanceNumber": 22,
+    "encounterIds": [
+      231
+    ],
+    "englishName": "Pyromancer Loregrain",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1584",
+    "wowheadNpcIds": [
+      9024
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "伊森迪奥斯",
+    "id": 6,
+    "sourceId": 232,
+    "instanceId": 230,
+    "instanceName": "黑石深渊",
+    "instanceType": "地下城",
+    "instanceNumber": 22,
+    "encounterIds": [
+      232
+    ],
+    "englishName": "Lord Incendius",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1584",
+    "wowheadNpcIds": [
+      9017
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "典狱官斯迪尔基斯",
+    "id": 7,
+    "sourceId": 233,
+    "instanceId": 230,
+    "instanceName": "黑石深渊",
+    "instanceType": "地下城",
+    "instanceNumber": 22,
+    "encounterIds": [
+      233
+    ],
+    "englishName": "Warder Stilgiss",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1584",
+    "wowheadNpcIds": [
+      9041
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "弗诺斯·达克维尔",
+    "id": 8,
+    "sourceId": 234,
+    "instanceId": 230,
+    "instanceName": "黑石深渊",
+    "instanceType": "地下城",
+    "instanceNumber": 22,
+    "encounterIds": [
+      234
+    ],
+    "englishName": "Fineous Darkvire",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1584",
+    "wowheadNpcIds": [
+      9056
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "贝尔加",
+    "id": 9,
+    "sourceId": 235,
+    "instanceId": 230,
+    "instanceName": "黑石深渊",
+    "instanceType": "地下城",
+    "instanceNumber": 22,
+    "encounterIds": [
+      235
+    ],
+    "englishName": "Bael'Gar",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1584",
+    "wowheadNpcIds": [
+      9016
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "安格弗将军",
+    "id": 10,
+    "sourceId": 236,
+    "instanceId": 230,
+    "instanceName": "黑石深渊",
+    "instanceType": "地下城",
+    "instanceNumber": 22,
+    "encounterIds": [
+      236
+    ],
+    "englishName": "General Angerforge",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1584",
+    "wowheadNpcIds": [
+      9033
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "傀儡统帅阿格曼奇",
+    "id": 11,
+    "sourceId": 237,
+    "instanceId": 230,
+    "instanceName": "黑石深渊",
+    "instanceType": "地下城",
+    "instanceNumber": 22,
+    "encounterIds": [
+      237
+    ],
+    "englishName": "Golem Lord Argelmach",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1584",
+    "wowheadNpcIds": [
+      8983
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "霍尔雷·黑须",
+    "id": 12,
+    "sourceId": 238,
+    "instanceId": 230,
+    "instanceName": "黑石深渊",
+    "instanceType": "地下城",
+    "instanceNumber": 22,
+    "encounterIds": [
+      238
+    ],
+    "englishName": "Hurley Blackbreath",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1584",
+    "wowheadNpcIds": [
+      9537
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "法拉克斯",
+    "id": 13,
+    "sourceId": 239,
+    "instanceId": 230,
+    "instanceName": "黑石深渊",
+    "instanceType": "地下城",
+    "instanceNumber": 22,
+    "encounterIds": [
+      239
+    ],
+    "englishName": "Phalanx",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1584",
+    "wowheadNpcIds": [
+      9502
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "雷布里·斯库比格特",
+    "id": 14,
+    "sourceId": 240,
+    "instanceId": 230,
+    "instanceName": "黑石深渊",
+    "instanceType": "地下城",
+    "instanceNumber": 22,
+    "encounterIds": [
+      240
+    ],
+    "englishName": "Ribbly Screwspigot",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1584",
+    "wowheadNpcIds": [
+      9543
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "普拉格",
+    "id": 15,
+    "sourceId": 241,
+    "instanceId": 230,
+    "instanceName": "黑石深渊",
+    "instanceType": "地下城",
+    "instanceNumber": 22,
+    "encounterIds": [
+      241
+    ],
+    "englishName": "Plugger Spazzring",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1584",
+    "wowheadNpcIds": [
+      9499
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "银行",
+    "id": 16,
+    "sourceId": 2791,
+    "instanceId": 230,
+    "instanceName": "黑石深渊",
+    "instanceType": "地下城",
+    "instanceNumber": 22,
+    "encounterIds": [
+      2791
+    ],
+    "englishName": "The Vault",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1584",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "弗莱拉斯大使",
+    "id": 17,
+    "sourceId": 242,
+    "instanceId": 230,
+    "instanceName": "黑石深渊",
+    "instanceType": "地下城",
+    "instanceNumber": 22,
+    "encounterIds": [
+      242
+    ],
+    "englishName": "Ambassador Flamelash",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1584",
+    "wowheadNpcIds": [
+      9156
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "黑铁七贤",
+    "id": 18,
+    "sourceId": 243,
+    "instanceId": 230,
+    "instanceName": "黑石深渊",
+    "instanceType": "地下城",
+    "instanceNumber": 22,
+    "encounterIds": [
+      243
+    ],
+    "englishName": "The Seven",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1584",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "玛格姆斯",
+    "id": 19,
+    "sourceId": 244,
+    "instanceId": 230,
+    "instanceName": "黑石深渊",
+    "instanceType": "地下城",
+    "instanceNumber": 22,
+    "encounterIds": [
+      244
+    ],
+    "englishName": "Magmus",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1584",
+    "wowheadNpcIds": [
+      9938
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "铁炉堡公主茉艾拉·铜须",
+    "id": 20,
+    "sourceId": 2789,
+    "instanceId": 230,
+    "instanceName": "黑石深渊",
+    "instanceType": "地下城",
+    "instanceNumber": 22,
+    "encounterIds": [
+      2789
+    ],
+    "englishName": "Princess Moira Bronzebeard",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1584",
+    "wowheadNpcIds": [
+      8929
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "达格兰·索瑞森大帝",
+    "id": 21,
+    "sourceId": 2790,
+    "instanceId": 230,
+    "instanceName": "黑石深渊",
+    "instanceType": "地下城",
+    "instanceNumber": 22,
+    "encounterIds": [
+      2790
+    ],
+    "englishName": "Emperor Dagran Thaurissan",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1584",
+    "wowheadNpcIds": [
+      9019
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "欧莫克大王",
+    "id": 1,
+    "sourceId": 267,
+    "instanceId": 229,
+    "instanceName": "黑石塔",
+    "instanceType": "地下城",
+    "instanceNumber": 24,
+    "encounterIds": [
+      267
+    ],
+    "englishName": "Highlord Omokk",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1583",
+    "wowheadNpcIds": [
+      9196
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "暗影猎手沃什加斯",
+    "id": 2,
+    "sourceId": 268,
+    "instanceId": 229,
+    "instanceName": "黑石塔",
+    "instanceType": "地下城",
+    "instanceNumber": 24,
+    "encounterIds": [
+      268
+    ],
+    "englishName": "Shadow Hunter Vosh'gajin",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1583",
+    "wowheadNpcIds": [
+      9236
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "指挥官沃恩",
+    "id": 3,
+    "sourceId": 269,
+    "instanceId": 229,
+    "instanceName": "黑石塔",
+    "instanceType": "地下城",
+    "instanceNumber": 24,
+    "encounterIds": [
+      269
+    ],
+    "englishName": "War Master Voone",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1583",
+    "wowheadNpcIds": [
+      9237
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "烟网蛛后",
+    "id": 4,
+    "sourceId": 270,
+    "instanceId": 229,
+    "instanceName": "黑石塔",
+    "instanceType": "地下城",
+    "instanceNumber": 24,
+    "encounterIds": [
+      270
+    ],
+    "englishName": "Mother Smolderweb",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1583",
+    "wowheadNpcIds": [
+      10596
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "乌洛克",
+    "id": 5,
+    "sourceId": 271,
+    "instanceId": 229,
+    "instanceName": "黑石塔",
+    "instanceType": "地下城",
+    "instanceNumber": 24,
+    "encounterIds": [
+      271
+    ],
+    "englishName": "Urok Doomhowl",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1583",
+    "wowheadNpcIds": [
+      10584
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "军需官兹格雷斯",
+    "id": 6,
+    "sourceId": 272,
+    "instanceId": 229,
+    "instanceName": "黑石塔",
+    "instanceType": "地下城",
+    "instanceNumber": 24,
+    "encounterIds": [
+      272
+    ],
+    "englishName": "Quartermaster Zigris",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1583",
+    "wowheadNpcIds": [
+      9736
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "哈雷肯",
+    "id": 7,
+    "sourceId": 274,
+    "instanceId": 229,
+    "instanceName": "黑石塔",
+    "instanceType": "地下城",
+    "instanceNumber": 24,
+    "encounterIds": [
+      274
+    ],
+    "englishName": "Halycon",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1583",
+    "wowheadNpcIds": [
+      10220
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "奴役者基兹鲁尔",
+    "id": 8,
+    "sourceId": 273,
+    "instanceId": 229,
+    "instanceName": "黑石塔",
+    "instanceType": "地下城",
+    "instanceNumber": 24,
+    "encounterIds": [
+      273
+    ],
+    "englishName": "Gizrul the Slavener",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1583",
+    "wowheadNpcIds": [
+      10268
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "维姆萨拉克",
+    "id": 9,
+    "sourceId": 275,
+    "instanceId": 229,
+    "instanceName": "黑石塔",
+    "instanceType": "地下城",
+    "instanceNumber": 24,
+    "encounterIds": [
+      275
+    ],
+    "englishName": "Overlord Wyrmthalak",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1583",
+    "wowheadNpcIds": [
+      9568
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "烈焰卫士艾博希尔",
+    "id": 10,
+    "sourceId": 3062,
+    "instanceId": 229,
+    "instanceName": "黑石塔",
+    "instanceType": "地下城",
+    "instanceNumber": 24,
+    "encounterIds": [
+      3062
+    ],
+    "englishName": "Pyroguard Emberseer",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1583",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "大酋长雷德·黑手",
+    "id": 11,
+    "sourceId": 3063,
+    "instanceId": 229,
+    "instanceName": "黑石塔",
+    "instanceType": "地下城",
+    "instanceNumber": 24,
+    "encounterIds": [
+      3063
+    ],
+    "englishName": "Warchief Rend Blackhand",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1583",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "比斯巨兽",
+    "id": 12,
+    "sourceId": 3068,
+    "instanceId": 229,
+    "instanceName": "黑石塔",
+    "instanceType": "地下城",
+    "instanceNumber": 24,
+    "encounterIds": [
+      3068
+    ],
+    "englishName": "The Beast",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1583",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "达基萨斯将军",
+    "id": 13,
+    "sourceId": 3069,
+    "instanceId": 229,
+    "instanceName": "黑石塔",
+    "instanceType": "地下城",
+    "instanceNumber": 24,
+    "encounterIds": [
+      3069
+    ],
+    "englishName": "General Drakkisath",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1583",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "瓦塔拉克公爵",
+    "id": 14,
+    "sourceId": 3070,
+    "instanceId": 229,
+    "instanceName": "黑石塔",
+    "instanceType": "地下城",
+    "instanceNumber": 24,
+    "encounterIds": [
+      3070
+    ],
+    "englishName": "Lord Valthalak",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=1583",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "瑟雷姆·刺蹄",
+    "id": 1,
+    "sourceId": 343,
+    "instanceId": 429,
+    "instanceName": "厄运之槌",
+    "instanceType": "地下城",
+    "instanceNumber": 25,
+    "encounterIds": [
+      343
+    ],
+    "englishName": "Zevrim Thornhoof",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2557",
+    "wowheadNpcIds": [
+      11490
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "海多斯博恩",
+    "id": 2,
+    "sourceId": 344,
+    "instanceId": 429,
+    "instanceName": "厄运之槌",
+    "instanceType": "地下城",
+    "instanceNumber": 25,
+    "encounterIds": [
+      344
+    ],
+    "englishName": "Hydrospawn",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2557",
+    "wowheadNpcIds": [
+      13280
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "蕾瑟塔蒂丝",
+    "id": 3,
+    "sourceId": 345,
+    "instanceId": 429,
+    "instanceName": "厄运之槌",
+    "instanceType": "地下城",
+    "instanceNumber": 25,
+    "encounterIds": [
+      345
+    ],
+    "englishName": "Lethtendris",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2557",
+    "wowheadNpcIds": [
+      14327
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "普希林",
+    "id": 4,
+    "sourceId": 2792,
+    "instanceId": 429,
+    "instanceName": "厄运之槌",
+    "instanceType": "地下城",
+    "instanceNumber": 25,
+    "encounterIds": [
+      2792
+    ],
+    "englishName": "Pusillin",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2557",
+    "wowheadNpcIds": [
+      14354
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "奥兹恩",
+    "id": 5,
+    "sourceId": 346,
+    "instanceId": 429,
+    "instanceName": "厄运之槌",
+    "instanceType": "地下城",
+    "instanceNumber": 25,
+    "encounterIds": [
+      346
+    ],
+    "englishName": "Alzzin the Wildshaper",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2557",
+    "wowheadNpcIds": [
+      11492
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "特迪斯·扭木",
+    "id": 6,
+    "sourceId": 350,
+    "instanceId": 429,
+    "instanceName": "厄运之槌",
+    "instanceType": "地下城",
+    "instanceNumber": 25,
+    "encounterIds": [
+      350
+    ],
+    "englishName": "Tendris Warpwood",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2557",
+    "wowheadNpcIds": [
+      11489
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "伊琳娜·暗木",
+    "id": 7,
+    "sourceId": 347,
+    "instanceId": 429,
+    "instanceName": "厄运之槌",
+    "instanceType": "地下城",
+    "instanceNumber": 25,
+    "encounterIds": [
+      347
+    ],
+    "englishName": "Illyanna Ravenoak",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2557",
+    "wowheadNpcIds": [
+      11488
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "卡雷迪斯镇长",
+    "id": 8,
+    "sourceId": 348,
+    "instanceId": 429,
+    "instanceName": "厄运之槌",
+    "instanceType": "地下城",
+    "instanceNumber": 25,
+    "encounterIds": [
+      348
+    ],
+    "englishName": "Magister Kalendris",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2557",
+    "wowheadNpcIds": [
+      11487
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "伊莫塔尔",
+    "id": 9,
+    "sourceId": 349,
+    "instanceId": 429,
+    "instanceName": "厄运之槌",
+    "instanceType": "地下城",
+    "instanceNumber": 25,
+    "encounterIds": [
+      349
+    ],
+    "englishName": "Immol'thar",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2557",
+    "wowheadNpcIds": [
+      11496
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "托塞德林王子",
+    "id": 10,
+    "sourceId": 361,
+    "instanceId": 429,
+    "instanceName": "厄运之槌",
+    "instanceType": "地下城",
+    "instanceNumber": 25,
+    "encounterIds": [
+      361
+    ],
+    "englishName": "Prince Tortheldrin",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2557",
+    "wowheadNpcIds": [
+      11486
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "卫兵摩尔达",
+    "id": 11,
+    "sourceId": 362,
+    "instanceId": 429,
+    "instanceName": "厄运之槌",
+    "instanceType": "地下城",
+    "instanceNumber": 25,
+    "encounterIds": [
+      362
+    ],
+    "englishName": "Guard Mol'dar",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2557",
+    "wowheadNpcIds": [
+      14326
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "践踏者克雷格",
+    "id": 12,
+    "sourceId": 363,
+    "instanceId": 429,
+    "instanceName": "厄运之槌",
+    "instanceType": "地下城",
+    "instanceNumber": 25,
+    "encounterIds": [
+      363
+    ],
+    "englishName": "Stomper Kreeg",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2557",
+    "wowheadNpcIds": [
+      14322
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "卫兵芬古斯",
+    "id": 13,
+    "sourceId": 364,
+    "instanceId": 429,
+    "instanceName": "厄运之槌",
+    "instanceType": "地下城",
+    "instanceNumber": 25,
+    "encounterIds": [
+      364
+    ],
+    "englishName": "Guard Fengus",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2557",
+    "wowheadNpcIds": [
+      14321
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "卫兵斯里基克",
+    "id": 14,
+    "sourceId": 365,
+    "instanceId": 429,
+    "instanceName": "厄运之槌",
+    "instanceType": "地下城",
+    "instanceNumber": 25,
+    "encounterIds": [
+      365
+    ],
+    "englishName": "Guard Slip'kik",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2557",
+    "wowheadNpcIds": [
+      14323
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "克罗卡斯",
+    "id": 15,
+    "sourceId": 366,
+    "instanceId": 429,
+    "instanceName": "厄运之槌",
+    "instanceType": "地下城",
+    "instanceNumber": 25,
+    "encounterIds": [
+      366
+    ],
+    "englishName": "Captain Kromcrush",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2557",
+    "wowheadNpcIds": [
+      14325
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "观察者克鲁什",
+    "id": 16,
+    "sourceId": 367,
+    "instanceId": 429,
+    "instanceName": "厄运之槌",
+    "instanceType": "地下城",
+    "instanceNumber": 25,
+    "encounterIds": [
+      367
+    ],
+    "englishName": "Cho'Rush the Observer",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2557",
+    "wowheadNpcIds": [
+      14324
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "戈多克大王",
+    "id": 17,
+    "sourceId": 368,
+    "instanceId": 429,
+    "instanceName": "厄运之槌",
+    "instanceType": "地下城",
+    "instanceNumber": 25,
+    "encounterIds": [
+      368
+    ],
+    "englishName": "King Gordok",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2557",
+    "wowheadNpcIds": [
+      11501
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "赫尔努拉斯",
+    "id": 18,
+    "sourceId": 2793,
+    "instanceId": 429,
+    "instanceName": "厄运之槌",
+    "instanceType": "地下城",
+    "instanceNumber": 25,
+    "encounterIds": [
+      2793
+    ],
+    "englishName": "Lord Hel'nurath",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2557",
+    "wowheadNpcIds": [
+      14506
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "苏斯",
+    "id": 19,
+    "sourceId": 2794,
+    "instanceId": 429,
+    "instanceName": "厄运之槌",
+    "instanceType": "地下城",
+    "instanceNumber": 25,
+    "encounterIds": [
+      2794
+    ],
+    "englishName": "Tsu'zee",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2557",
+    "wowheadNpcIds": [
+      11467
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "基尔图诺斯",
+    "id": 1,
+    "sourceId": 2805,
+    "instanceId": 289,
+    "instanceName": "通灵学院",
+    "instanceType": "地下城",
+    "instanceNumber": 26,
+    "encounterIds": [
+      2805
+    ],
+    "englishName": "Kirtonos",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2057",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "詹迪斯·巴罗夫",
+    "id": 2,
+    "sourceId": 2804,
+    "instanceId": 289,
+    "instanceName": "通灵学院",
+    "instanceType": "地下城",
+    "instanceNumber": 26,
+    "encounterIds": [
+      2804
+    ],
+    "englishName": "Jandice Barov",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2057",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "血骨傀儡",
+    "id": 3,
+    "sourceId": 2811,
+    "instanceId": 289,
+    "instanceName": "通灵学院",
+    "instanceType": "地下城",
+    "instanceNumber": 26,
+    "encounterIds": [
+      2811
+    ],
+    "englishName": "Rattlegore",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2057",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "马杜克·布莱克波尔",
+    "id": 4,
+    "sourceId": 2809,
+    "instanceId": 289,
+    "instanceName": "通灵学院",
+    "instanceType": "地下城",
+    "instanceNumber": 26,
+    "encounterIds": [
+      2809
+    ],
+    "englishName": "Marduk Blackpool",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2057",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "维克图斯",
+    "id": 5,
+    "sourceId": 2813,
+    "instanceId": 289,
+    "instanceName": "通灵学院",
+    "instanceType": "地下城",
+    "instanceNumber": 26,
+    "encounterIds": [
+      2813
+    ],
+    "englishName": "Vectus",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2057",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "库尔莫克",
+    "id": 6,
+    "sourceId": 3055,
+    "instanceId": 289,
+    "instanceName": "通灵学院",
+    "instanceType": "地下城",
+    "instanceNumber": 26,
+    "encounterIds": [
+      3055
+    ],
+    "englishName": "Kormok",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2057",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "莱斯·霜语",
+    "id": 7,
+    "sourceId": 2810,
+    "instanceId": 289,
+    "instanceName": "通灵学院",
+    "instanceType": "地下城",
+    "instanceNumber": 26,
+    "encounterIds": [
+      2810
+    ],
+    "englishName": "Ras Frostwhisperer",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2057",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "讲师玛丽希亚",
+    "id": 8,
+    "sourceId": 2803,
+    "instanceId": 289,
+    "instanceName": "通灵学院",
+    "instanceType": "地下城",
+    "instanceNumber": 26,
+    "encounterIds": [
+      2803
+    ],
+    "englishName": "Instructor Malicia",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2057",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "瑟尔林·卡斯迪诺夫教授",
+    "id": 9,
+    "sourceId": 2802,
+    "instanceId": 289,
+    "instanceName": "通灵学院",
+    "instanceType": "地下城",
+    "instanceNumber": 26,
+    "encounterIds": [
+      2802
+    ],
+    "englishName": "Doctor Theolen Krastinov",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2057",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "博学者普克尔特",
+    "id": 10,
+    "sourceId": 2808,
+    "instanceId": 289,
+    "instanceName": "通灵学院",
+    "instanceType": "地下城",
+    "instanceNumber": 26,
+    "encounterIds": [
+      2808
+    ],
+    "englishName": "Lorekeeper Polkelt",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2057",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "拉文尼亚",
+    "id": 11,
+    "sourceId": 2812,
+    "instanceId": 289,
+    "instanceName": "通灵学院",
+    "instanceType": "地下城",
+    "instanceNumber": 26,
+    "encounterIds": [
+      2812
+    ],
+    "englishName": "The Ravenian",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2057",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "阿雷克斯·巴罗夫",
+    "id": 12,
+    "sourceId": 2807,
+    "instanceId": 289,
+    "instanceName": "通灵学院",
+    "instanceType": "地下城",
+    "instanceNumber": 26,
+    "encounterIds": [
+      2807
+    ],
+    "englishName": "Lord Alexei Barov",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2057",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "伊露希亚·巴罗夫",
+    "id": 13,
+    "sourceId": 2806,
+    "instanceId": 289,
+    "instanceName": "通灵学院",
+    "instanceType": "地下城",
+    "instanceNumber": 26,
+    "encounterIds": [
+      2806
+    ],
+    "englishName": "Lady Illucia Barov",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2057",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "黑暗院长加丁",
+    "id": 14,
+    "sourceId": 2801,
+    "instanceId": 289,
+    "instanceName": "通灵学院",
+    "instanceType": "地下城",
+    "instanceNumber": 26,
+    "encounterIds": [
+      2801
+    ],
+    "englishName": "Darkmaster Gandling",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2057",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "弗雷斯特恩",
+    "id": 1,
+    "sourceId": 473,
+    "instanceId": 329,
+    "instanceName": "斯坦索姆",
+    "instanceType": "地下城",
+    "instanceNumber": 28,
+    "encounterIds": [
+      473
+    ],
+    "englishName": "Hearthsinger Forresten",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2017",
+    "wowheadNpcIds": [
+      10558
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "残忍的提米",
+    "id": 2,
+    "sourceId": 474,
+    "instanceId": 329,
+    "instanceName": "斯坦索姆",
+    "instanceType": "地下城",
+    "instanceNumber": 28,
+    "encounterIds": [
+      474
+    ],
+    "englishName": "Timmy the Cruel",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2017",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "狂热的玛洛尔",
+    "id": 3,
+    "sourceId": 476,
+    "instanceId": 329,
+    "instanceName": "斯坦索姆",
+    "instanceType": "地下城",
+    "instanceNumber": 28,
+    "encounterIds": [
+      476
+    ],
+    "englishName": "Malor the Zealous",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2017",
+    "wowheadNpcIds": [
+      11032
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "炮手威利",
+    "id": 4,
+    "sourceId": 475,
+    "instanceId": 329,
+    "instanceName": "斯坦索姆",
+    "instanceType": "地下城",
+    "instanceNumber": 28,
+    "encounterIds": [
+      475
+    ],
+    "englishName": "Cannon Master Willey",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2017",
+    "wowheadNpcIds": [
+      10997
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "档案管理员加尔福特",
+    "id": 5,
+    "sourceId": 477,
+    "instanceId": 329,
+    "instanceName": "斯坦索姆",
+    "instanceType": "地下城",
+    "instanceNumber": 28,
+    "encounterIds": [
+      477
+    ],
+    "englishName": "Archivist Galford",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2017",
+    "wowheadNpcIds": [
+      10811
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "巴纳扎尔",
+    "id": 6,
+    "sourceId": 478,
+    "instanceId": 329,
+    "instanceName": "斯坦索姆",
+    "instanceType": "地下城",
+    "instanceNumber": 28,
+    "encounterIds": [
+      478
+    ],
+    "englishName": "Balnazzar",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2017",
+    "wowheadNpcIds": [
+      10813
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "不可宽恕者",
+    "id": 7,
+    "sourceId": 472,
+    "instanceId": 329,
+    "instanceName": "斯坦索姆",
+    "instanceType": "地下城",
+    "instanceNumber": 28,
+    "encounterIds": [
+      472
+    ],
+    "englishName": "The Unforgiven",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2017",
+    "wowheadNpcIds": [
+      10516
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "安娜丝塔丽男爵夫人",
+    "id": 8,
+    "sourceId": 479,
+    "instanceId": 329,
+    "instanceName": "斯坦索姆",
+    "instanceType": "地下城",
+    "instanceNumber": 28,
+    "encounterIds": [
+      479
+    ],
+    "englishName": "Baroness Anastari",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2017",
+    "wowheadNpcIds": [
+      10436
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "奈鲁布恩坎",
+    "id": 9,
+    "sourceId": 480,
+    "instanceId": 329,
+    "instanceName": "斯坦索姆",
+    "instanceType": "地下城",
+    "instanceNumber": 28,
+    "encounterIds": [
+      480
+    ],
+    "englishName": "Nerub'enkan",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2017",
+    "wowheadNpcIds": [
+      10437
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "苍白的玛勒基",
+    "id": 10,
+    "sourceId": 481,
+    "instanceId": 329,
+    "instanceName": "斯坦索姆",
+    "instanceType": "地下城",
+    "instanceNumber": 28,
+    "encounterIds": [
+      481
+    ],
+    "englishName": "Maleki the Pallid",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2017",
+    "wowheadNpcIds": [
+      10438
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "巴瑟拉斯镇长",
+    "id": 11,
+    "sourceId": 482,
+    "instanceId": 329,
+    "instanceName": "斯坦索姆",
+    "instanceType": "地下城",
+    "instanceNumber": 28,
+    "encounterIds": [
+      482
+    ],
+    "englishName": "Magistrate Barthilas",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2017",
+    "wowheadNpcIds": [
+      10435
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "吞咽者拉姆斯登",
+    "id": 12,
+    "sourceId": 483,
+    "instanceId": 329,
+    "instanceName": "斯坦索姆",
+    "instanceType": "地下城",
+    "instanceNumber": 28,
+    "encounterIds": [
+      483
+    ],
+    "englishName": "Ramstein the Gorger",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2017",
+    "wowheadNpcIds": [
+      10439
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "瑞文戴尔男爵",
+    "id": 13,
+    "sourceId": 484,
+    "instanceId": 329,
+    "instanceName": "斯坦索姆",
+    "instanceType": "地下城",
+    "instanceNumber": 28,
+    "encounterIds": [
+      484
+    ],
+    "englishName": "Baron Rivendare",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2017",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "黑衣守卫铸剑师",
+    "id": 14,
+    "sourceId": 2795,
+    "instanceId": 329,
+    "instanceName": "斯坦索姆",
+    "instanceType": "地下城",
+    "instanceNumber": 28,
+    "encounterIds": [
+      2795
+    ],
+    "englishName": "Black Guard Swordsmith",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2017",
+    "wowheadNpcIds": [
+      11121
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "红衣铸锤师",
+    "id": 15,
+    "sourceId": 2796,
+    "instanceId": 329,
+    "instanceName": "斯坦索姆",
+    "instanceType": "地下城",
+    "instanceNumber": 28,
+    "encounterIds": [
+      2796
+    ],
+    "englishName": "Crimson Hammersmith",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2017",
+    "wowheadNpcIds": [
+      11120
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "艾兹拉·格里姆",
+    "id": 16,
+    "sourceId": 2797,
+    "instanceId": 329,
+    "instanceName": "斯坦索姆",
+    "instanceType": "地下城",
+    "instanceNumber": 28,
+    "encounterIds": [
+      2797
+    ],
+    "englishName": "Ezra Grimm",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2017",
+    "wowheadNpcIds": [
+      11058
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "邮差马龙",
+    "id": 17,
+    "sourceId": 2798,
+    "instanceId": 329,
+    "instanceName": "斯坦索姆",
+    "instanceType": "地下城",
+    "instanceNumber": 28,
+    "encounterIds": [
+      2798
+    ],
+    "englishName": "Postmaster Malown",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2017",
+    "wowheadNpcIds": [
+      11143
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "斯库尔",
+    "id": 18,
+    "sourceId": 2799,
+    "instanceId": 329,
+    "instanceName": "斯坦索姆",
+    "instanceType": "地下城",
+    "instanceNumber": 28,
+    "encounterIds": [
+      2799
+    ],
+    "englishName": "Skul",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2017",
+    "wowheadNpcIds": [
+      10393
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "石脊",
+    "id": 19,
+    "sourceId": 2800,
+    "instanceId": 329,
+    "instanceName": "斯坦索姆",
+    "instanceType": "地下城",
+    "instanceNumber": 28,
+    "encounterIds": [
+      2800
+    ],
+    "englishName": "Stonespine",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2017",
+    "wowheadNpcIds": [
+      10809
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "预言者斯克拉姆",
+    "id": 1,
+    "sourceId": 709,
+    "instanceId": 531,
+    "instanceName": "安其拉神殿",
+    "instanceType": "团队副本",
+    "instanceNumber": 1,
+    "encounterIds": [
+      709
+    ],
+    "englishName": "The Prophet Skeram",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=3428",
+    "wowheadNpcIds": [
+      15263
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "安其拉三宝",
+    "id": 2,
+    "sourceId": 710,
+    "instanceId": 531,
+    "instanceName": "安其拉神殿",
+    "instanceType": "团队副本",
+    "instanceNumber": 1,
+    "encounterIds": [
+      710
+    ],
+    "englishName": "Silithid Royalty",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=3428",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "沙尔图拉",
+    "id": 3,
+    "sourceId": 711,
+    "instanceId": 531,
+    "instanceName": "安其拉神殿",
+    "instanceType": "团队副本",
+    "instanceNumber": 1,
+    "encounterIds": [
+      711
+    ],
+    "englishName": "Battleguard Sartura",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=3428",
+    "wowheadNpcIds": [
+      15516
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "顽强的范克瑞斯",
+    "id": 4,
+    "sourceId": 712,
+    "instanceId": 531,
+    "instanceName": "安其拉神殿",
+    "instanceType": "团队副本",
+    "instanceNumber": 1,
+    "encounterIds": [
+      712
+    ],
+    "englishName": "Fankriss the Unyielding",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=3428",
+    "wowheadNpcIds": [
+      15510
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "维希度斯",
+    "id": 5,
+    "sourceId": 713,
+    "instanceId": 531,
+    "instanceName": "安其拉神殿",
+    "instanceType": "团队副本",
+    "instanceNumber": 1,
+    "encounterIds": [
+      713
+    ],
+    "englishName": "Viscidus",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=3428",
+    "wowheadNpcIds": [
+      15299
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "哈霍兰公主",
+    "id": 6,
+    "sourceId": 714,
+    "instanceId": 531,
+    "instanceName": "安其拉神殿",
+    "instanceType": "团队副本",
+    "instanceNumber": 1,
+    "encounterIds": [
+      714
+    ],
+    "englishName": "Princess Huhuran",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=3428",
+    "wowheadNpcIds": [
+      15509
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "双子皇帝",
+    "id": 7,
+    "sourceId": 715,
+    "instanceId": 531,
+    "instanceName": "安其拉神殿",
+    "instanceType": "团队副本",
+    "instanceNumber": 1,
+    "encounterIds": [
+      715
+    ],
+    "englishName": "Twin Emperors",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=3428",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "奥罗",
+    "id": 8,
+    "sourceId": 716,
+    "instanceId": 531,
+    "instanceName": "安其拉神殿",
+    "instanceType": "团队副本",
+    "instanceNumber": 1,
+    "encounterIds": [
+      716
+    ],
+    "englishName": "Ouro",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=3428",
+    "wowheadNpcIds": [
+      15517
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "克苏恩",
+    "id": 9,
+    "sourceId": 717,
+    "instanceId": 531,
+    "instanceName": "安其拉神殿",
+    "instanceType": "团队副本",
+    "instanceNumber": 1,
+    "encounterIds": [
+      717
+    ],
+    "englishName": "C'thun",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=3428",
+    "wowheadNpcIds": [
+      15727
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "狂野的拉佐格尔",
+    "id": 1,
+    "sourceId": 610,
+    "instanceId": 469,
+    "instanceName": "黑翼之巢",
+    "instanceType": "团队副本",
+    "instanceNumber": 3,
+    "encounterIds": [
+      610
+    ],
+    "englishName": "Razorgore the Untamed",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2677",
+    "wowheadNpcIds": [
+      12435
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "堕落的瓦拉斯塔兹",
+    "id": 2,
+    "sourceId": 611,
+    "instanceId": 469,
+    "instanceName": "黑翼之巢",
+    "instanceType": "团队副本",
+    "instanceNumber": 3,
+    "encounterIds": [
+      611
+    ],
+    "englishName": "Vaelastrasz the Corrupt",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2677",
+    "wowheadNpcIds": [
+      13020
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "勒什雷尔",
+    "id": 3,
+    "sourceId": 612,
+    "instanceId": 469,
+    "instanceName": "黑翼之巢",
+    "instanceType": "团队副本",
+    "instanceNumber": 3,
+    "encounterIds": [
+      612
+    ],
+    "englishName": "Broodlord Lashlayer",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2677",
+    "wowheadNpcIds": [
+      12017
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "费尔默",
+    "id": 4,
+    "sourceId": 613,
+    "instanceId": 469,
+    "instanceName": "黑翼之巢",
+    "instanceType": "团队副本",
+    "instanceNumber": 3,
+    "encounterIds": [
+      613
+    ],
+    "englishName": "Firemaw",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2677",
+    "wowheadNpcIds": [
+      11983
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "埃博诺克",
+    "id": 5,
+    "sourceId": 614,
+    "instanceId": 469,
+    "instanceName": "黑翼之巢",
+    "instanceType": "团队副本",
+    "instanceNumber": 3,
+    "encounterIds": [
+      614
+    ],
+    "englishName": "Ebonroc",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2677",
+    "wowheadNpcIds": [
+      14601
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "弗莱格尔",
+    "id": 6,
+    "sourceId": 615,
+    "instanceId": 469,
+    "instanceName": "黑翼之巢",
+    "instanceType": "团队副本",
+    "instanceNumber": 3,
+    "encounterIds": [
+      615
+    ],
+    "englishName": "Flamegor",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2677",
+    "wowheadNpcIds": [
+      11981
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "克洛玛古斯",
+    "id": 7,
+    "sourceId": 616,
+    "instanceId": 469,
+    "instanceName": "黑翼之巢",
+    "instanceType": "团队副本",
+    "instanceNumber": 3,
+    "encounterIds": [
+      616
+    ],
+    "englishName": "Chromaggus",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2677",
+    "wowheadNpcIds": [
+      14020
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "奈法利安",
+    "id": 8,
+    "sourceId": 617,
+    "instanceId": 469,
+    "instanceName": "黑翼之巢",
+    "instanceType": "团队副本",
+    "instanceNumber": 3,
+    "encounterIds": [
+      617
+    ],
+    "englishName": "Nefarian",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2677",
+    "wowheadNpcIds": [
+      11583
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "鲁西弗隆",
+    "id": 1,
+    "sourceId": 663,
+    "instanceId": 409,
+    "instanceName": "熔火之心",
+    "instanceType": "团队副本",
+    "instanceNumber": 5,
+    "encounterIds": [
+      663
+    ],
+    "englishName": "Lucifron",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2717",
+    "wowheadNpcIds": [
+      12118,
+      228429
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "玛格曼达",
+    "id": 2,
+    "sourceId": 664,
+    "instanceId": 409,
+    "instanceName": "熔火之心",
+    "instanceType": "团队副本",
+    "instanceNumber": 5,
+    "encounterIds": [
+      664
+    ],
+    "englishName": "Magmadar",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2717",
+    "wowheadNpcIds": [
+      11982,
+      228430
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "基赫纳斯",
+    "id": 3,
+    "sourceId": 665,
+    "instanceId": 409,
+    "instanceName": "熔火之心",
+    "instanceType": "团队副本",
+    "instanceNumber": 5,
+    "encounterIds": [
+      665
+    ],
+    "englishName": "Gehennas",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2717",
+    "wowheadNpcIds": [
+      12259,
+      228431
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "加尔",
+    "id": 4,
+    "sourceId": 666,
+    "instanceId": 409,
+    "instanceName": "熔火之心",
+    "instanceType": "团队副本",
+    "instanceNumber": 5,
+    "encounterIds": [
+      666
+    ],
+    "englishName": "Garr",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2717",
+    "wowheadNpcIds": [
+      12057,
+      228432
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "沙斯拉尔",
+    "id": 5,
+    "sourceId": 667,
+    "instanceId": 409,
+    "instanceName": "熔火之心",
+    "instanceType": "团队副本",
+    "instanceNumber": 5,
+    "encounterIds": [
+      667
+    ],
+    "englishName": "Shazzrah",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2717",
+    "wowheadNpcIds": [
+      12264,
+      228434
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "迦顿男爵",
+    "id": 6,
+    "sourceId": 668,
+    "instanceId": 409,
+    "instanceName": "熔火之心",
+    "instanceType": "团队副本",
+    "instanceNumber": 5,
+    "encounterIds": [
+      668
+    ],
+    "englishName": "Baron Geddon",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2717",
+    "wowheadNpcIds": [
+      12056,
+      228433
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "萨弗隆先驱者",
+    "id": 7,
+    "sourceId": 669,
+    "instanceId": 409,
+    "instanceName": "熔火之心",
+    "instanceType": "团队副本",
+    "instanceNumber": 5,
+    "encounterIds": [
+      669
+    ],
+    "englishName": "Sulfuron Harbinger",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2717",
+    "wowheadNpcIds": [
+      12098,
+      228436
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "焚化者古雷曼格",
+    "id": 8,
+    "sourceId": 670,
+    "instanceId": 409,
+    "instanceName": "熔火之心",
+    "instanceType": "团队副本",
+    "instanceNumber": 5,
+    "encounterIds": [
+      670
+    ],
+    "englishName": "Golemagg the Incinerator",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2717",
+    "wowheadNpcIds": [
+      11988,
+      228435
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "管理者埃克索图斯",
+    "id": 9,
+    "sourceId": 671,
+    "instanceId": 409,
+    "instanceName": "熔火之心",
+    "instanceType": "团队副本",
+    "instanceNumber": 5,
+    "encounterIds": [
+      671
+    ],
+    "englishName": "Majordomo Executus",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2717",
+    "wowheadNpcIds": [
+      12018,
+      228437
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "拉格纳罗斯",
+    "id": 10,
+    "sourceId": 672,
+    "instanceId": 409,
+    "instanceName": "熔火之心",
+    "instanceType": "团队副本",
+    "instanceNumber": 5,
+    "encounterIds": [
+      672
+    ],
+    "englishName": "Ragnaros",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2717",
+    "wowheadNpcIds": [
+      11502
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "熔火之心",
+    "id": 11,
+    "sourceId": 3018,
+    "instanceId": 409,
+    "instanceName": "熔火之心",
+    "instanceType": "团队副本",
+    "instanceNumber": 5,
+    "encounterIds": [
+      3018
+    ],
+    "englishName": "The Molten Core",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2717",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "阿努布雷坎",
+    "id": 1,
+    "sourceId": 1107,
+    "instanceId": 533,
+    "instanceName": "纳克萨玛斯",
+    "instanceType": "团队副本",
+    "instanceNumber": 6,
+    "encounterIds": [
+      1107
+    ],
+    "englishName": "Anub'Rekhan",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=3456",
+    "wowheadNpcIds": [
+      15956
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "黑女巫法琳娜",
+    "id": 2,
+    "sourceId": 1110,
+    "instanceId": 533,
+    "instanceName": "纳克萨玛斯",
+    "instanceType": "团队副本",
+    "instanceNumber": 6,
+    "encounterIds": [
+      1110
+    ],
+    "englishName": "Grand Widow Faerlina",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=3456",
+    "wowheadNpcIds": [
+      15953
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "迈克斯纳",
+    "id": 3,
+    "sourceId": 1116,
+    "instanceId": 533,
+    "instanceName": "纳克萨玛斯",
+    "instanceType": "团队副本",
+    "instanceNumber": 6,
+    "encounterIds": [
+      1116
+    ],
+    "englishName": "Maexxna",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=3456",
+    "wowheadNpcIds": [
+      15952
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "瘟疫使者诺斯",
+    "id": 4,
+    "sourceId": 1117,
+    "instanceId": 533,
+    "instanceName": "纳克萨玛斯",
+    "instanceType": "团队副本",
+    "instanceNumber": 6,
+    "encounterIds": [
+      1117
+    ],
+    "englishName": "Noth the Plaguebringer",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=3456",
+    "wowheadNpcIds": [
+      15954
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "肮脏的希尔盖",
+    "id": 5,
+    "sourceId": 1112,
+    "instanceId": 533,
+    "instanceName": "纳克萨玛斯",
+    "instanceType": "团队副本",
+    "instanceNumber": 6,
+    "encounterIds": [
+      1112
+    ],
+    "englishName": "Heigan the Unclean",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=3456",
+    "wowheadNpcIds": [
+      15936
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "洛欧塞布",
+    "id": 6,
+    "sourceId": 1115,
+    "instanceId": 533,
+    "instanceName": "纳克萨玛斯",
+    "instanceType": "团队副本",
+    "instanceNumber": 6,
+    "encounterIds": [
+      1115
+    ],
+    "englishName": "Loatheb",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=3456",
+    "wowheadNpcIds": [
+      16011
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "教官拉苏维奥斯",
+    "id": 7,
+    "sourceId": 1113,
+    "instanceId": 533,
+    "instanceName": "纳克萨玛斯",
+    "instanceType": "团队副本",
+    "instanceNumber": 6,
+    "encounterIds": [
+      1113
+    ],
+    "englishName": "Instructor Razuvious",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=3456",
+    "wowheadNpcIds": [
+      16061
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "收割者戈提克",
+    "id": 8,
+    "sourceId": 1109,
+    "instanceId": 533,
+    "instanceName": "纳克萨玛斯",
+    "instanceType": "团队副本",
+    "instanceNumber": 6,
+    "encounterIds": [
+      1109
+    ],
+    "englishName": "Gothik the Harvester",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=3456",
+    "wowheadNpcIds": [
+      16060
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "天启四骑士",
+    "id": 9,
+    "sourceId": 1121,
+    "instanceId": 533,
+    "instanceName": "纳克萨玛斯",
+    "instanceType": "团队副本",
+    "instanceNumber": 6,
+    "encounterIds": [
+      1121
+    ],
+    "englishName": "The Four Horsemen",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=3456",
+    "note": "客户端首领战；Wowhead NPC 名单未逐项匹配（可能为组合战斗）",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "帕奇维克",
+    "id": 10,
+    "sourceId": 1118,
+    "instanceId": 533,
+    "instanceName": "纳克萨玛斯",
+    "instanceType": "团队副本",
+    "instanceNumber": 6,
+    "encounterIds": [
+      1118
+    ],
+    "englishName": "Patchwerk",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=3456",
+    "wowheadNpcIds": [
+      16028
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "格罗布鲁斯",
+    "id": 11,
+    "sourceId": 1111,
+    "instanceId": 533,
+    "instanceName": "纳克萨玛斯",
+    "instanceType": "团队副本",
+    "instanceNumber": 6,
+    "encounterIds": [
+      1111
+    ],
+    "englishName": "Grobbulus",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=3456",
+    "wowheadNpcIds": [
+      15931
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "格拉斯",
+    "id": 12,
+    "sourceId": 1108,
+    "instanceId": 533,
+    "instanceName": "纳克萨玛斯",
+    "instanceType": "团队副本",
+    "instanceNumber": 6,
+    "encounterIds": [
+      1108
+    ],
+    "englishName": "Gluth",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=3456",
+    "wowheadNpcIds": [
+      15932
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "塔迪乌斯",
+    "id": 13,
+    "sourceId": 1120,
+    "instanceId": 533,
+    "instanceName": "纳克萨玛斯",
+    "instanceType": "团队副本",
+    "instanceNumber": 6,
+    "encounterIds": [
+      1120
+    ],
+    "englishName": "Thaddius",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=3456",
+    "wowheadNpcIds": [
+      15928
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "萨菲隆",
+    "id": 14,
+    "sourceId": 1119,
+    "instanceId": 533,
+    "instanceName": "纳克萨玛斯",
+    "instanceType": "团队副本",
+    "instanceNumber": 6,
+    "encounterIds": [
+      1119
+    ],
+    "englishName": "Sapphiron",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=3456",
+    "wowheadNpcIds": [
+      15989
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "克尔苏加德",
+    "id": 15,
+    "sourceId": 1114,
+    "instanceId": 533,
+    "instanceName": "纳克萨玛斯",
+    "instanceType": "团队副本",
+    "instanceNumber": 6,
+    "encounterIds": [
+      1114
+    ],
+    "englishName": "Kel'Thuzad",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=3456",
+    "wowheadNpcIds": [
+      15990
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "奥妮克希亚",
+    "id": 1,
+    "sourceId": 1084,
+    "instanceId": 249,
+    "instanceName": "奥妮克希亚的巢穴",
+    "instanceType": "团队副本",
+    "instanceNumber": 7,
+    "encounterIds": [
+      1084
+    ],
+    "englishName": "Onyxia",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=2159",
+    "note": "Wowhead 页面暂不可读取；名称和顺序按客户端记录",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "库林纳克斯",
+    "id": 1,
+    "sourceId": 718,
+    "instanceId": 509,
+    "instanceName": "安其拉废墟",
+    "instanceType": "团队副本",
+    "instanceNumber": 8,
+    "encounterIds": [
+      718
+    ],
+    "englishName": "Kurinnaxx",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=3429",
+    "wowheadNpcIds": [
+      15348
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "拉贾克斯将军",
+    "id": 2,
+    "sourceId": 719,
+    "instanceId": 509,
+    "instanceName": "安其拉废墟",
+    "instanceType": "团队副本",
+    "instanceNumber": 8,
+    "encounterIds": [
+      719
+    ],
+    "englishName": "General Rajaxx",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=3429",
+    "wowheadNpcIds": [
+      15341
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "莫阿姆",
+    "id": 3,
+    "sourceId": 720,
+    "instanceId": 509,
+    "instanceName": "安其拉废墟",
+    "instanceType": "团队副本",
+    "instanceNumber": 8,
+    "encounterIds": [
+      720
+    ],
+    "englishName": "Moam",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=3429",
+    "wowheadNpcIds": [
+      15340
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "吞咽者布鲁",
+    "id": 4,
+    "sourceId": 721,
+    "instanceId": 509,
+    "instanceName": "安其拉废墟",
+    "instanceType": "团队副本",
+    "instanceNumber": 8,
+    "encounterIds": [
+      721
+    ],
+    "englishName": "Buru the Gorger",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=3429",
+    "wowheadNpcIds": [
+      15370
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "狩猎者阿亚米斯",
+    "id": 5,
+    "sourceId": 722,
+    "instanceId": 509,
+    "instanceName": "安其拉废墟",
+    "instanceType": "团队副本",
+    "instanceNumber": 8,
+    "encounterIds": [
+      722
+    ],
+    "englishName": "Ayamiss the Hunter",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=3429",
+    "wowheadNpcIds": [
+      15369
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "无疤者奥斯里安",
+    "id": 6,
+    "sourceId": 723,
+    "instanceId": 509,
+    "instanceName": "安其拉废墟",
+    "instanceType": "团队副本",
+    "instanceNumber": 8,
+    "encounterIds": [
+      723
+    ],
+    "englishName": "Ossirian the Unscarred",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "listSource": "https://www.wowhead.com/classic/cn/zone=3429",
+    "wowheadNpcIds": [
+      15339
+    ],
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "高阶祭司耶克里克",
+    "id": 1,
+    "sourceId": 785,
+    "instanceId": 309,
+    "instanceName": "祖尔格拉布",
+    "instanceType": "团队副本",
+    "instanceNumber": 9,
+    "encounterIds": [
+      785
+    ],
+    "englishName": "High Priestess Jeklik",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "note": "Wowhead 页面暂不可读取；名称和顺序按客户端记录",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "高阶祭司温诺希斯",
+    "id": 2,
+    "sourceId": 784,
+    "instanceId": 309,
+    "instanceName": "祖尔格拉布",
+    "instanceType": "团队副本",
+    "instanceNumber": 9,
+    "encounterIds": [
+      784
+    ],
+    "englishName": "High Priest Venoxis",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "note": "Wowhead 页面暂不可读取；名称和顺序按客户端记录",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "高阶祭司玛尔里",
+    "id": 3,
+    "sourceId": 786,
+    "instanceId": 309,
+    "instanceName": "祖尔格拉布",
+    "instanceType": "团队副本",
+    "instanceNumber": 9,
+    "encounterIds": [
+      786
+    ],
+    "englishName": "High Priestess Mar'li",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "note": "Wowhead 页面暂不可读取；名称和顺序按客户端记录",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "血领主曼多基尔",
+    "id": 4,
+    "sourceId": 787,
+    "instanceId": 309,
+    "instanceName": "祖尔格拉布",
+    "instanceType": "团队副本",
+    "instanceNumber": 9,
+    "encounterIds": [
+      787
+    ],
+    "englishName": "Bloodlord Mandokir",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "note": "Wowhead 页面暂不可读取；名称和顺序按客户端记录",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "疯狂之缘",
+    "id": 5,
+    "sourceId": 788,
+    "instanceId": 309,
+    "instanceName": "祖尔格拉布",
+    "instanceType": "团队副本",
+    "instanceNumber": 9,
+    "encounterIds": [
+      788
+    ],
+    "englishName": "Edge of Madness",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "note": "Wowhead 页面暂不可读取；名称和顺序按客户端记录",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "高阶祭司塞卡尔",
+    "id": 6,
+    "sourceId": 789,
+    "instanceId": 309,
+    "instanceName": "祖尔格拉布",
+    "instanceType": "团队副本",
+    "instanceNumber": 9,
+    "encounterIds": [
+      789
+    ],
+    "englishName": "High Priest Thekal",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "note": "Wowhead 页面暂不可读取；名称和顺序按客户端记录",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "加兹兰卡",
+    "id": 7,
+    "sourceId": 790,
+    "instanceId": 309,
+    "instanceName": "祖尔格拉布",
+    "instanceType": "团队副本",
+    "instanceNumber": 9,
+    "encounterIds": [
+      790
+    ],
+    "englishName": "Gahz'ranka",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "note": "Wowhead 页面暂不可读取；名称和顺序按客户端记录",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "高阶祭司娅尔罗",
+    "id": 8,
+    "sourceId": 791,
+    "instanceId": 309,
+    "instanceName": "祖尔格拉布",
+    "instanceType": "团队副本",
+    "instanceNumber": 9,
+    "encounterIds": [
+      791
+    ],
+    "englishName": "High Priestess Arlokk",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "note": "Wowhead 页面暂不可读取；名称和顺序按客户端记录",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "妖术师金度",
+    "id": 9,
+    "sourceId": 792,
+    "instanceId": 309,
+    "instanceName": "祖尔格拉布",
+    "instanceType": "团队副本",
+    "instanceNumber": 9,
+    "encounterIds": [
+      792
+    ],
+    "englishName": "Jin'do the Hexxer",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "note": "Wowhead 页面暂不可读取；名称和顺序按客户端记录",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  },
+  {
+    "name": "哈卡",
+    "id": 10,
+    "sourceId": 793,
+    "instanceId": 309,
+    "instanceName": "祖尔格拉布",
+    "instanceType": "团队副本",
+    "instanceNumber": 9,
+    "encounterIds": [
+      793
+    ],
+    "englishName": "Hakkar",
+    "clientBuild": "1.60.1.70245",
+    "idSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "orderSource": "https://wago.tools/db2/DungeonEncounter?build=1.60.1.70245",
+    "note": "Wowhead 页面暂不可读取；名称和顺序按客户端记录",
+    "expansion": 0,
+    "expansionName": "经典旧世"
+  }
+]

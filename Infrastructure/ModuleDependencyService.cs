@@ -10,6 +10,7 @@ internal sealed class ModuleDependencyService
         ClassStateCatalog.CategoryState,
         ClassStateCatalog.CategorySpecial,
         ClassStateCatalog.CategoryResource,
+        ClassStateCatalog.CategoryRegion,
         ClassStateCatalog.CategoryConfig,
         ClassStateCatalog.CategoryTarget,
         ClassStateCatalog.CategoryFocus,
@@ -73,7 +74,8 @@ internal sealed class ModuleDependencyService
         }
 
         FuyutsuiConfigConverter.EnsurePixelCapacity(spec, $"{Path.GetFileName(configDocument.FilePath)}[{specId}]",
-            NameplateStateLayout.SupportsImprovedGarrote(_classDirectory, classId, specId));
+            NameplateStateLayout.SupportsImprovedGarrote(_classDirectory, classId, specId),
+            EncounterTimelineStateLayout.IsSupported(_classDirectory));
 
         var macrosDocument = ClassMacrosStore.Load(_classMacrosPath);
         var classKey = ClassMacrosStore.ToClassFileKey(classId.Value);
@@ -195,7 +197,8 @@ internal sealed class ModuleDependencyService
         {
             FuyutsuiConfigConverter.EnsurePixelCapacity(localSpec,
                 $"{Path.GetFileName(classPath)}[{snapshot.SpecId}]",
-                NameplateStateLayout.SupportsImprovedGarrote(_classDirectory, snapshot.ClassId, snapshot.SpecId));
+                NameplateStateLayout.SupportsImprovedGarrote(_classDirectory, snapshot.ClassId, snapshot.SpecId),
+                EncounterTimelineStateLayout.IsSupported(_classDirectory));
         }
 
         if (!counters.HasConfigChanges && counters.MacrosAdded == 0)
@@ -228,6 +231,9 @@ internal sealed class ModuleDependencyService
         }
 
         UpgradeLegacyItems(snapshot);
+        ClassStateCatalog.NormalizeNames(snapshot.Config.Spec.FlatStates);
+        if (snapshot.Config.Spec.NestedStates)
+            ClassStateCatalog.RelocateRegionFields(snapshot.Config.Spec.CategorizedStates);
 
         OverrideSpellLayout.Validate((snapshot.Config.Spec.Overrides ?? []).Select(entry =>
             new ClassBlocksStore.OverrideEntry
@@ -292,6 +298,7 @@ internal sealed class ModuleDependencyService
                          ClassStateCatalog.CategoryState,
                          ClassStateCatalog.CategorySpecial,
                          ClassStateCatalog.CategoryResource,
+                         ClassStateCatalog.CategoryRegion,
                          ClassStateCatalog.CategoryConfig
                      })
             {
@@ -428,6 +435,7 @@ internal sealed class ModuleDependencyService
 
     private static ModuleSpecSnapshot CaptureSpec(ClassBlocksStore.SpecBlocks spec) => new()
     {
+        Timeline = spec.Timeline,
         NestedStates = spec.NestedStates,
         FlatStates = new List<string>(spec.FlatStates),
         CategorizedStates = spec.CategorizedStates.ToDictionary(
@@ -538,7 +546,7 @@ internal sealed class ModuleDependencyService
             }
         }
 
-        ClassBlocksStore.RelocateSpecialStateFields(local);
+        ClassBlocksStore.RelocateStateFields(local);
 
         var reservedNames = new HashSet<string>(StringComparer.Ordinal);
         if (local.NestedStates)
@@ -548,6 +556,7 @@ internal sealed class ModuleDependencyService
                          ClassStateCatalog.CategoryState,
                          ClassStateCatalog.CategorySpecial,
                          ClassStateCatalog.CategoryResource,
+                         ClassStateCatalog.CategoryRegion,
                          ClassStateCatalog.CategoryConfig
                      })
             {
@@ -573,6 +582,11 @@ internal sealed class ModuleDependencyService
         MergeNameplates(local, incoming.Nameplates, counters);
         MergeSpells(local.Spells, incoming.Spells, counters);
         MergeOverrides(local.Overrides, incoming.Overrides ?? [], counters);
+        if (local.Timeline is null && incoming.Timeline is { } timeline)
+        {
+            local.Timeline = timeline;
+            counters.ConfigAdded++;
+        }
         MergeGroup(local, incoming.Group, counters);
     }
 

@@ -117,6 +117,10 @@ public sealed class GameState
             }
         }
 
-        return Values.TryGetValue(normalized, out var directValue) ? directValue : null;
+        if (Values.TryGetValue(normalized, out var directValue))
+            return directValue;
+
+        // 旧模块的“难度”条件继续读取首领战难度，不影响新增的副本难度。
+        return Values.TryGetValue(ClassStateCatalog.NormalizeName(normalized), out var legacyValue) ? legacyValue : null;
     }
 }

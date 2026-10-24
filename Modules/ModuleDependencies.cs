@@ -37,6 +37,7 @@ public sealed class ModuleConfigSnapshot
 
 public sealed class ModuleSpecSnapshot
 {
+    public bool? Timeline { get; set; }
     public bool NestedStates { get; set; } = true;
     public List<string> FlatStates { get; set; } = new();
     public Dictionary<string, List<string>> CategorizedStates { get; set; } = new(StringComparer.Ordinal);
@@ -58,6 +59,7 @@ public sealed class ModuleSpecSnapshot
 
     public ModuleSpecSnapshot Clone() => new()
     {
+        Timeline = Timeline,
         NestedStates = NestedStates,
         FlatStates = new List<string>(FlatStates ?? []),
         CategorizedStates = (CategorizedStates ?? new Dictionary<string, List<string>>()).ToDictionary(

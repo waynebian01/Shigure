@@ -56,7 +56,7 @@ public sealed partial class StatusForm
         filterGrid.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
         for (var i = 0; i < fields.Length; i++)
         {
-            var filter = CreateExBossEventFilter(250);
+            var filter = CreateReferenceFilter(250);
             filter.Name = $"dungeon-spell-filter-{fields[i]}";
             filter.AccessibleName = labels[i];
             filter.Dock = DockStyle.Fill;
@@ -118,7 +118,7 @@ public sealed partial class StatusForm
         list.Margin = Padding.Empty;
         content.Controls.Add(list, 0, 2);
         var page = BuildFixedWidthSectionPage("副本技能", content,
-            data.Error ?? "五项筛选联动；输入 spellId 或 iconId 精确筛选，清空输入恢复结果", list, UiTheme.EventPageWidth, scaleHeader: true);
+            data.Error ?? "五项筛选联动；输入 spellId 或 iconId 精确筛选，清空输入恢复结果", list, UiTheme.ReferencePageWidth, scaleHeader: true);
 
         var updatingFilters = false;
         string DescribeValue(DungeonSpellFilter field, string value)
@@ -126,8 +126,8 @@ public sealed partial class StatusForm
             if (value.Length == 0) return "未指定";
             return field switch
             {
-                DungeonSpellFilter.Map => DungeonSpellCatalog.DescribeNumber(int.Parse(value), data.MapNames),
-                DungeonSpellFilter.Boss => DungeonSpellCatalog.DescribeNumber(int.Parse(value), data.BossNames),
+                DungeonSpellFilter.Instance => DungeonSpellCatalog.DescribeInstance(int.Parse(value), data.Instances),
+                DungeonSpellFilter.Boss => DungeonSpellCatalog.DescribeBoss(int.Parse(value), data.Bosses),
                 DungeonSpellFilter.Type => DungeonSpellCatalog.DescribeType(value),
                 DungeonSpellFilter.Class => DungeonSpellCatalog.DescribeClass(value),
                 _ => value
@@ -158,6 +158,10 @@ public sealed partial class StatusForm
                         candidates.Add(current);
                     var values = candidates
                         .OrderBy(value => value.Length == 0)
+                        .ThenBy(value => field == DungeonSpellFilter.Instance && int.TryParse(value, out var instanceId)
+                            ? DungeonSpellCatalog.InstanceOrder(instanceId, data.Instances) : (0, 0L))
+                        .ThenBy(value => field == DungeonSpellFilter.Boss && int.TryParse(value, out var encounterId)
+                            ? DungeonSpellCatalog.BossOrder(encounterId, data.Bosses) : 0)
                         .ThenBy(value => long.TryParse(value, out var id) ? id : 0)
                         .ThenBy(value => DescribeValue(field, value), StringComparer.Ordinal).ToArray();
                     var filter = filters[field];
@@ -181,8 +185,8 @@ public sealed partial class StatusForm
                     .Select(spell => new ListViewItem(
                     [
                         spell.Name, spell.SpellId.ToString(),
-                        DungeonSpellCatalog.DescribeNumber(spell.MapId, data.MapNames),
-                        DungeonSpellCatalog.DescribeNumber(spell.Boss, data.BossNames),
+                        DungeonSpellCatalog.DescribeInstance(spell.InstanceId, data.Instances),
+                        DungeonSpellCatalog.DescribeBoss(spell.EncounterId, data.Bosses),
                         DungeonSpellCatalog.DescribeType(spell.Type), spell.IconId.ToString(),
                         spell.Npcs.Count == 0 ? "未指定" : string.Join("、", spell.Npcs),
                         spell.Classes.Count == 0 ? "未指定" : string.Join("、", spell.Classes.Select(DungeonSpellCatalog.DescribeClass))
@@ -190,8 +194,8 @@ public sealed partial class StatusForm
                     {
                         Tag = spell,
                         ToolTipText = $"{spell.Name} · spellId {spell.SpellId} · iconId {spell.IconId} · iconName {spell.IconName}"
-                            + $"\n副本：{DungeonSpellCatalog.DescribeNumber(spell.MapId, data.MapNames)}"
-                            + $" · 首领：{DungeonSpellCatalog.DescribeNumber(spell.Boss, data.BossNames)}"
+                            + $"\n副本：{DungeonSpellCatalog.DescribeInstance(spell.InstanceId, data.Instances)}"
+                            + $" · 首领：{DungeonSpellCatalog.DescribeBoss(spell.EncounterId, data.Bosses)}"
                             + $"\nNPC：{(spell.Npcs.Count == 0 ? "未指定" : string.Join("、", spell.Npcs))}"
                             + $" · 职业：{(spell.Classes.Count == 0 ? "未指定" : string.Join("、", spell.Classes.Select(DungeonSpellCatalog.DescribeClass)))}"
                     }).ToArray());

@@ -65,9 +65,8 @@ function Fuyutsui:CANCEL_PLAYER_COUNTDOWN(_, initiatedBy, informChat, initiatedB
 end
 
 function Fuyutsui:RefreshZoneState()
-    state.mapID = C_Map.GetBestMapForUnit("player") or 0
-    state.mapInfo = C_Map.GetMapInfo(state.mapID)
     self:RefreshPlayerMapState()
+    state.mapInfo = C_Map.GetMapInfo(state.mapID)
     state.subzone = GetSubZoneText()
     if GetBindLocation() == state.subzone then
         print("欢迎回家!")
@@ -87,18 +86,37 @@ function Fuyutsui:ZONE_CHANGED_NEW_AREA()
 end
 
 function Fuyutsui:PLAYER_ENTERING_WORLD()
+    state.mythicPlusStopped = false
+    self:RefreshMythicPlusState()
     self:RefreshOverrideSpells()
-    state.mapID = C_Map.GetBestMapForUnit("player") or 0
     self:RefreshPlayerMapState()
     self:UpdateReaverGlaive(204157)
     self:UpdateHeroTalent()
     self:CacheCollectedMountSpells()
     self:RefreshChargedComboPoints()
+    if self.SyncEncounterTimeline then
+        self:SyncEncounterTimeline()
+    end
     C_Timer.After(2, function()
         self:RefreshAllPlayerPowers()
         self:RebuildGroupRoster()
         self:LoadPlayerMacros()
     end)
+end
+
+function Fuyutsui:CHALLENGE_MODE_START()
+    state.mythicPlusStopped = false
+    self:RefreshMythicPlusState()
+end
+
+function Fuyutsui:CHALLENGE_MODE_COMPLETED()
+    -- 事件发生时接口可能仍返回旧数据，锁定零值直到下一次开本或进入世界。
+    state.mythicPlusStopped = true
+    self:RefreshMythicPlusState()
+end
+
+function Fuyutsui:CHALLENGE_MODE_RESET()
+    self:CHALLENGE_MODE_COMPLETED()
 end
 
 function Fuyutsui:PLAYER_TALENT_UPDATE()
@@ -287,6 +305,7 @@ function Fuyutsui:UNIT_SPELLCAST_SUCCEEDED(_, unitTarget, castGUID, spellID, cas
     self:UpdateInsertItemBySuccess(spellID)
     self:PreviousSkill(spellID)
     self:UpdateActiveTotemRemainingTime(spellID)
+    self:UpdateUnseenBladeCount(spellID)
     if spellID == 384255 then
         self:ClearAllFuyutsuiBars()
         print("切换天赋")
@@ -304,30 +323,18 @@ end
 
 function Fuyutsui:SPELL_UPDATE_COOLDOWN(_, spellID, baseSpellID)
     if issecretvalue(spellID) then return end
-    -- print(spellID, baseSpellID, C_Spell.GetSpellLink(spellID))
+
+    -- if not spellids[spellID] then
+    --     spellids[spellID] = true
+    --     print(spellID, baseSpellID, C_Spell.GetSpellLink(spellID))
+    -- end
+
     if spellID == 25771 then
         self:UpdatePlayerForbearance()
     end
     self:RecordKnightSpellState(spellID)
     self:UpdateBoilingPoint(spellID) -- 沸点
 end
-
-local potions = {
-    [241304] = "银月城生命药水",
-    [241305] = "银月城生命药水",
-    [271884] = "浓缩银月城生命药水",
-    [271885] = "浓缩银月城生命药水",
-    [5512] = "治疗石",
-    [224464] = "恶魔治疗石",
-    [241301] = "光注法力药水",
-    [241300] = "光注法力药水",
-    [241288] = "鲁莽药水",
-    [241289] = "鲁莽药水",
-    [241308] = "圣光潜力",
-    [241309] = "圣光潜力",
-    [241292] = "狂放恣意饮剂",
-    [241293] = "狂放恣意饮剂",
-}
 
 function Fuyutsui:ITEM_COUNT_CHANGED()
     self:UpdateItemCooldown()
@@ -563,36 +570,24 @@ function Fuyutsui:UPDATE_SHAPESHIFT_FORMS()
 end
 
 function Fuyutsui:ENCOUNTER_START(_, encounterID, encounterName, difficultyID, groupSize)
-    if self.ResetExBossTimelinePixels then
-        self:ResetExBossTimelinePixels()
-    end
     self:SetEncounterState(encounterID, difficultyID)
     self:RefreshBossAuraContainers()
+    if self.SyncEncounterTimeline then
+        self:SyncEncounterTimeline()
+    end
 end
 
 function Fuyutsui:ENCOUNTER_END(_, encounterID, encounterName, difficultyID, groupSize, success)
-    if self.ResetExBossTimelinePixels then
-        self:ResetExBossTimelinePixels()
-    end
-    if self.ResetBigWigsTimelinePixels then
-        self:ResetBigWigsTimelinePixels()
-    end
     self:SetEncounterState(0, 0)
     self:RefreshBossAuraContainers()
+    if self.SyncEncounterTimeline then
+        self:SyncEncounterTimeline()
+    end
 end
 
 function Fuyutsui:INSTANCE_ENCOUNTER_ENGAGE_UNIT()
     self:RefreshBossUnitStates()
     self:RefreshBossAuraContainers()
-end
-
-function Fuyutsui:ENCOUNTER_TIMELINE_EVENT_ADDED(_, eventInfo)
-end
-
-function Fuyutsui:ENCOUNTER_TIMELINE_EVENT_REMOVED(_, eventID)
-end
-
-function Fuyutsui:ENCOUNTER_TIMELINE_EVENT_STATE_CHANGED(_, eventID)
 end
 
 function Fuyutsui:StartFrameUpdates()
@@ -633,6 +628,7 @@ local function RunUpdateSafely(self, methodName, ...)
 end
 
 function Fuyutsui:OnUpdate(elapsed)
+    RunUpdateSafely(self, "RefreshEncounterTimelinePixels")
     RunUpdateSafely(self, "RefreshNextGroupMemberState")
     RunUpdateSafely(self, "UpdateStateBlock", "状态", "公共冷却")
 
@@ -652,15 +648,13 @@ function Fuyutsui:OnUpdate(elapsed)
 
         RunUpdateSafely(self, "RefreshNameplatePixels")
         RunUpdateSafely(self, "UpdateItemCooldown")
-        RunUpdateSafely(self, "RefreshExBossTimelinePixels")
-        RunUpdateSafely(self, "RefreshExTrashTimelinePixels")
-        RunUpdateSafely(self, "RefreshBigWigsTimelinePixels")
         self.timeElapsed = 0
     end
 
     self.timeElapsed1 = self.timeElapsed1 + elapsed
     if self.timeElapsed1 >= 1 then
         RunUpdateSafely(self, "RefreshPlayerCombatDuration")
+        RunUpdateSafely(self, "RefreshMythicPlusState")
         RunUpdateSafely(self, "RefreshActiveKnightCount")
         self.timeElapsed1 = 0
     end

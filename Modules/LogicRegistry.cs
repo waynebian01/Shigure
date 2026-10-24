@@ -149,7 +149,7 @@ public sealed class LogicRegistry : IRuntimeLogic
             try
             {
                 var decisions = runLogic
-                    ? ModuleLogic.RunTracked(module, state, _keymap, _sentKeyRules, ruleMatches, ruleSoundEvents, _hitDelays)
+                    ? ModuleLogic.RunTracked(module, state, _keymap, _sentKeyRules, ruleMatches, ruleSoundEvents, _hitDelays, _ruleMatches)
                     : [];
                 return new LogicEvaluation(module.Name, decisions, _hitDelays.HasPending);
             }

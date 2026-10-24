@@ -1,5 +1,4 @@
 using System.Globalization;
-using System.Text.RegularExpressions;
 
 namespace Shigure;
 
@@ -40,23 +39,9 @@ public sealed class ModuleTeammateTarget
     }
 }
 
-/// <summary>按本帧队友目标调整成员字段；选人前后共享相同的写入和别名同步逻辑。</summary>
+/// <summary>按本帧队友目标调整成员字段，最终调整支持已解析的动态单位。</summary>
 internal static class TeammateValueAdjustment
 {
-    internal static bool CanApplyBeforeSelection(ModuleDefinition module, ModuleValueAdjustment adjustment)
-    {
-        if (adjustment.TeammateTarget is null or { Kind: ModuleTeammateTargetKind.DynamicUnit }) return false;
-        var lateFields = module.Units.SelectMany(unit => new[] { unit.Name, unit.ValueName })
-            .Concat(module.Counts.Select(count => count.Name))
-            .Concat(module.EnemyCounts.Select(count => count.Name))
-            .Concat(module.AverageHealthFields.Select(field => field.Name))
-            .Concat(module.ValueAdjustments.Where(value => value.IsCustom || !string.IsNullOrWhiteSpace(value.Formula))
-                .Select(value => value.Field));
-        // 包括条件左右两侧的动态引用，避免用尚未生成的默认值提前判断。
-        return !lateFields.Where(name => !string.IsNullOrWhiteSpace(name)).Any(name =>
-            Regex.IsMatch(adjustment.Condition, $@"(?<![_$\p{{L}}\p{{N}}]){Regex.Escape(name!)}(?![_$\p{{L}}\p{{N}}])"));
-    }
-
     internal static bool Apply(ModuleDefinition module, GameState state, ModuleValueAdjustment adjustment, bool matched)
     {
         var slot = ResolveTarget(state, adjustment.TeammateTarget!);

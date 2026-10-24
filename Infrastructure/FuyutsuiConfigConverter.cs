@@ -31,6 +31,7 @@ internal static class FuyutsuiConfigConverter
         ClassStateCatalog.CategoryState,
         ClassStateCatalog.CategorySpecial,
         ClassStateCatalog.CategoryResource,
+        ClassStateCatalog.CategoryRegion,
         ClassStateCatalog.CategoryConfig,
         ClassStateCatalog.CategoryTarget,
         ClassStateCatalog.CategoryFocus,
@@ -67,7 +68,8 @@ internal static class FuyutsuiConfigConverter
             for (var specId = 1; specId <= 4; specId++)
                 if (blocks.Get((long)specId) is TableValue spec)
                     CompileSpec(spec, $"{fileName}[{specId}]",
-                        NameplateStateLayout.SupportsImprovedGarrote(classDirectory, classId, specId), rejectPixelOverflow: true);
+                        NameplateStateLayout.SupportsImprovedGarrote(classDirectory, classId, specId),
+                        EncounterTimelineStateLayout.IsSupported(classDirectory), rejectPixelOverflow: true);
         }
 
         Directory.CreateDirectory(configDirectory);
@@ -128,7 +130,8 @@ internal static class FuyutsuiConfigConverter
                 }
 
                 var (specJson, specWarnings) = CompileSpec(specTable, $"{fileName}[{specId}]",
-                    NameplateStateLayout.SupportsImprovedGarrote(classDirectory, classId, specId));
+                    NameplateStateLayout.SupportsImprovedGarrote(classDirectory, classId, specId),
+                    EncounterTimelineStateLayout.IsSupported(classDirectory));
                 warnings.AddRange(specWarnings);
                 if (specJson.Count > 0)
                 {
@@ -346,7 +349,7 @@ internal static class FuyutsuiConfigConverter
             $"布局校验失败：{label} 的{region}布局需要 {requiredPixels} 格，超过主像素行 {MainPixelLayout.MaxCapacity} 格上限；配置和宏均未写入。");
 
     public static void EnsurePixelCapacity(
-        ClassBlocksStore.SpecBlocks spec, string label, bool supportsImprovedGarrote)
+        ClassBlocksStore.SpecBlocks spec, string label, bool supportsImprovedGarrote, bool supportsEncounterTimeline)
     {
         // 用实际保存格式走同一转换流程，避免容量检查与 config 的像素占位规则不一致。
         var source = "ClassBlocks = " + ClassBlocksStore.SerializeClassBlocks(
@@ -355,11 +358,12 @@ internal static class FuyutsuiConfigConverter
             ?? throw new InvalidDataException("无法解析合并后的职业配置。");
         var specTable = blocks.Get(1L) as TableValue
             ?? throw new InvalidDataException("无法解析合并后的专精配置。");
-        CompileSpec(specTable, label, supportsImprovedGarrote, rejectPixelOverflow: true);
+        CompileSpec(specTable, label, supportsImprovedGarrote, supportsEncounterTimeline, rejectPixelOverflow: true);
     }
 
     private static (JsonObject Spec, List<string> Warnings) CompileSpec(
-        TableValue spec, string label, bool supportsImprovedGarrote, bool rejectPixelOverflow = false)
+        TableValue spec, string label, bool supportsImprovedGarrote, bool supportsEncounterTimeline,
+        bool rejectPixelOverflow = false)
     {
         var warnings = new List<string>();
         var result = new JsonObject();
@@ -420,11 +424,11 @@ internal static class FuyutsuiConfigConverter
                         index,
                         skipCommon: true,
                         ClassStateCatalog.FindCategory(stateName) ?? ClassStateCatalog.CategoryState);
-                    if (stateName == "目标NPCID" && result[stateName] is JsonObject npcField)
+                    if (stateName is "目标NPCID" or "地图" && result[stateName] is JsonObject rgbField)
                     {
-                        npcField["category"] = ClassStateCatalog.CategoryTarget;
-                        npcField["pixelFormat"] = "rgb24";
-                        npcField["payloadStep"] = index + 1;
+                        if (stateName == "目标NPCID") rgbField["category"] = ClassStateCatalog.CategoryTarget;
+                        rgbField["pixelFormat"] = "rgb24";
+                        rgbField["payloadStep"] = index + 1;
                         index += 2;
                     }
                     else
@@ -558,6 +562,19 @@ internal static class FuyutsuiConfigConverter
             result[OverrideSpellLayout.FieldKey(entry.OriginalId)] = field;
         }
 
+        if (supportsEncounterTimeline && spec.GetBool("timeline") == true)
+        {
+            for (var slot = 1; slot <= EncounterTimelineStateLayout.SlotCount; slot++)
+            {
+                var spell = Field(index, "int", EncounterTimelineStateLayout.Category);
+                spell["pixelFormat"] = "rgb24";
+                spell["payloadStep"] = index + 1;
+                result[$"时间轴{slot}技能ID"] = spell;
+                result[$"时间轴{slot}剩余时间"] = Field(index + 2, "deciseconds", EncounterTimelineStateLayout.Category);
+                index += EncounterTimelineStateLayout.PixelsPerSlot;
+            }
+        }
+
         if (spec.GetTable("items") is { } items)
         {
             foreach (var item in ReadItems(items, warnings, label))
@@ -589,7 +606,7 @@ internal static class FuyutsuiConfigConverter
 
         if (rejectPixelOverflow && index - 1 > MainPixelLayout.MaxCapacity)
         {
-            throw new PixelCapacityExceededException(label, "状态、光环、冷却和替换技", index - 1);
+            throw new PixelCapacityExceededException(label, "状态、光环、冷却、替换技和时间轴", index - 1);
         }
 
         // group
@@ -930,7 +947,8 @@ internal static class FuyutsuiConfigConverter
     }
 
     private static bool IsRgbState(string category, string stateName)
-        => (stateName == "NPCID" && category == ClassStateCatalog.CategoryTarget)
+        => (stateName == "地图" && category == ClassStateCatalog.CategoryRegion)
+           || (stateName == "NPCID" && category == ClassStateCatalog.CategoryTarget)
            || (stateName == "施法技能" && category is
             ClassStateCatalog.CategoryTarget or ClassStateCatalog.CategoryFocus or
             ClassStateCatalog.CategoryBoss1 or ClassStateCatalog.CategoryBoss2 or
@@ -1026,7 +1044,7 @@ internal static class FuyutsuiConfigConverter
     private static string NormalizeStateName(string name)
         => string.Equals(name, "法术失败", StringComparison.Ordinal)
             ? ModuleSpecialActions.InsertSpellState
-            : name;
+            : ClassStateCatalog.NormalizeName(name);
 
     private static bool IsUnitStateCategory(string category)
         => category is ClassStateCatalog.CategoryTarget

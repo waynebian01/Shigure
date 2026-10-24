@@ -1,525 +1,10376 @@
 [
   {
-    "title": "当前赛季",
-    "dungeons": [
+    "instanceId": 33,
+    "name": "影牙城堡",
+    "type": "地下城",
+    "bosses": [
       {
-        "name": "烈毒之渊",
-        "bosses": [
-          {
-            "sequence": 1,
-            "name": "盘魂者内克扎莉",
-            "number": 16
-          },
-          {
-            "sequence": 2,
-            "name": "陵寝哨兵",
-            "number": 17
-          },
-          {
-            "sequence": 3,
-            "name": "迷失的探险者",
-            "number": 18
-          },
-          {
-            "sequence": 4,
-            "name": "万毒邪祟者瓦什尼克",
-            "number": 19
-          },
-          {
-            "sequence": 5,
-            "name": "斯索拉克",
-            "number": 20
-          },
-          {
-            "sequence": 6,
-            "name": "双子毒牙",
-            "number": 21
-          },
-          {
-            "sequence": 7,
-            "name": "盘卷祭坛",
-            "number": 22
-          },
-          {
-            "sequence": 8,
-            "name": "乌拉特克",
-            "number": 23
-          }
+        "sequence": 1,
+        "name": "灰葬男爵",
+        "number": 1,
+        "encounterIds": [
+          1069
         ]
       },
       {
-        "name": "潮缚石窟",
-        "bosses": [
-          {
-            "sequence": 1,
-            "name": "尼姆瑞莎·唤波者",
-            "number": 15
-          }
+        "sequence": 2,
+        "name": "席瓦莱恩男爵",
+        "number": 2,
+        "encounterIds": [
+          1070
         ]
       },
       {
-        "name": "毒牙祭坛",
-        "bosses": [
-          {
-            "sequence": 1,
-            "name": "拉维",
-            "number": 80
-          },
-          {
-            "sequence": 2,
-            "name": "扭缠盘蛇",
-            "number": 81
-          },
-          {
-            "sequence": 3,
-            "name": "祖尔加",
-            "number": 82
-          }
+        "sequence": 3,
+        "name": "指挥官斯普林瓦尔",
+        "number": 3,
+        "encounterIds": [
+          1071
         ]
       },
       {
-        "name": "纳洛拉克的洞穴",
-        "bosses": [
-          {
-            "sequence": 1,
-            "name": "囤宝狂人",
-            "number": 83
-          },
-          {
-            "sequence": 2,
-            "name": "寒冬哨兵",
-            "number": 84
-          },
-          {
-            "sequence": 3,
-            "name": "纳洛拉克",
-            "number": 85
-          }
+        "sequence": 4,
+        "name": "沃登勋爵",
+        "number": 4,
+        "encounterIds": [
+          1073
         ]
       },
       {
-        "name": "密谋小径",
-        "bosses": [
-          {
-            "sequence": 1,
-            "name": "凯斯媞亚·魔力之心",
-            "number": 86
-          },
-          {
-            "sequence": 2,
-            "name": "赞恩·刃悲",
-            "number": 87
-          },
-          {
-            "sequence": 3,
-            "name": "歼灭者萨祖克斯",
-            "number": 88
-          },
-          {
-            "sequence": 4,
-            "name": "利希尔·烬怒",
-            "number": 89
-          }
+        "sequence": 5,
+        "name": "皇冠药剂公司",
+        "number": 5,
+        "encounterIds": [
+          2879
         ]
       },
       {
-        "name": "夺目谷",
-        "bosses": [
-          {
-            "sequence": 1,
-            "name": "光明众花",
-            "number": 90
-          },
-          {
-            "sequence": 2,
-            "name": "圣光猎手伊库兹",
-            "number": 91
-          },
-          {
-            "sequence": 3,
-            "name": "护光者鲁伊亚",
-            "number": 92
-          },
-          {
-            "sequence": 4,
-            "name": "兹欧凯特",
-            "number": 93
-          }
-        ]
-      },
-      {
-        "name": "诸王之眠",
-        "bosses": [
-          {
-            "sequence": 1,
-            "name": "黄金风蛇",
-            "number": 94
-          },
-          {
-            "sequence": 2,
-            "name": "部族议会",
-            "number": 95
-          },
-          {
-            "sequence": 3,
-            "name": "殓尸者姆沁巴",
-            "number": 96
-          },
-          {
-            "sequence": 4,
-            "name": "达萨大王",
-            "number": 97
-          }
-        ]
-      },
-      {
-        "name": "红玉新生法池",
-        "bosses": [
-          {
-            "sequence": 1,
-            "name": "梅莉杜莎·寒妆",
-            "number": 98
-          },
-          {
-            "sequence": 2,
-            "name": "柯姬雅·焰蹄",
-            "number": 99
-          },
-          {
-            "sequence": 3,
-            "name": "基拉卡与厄克哈特·风脉",
-            "number": 100
-          }
-        ]
-      },
-      {
-        "name": "虚空之痕竞技场",
-        "bosses": [
-          {
-            "sequence": 1,
-            "name": "塔兹拉尔",
-            "number": 101
-          },
-          {
-            "sequence": 2,
-            "name": "阿特洛苏斯",
-            "number": 102
-          },
-          {
-            "sequence": 3,
-            "name": "煞戎努斯",
-            "number": 103
-          }
-        ]
-      },
-      {
-        "name": "塞塔里斯神庙",
-        "bosses": [
-          {
-            "sequence": 1,
-            "name": "阿德里斯和阿斯匹克斯",
-            "number": 104
-          },
-          {
-            "sequence": 2,
-            "name": "米利克萨",
-            "number": 105
-          },
-          {
-            "sequence": 3,
-            "name": "加瓦兹特",
-            "number": 106
-          },
-          {
-            "sequence": 4,
-            "name": "塞塔里斯的化身",
-            "number": 107
-          }
+        "sequence": 6,
+        "name": "高弗雷勋爵",
+        "number": 6,
+        "encounterIds": [
+          1072
         ]
       }
     ]
   },
   {
-    "title": "第一赛季",
-    "dungeons": [
+    "instanceId": 47,
+    "name": "剃刀沼泽",
+    "type": "地下城",
+    "bosses": [
       {
-        "name": "虚影尖塔",
-        "bosses": [
-          {
-            "sequence": 1,
-            "name": "元首阿福扎恩",
-            "number": 1
-          },
-          {
-            "sequence": 2,
-            "name": "弗拉希乌斯",
-            "number": 2
-          },
-          {
-            "sequence": 3,
-            "name": "陨落之王萨哈达尔",
-            "number": 3
-          },
-          {
-            "sequence": 4,
-            "name": "威厄高尔和艾佐拉克",
-            "number": 4
-          },
-          {
-            "sequence": 5,
-            "name": "光盲先锋军",
-            "number": 5
-          },
-          {
-            "sequence": 6,
-            "name": "宇宙之冕",
-            "number": 6
-          }
+        "sequence": 1,
+        "name": "猎手布塔斯克",
+        "number": 1,
+        "encounterIds": [
+          1656
         ]
       },
       {
-        "name": "梦境裂隙",
-        "bosses": [
-          {
-            "sequence": 1,
-            "name": "奇美鲁斯，未梦之神",
-            "number": 7
-          }
+        "sequence": 2,
+        "name": "鲁古格",
+        "number": 2,
+        "encounterIds": [
+          438
         ]
       },
       {
-        "name": "奎尔丹纳斯岛",
-        "bosses": [
-          {
-            "sequence": 1,
-            "name": "贝洛朗，奥的子嗣",
-            "number": 8
-          },
-          {
-            "sequence": 2,
-            "name": "至暗之夜降临",
-            "number": 9
-          }
+        "sequence": 3,
+        "name": "督军拉姆塔斯",
+        "number": 3,
+        "encounterIds": [
+          1659
         ]
       },
       {
-        "name": "世界",
-        "bosses": [
-          {
-            "sequence": 1,
-            "name": "鲁阿夏尔",
-            "number": 10
-          },
-          {
-            "sequence": 2,
-            "name": "索姆贝兰",
-            "number": 11
-          },
-          {
-            "sequence": 3,
-            "name": "普雷达萨斯",
-            "number": 12
-          },
-          {
-            "sequence": 4,
-            "name": "克拉格平",
-            "number": 13
-          }
+        "sequence": 4,
+        "name": "盲眼猎手格罗亚特",
+        "number": 4,
+        "encounterIds": [
+          1660
         ]
       },
       {
-        "name": "孢陨幽境",
-        "bosses": [
-          {
-            "sequence": 1,
-            "name": "腐沼",
-            "number": 14
-          }
+        "sequence": 5,
+        "name": "卡尔加·刺肋",
+        "number": 5,
+        "encounterIds": [
+          1661
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 34,
+    "name": "监狱",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "霍格",
+        "number": 1,
+        "encounterIds": [
+          1144
         ]
       },
       {
-        "name": "节点希纳斯",
-        "bosses": [
-          {
-            "sequence": 1,
-            "name": "核技工程长卡斯雷瑟",
-            "number": 51
-          },
-          {
-            "sequence": 2,
-            "name": "核心守卫奈萨拉",
-            "number": 52
-          },
-          {
-            "sequence": 3,
-            "name": "洛萨克森",
-            "number": 53
-          }
+        "sequence": 2,
+        "name": "灼热勋爵",
+        "number": 2,
+        "encounterIds": [
+          1145
         ]
       },
       {
-        "name": "迈萨拉洞窟",
-        "bosses": [
-          {
-            "sequence": 1,
-            "name": "姆罗金和内克拉克斯",
-            "number": 54
-          },
-          {
-            "sequence": 2,
-            "name": "沃达扎",
-            "number": 55
-          },
-          {
-            "sequence": 3,
-            "name": "拉克图尔，聚魂之器",
-            "number": 56
-          }
+        "sequence": 3,
+        "name": "兰多菲·摩洛克",
+        "number": 3,
+        "encounterIds": [
+          1146
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 43,
+    "name": "哀嚎洞穴",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "安娜科德拉",
+        "number": 1,
+        "encounterIds": [
+          585
         ]
       },
       {
-        "name": "风行者之塔",
-        "bosses": [
-          {
-            "sequence": 1,
-            "name": "烬晓",
-            "number": 57
-          },
-          {
-            "sequence": 2,
-            "name": "被遗弃的二人组",
-            "number": 58
-          },
-          {
-            "sequence": 3,
-            "name": "指挥官克罗鲁科",
-            "number": 59
-          },
-          {
-            "sequence": 4,
-            "name": "无眠之心",
-            "number": 60
-          }
+        "sequence": 2,
+        "name": "皮萨斯",
+        "number": 2,
+        "encounterIds": [
+          588
         ]
       },
       {
-        "name": "魔导师平台",
-        "bosses": [
-          {
-            "sequence": 1,
-            "name": "奥能金刚库斯托斯",
-            "number": 61
-          },
-          {
-            "sequence": 2,
-            "name": "瑟拉奈尔·日鞭",
-            "number": 62
-          },
-          {
-            "sequence": 3,
-            "name": "吉美尔鲁斯",
-            "number": 63
-          },
-          {
-            "sequence": 4,
-            "name": "迪詹崔乌斯",
-            "number": 64
-          }
+        "sequence": 3,
+        "name": "考布莱恩",
+        "number": 3,
+        "encounterIds": [
+          586
         ]
       },
       {
-        "name": "执政团之座",
-        "bosses": [
-          {
-            "sequence": 1,
-            "name": "晋升者祖拉尔",
-            "number": 65
-          },
-          {
-            "sequence": 2,
-            "name": "萨普瑞什",
-            "number": 66
-          },
-          {
-            "sequence": 3,
-            "name": "总督奈扎尔",
-            "number": 67
-          },
-          {
-            "sequence": 4,
-            "name": "鲁拉",
-            "number": 68
-          }
+        "sequence": 4,
+        "name": "克雷什",
+        "number": 4,
+        "encounterIds": [
+          587
         ]
       },
       {
-        "name": "艾杰斯亚学院",
-        "bosses": [
-          {
-            "sequence": 1,
-            "name": "维克萨姆斯",
-            "number": 69
-          },
-          {
-            "sequence": 2,
-            "name": "茂林古树",
-            "number": 70
-          },
-          {
-            "sequence": 3,
-            "name": "克罗兹",
-            "number": 71
-          },
-          {
-            "sequence": 4,
-            "name": "多拉苟萨的回响",
-            "number": 72
-          }
+        "sequence": 5,
+        "name": "斯卡姆",
+        "number": 5,
+        "encounterIds": [
+          589
         ]
       },
       {
-        "name": "萨隆矿坑",
-        "bosses": [
-          {
-            "sequence": 1,
-            "name": "熔炉之主加弗斯特",
-            "number": 73
-          },
-          {
-            "sequence": 2,
-            "name": "伊克和科瑞克",
-            "number": 74
-          },
-          {
-            "sequence": 3,
-            "name": "天灾领主泰兰努斯",
-            "number": 75
-          }
+        "sequence": 6,
+        "name": "瑟芬迪斯",
+        "number": 6,
+        "encounterIds": [
+          590
         ]
       },
       {
-        "name": "通天峰",
-        "bosses": [
-          {
-            "sequence": 1,
-            "name": "兰吉特",
-            "number": 76
-          },
-          {
-            "sequence": 2,
-            "name": "阿拉卡纳斯",
-            "number": 77
-          },
-          {
-            "sequence": 3,
-            "name": "鲁克兰",
-            "number": 78
-          },
-          {
-            "sequence": 4,
-            "name": "高阶贤者维里克斯",
-            "number": 79
-          }
+        "sequence": 7,
+        "name": "永生者沃尔丹",
+        "number": 7,
+        "encounterIds": [
+          591
+        ]
+      },
+      {
+        "sequence": 8,
+        "name": "吞噬者穆坦努斯",
+        "number": 8,
+        "encounterIds": [
+          592
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 48,
+    "name": "黑暗深渊",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "加摩拉",
+        "number": 1,
+        "encounterIds": [
+          1667
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "多米尼娜",
+        "number": 2,
+        "encounterIds": [
+          1668
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "征服者克鲁尔",
+        "number": 3,
+        "encounterIds": [
+          1669
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "苏克",
+        "number": 4,
+        "encounterIds": [
+          1675
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "深渊守护者",
+        "number": 5,
+        "encounterIds": [
+          1676
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "刽子手戈尔",
+        "number": 6,
+        "encounterIds": [
+          1670
+        ]
+      },
+      {
+        "sequence": 7,
+        "name": "暮光领主巴赛尔",
+        "number": 7,
+        "encounterIds": [
+          1671
+        ]
+      },
+      {
+        "sequence": 8,
+        "name": "阿库麦尔",
+        "number": 8,
+        "encounterIds": [
+          1672
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 90,
+    "name": "诺莫瑞根",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "格鲁比斯",
+        "number": 1,
+        "encounterIds": [
+          379
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "粘性辐射尘",
+        "number": 2,
+        "encounterIds": [
+          378
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "电刑器6000型",
+        "number": 3,
+        "encounterIds": [
+          380
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "群体打击者9-60",
+        "number": 4,
+        "encounterIds": [
+          381
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "机械师瑟玛普拉格",
+        "number": 5,
+        "encounterIds": [
+          382
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 129,
+    "name": "剃刀高地",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "阿鲁克斯",
+        "number": 1,
+        "encounterIds": [
+          1662
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "火眼莫德雷斯",
+        "number": 2,
+        "encounterIds": [
+          1663
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "麦什伦",
+        "number": 3,
+        "encounterIds": [
+          1664
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "亡语者布莱克松",
+        "number": 4,
+        "encounterIds": [
+          1665
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "寒冰之王亚门纳尔",
+        "number": 5,
+        "encounterIds": [
+          1666
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 189,
+    "name": "血色修道院",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "审讯员韦沙斯",
+        "number": 1,
+        "encounterIds": [
+          444
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "血法师萨尔诺斯",
+        "number": 2,
+        "encounterIds": [
+          2818
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "驯犬者洛克希",
+        "number": 3,
+        "encounterIds": [
+          446
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "奥法师杜安",
+        "number": 4,
+        "encounterIds": [
+          447
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "赫洛德",
+        "number": 5,
+        "encounterIds": [
+          448
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "大检察官法尔班克斯",
+        "number": 6,
+        "encounterIds": [
+          449
+        ]
+      },
+      {
+        "sequence": 7,
+        "name": "大检察官怀特迈恩",
+        "number": 7,
+        "encounterIds": [
+          450
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 209,
+    "name": "祖尔法拉克",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "殉教者塞卡",
+        "number": 1,
+        "encounterIds": [
+          596
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "水占师维蕾萨",
+        "number": 2,
+        "encounterIds": [
+          593
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "安图苏尔",
+        "number": 3,
+        "encounterIds": [
+          595
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "巫医祖穆拉恩",
+        "number": 4,
+        "encounterIds": [
+          597
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "加兹瑞拉",
+        "number": 5,
+        "encounterIds": [
+          594
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "耐克鲁姆",
+        "number": 6,
+        "encounterIds": [
+          598
+        ]
+      },
+      {
+        "sequence": 7,
+        "name": "暗影祭司塞瑟斯",
+        "number": 7,
+        "encounterIds": [
+          599
+        ]
+      },
+      {
+        "sequence": 8,
+        "name": "乌克兹·沙顶",
+        "number": 8,
+        "encounterIds": [
+          600
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 70,
+    "name": "奥达曼",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "鲁维罗什",
+        "number": 1,
+        "encounterIds": [
+          547
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "失落的矮人",
+        "number": 2,
+        "encounterIds": [
+          548
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "艾隆纳亚",
+        "number": 3,
+        "encounterIds": [
+          549
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "黑曜石哨兵",
+        "number": 4,
+        "encounterIds": [
+          1887
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "远古巨石卫士",
+        "number": 5,
+        "encounterIds": [
+          551
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "加加恩·火锤",
+        "number": 6,
+        "encounterIds": [
+          552
+        ]
+      },
+      {
+        "sequence": 7,
+        "name": "格瑞姆洛克",
+        "number": 7,
+        "encounterIds": [
+          553
+        ]
+      },
+      {
+        "sequence": 8,
+        "name": "阿扎达斯",
+        "number": 8,
+        "encounterIds": [
+          554
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 109,
+    "name": "沉没的神庙",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "德姆塞卡尔",
+        "number": 1,
+        "encounterIds": [
+          486
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "哈卡的化身",
+        "number": 2,
+        "encounterIds": [
+          492
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "德拉维沃尔",
+        "number": 3,
+        "encounterIds": [
+          487
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "预言者迦玛兰",
+        "number": 4,
+        "encounterIds": [
+          488
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "摩弗拉斯",
+        "number": 5,
+        "encounterIds": [
+          490
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "哈扎斯",
+        "number": 6,
+        "encounterIds": [
+          491
+        ]
+      },
+      {
+        "sequence": 7,
+        "name": "伊兰尼库斯的阴影",
+        "number": 7,
+        "encounterIds": [
+          493
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 36,
+    "name": "死亡矿井",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "拉克佐",
+        "number": 1,
+        "encounterIds": [
+          2967
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "斯尼德",
+        "number": 2,
+        "encounterIds": [
+          2968
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "基尔尼格",
+        "number": 3,
+        "encounterIds": [
+          2969
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "重拳先生",
+        "number": 4,
+        "encounterIds": [
+          2970
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "绿皮船长",
+        "number": 5,
+        "encounterIds": [
+          2971
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "艾德温·范克里夫",
+        "number": 6,
+        "encounterIds": [
+          2972
+        ]
+      },
+      {
+        "sequence": 7,
+        "name": "格拉布托克",
+        "number": 7,
+        "encounterIds": [
+          2976,
+          2981
+        ]
+      },
+      {
+        "sequence": 8,
+        "name": "曲奇",
+        "number": 8,
+        "encounterIds": [
+          2986
+        ]
+      },
+      {
+        "sequence": 9,
+        "name": "赫利克斯·破甲",
+        "number": 9,
+        "encounterIds": [
+          2977,
+          2982
+        ]
+      },
+      {
+        "sequence": 10,
+        "name": "死神5000",
+        "number": 10,
+        "encounterIds": [
+          2975,
+          2980
+        ]
+      },
+      {
+        "sequence": 11,
+        "name": "撕心狼将军",
+        "number": 11,
+        "encounterIds": [
+          2974,
+          2979
+        ]
+      },
+      {
+        "sequence": 12,
+        "name": "“船长”曲奇",
+        "number": 12,
+        "encounterIds": [
+          2973,
+          2978
+        ]
+      },
+      {
+        "sequence": 13,
+        "name": "梵妮莎·范克里夫",
+        "number": 13,
+        "encounterIds": [
+          1081
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 229,
+    "name": "黑石塔",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "欧莫克大王",
+        "number": 1,
+        "encounterIds": [
+          267
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "暗影猎手沃什加斯",
+        "number": 2,
+        "encounterIds": [
+          268
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "指挥官沃恩",
+        "number": 3,
+        "encounterIds": [
+          269
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "烟网蛛后",
+        "number": 4,
+        "encounterIds": [
+          270
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "尤洛克·暗嚎",
+        "number": 5,
+        "encounterIds": [
+          271
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "军需官兹格雷斯",
+        "number": 6,
+        "encounterIds": [
+          272
+        ]
+      },
+      {
+        "sequence": 7,
+        "name": "哈雷肯",
+        "number": 7,
+        "encounterIds": [
+          274
+        ]
+      },
+      {
+        "sequence": 8,
+        "name": "奴役者基兹鲁尔",
+        "number": 8,
+        "encounterIds": [
+          273
+        ]
+      },
+      {
+        "sequence": 9,
+        "name": "维姆萨拉克",
+        "number": 9,
+        "encounterIds": [
+          275
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 230,
+    "name": "黑石深渊",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "审讯官格斯塔恩",
+        "number": 1,
+        "encounterIds": [
+          227
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "洛考尔",
+        "number": 2,
+        "encounterIds": [
+          228
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "驯犬者格雷布玛尔",
+        "number": 3,
+        "encounterIds": [
+          229
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "秩序竞技场",
+        "number": 4,
+        "encounterIds": [
+          230
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "控火师罗格雷恩",
+        "number": 5,
+        "encounterIds": [
+          231
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "伊森迪奥斯",
+        "number": 6,
+        "encounterIds": [
+          232
+        ]
+      },
+      {
+        "sequence": 7,
+        "name": "典狱官斯迪尔基斯",
+        "number": 7,
+        "encounterIds": [
+          233
+        ]
+      },
+      {
+        "sequence": 8,
+        "name": "弗诺斯·达克维尔",
+        "number": 8,
+        "encounterIds": [
+          234
+        ]
+      },
+      {
+        "sequence": 9,
+        "name": "贝尔加",
+        "number": 9,
+        "encounterIds": [
+          235
+        ]
+      },
+      {
+        "sequence": 10,
+        "name": "安格弗将军",
+        "number": 10,
+        "encounterIds": [
+          236
+        ]
+      },
+      {
+        "sequence": 11,
+        "name": "傀儡统帅阿格曼奇",
+        "number": 11,
+        "encounterIds": [
+          237
+        ]
+      },
+      {
+        "sequence": 12,
+        "name": "霍尔雷·黑须",
+        "number": 12,
+        "encounterIds": [
+          238
+        ]
+      },
+      {
+        "sequence": 13,
+        "name": "法拉克斯",
+        "number": 13,
+        "encounterIds": [
+          239
+        ]
+      },
+      {
+        "sequence": 14,
+        "name": "雷布里·斯库比格特",
+        "number": 14,
+        "encounterIds": [
+          240
+        ]
+      },
+      {
+        "sequence": 15,
+        "name": "普拉格",
+        "number": 15,
+        "encounterIds": [
+          241
+        ]
+      },
+      {
+        "sequence": 16,
+        "name": "弗莱拉斯大使",
+        "number": 16,
+        "encounterIds": [
+          242
+        ]
+      },
+      {
+        "sequence": 17,
+        "name": "黑铁七贤",
+        "number": 17,
+        "encounterIds": [
+          243
+        ]
+      },
+      {
+        "sequence": 18,
+        "name": "玛格姆斯",
+        "number": 18,
+        "encounterIds": [
+          244
+        ]
+      },
+      {
+        "sequence": 19,
+        "name": "达格兰·索瑞森大帝",
+        "number": 19,
+        "encounterIds": [
+          245
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 329,
+    "name": "斯坦索姆",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "弗雷斯特恩",
+        "number": 1,
+        "encounterIds": [
+          473
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "安娜丝塔丽男爵夫人",
+        "number": 2,
+        "encounterIds": [
+          479
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "不可宽恕者",
+        "number": 3,
+        "encounterIds": [
+          472
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "奈鲁布恩坎",
+        "number": 4,
+        "encounterIds": [
+          480
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "邮差马龙",
+        "number": 5,
+        "encounterIds": [
+          1885
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "残忍的提米",
+        "number": 6,
+        "encounterIds": [
+          474
+        ]
+      },
+      {
+        "sequence": 7,
+        "name": "苍白的玛勒基",
+        "number": 7,
+        "encounterIds": [
+          481
+        ]
+      },
+      {
+        "sequence": 8,
+        "name": "指挥官玛洛尔",
+        "number": 8,
+        "encounterIds": [
+          476
+        ]
+      },
+      {
+        "sequence": 9,
+        "name": "巴瑟拉斯镇长",
+        "number": 9,
+        "encounterIds": [
+          482
+        ]
+      },
+      {
+        "sequence": 10,
+        "name": "希望破坏者威利",
+        "number": 10,
+        "encounterIds": [
+          475
+        ]
+      },
+      {
+        "sequence": 11,
+        "name": "吞咽者拉姆斯登",
+        "number": 11,
+        "encounterIds": [
+          483
+        ]
+      },
+      {
+        "sequence": 12,
+        "name": "档案管理员加尔福特",
+        "number": 12,
+        "encounterIds": [
+          477
+        ]
+      },
+      {
+        "sequence": 13,
+        "name": "巴纳扎尔",
+        "number": 13,
+        "encounterIds": [
+          478
+        ]
+      },
+      {
+        "sequence": 14,
+        "name": "奥里克斯·瑞文戴尔领主",
+        "number": 14,
+        "encounterIds": [
+          484
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 289,
+    "name": "通灵学院",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "传令官基尔图诺斯",
+        "number": 1,
+        "encounterIds": [
+          451
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "詹迪斯·巴罗夫",
+        "number": 2,
+        "encounterIds": [
+          452
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "血骨傀儡",
+        "number": 3,
+        "encounterIds": [
+          453
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "马杜克·布莱克波尔",
+        "number": 4,
+        "encounterIds": [
+          454
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "维克图斯",
+        "number": 5,
+        "encounterIds": [
+          455
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "莱斯·霜语",
+        "number": 6,
+        "encounterIds": [
+          456
+        ]
+      },
+      {
+        "sequence": 7,
+        "name": "讲师玛丽希亚",
+        "number": 7,
+        "encounterIds": [
+          457
+        ]
+      },
+      {
+        "sequence": 8,
+        "name": "瑟尔林·卡斯迪诺夫教授",
+        "number": 8,
+        "encounterIds": [
+          458
+        ]
+      },
+      {
+        "sequence": 9,
+        "name": "博学者普克尔特",
+        "number": 9,
+        "encounterIds": [
+          459
+        ]
+      },
+      {
+        "sequence": 10,
+        "name": "拉文尼亚",
+        "number": 10,
+        "encounterIds": [
+          460
+        ]
+      },
+      {
+        "sequence": 11,
+        "name": "阿雷克斯·巴罗夫",
+        "number": 11,
+        "encounterIds": [
+          461
+        ]
+      },
+      {
+        "sequence": 12,
+        "name": "伊露希亚·巴罗夫",
+        "number": 12,
+        "encounterIds": [
+          462
+        ]
+      },
+      {
+        "sequence": 13,
+        "name": "黑暗院长加丁",
+        "number": 13,
+        "encounterIds": [
+          463
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 349,
+    "name": "玛拉顿",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "诺克赛恩",
+        "number": 1,
+        "encounterIds": [
+          422
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "锐刺鞭笞者",
+        "number": 2,
+        "encounterIds": [
+          423
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "工匠吉兹洛克",
+        "number": 3,
+        "encounterIds": [
+          427
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "维利塔恩",
+        "number": 4,
+        "encounterIds": [
+          424
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "被诅咒的塞雷布拉斯",
+        "number": 5,
+        "encounterIds": [
+          425
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "兰斯利德",
+        "number": 6,
+        "encounterIds": [
+          426
+        ]
+      },
+      {
+        "sequence": 7,
+        "name": "洛特格里普",
+        "number": 7,
+        "encounterIds": [
+          428
+        ]
+      },
+      {
+        "sequence": 8,
+        "name": "瑟莱德丝公主",
+        "number": 8,
+        "encounterIds": [
+          429
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 389,
+    "name": "怒焰裂谷",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "阿达罗格",
+        "number": 1,
+        "encounterIds": [
+          1443
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "黑暗萨满柯兰萨",
+        "number": 2,
+        "encounterIds": [
+          1444
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "焰喉",
+        "number": 3,
+        "encounterIds": [
+          1445
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "熔岩守卫戈多斯",
+        "number": 4,
+        "encounterIds": [
+          1446
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 429,
+    "name": "厄运之槌",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "蕾瑟塔蒂丝",
+        "number": 1,
+        "encounterIds": [
+          345
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "海多斯博恩",
+        "number": 2,
+        "encounterIds": [
+          344
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "瑟雷姆·刺蹄",
+        "number": 3,
+        "encounterIds": [
+          343
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "荒野变形者奥兹恩",
+        "number": 4,
+        "encounterIds": [
+          346
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "特迪斯·扭木",
+        "number": 5,
+        "encounterIds": [
+          350
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "伊琳娜·暗木",
+        "number": 6,
+        "encounterIds": [
+          347
+        ]
+      },
+      {
+        "sequence": 7,
+        "name": "卡雷迪斯镇长",
+        "number": 7,
+        "encounterIds": [
+          348
+        ]
+      },
+      {
+        "sequence": 8,
+        "name": "伊莫塔尔",
+        "number": 8,
+        "encounterIds": [
+          349
+        ]
+      },
+      {
+        "sequence": 9,
+        "name": "托塞德林王子",
+        "number": 9,
+        "encounterIds": [
+          361
+        ]
+      },
+      {
+        "sequence": 10,
+        "name": "卫兵摩尔达",
+        "number": 10,
+        "encounterIds": [
+          362
+        ]
+      },
+      {
+        "sequence": 11,
+        "name": "践踏者克雷格",
+        "number": 11,
+        "encounterIds": [
+          363
+        ]
+      },
+      {
+        "sequence": 12,
+        "name": "卫兵芬古斯",
+        "number": 12,
+        "encounterIds": [
+          364
+        ]
+      },
+      {
+        "sequence": 13,
+        "name": "卫兵斯里基克",
+        "number": 13,
+        "encounterIds": [
+          365
+        ]
+      },
+      {
+        "sequence": 14,
+        "name": "克罗卡斯",
+        "number": 14,
+        "encounterIds": [
+          366
+        ]
+      },
+      {
+        "sequence": 15,
+        "name": "观察者克鲁什",
+        "number": 15,
+        "encounterIds": [
+          367
+        ]
+      },
+      {
+        "sequence": 16,
+        "name": "戈多克大王",
+        "number": 16,
+        "encounterIds": [
+          368
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 269,
+    "name": "黑色沼泽",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "时空领主德亚",
+        "number": 1,
+        "encounterIds": [
+          1920
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "坦普卢斯",
+        "number": 2,
+        "encounterIds": [
+          1921
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "埃欧努斯",
+        "number": 3,
+        "encounterIds": [
+          1919
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 560,
+    "name": "旧希尔斯布莱德丘陵",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "德拉克中尉",
+        "number": 1,
+        "encounterIds": [
+          1905
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "斯卡洛克上尉",
+        "number": 2,
+        "encounterIds": [
+          1907
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "时空猎手",
+        "number": 3,
+        "encounterIds": [
+          1906
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 543,
+    "name": "地狱火城墙",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "巡视者加戈玛",
+        "number": 1,
+        "encounterIds": [
+          1893
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "无疤者奥摩尔",
+        "number": 2,
+        "encounterIds": [
+          1891
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "传令官瓦兹德",
+        "number": 3,
+        "encounterIds": [
+          1892
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 542,
+    "name": "鲜血熔炉",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "制造者",
+        "number": 1,
+        "encounterIds": [
+          1922
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "布洛戈克",
+        "number": 2,
+        "encounterIds": [
+          1924
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "击碎者克里丹",
+        "number": 3,
+        "encounterIds": [
+          1923
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 540,
+    "name": "破碎大厅",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "高阶术士奈瑟库斯",
+        "number": 1,
+        "encounterIds": [
+          1936
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "血卫士伯鲁恩",
+        "number": 2,
+        "encounterIds": [
+          1935
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "战争使者沃姆罗格",
+        "number": 3,
+        "encounterIds": [
+          1937
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "酋长卡加斯·刃拳",
+        "number": 4,
+        "encounterIds": [
+          1938
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 545,
+    "name": "蒸汽地窟",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "水术师瑟丝比娅",
+        "number": 1,
+        "encounterIds": [
+          1942
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "机械师斯蒂里格",
+        "number": 2,
+        "encounterIds": [
+          1943
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "督军卡利瑟里斯",
+        "number": 3,
+        "encounterIds": [
+          1944
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 546,
+    "name": "幽暗沼泽",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "霍加尔芬",
+        "number": 1,
+        "encounterIds": [
+          1946
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "加兹安",
+        "number": 2,
+        "encounterIds": [
+          1945
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "沼地领主穆塞雷克",
+        "number": 3,
+        "encounterIds": [
+          1947
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "黑色阔步者",
+        "number": 4,
+        "encounterIds": [
+          1948
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 547,
+    "name": "奴隶围栏",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "背叛者门努",
+        "number": 1,
+        "encounterIds": [
+          1939
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "巨钳鲁克玛尔",
+        "number": 2,
+        "encounterIds": [
+          1941
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "夸格米拉",
+        "number": 3,
+        "encounterIds": [
+          1940
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "冰霜之王",
+        "number": 4,
+        "encounterIds": [
+          3317
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 555,
+    "name": "暗影迷宫",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "赫尔默大使",
+        "number": 1,
+        "encounterIds": [
+          1908
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "煽动者布莱卡特",
+        "number": 2,
+        "encounterIds": [
+          1909
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "沃匹尔大师",
+        "number": 3,
+        "encounterIds": [
+          1911
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "摩摩尔",
+        "number": 4,
+        "encounterIds": [
+          1910
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 558,
+    "name": "奥金尼地穴",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "死亡观察者希尔拉克",
+        "number": 1,
+        "encounterIds": [
+          1890
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "大主教玛拉达尔",
+        "number": 2,
+        "encounterIds": [
+          1889
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 556,
+    "name": "塞泰克大厅",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "黑暗编织者塞斯",
+        "number": 1,
+        "encounterIds": [
+          1903
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "安苏",
+        "number": 2,
+        "encounterIds": [
+          1904
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "利爪之王艾吉斯",
+        "number": 3,
+        "encounterIds": [
+          1902
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 557,
+    "name": "法力陵墓",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "潘德莫努斯",
+        "number": 1,
+        "encounterIds": [
+          1900
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "塔瓦洛克",
+        "number": 2,
+        "encounterIds": [
+          1901
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "尤尔",
+        "number": 3,
+        "encounterIds": [
+          250
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "节点亲王沙法尔",
+        "number": 4,
+        "encounterIds": [
+          1899
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 553,
+    "name": "生态船",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "指挥官萨拉妮丝",
+        "number": 1,
+        "encounterIds": [
+          1925
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "高级植物学家弗雷温",
+        "number": 2,
+        "encounterIds": [
+          1926
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "看管者索恩格林",
+        "number": 3,
+        "encounterIds": [
+          1928
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "拉伊",
+        "number": 4,
+        "encounterIds": [
+          1927
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "迁跃扭木",
+        "number": 5,
+        "encounterIds": [
+          1929
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 552,
+    "name": "禁魔监狱",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "自由的瑟雷凯斯",
+        "number": 1,
+        "encounterIds": [
+          1916
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "末日预言者达尔莉安",
+        "number": 2,
+        "encounterIds": [
+          1913
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "天怒预言者苏克拉底",
+        "number": 3,
+        "encounterIds": [
+          1915
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "预言者斯克瑞斯",
+        "number": 4,
+        "encounterIds": [
+          1914
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 554,
+    "name": "能源舰",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "机械领主卡帕西图斯",
+        "number": 1,
+        "encounterIds": [
+          1932
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "灵术师塞比瑟蕾",
+        "number": 2,
+        "encounterIds": [
+          1930
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "计算者帕萨雷恩",
+        "number": 3,
+        "encounterIds": [
+          1931
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "看守者盖罗基尔",
+        "number": 4,
+        "encounterIds": [
+          1933
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "看守者埃隆汉",
+        "number": 5,
+        "encounterIds": [
+          1934
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 585,
+    "name": "魔导师平台",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "塞林·火心",
+        "number": 1,
+        "encounterIds": [
+          1897
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "维萨鲁斯",
+        "number": 2,
+        "encounterIds": [
+          1898
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "女祭司德莉希亚",
+        "number": 3,
+        "encounterIds": [
+          1895
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "凯尔萨斯·逐日者",
+        "number": 4,
+        "encounterIds": [
+          1894
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 574,
+    "name": "乌特加德城堡",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "凯雷塞斯王子",
+        "number": 1,
+        "encounterIds": [
+          2026
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "斯卡瓦尔德和达尔隆",
+        "number": 2,
+        "encounterIds": [
+          2024
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "掠夺者因格瓦尔",
+        "number": 3,
+        "encounterIds": [
+          2025
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 575,
+    "name": "乌特加德之巅",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "席瓦拉·索格蕾",
+        "number": 1,
+        "encounterIds": [
+          2030
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "戈托克·苍蹄",
+        "number": 2,
+        "encounterIds": [
+          2027
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "残忍的斯卡迪",
+        "number": 3,
+        "encounterIds": [
+          2029
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "伊米隆国王",
+        "number": 4,
+        "encounterIds": [
+          2028
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 595,
+    "name": "净化斯坦索姆",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "肉钩",
+        "number": 1,
+        "encounterIds": [
+          2002
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "塑血者沙尔拉姆",
+        "number": 2,
+        "encounterIds": [
+          2004
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "时光领主埃博克",
+        "number": 3,
+        "encounterIds": [
+          2003
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "玛尔加尼斯",
+        "number": 4,
+        "encounterIds": [
+          2005
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 600,
+    "name": "达克萨隆要塞",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "托尔戈",
+        "number": 1,
+        "encounterIds": [
+          1974
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "召唤者诺沃斯",
+        "number": 2,
+        "encounterIds": [
+          1976
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "暴龙之王爵德",
+        "number": 3,
+        "encounterIds": [
+          1977
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "先知萨隆亚",
+        "number": 4,
+        "encounterIds": [
+          1975
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 578,
+    "name": "魔环",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "审讯者达库斯",
+        "number": 1,
+        "encounterIds": [
+          528,
+          529,
+          2016
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "瓦尔洛斯·云击",
+        "number": 2,
+        "encounterIds": [
+          530,
+          531,
+          2015
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "法师领主伊洛姆",
+        "number": 3,
+        "encounterIds": [
+          532,
+          533,
+          2014
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "魔网守护者埃雷苟斯",
+        "number": 4,
+        "encounterIds": [
+          534,
+          535,
+          2013
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 599,
+    "name": "岩石大厅",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "克莱斯塔卢斯",
+        "number": 1,
+        "encounterIds": [
+          1994
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "悲伤圣女",
+        "number": 2,
+        "encounterIds": [
+          1996
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "远古法庭",
+        "number": 3,
+        "encounterIds": [
+          1995
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "塑铁者斯约尼尔",
+        "number": 4,
+        "encounterIds": [
+          1998
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 576,
+    "name": "魔枢",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "冰封指挥官",
+        "number": 1,
+        "encounterIds": [
+          519
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "冻结的指挥官",
+        "number": 2,
+        "encounterIds": [
+          3017
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "大魔导师泰蕾丝塔",
+        "number": 3,
+        "encounterIds": [
+          2010
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "阿诺玛鲁斯",
+        "number": 4,
+        "encounterIds": [
+          2009
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "塑树者奥莫洛克",
+        "number": 5,
+        "encounterIds": [
+          2012
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "克莉斯塔萨",
+        "number": 6,
+        "encounterIds": [
+          2011
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 602,
+    "name": "闪电大厅",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "比亚格里将军",
+        "number": 1,
+        "encounterIds": [
+          1987
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "沃尔坎",
+        "number": 2,
+        "encounterIds": [
+          1985
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "艾欧纳尔",
+        "number": 3,
+        "encounterIds": [
+          1984
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "洛肯",
+        "number": 4,
+        "encounterIds": [
+          1986
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 601,
+    "name": "艾卓-尼鲁布",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "看门者克里克希尔",
+        "number": 1,
+        "encounterIds": [
+          1971
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "哈多诺克斯",
+        "number": 2,
+        "encounterIds": [
+          1972
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "阿努巴拉克",
+        "number": 3,
+        "encounterIds": [
+          1973
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 608,
+    "name": "紫罗兰监狱",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "第二囚犯",
+        "number": 1,
+        "encounterIds": [
+          2018
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "第一囚犯",
+        "number": 2,
+        "encounterIds": [
+          2019
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "塞安妮苟萨",
+        "number": 3,
+        "encounterIds": [
+          2020
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 604,
+    "name": "古达克",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "斯拉德兰",
+        "number": 1,
+        "encounterIds": [
+          1978
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "达卡莱巨像",
+        "number": 2,
+        "encounterIds": [
+          1983
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "莫拉比",
+        "number": 3,
+        "encounterIds": [
+          1980
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "凶残的伊克",
+        "number": 4,
+        "encounterIds": [
+          1988
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "迦尔达拉",
+        "number": 5,
+        "encounterIds": [
+          1981
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 619,
+    "name": "安卡赫特：古代王国",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "纳多克斯长老",
+        "number": 1,
+        "encounterIds": [
+          1969
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "塔达拉姆王子",
+        "number": 2,
+        "encounterIds": [
+          1966
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "耶戈达·觅影者",
+        "number": 3,
+        "encounterIds": [
+          1967
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "埃曼尼塔",
+        "number": 4,
+        "encounterIds": [
+          1989
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "传令官沃拉兹",
+        "number": 5,
+        "encounterIds": [
+          1968
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 650,
+    "name": "冠军的试炼",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "总冠军",
+        "number": 1,
+        "encounterIds": [
+          2022
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "银色勇士",
+        "number": 2,
+        "encounterIds": [
+          2023
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "黑骑士",
+        "number": 3,
+        "encounterIds": [
+          2021
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 632,
+    "name": "灵魂洪炉",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "布隆亚姆",
+        "number": 1,
+        "encounterIds": [
+          2006
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "噬魂者",
+        "number": 2,
+        "encounterIds": [
+          2007
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 658,
+    "name": "萨隆矿坑",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "熔炉之主加弗斯特",
+        "number": 1,
+        "encounterIds": [
+          1999
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "伊克和科瑞克",
+        "number": 2,
+        "encounterIds": [
+          2001
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "天灾领主泰兰努斯",
+        "number": 3,
+        "encounterIds": [
+          2000
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 668,
+    "name": "映像大厅",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "法瑞克",
+        "number": 1,
+        "encounterIds": [
+          1992
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "玛维恩",
+        "number": 2,
+        "encounterIds": [
+          1993
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "逃离阿尔萨斯",
+        "number": 3,
+        "encounterIds": [
+          1990
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 859,
+    "name": "祖尔格拉布",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "高阶祭司温诺希斯",
+        "number": 1,
+        "encounterIds": [
+          1178
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "疯狂之缘",
+        "number": 2,
+        "encounterIds": [
+          1188
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "血领主曼多基尔",
+        "number": 3,
+        "encounterIds": [
+          1179
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "高阶祭司基尔娜拉",
+        "number": 4,
+        "encounterIds": [
+          1180
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "赞吉尔",
+        "number": 5,
+        "encounterIds": [
+          1181
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "碎神者金度",
+        "number": 6,
+        "encounterIds": [
+          1182
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 568,
+    "name": "祖阿曼",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "埃基尔松",
+        "number": 1,
+        "encounterIds": [
+          1189
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "纳洛拉克",
+        "number": 2,
+        "encounterIds": [
+          1190
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "加亚莱",
+        "number": 3,
+        "encounterIds": [
+          1191
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "哈尔拉兹",
+        "number": 4,
+        "encounterIds": [
+          1192
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "妖术领主玛拉卡斯",
+        "number": 5,
+        "encounterIds": [
+          1193
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "达卡拉",
+        "number": 6,
+        "encounterIds": [
+          1194
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 645,
+    "name": "黑石岩窟",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "摧骨者罗姆欧格",
+        "number": 1,
+        "encounterIds": [
+          1040
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "柯尔拉，暮光之兆",
+        "number": 2,
+        "encounterIds": [
+          1038
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "卡尔什·断钢",
+        "number": 3,
+        "encounterIds": [
+          1039
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "如花",
+        "number": 4,
+        "encounterIds": [
+          1037
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "升腾者领主奥西迪斯",
+        "number": 5,
+        "encounterIds": [
+          1036
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 644,
+    "name": "起源大厅",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "神殿守护者安努尔",
+        "number": 1,
+        "encounterIds": [
+          1080
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "地怒者塔赫",
+        "number": 2,
+        "encounterIds": [
+          1076
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "安拉斐特",
+        "number": 3,
+        "encounterIds": [
+          1075
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "伊希斯特",
+        "number": 4,
+        "encounterIds": [
+          1077
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "阿穆纳伊",
+        "number": 5,
+        "encounterIds": [
+          1074
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "塞特斯",
+        "number": 6,
+        "encounterIds": [
+          1079
+        ]
+      },
+      {
+        "sequence": 7,
+        "name": "拉夏",
+        "number": 7,
+        "encounterIds": [
+          1078
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 670,
+    "name": "格瑞姆巴托",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "乌比斯将军",
+        "number": 1,
+        "encounterIds": [
+          1051
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "铸炉之主索朗格斯",
+        "number": 2,
+        "encounterIds": [
+          1050
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "达加·燃影者",
+        "number": 3,
+        "encounterIds": [
+          1048
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "埃鲁达克",
+        "number": 4,
+        "encounterIds": [
+          1049
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 643,
+    "name": "潮汐王座",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "纳兹夏尔女士",
+        "number": 1,
+        "encounterIds": [
+          1045
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "指挥官乌尔索克",
+        "number": 2,
+        "encounterIds": [
+          1044
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "蛊心魔古厄夏",
+        "number": 3,
+        "encounterIds": [
+          1046
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "厄祖玛特",
+        "number": 4,
+        "encounterIds": [
+          1047
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 657,
+    "name": "旋云之巅",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "大宰相埃尔坦",
+        "number": 1,
+        "encounterIds": [
+          1043
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "阿尔泰鲁斯",
+        "number": 2,
+        "encounterIds": [
+          1041
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "阿萨德",
+        "number": 3,
+        "encounterIds": [
+          1042
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 725,
+    "name": "巨石之核",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "克伯鲁斯",
+        "number": 1,
+        "encounterIds": [
+          1056
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "岩皮",
+        "number": 2,
+        "encounterIds": [
+          1059
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "欧泽鲁克",
+        "number": 3,
+        "encounterIds": [
+          1058
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "高阶女祭司艾苏尔",
+        "number": 4,
+        "encounterIds": [
+          1057
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 755,
+    "name": "托维尔失落之城",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "胡辛姆将军",
+        "number": 1,
+        "encounterIds": [
+          1052
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "锁喉",
+        "number": 2,
+        "encounterIds": [
+          1054
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "高阶预言者巴林姆",
+        "number": 3,
+        "encounterIds": [
+          1053
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "希亚玛特",
+        "number": 4,
+        "encounterIds": [
+          1055
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 939,
+    "name": "永恒之井",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "佩罗萨恩",
+        "number": 1,
+        "encounterIds": [
+          1272
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "艾萨拉女王",
+        "number": 2,
+        "encounterIds": [
+          1273
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "玛诺洛斯",
+        "number": 3,
+        "encounterIds": [
+          1274
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 938,
+    "name": "时光之末",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "贝恩的残影",
+        "number": 1,
+        "encounterIds": [
+          1881
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "吉安娜的残影",
+        "number": 2,
+        "encounterIds": [
+          1883
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "希尔瓦娜斯的残影",
+        "number": 3,
+        "encounterIds": [
+          1882
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "泰兰德的残影",
+        "number": 4,
+        "encounterIds": [
+          1884
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "姆诺兹多",
+        "number": 5,
+        "encounterIds": [
+          1271
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 940,
+    "name": "暮光审判",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "阿奎里恩",
+        "number": 1,
+        "encounterIds": [
+          1337
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "埃希拉·黎明克星",
+        "number": 2,
+        "encounterIds": [
+          1340
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "大主教本尼迪塔斯",
+        "number": 3,
+        "encounterIds": [
+          1339
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 959,
+    "name": "影踪禅院",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "古·穿云",
+        "number": 1,
+        "encounterIds": [
+          1303
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "雪流大师",
+        "number": 2,
+        "encounterIds": [
+          1304
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "狂之煞",
+        "number": 3,
+        "encounterIds": [
+          1305
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "祝踏岚",
+        "number": 4,
+        "encounterIds": [
+          1306
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 960,
+    "name": "青龙寺",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "贤者马里",
+        "number": 1,
+        "encounterIds": [
+          1418
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "游学者石步",
+        "number": 2,
+        "encounterIds": [
+          1417
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "刘·焰心",
+        "number": 3,
+        "encounterIds": [
+          1416
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "疑之煞",
+        "number": 4,
+        "encounterIds": [
+          1439
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 961,
+    "name": "风暴烈酒酿造厂",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "乌克乌克",
+        "number": 1,
+        "encounterIds": [
+          1412
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "跳跳大王",
+        "number": 2,
+        "encounterIds": [
+          1413
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "破桶而出的炎诛",
+        "number": 3,
+        "encounterIds": [
+          1414
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 962,
+    "name": "残阳关",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "破坏者吉普提拉克",
+        "number": 1,
+        "encounterIds": [
+          1397
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "突袭者加杜卡",
+        "number": 2,
+        "encounterIds": [
+          1405
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "指挥官瑞魔克",
+        "number": 3,
+        "encounterIds": [
+          1406
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "莱公",
+        "number": 4,
+        "encounterIds": [
+          1419
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 1001,
+    "name": "血色大厅",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "驯犬者布兰恩",
+        "number": 1,
+        "encounterIds": [
+          1422
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "织焰者孔格勒",
+        "number": 2,
+        "encounterIds": [
+          1420
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "武器大师哈兰",
+        "number": 3,
+        "encounterIds": [
+          1421
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 1007,
+    "name": "通灵学院",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "指导者寒心",
+        "number": 1,
+        "encounterIds": [
+          1426
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "詹迪斯·巴罗夫",
+        "number": 2,
+        "encounterIds": [
+          1427
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "血骨傀儡",
+        "number": 3,
+        "encounterIds": [
+          1428
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "莉莉安·沃斯",
+        "number": 4,
+        "encounterIds": [
+          1429
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "黑暗院长加丁",
+        "number": 5,
+        "encounterIds": [
+          1430
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 1004,
+    "name": "血色修道院",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "无头骑士",
+        "number": 1,
+        "encounterIds": [
+          2725
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "裂魂者萨尔诺斯",
+        "number": 2,
+        "encounterIds": [
+          1423
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "科洛夫修士",
+        "number": 3,
+        "encounterIds": [
+          1424
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "大检察官怀特迈恩",
+        "number": 4,
+        "encounterIds": [
+          1425
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 994,
+    "name": "魔古山宫殿",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "君王的试炼",
+        "number": 1,
+        "encounterIds": [
+          1442
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "杰翰",
+        "number": 2,
+        "encounterIds": [
+          2129
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "武器大师席恩",
+        "number": 3,
+        "encounterIds": [
+          1441
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 1011,
+    "name": "围攻砮皂寺",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "宰相金巴卡",
+        "number": 1,
+        "encounterIds": [
+          1465
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "指挥官沃加克",
+        "number": 2,
+        "encounterIds": [
+          1502
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "将军帕瓦拉克",
+        "number": 3,
+        "encounterIds": [
+          1447
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "翼虫首领尼诺洛克",
+        "number": 4,
+        "encounterIds": [
+          1464
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 1175,
+    "name": "血槌炉渣矿井",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "玛格莫拉图斯",
+        "number": 1,
+        "encounterIds": [
+          1655
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "守奴人库鲁斯托",
+        "number": 2,
+        "encounterIds": [
+          1653
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "罗托尔",
+        "number": 3,
+        "encounterIds": [
+          1652
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "戈洛克",
+        "number": 4,
+        "encounterIds": [
+          1654
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 1182,
+    "name": "奥金顿",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "警戒者凯萨尔",
+        "number": 1,
+        "encounterIds": [
+          1686
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "缚魂者尼娅米",
+        "number": 2,
+        "encounterIds": [
+          1685
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "阿扎凯尔，燃烧军团先锋",
+        "number": 3,
+        "encounterIds": [
+          1678
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "塔隆戈尔",
+        "number": 4,
+        "encounterIds": [
+          1714
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 1176,
+    "name": "影月墓地",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "莎达娜·血怒",
+        "number": 1,
+        "encounterIds": [
+          1677
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "纳利什",
+        "number": 2,
+        "encounterIds": [
+          1688
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "骨喉",
+        "number": 3,
+        "encounterIds": [
+          1679
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "耐奥祖",
+        "number": 4,
+        "encounterIds": [
+          1682
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 1195,
+    "name": "钢铁码头",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "血肉撕裂者诺格加尔",
+        "number": 1,
+        "encounterIds": [
+          1749
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "恐轨押运员",
+        "number": 2,
+        "encounterIds": [
+          1748
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "奥舍尔",
+        "number": 3,
+        "encounterIds": [
+          1750
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "斯古洛克，格鲁尔之子",
+        "number": 4,
+        "encounterIds": [
+          1754
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 1208,
+    "name": "恐轨车站",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "箭火和波尔卡",
+        "number": 1,
+        "encounterIds": [
+          1715
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "尼托格·雷塔",
+        "number": 2,
+        "encounterIds": [
+          1732
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "啸天者托瓦拉",
+        "number": 3,
+        "encounterIds": [
+          1736
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 1209,
+    "name": "通天峰",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "兰吉特",
+        "number": 1,
+        "encounterIds": [
+          1698
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "阿拉卡纳斯",
+        "number": 2,
+        "encounterIds": [
+          1699
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "鲁克兰",
+        "number": 3,
+        "encounterIds": [
+          1700
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "高阶贤者维里克斯",
+        "number": 4,
+        "encounterIds": [
+          1701
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 1279,
+    "name": "永茂林地",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "枯木",
+        "number": 1,
+        "encounterIds": [
+          1746
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "远古的保卫者",
+        "number": 2,
+        "encounterIds": [
+          1757
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "大法师索尔",
+        "number": 3,
+        "encounterIds": [
+          1751
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "艾里塔克",
+        "number": 4,
+        "encounterIds": [
+          1752
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "雅努",
+        "number": 5,
+        "encounterIds": [
+          1756
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 1358,
+    "name": "黑石塔上层",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "折铁者高尔山",
+        "number": 1,
+        "encounterIds": [
+          1761
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "奇拉克",
+        "number": 2,
+        "encounterIds": [
+          1758
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "指挥官萨贝克",
+        "number": 3,
+        "encounterIds": [
+          1759
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "狂野的怒翼",
+        "number": 4,
+        "encounterIds": [
+          1760
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "督军扎伊拉",
+        "number": 5,
+        "encounterIds": [
+          1762
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 1458,
+    "name": "奈萨里奥的巢穴",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "洛克莫拉",
+        "number": 1,
+        "encounterIds": [
+          1790
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "乌拉罗格·塑山",
+        "number": 2,
+        "encounterIds": [
+          1791
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "纳拉萨斯",
+        "number": 3,
+        "encounterIds": [
+          1792
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "地底之王达古尔",
+        "number": 4,
+        "encounterIds": [
+          1793
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 1477,
+    "name": "英灵殿",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "海姆达尔",
+        "number": 1,
+        "encounterIds": [
+          1805
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "赫娅",
+        "number": 2,
+        "encounterIds": [
+          1806
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "芬雷尔",
+        "number": 3,
+        "encounterIds": [
+          1807
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "神王斯科瓦尔德",
+        "number": 4,
+        "encounterIds": [
+          1808
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "奥丁",
+        "number": 5,
+        "encounterIds": [
+          1809
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 1466,
+    "name": "黑心林地",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "大德鲁伊格兰达里斯",
+        "number": 1,
+        "encounterIds": [
+          1836
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "橡树之心",
+        "number": 2,
+        "encounterIds": [
+          1837
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "德萨隆",
+        "number": 3,
+        "encounterIds": [
+          1838
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "萨维斯之影",
+        "number": 4,
+        "encounterIds": [
+          1839
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 1493,
+    "name": "守望者地窟",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "提拉宋·萨瑟利尔",
+        "number": 1,
+        "encounterIds": [
+          1815
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "审判官托蒙托鲁姆",
+        "number": 2,
+        "encounterIds": [
+          1850
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "阿什高姆",
+        "number": 3,
+        "encounterIds": [
+          1816
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "格雷泽",
+        "number": 4,
+        "encounterIds": [
+          1817
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "科达娜·邪歌",
+        "number": 5,
+        "encounterIds": [
+          1818
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 1501,
+    "name": "黑鸦堡垒",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "融合之魂",
+        "number": 1,
+        "encounterIds": [
+          1832
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "伊莉萨娜·拉文凯斯",
+        "number": 2,
+        "encounterIds": [
+          1833
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "可恨的斯麦斯帕",
+        "number": 3,
+        "encounterIds": [
+          1834
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "库塔洛斯·拉文凯斯",
+        "number": 4,
+        "encounterIds": [
+          1835
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 1492,
+    "name": "冥口峭壁",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "堕落君王伊米隆",
+        "number": 1,
+        "encounterIds": [
+          1822
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "哈布隆",
+        "number": 2,
+        "encounterIds": [
+          1823
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "海拉",
+        "number": 3,
+        "encounterIds": [
+          1824
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 1516,
+    "name": "魔法回廊",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "伊凡尔",
+        "number": 1,
+        "encounterIds": [
+          1827
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "科蒂拉克斯",
+        "number": 2,
+        "encounterIds": [
+          1825
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "萨卡尔将军",
+        "number": 3,
+        "encounterIds": [
+          1828
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "纳尔提拉",
+        "number": 4,
+        "encounterIds": [
+          1826
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "顾问凡多斯",
+        "number": 5,
+        "encounterIds": [
+          1829
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 1544,
+    "name": "紫罗兰监狱",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "颤栗之喉",
+        "number": 1,
+        "encounterIds": [
+          1845
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "溃面",
+        "number": 2,
+        "encounterIds": [
+          1848
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "鲜血公主萨安娜",
+        "number": 3,
+        "encounterIds": [
+          1855
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "夺心者卡什",
+        "number": 4,
+        "encounterIds": [
+          1846
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "米尔菲丝·法力风暴",
+        "number": 5,
+        "encounterIds": [
+          1847
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "阿努贝斯特",
+        "number": 6,
+        "encounterIds": [
+          1852
+        ]
+      },
+      {
+        "sequence": 7,
+        "name": "赛尔奥隆",
+        "number": 7,
+        "encounterIds": [
+          1851
+        ]
+      },
+      {
+        "sequence": 8,
+        "name": "邪能领主贝图格",
+        "number": 8,
+        "encounterIds": [
+          1856
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 1456,
+    "name": "艾萨拉之眼",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "督军帕杰什",
+        "number": 1,
+        "encounterIds": [
+          1810
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "积怨夫人",
+        "number": 2,
+        "encounterIds": [
+          1811
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "深须国王",
+        "number": 3,
+        "encounterIds": [
+          1812
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "瑟芬崔斯克",
+        "number": 4,
+        "encounterIds": [
+          1813
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "艾萨拉之怒",
+        "number": 5,
+        "encounterIds": [
+          1814
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 1571,
+    "name": "群星庭院",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "巡逻队长加多",
+        "number": 1,
+        "encounterIds": [
+          1868
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "塔丽克萨·火冠",
+        "number": 2,
+        "encounterIds": [
+          1869
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "顾问麦兰杜斯",
+        "number": 3,
+        "encounterIds": [
+          1870
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 1651,
+    "name": "卡拉赞",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "歌剧院",
+        "number": 1,
+        "encounterIds": [
+          1957
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "贞节圣女",
+        "number": 2,
+        "encounterIds": [
+          1954
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "猎手阿图门",
+        "number": 3,
+        "encounterIds": [
+          1960
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "莫罗斯",
+        "number": 4,
+        "encounterIds": [
+          1961
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "馆长",
+        "number": 5,
+        "encounterIds": [
+          1964
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "麦迪文之影",
+        "number": 6,
+        "encounterIds": [
+          1965
+        ]
+      },
+      {
+        "sequence": 7,
+        "name": "魔力吞噬者",
+        "number": 7,
+        "encounterIds": [
+          1959
+        ]
+      },
+      {
+        "sequence": 8,
+        "name": "夜之魇",
+        "number": 8,
+        "encounterIds": [
+          2031
+        ]
+      },
+      {
+        "sequence": 9,
+        "name": "监视者维兹艾德姆",
+        "number": 9,
+        "encounterIds": [
+          2017
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 1677,
+    "name": "永夜大教堂",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "阿格洛诺克斯",
+        "number": 1,
+        "encounterIds": [
+          2055
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "轻蔑的萨什比特",
+        "number": 2,
+        "encounterIds": [
+          2057
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "多玛塔克斯",
+        "number": 3,
+        "encounterIds": [
+          2053
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "孟菲斯托斯",
+        "number": 4,
+        "encounterIds": [
+          2039
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 1753,
+    "name": "执政团之座",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "晋升者祖拉尔",
+        "number": 1,
+        "encounterIds": [
+          2065
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "萨普瑞什",
+        "number": 2,
+        "encounterIds": [
+          2066
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "总督奈扎尔",
+        "number": 3,
+        "encounterIds": [
+          2067
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "鲁拉",
+        "number": 4,
+        "encounterIds": [
+          2068
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 1594,
+    "name": "暴富矿区！！",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "投币式群体打击者",
+        "number": 1,
+        "encounterIds": [
+          2105
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "艾泽洛克",
+        "number": 2,
+        "encounterIds": [
+          2106
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "瑞克莎·流火",
+        "number": 3,
+        "encounterIds": [
+          2107
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "商业大亨拉兹敦克",
+        "number": 4,
+        "encounterIds": [
+          2108
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "贝塔里克斯·热修",
+        "number": 5,
+        "encounterIds": [
+          3463
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 1763,
+    "name": "阿塔达萨",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "女祭司阿伦扎",
+        "number": 1,
+        "encounterIds": [
+          2084
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "沃卡尔",
+        "number": 2,
+        "encounterIds": [
+          2085
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "莱赞",
+        "number": 3,
+        "encounterIds": [
+          2086
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "亚兹玛",
+        "number": 4,
+        "encounterIds": [
+          2087
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 1754,
+    "name": "自由镇",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "天空上尉库拉格",
+        "number": 1,
+        "encounterIds": [
+          2093
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "海盗议会",
+        "number": 2,
+        "encounterIds": [
+          2094
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "藏宝竞技场",
+        "number": 3,
+        "encounterIds": [
+          2095
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "哈兰·斯威提勋爵",
+        "number": 4,
+        "encounterIds": [
+          2096
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 1771,
+    "name": "托尔达戈",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "泥沙女王",
+        "number": 1,
+        "encounterIds": [
+          2101
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "杰斯·豪里斯",
+        "number": 2,
+        "encounterIds": [
+          2102
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "骑士队长瓦莱莉",
+        "number": 3,
+        "encounterIds": [
+          2103
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "科古斯狱长",
+        "number": 4,
+        "encounterIds": [
+          2104
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 1822,
+    "name": "围攻伯拉勒斯",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "拜恩比吉中士",
+        "number": 1,
+        "encounterIds": [
+          2097
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "“屠夫”血钩",
+        "number": 2,
+        "encounterIds": [
+          2098
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "恐怖船长洛克伍德",
+        "number": 3,
+        "encounterIds": [
+          2109
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "哈达尔·黑渊",
+        "number": 4,
+        "encounterIds": [
+          2099
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "维克戈斯",
+        "number": 5,
+        "encounterIds": [
+          2100
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 1841,
+    "name": "地渊孢林",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "长者莉娅克萨",
+        "number": 1,
+        "encounterIds": [
+          2111
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "被感染的岩喉",
+        "number": 2,
+        "encounterIds": [
+          2118
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "孢子召唤师赞查",
+        "number": 3,
+        "encounterIds": [
+          2112
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "不羁畸变怪",
+        "number": 4,
+        "encounterIds": [
+          2123
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 1862,
+    "name": "维克雷斯庄园",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "毒心三姝",
+        "number": 1,
+        "encounterIds": [
+          2113
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "魂缚巨像",
+        "number": 2,
+        "encounterIds": [
+          2114
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "贪食的拉尔",
+        "number": 3,
+        "encounterIds": [
+          2115
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "维克雷斯勋爵和夫人",
+        "number": 4,
+        "encounterIds": [
+          2116
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "图尔，高莱克",
+        "number": 5,
+        "encounterIds": [
+          2117
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 1864,
+    "name": "风暴神殿",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "阿库希尔",
+        "number": 1,
+        "encounterIds": [
+          2130
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "海贤议会",
+        "number": 2,
+        "encounterIds": [
+          2131
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "斯托颂勋爵",
+        "number": 3,
+        "encounterIds": [
+          2132
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "低语者沃尔兹斯",
+        "number": 4,
+        "encounterIds": [
+          2133
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 1762,
+    "name": "诸王之眠",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "黄金风蛇",
+        "number": 1,
+        "encounterIds": [
+          2139
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "殓尸者姆沁巴",
+        "number": 2,
+        "encounterIds": [
+          2142
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "部族议会",
+        "number": 3,
+        "encounterIds": [
+          2140
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "达萨大王",
+        "number": 4,
+        "encounterIds": [
+          2143
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 1877,
+    "name": "塞塔里斯神庙",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "阿德里斯和阿斯匹克斯",
+        "number": 1,
+        "encounterIds": [
+          2124
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "米利克萨",
+        "number": 2,
+        "encounterIds": [
+          2125
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "加瓦兹特",
+        "number": 3,
+        "encounterIds": [
+          2126
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "塞塔里斯的化身",
+        "number": 4,
+        "encounterIds": [
+          2127
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2097,
+    "name": "麦卡贡行动",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "戈巴马克国王",
+        "number": 1,
+        "encounterIds": [
+          2290
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "冈克",
+        "number": 2,
+        "encounterIds": [
+          2292
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "崔克茜和耐诺",
+        "number": 3,
+        "encounterIds": [
+          2312
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "HK-8型空中压制单位",
+        "number": 4,
+        "encounterIds": [
+          2291
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "坦克大战",
+        "number": 5,
+        "encounterIds": [
+          2257
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "狂犬K.U.-J.0.",
+        "number": 6,
+        "encounterIds": [
+          2258
+        ]
+      },
+      {
+        "sequence": 7,
+        "name": "机械师的花园",
+        "number": 7,
+        "encounterIds": [
+          2259
+        ]
+      },
+      {
+        "sequence": 8,
+        "name": "麦卡贡国王",
+        "number": 8,
+        "encounterIds": [
+          2260
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2236,
+    "name": "暗槌堡垒",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "汤克",
+        "number": 1,
+        "encounterIds": [
+          2325
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "卡雷苟斯",
+        "number": 2,
+        "encounterIds": [
+          2326
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2287,
+    "name": "赎罪大厅",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "哈尔吉亚斯，罪污巨像",
+        "number": 1,
+        "encounterIds": [
+          2401
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "艾谢朗",
+        "number": 2,
+        "encounterIds": [
+          2380
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "高阶裁决官阿丽兹",
+        "number": 3,
+        "encounterIds": [
+          2403
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "宫务大臣",
+        "number": 4,
+        "encounterIds": [
+          2381
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2285,
+    "name": "晋升高塔",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "金-塔拉",
+        "number": 1,
+        "encounterIds": [
+          2357
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "雯图纳柯丝",
+        "number": 2,
+        "encounterIds": [
+          2356
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "奥莱芙莉安",
+        "number": 3,
+        "encounterIds": [
+          2358
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "忠诚圣杰德沃丝",
+        "number": 4,
+        "encounterIds": [
+          2359
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2293,
+    "name": "伤逝剧场",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "狭路相逢",
+        "number": 1,
+        "encounterIds": [
+          2391
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "斩血",
+        "number": 2,
+        "encounterIds": [
+          2365
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "无堕者哈夫",
+        "number": 3,
+        "encounterIds": [
+          2366
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "库尔萨洛克",
+        "number": 4,
+        "encounterIds": [
+          2364
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "莫德蕾莎",
+        "number": 5,
+        "encounterIds": [
+          2404
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2284,
+    "name": "赤红深渊",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "贪食的克里克西斯",
+        "number": 1,
+        "encounterIds": [
+          2360
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "执行者塔沃德",
+        "number": 2,
+        "encounterIds": [
+          2361
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "大学监贝律莉娅",
+        "number": 3,
+        "encounterIds": [
+          2362
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "卡尔将军",
+        "number": 4,
+        "encounterIds": [
+          2363
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2286,
+    "name": "通灵战潮",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "凋骨",
+        "number": 1,
+        "encounterIds": [
+          2387
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "收割者阿玛厄斯",
+        "number": 2,
+        "encounterIds": [
+          2388
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "外科医生缝肉",
+        "number": 3,
+        "encounterIds": [
+          2389
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "缚霜者纳尔佐",
+        "number": 4,
+        "encounterIds": [
+          2390
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2289,
+    "name": "凋魂之殇",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "酤团",
+        "number": 1,
+        "encounterIds": [
+          2382
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "伊库斯博士",
+        "number": 2,
+        "encounterIds": [
+          2384
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "多米娜·毒刃",
+        "number": 3,
+        "encounterIds": [
+          2385
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "斯特拉达玛侯爵",
+        "number": 4,
+        "encounterIds": [
+          2386
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2291,
+    "name": "彼界",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "夺灵者哈卡",
+        "number": 1,
+        "encounterIds": [
+          2395
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "法力风暴夫妇",
+        "number": 2,
+        "encounterIds": [
+          2394
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "商人赛·艾柯莎",
+        "number": 3,
+        "encounterIds": [
+          2400
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "穆厄扎拉",
+        "number": 4,
+        "encounterIds": [
+          2396
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2290,
+    "name": "塞兹仙林的迷雾",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "马洛克，英格拉",
+        "number": 1,
+        "encounterIds": [
+          2397
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "唤雾者",
+        "number": 2,
+        "encounterIds": [
+          2392
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "特雷德奥瓦",
+        "number": 3,
+        "encounterIds": [
+          2393
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2441,
+    "name": "塔扎维什，帷纱集市",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "哨卫佐·菲克斯",
+        "number": 1,
+        "encounterIds": [
+          2425
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "卖品会",
+        "number": 2,
+        "encounterIds": [
+          2441
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "收发室乱战",
+        "number": 3,
+        "encounterIds": [
+          2424
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "麦扎的绿洲",
+        "number": 4,
+        "encounterIds": [
+          2440
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "索·阿兹密",
+        "number": 5,
+        "encounterIds": [
+          2437
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "希尔布兰德",
+        "number": 6,
+        "encounterIds": [
+          2426
+        ]
+      },
+      {
+        "sequence": 7,
+        "name": "时空船长钩尾",
+        "number": 7,
+        "encounterIds": [
+          2419
+        ]
+      },
+      {
+        "sequence": 8,
+        "name": "索·莉亚",
+        "number": 8,
+        "encounterIds": [
+          2442
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2515,
+    "name": "碧蓝魔馆",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "莱魔",
+        "number": 1,
+        "encounterIds": [
+          2582
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "青刃",
+        "number": 2,
+        "encounterIds": [
+          2585
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "泰拉什·灰翼",
+        "number": 3,
+        "encounterIds": [
+          2583
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "安布雷斯库",
+        "number": 4,
+        "encounterIds": [
+          2584
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2451,
+    "name": "奥达曼",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "失落的矮人",
+        "number": 1,
+        "encounterIds": [
+          2555
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "布罗马奇",
+        "number": 2,
+        "encounterIds": [
+          2556
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "哨兵塔隆达丝",
+        "number": 3,
+        "encounterIds": [
+          2557
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "艾博隆",
+        "number": 4,
+        "encounterIds": [
+          2558
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "时空领主戴欧斯",
+        "number": 5,
+        "encounterIds": [
+          2559
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2516,
+    "name": "诺库德阻击战",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "格拉尼斯",
+        "number": 1,
+        "encounterIds": [
+          2637
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "狂怒风暴",
+        "number": 2,
+        "encounterIds": [
+          2636
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "提拉和马鲁克",
+        "number": 3,
+        "encounterIds": [
+          2581
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "巴拉卡可汗",
+        "number": 4,
+        "encounterIds": [
+          2580
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2520,
+    "name": "蕨皮山谷",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "劈爪的战团",
+        "number": 1,
+        "encounterIds": [
+          2570
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "树口",
+        "number": 2,
+        "encounterIds": [
+          2568
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "肠击",
+        "number": 3,
+        "encounterIds": [
+          2567
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "腐朽主母怒眼",
+        "number": 4,
+        "encounterIds": [
+          2569
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2519,
+    "name": "奈萨鲁斯",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "查尔加斯，龙鳞之灾",
+        "number": 1,
+        "encounterIds": [
+          2613
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "熔炉主管戈雷克",
+        "number": 2,
+        "encounterIds": [
+          2612
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "岩浆之牙",
+        "number": 3,
+        "encounterIds": [
+          2610
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "督军莎尔佳",
+        "number": 4,
+        "encounterIds": [
+          2611
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2526,
+    "name": "艾杰斯亚学院",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "维克萨姆斯",
+        "number": 1,
+        "encounterIds": [
+          2562
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "茂林古树",
+        "number": 2,
+        "encounterIds": [
+          2563
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "克罗兹",
+        "number": 3,
+        "encounterIds": [
+          2564
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "多拉苟萨的回响",
+        "number": 4,
+        "encounterIds": [
+          2565
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2521,
+    "name": "红玉新生法池",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "梅莉杜莎·寒妆",
+        "number": 1,
+        "encounterIds": [
+          2609
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "柯姬雅·焰蹄",
+        "number": 2,
+        "encounterIds": [
+          2606
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "基拉卡与厄克哈特·风脉",
+        "number": 3,
+        "encounterIds": [
+          2623
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2527,
+    "name": "注能大厅",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "看护者伊里度斯",
+        "number": 1,
+        "encounterIds": [
+          2615
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "吞喉巨蛙",
+        "number": 2,
+        "encounterIds": [
+          2616
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "不屈者卡金",
+        "number": 3,
+        "encounterIds": [
+          2617
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "原始海啸",
+        "number": 4,
+        "encounterIds": [
+          2618
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2579,
+    "name": "永恒黎明",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "克罗妮卡",
+        "number": 1,
+        "encounterIds": [
+          2666
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "时间流具象",
+        "number": 2,
+        "encounterIds": [
+          2667
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "迦拉克隆之荒",
+        "number": 3,
+        "encounterIds": [
+          2668
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "伊律迪孔",
+        "number": 4,
+        "encounterIds": [
+          2669
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "永恒守护者提尔",
+        "number": 5,
+        "encounterIds": [
+          2670
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "米罗克",
+        "number": 6,
+        "encounterIds": [
+          2671
+        ]
+      },
+      {
+        "sequence": 7,
+        "name": "迷时战场",
+        "number": 7,
+        "encounterIds": [
+          2672
+        ]
+      },
+      {
+        "sequence": 8,
+        "name": "时空领主戴欧斯",
+        "number": 8,
+        "encounterIds": [
+          2673
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2651,
+    "name": "暗焰裂口",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "老蜡须",
+        "number": 1,
+        "encounterIds": [
+          2829
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "布雷炙孔",
+        "number": 2,
+        "encounterIds": [
+          2826
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "蜡烛之王",
+        "number": 3,
+        "encounterIds": [
+          2787
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "黑暗之主",
+        "number": 4,
+        "encounterIds": [
+          2788
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2652,
+    "name": "矶石宝库",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "E.D.N.A.",
+        "number": 1,
+        "encounterIds": [
+          2854
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "斯卡莫拉克",
+        "number": 2,
+        "encounterIds": [
+          2880
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "机械大师",
+        "number": 3,
+        "encounterIds": [
+          2888
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "虚空代言人艾里克",
+        "number": 4,
+        "encounterIds": [
+          2883
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2648,
+    "name": "驭雷栖巢",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "凯里欧斯",
+        "number": 1,
+        "encounterIds": [
+          2816
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "雷卫戈伦",
+        "number": 2,
+        "encounterIds": [
+          2861
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "虚空石畸体",
+        "number": 3,
+        "encounterIds": [
+          2836
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2649,
+    "name": "圣焰隐修院",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "戴尔克莱上尉",
+        "number": 1,
+        "encounterIds": [
+          2847
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "布朗派克男爵",
+        "number": 2,
+        "encounterIds": [
+          2835
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "隐修院长穆普雷",
+        "number": 3,
+        "encounterIds": [
+          2848
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2662,
+    "name": "破晨号",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "代言人夏多克朗",
+        "number": 1,
+        "encounterIds": [
+          2837
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "阿努布伊卡基",
+        "number": 2,
+        "encounterIds": [
+          2838
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "拉夏南",
+        "number": 3,
+        "encounterIds": [
+          2839
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2669,
+    "name": "千丝之城",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "演说者基克斯威兹克",
+        "number": 1,
+        "encounterIds": [
+          2907
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "女王之牙",
+        "number": 2,
+        "encounterIds": [
+          2908
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "凝结聚合体",
+        "number": 3,
+        "encounterIds": [
+          2905
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "大捻接师艾佐",
+        "number": 4,
+        "encounterIds": [
+          2909
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2660,
+    "name": "艾拉-卡拉，回响之城",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "阿瓦诺克斯",
+        "number": 1,
+        "encounterIds": [
+          2926
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "阿努布泽克特",
+        "number": 2,
+        "encounterIds": [
+          2906
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "收割者吉卡塔尔",
+        "number": 3,
+        "encounterIds": [
+          2901
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2661,
+    "name": "燧酿酒庄",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "酿造大师阿德里尔",
+        "number": 1,
+        "encounterIds": [
+          2900
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "艾帕",
+        "number": 2,
+        "encounterIds": [
+          2929
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "戈尔迪·底爵",
+        "number": 3,
+        "encounterIds": [
+          2930
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "本克·鸣蜂",
+        "number": 4,
+        "encounterIds": [
+          2931
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2773,
+    "name": "水闸行动",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "老大娘",
+        "number": 1,
+        "encounterIds": [
+          3020
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "破拆双人组",
+        "number": 2,
+        "encounterIds": [
+          3019
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "沼面",
+        "number": 3,
+        "encounterIds": [
+          3053
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "吉泽尔·超震",
+        "number": 4,
+        "encounterIds": [
+          3054
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2830,
+    "name": "奥尔达尼生态圆顶",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "阿兹希卡",
+        "number": 1,
+        "encounterIds": [
+          3107
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "塔尔·巴特和阿瓦兹吉",
+        "number": 2,
+        "encounterIds": [
+          3108
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "撰魂师",
+        "number": 3,
+        "encounterIds": [
+          3109
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2805,
+    "name": "风行者之塔",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "烬晓",
+        "number": 1,
+        "encounterIds": [
+          3056
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "被遗弃的二人组",
+        "number": 2,
+        "encounterIds": [
+          3057
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "指挥官克罗鲁科",
+        "number": 3,
+        "encounterIds": [
+          3058
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "无眠之心",
+        "number": 4,
+        "encounterIds": [
+          3059
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2811,
+    "name": "魔导师平台",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "奥能金刚库斯托斯",
+        "number": 1,
+        "encounterIds": [
+          3071
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "瑟拉奈尔·日鞭",
+        "number": 2,
+        "encounterIds": [
+          3072
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "吉美尔鲁斯",
+        "number": 3,
+        "encounterIds": [
+          3073
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "迪詹崔乌斯",
+        "number": 4,
+        "encounterIds": [
+          3074
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2813,
+    "name": "密谋小径",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "凯斯媞亚·魔力之心",
+        "number": 1,
+        "encounterIds": [
+          3101
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "赞恩·刃悲",
+        "number": 2,
+        "encounterIds": [
+          3102
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "歼灭者萨祖克斯",
+        "number": 3,
+        "encounterIds": [
+          3103
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "利希尔·烬怒",
+        "number": 4,
+        "encounterIds": [
+          3105
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2859,
+    "name": "夺目谷",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "光明众花",
+        "number": 1,
+        "encounterIds": [
+          3199
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "圣光猎手伊库兹",
+        "number": 2,
+        "encounterIds": [
+          3200
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "护光者鲁伊亚",
+        "number": 3,
+        "encounterIds": [
+          3201
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "兹欧凯特",
+        "number": 4,
+        "encounterIds": [
+          3202
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2825,
+    "name": "纳洛拉克的洞穴",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "囤宝狂人",
+        "number": 1,
+        "encounterIds": [
+          3207
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "寒冬哨兵",
+        "number": 2,
+        "encounterIds": [
+          3208
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "纳洛拉克",
+        "number": 3,
+        "encounterIds": [
+          3209
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2874,
+    "name": "迈萨拉洞窟",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "姆罗金和内克拉克斯",
+        "number": 1,
+        "encounterIds": [
+          3212
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "沃达扎",
+        "number": 2,
+        "encounterIds": [
+          3213
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "拉克图尔，聚魂之器",
+        "number": 3,
+        "encounterIds": [
+          3214
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2923,
+    "name": "虚空之痕竞技场",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "塔兹拉尔",
+        "number": 1,
+        "encounterIds": [
+          3285
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "阿特洛苏斯",
+        "number": 2,
+        "encounterIds": [
+          3286
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "煞戎努斯",
+        "number": 3,
+        "encounterIds": [
+          3287
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2915,
+    "name": "节点希纳斯",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "核技工程长卡斯雷瑟",
+        "number": 1,
+        "encounterIds": [
+          3328
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "核心守卫奈萨拉",
+        "number": 2,
+        "encounterIds": [
+          3332
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "洛萨克森",
+        "number": 3,
+        "encounterIds": [
+          3333
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2993,
+    "name": "毒牙祭坛",
+    "type": "地下城",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "拉维",
+        "number": 1,
+        "encounterIds": [
+          3456
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "扭缠盘蛇",
+        "number": 2,
+        "encounterIds": [
+          3457
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "祖尔加",
+        "number": 3,
+        "encounterIds": [
+          3458
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 469,
+    "name": "黑翼之巢",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "狂野的拉佐格尔",
+        "number": 1,
+        "encounterIds": [
+          610
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "堕落的瓦拉斯塔兹",
+        "number": 2,
+        "encounterIds": [
+          611
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "勒什雷尔",
+        "number": 3,
+        "encounterIds": [
+          612
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "费尔默",
+        "number": 4,
+        "encounterIds": [
+          613
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "埃博诺克",
+        "number": 5,
+        "encounterIds": [
+          614
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "弗莱格尔",
+        "number": 6,
+        "encounterIds": [
+          615
+        ]
+      },
+      {
+        "sequence": 7,
+        "name": "克洛玛古斯",
+        "number": 7,
+        "encounterIds": [
+          616
+        ]
+      },
+      {
+        "sequence": 8,
+        "name": "奈法利安",
+        "number": 8,
+        "encounterIds": [
+          617
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 409,
+    "name": "熔火之心",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "鲁西弗隆",
+        "number": 1,
+        "encounterIds": [
+          663
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "玛格曼达",
+        "number": 2,
+        "encounterIds": [
+          664
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "基赫纳斯",
+        "number": 3,
+        "encounterIds": [
+          665
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "加尔",
+        "number": 4,
+        "encounterIds": [
+          666
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "沙斯拉尔",
+        "number": 5,
+        "encounterIds": [
+          667
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "迦顿男爵",
+        "number": 6,
+        "encounterIds": [
+          668
+        ]
+      },
+      {
+        "sequence": 7,
+        "name": "萨弗隆先驱者",
+        "number": 7,
+        "encounterIds": [
+          669
+        ]
+      },
+      {
+        "sequence": 8,
+        "name": "焚化者古雷曼格",
+        "number": 8,
+        "encounterIds": [
+          670
+        ]
+      },
+      {
+        "sequence": 9,
+        "name": "管理者埃克索图斯",
+        "number": 9,
+        "encounterIds": [
+          671
+        ]
+      },
+      {
+        "sequence": 10,
+        "name": "拉格纳罗斯",
+        "number": 10,
+        "encounterIds": [
+          672
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 531,
+    "name": "安其拉",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "预言者斯克拉姆",
+        "number": 1,
+        "encounterIds": [
+          709
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "安其拉三宝",
+        "number": 2,
+        "encounterIds": [
+          710
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "沙尔图拉",
+        "number": 3,
+        "encounterIds": [
+          711
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "顽强的范克瑞斯",
+        "number": 4,
+        "encounterIds": [
+          712
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "维希度斯",
+        "number": 5,
+        "encounterIds": [
+          713
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "哈霍兰公主",
+        "number": 6,
+        "encounterIds": [
+          714
+        ]
+      },
+      {
+        "sequence": 7,
+        "name": "双子皇帝",
+        "number": 7,
+        "encounterIds": [
+          715
+        ]
+      },
+      {
+        "sequence": 8,
+        "name": "奥罗",
+        "number": 8,
+        "encounterIds": [
+          716
+        ]
+      },
+      {
+        "sequence": 9,
+        "name": "克苏恩",
+        "number": 9,
+        "encounterIds": [
+          717
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 509,
+    "name": "安其拉废墟",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "库林纳克斯",
+        "number": 1,
+        "encounterIds": [
+          718
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "拉贾克斯将军",
+        "number": 2,
+        "encounterIds": [
+          719
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "莫阿姆",
+        "number": 3,
+        "encounterIds": [
+          720
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "吞咽者布鲁",
+        "number": 4,
+        "encounterIds": [
+          721
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "狩猎者阿亚米斯",
+        "number": 5,
+        "encounterIds": [
+          722
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "无疤者奥斯里安",
+        "number": 6,
+        "encounterIds": [
+          723
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 532,
+    "name": "卡拉赞",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "猎手阿图门",
+        "number": 1,
+        "encounterIds": [
+          652
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "莫罗斯",
+        "number": 2,
+        "encounterIds": [
+          653
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "贞节圣女",
+        "number": 3,
+        "encounterIds": [
+          654
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "歌剧院",
+        "number": 4,
+        "encounterIds": [
+          655
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "馆长",
+        "number": 5,
+        "encounterIds": [
+          656
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "埃兰之影",
+        "number": 6,
+        "encounterIds": [
+          658
+        ]
+      },
+      {
+        "sequence": 7,
+        "name": "特雷斯坦·邪蹄",
+        "number": 7,
+        "encounterIds": [
+          657
+        ]
+      },
+      {
+        "sequence": 8,
+        "name": "虚空幽龙",
+        "number": 8,
+        "encounterIds": [
+          659
+        ]
+      },
+      {
+        "sequence": 9,
+        "name": "国际象棋",
+        "number": 9,
+        "encounterIds": [
+          660
+        ]
+      },
+      {
+        "sequence": 10,
+        "name": "夜之魇",
+        "number": 10,
+        "encounterIds": [
+          662
+        ]
+      },
+      {
+        "sequence": 11,
+        "name": "玛克扎尔王子",
+        "number": 11,
+        "encounterIds": [
+          661
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 534,
+    "name": "海加尔峰",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "雷基·冬寒",
+        "number": 1,
+        "encounterIds": [
+          618
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "安纳塞隆",
+        "number": 2,
+        "encounterIds": [
+          619
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "卡兹洛加",
+        "number": 3,
+        "encounterIds": [
+          620
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "阿兹加洛",
+        "number": 4,
+        "encounterIds": [
+          621
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "阿克蒙德",
+        "number": 5,
+        "encounterIds": [
+          622
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 548,
+    "name": "毒蛇神殿",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "不稳定的海度斯",
+        "number": 1,
+        "encounterIds": [
+          623
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "鱼斯拉",
+        "number": 2,
+        "encounterIds": [
+          624
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "盲眼者莱欧瑟拉斯",
+        "number": 3,
+        "encounterIds": [
+          625
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "深水领主卡拉瑟雷斯",
+        "number": 4,
+        "encounterIds": [
+          626
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "莫洛格里·踏潮者",
+        "number": 5,
+        "encounterIds": [
+          627
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "瓦丝琪",
+        "number": 6,
+        "encounterIds": [
+          628
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 544,
+    "name": "玛瑟里顿的巢穴",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "玛瑟里顿",
+        "number": 1,
+        "encounterIds": [
+          651
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 550,
+    "name": "风暴要塞",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "奥",
+        "number": 1,
+        "encounterIds": [
+          730
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "空灵机甲",
+        "number": 2,
+        "encounterIds": [
+          731
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "大星术师索兰莉安",
+        "number": 3,
+        "encounterIds": [
+          732
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "凯尔萨斯·逐日者",
+        "number": 4,
+        "encounterIds": [
+          733
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 565,
+    "name": "格鲁尔的巢穴",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "莫加尔大王",
+        "number": 1,
+        "encounterIds": [
+          649
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "屠龙者格鲁尔",
+        "number": 2,
+        "encounterIds": [
+          650
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 564,
+    "name": "黑暗神殿",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "高阶督军纳因图斯",
+        "number": 1,
+        "encounterIds": [
+          601
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "苏普雷姆斯",
+        "number": 2,
+        "encounterIds": [
+          602
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "阿卡玛之影",
+        "number": 3,
+        "encounterIds": [
+          603
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "塔隆·血魔",
+        "number": 4,
+        "encounterIds": [
+          604
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "古尔图格·血沸",
+        "number": 5,
+        "encounterIds": [
+          605
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "灵魂之匣",
+        "number": 6,
+        "encounterIds": [
+          606
+        ]
+      },
+      {
+        "sequence": 7,
+        "name": "莎赫拉丝主母",
+        "number": 7,
+        "encounterIds": [
+          607
+        ]
+      },
+      {
+        "sequence": 8,
+        "name": "伊利达雷议会",
+        "number": 8,
+        "encounterIds": [
+          608
+        ]
+      },
+      {
+        "sequence": 9,
+        "name": "伊利丹·怒风",
+        "number": 9,
+        "encounterIds": [
+          609
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 580,
+    "name": "太阳之井高地",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "卡雷苟斯",
+        "number": 1,
+        "encounterIds": [
+          724
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "布鲁塔卢斯",
+        "number": 2,
+        "encounterIds": [
+          725
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "菲米丝",
+        "number": 3,
+        "encounterIds": [
+          726
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "艾瑞达双子",
+        "number": 4,
+        "encounterIds": [
+          727
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "穆鲁",
+        "number": 5,
+        "encounterIds": [
+          728
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "基尔加丹",
+        "number": 6,
+        "encounterIds": [
+          729
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 249,
+    "name": "奥妮克希亚的巢穴",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "奥妮克希亚",
+        "number": 1,
+        "encounterIds": [
+          1084
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 533,
+    "name": "纳克萨玛斯",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "阿努布雷坎",
+        "number": 1,
+        "encounterIds": [
+          1107
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "黑女巫法琳娜",
+        "number": 2,
+        "encounterIds": [
+          1110
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "迈克斯纳",
+        "number": 3,
+        "encounterIds": [
+          1116
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "药剂师诺斯",
+        "number": 4,
+        "encounterIds": [
+          1117
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "肮脏的希尔盖",
+        "number": 5,
+        "encounterIds": [
+          1112
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "洛欧塞布",
+        "number": 6,
+        "encounterIds": [
+          1115
+        ]
+      },
+      {
+        "sequence": 7,
+        "name": "教官拉苏维奥斯",
+        "number": 7,
+        "encounterIds": [
+          1113
+        ]
+      },
+      {
+        "sequence": 8,
+        "name": "收割者戈提克",
+        "number": 8,
+        "encounterIds": [
+          1109
+        ]
+      },
+      {
+        "sequence": 9,
+        "name": "天启四骑士",
+        "number": 9,
+        "encounterIds": [
+          1121
+        ]
+      },
+      {
+        "sequence": 10,
+        "name": "帕奇维克",
+        "number": 10,
+        "encounterIds": [
+          1118
+        ]
+      },
+      {
+        "sequence": 11,
+        "name": "格罗布鲁斯",
+        "number": 11,
+        "encounterIds": [
+          1111
+        ]
+      },
+      {
+        "sequence": 12,
+        "name": "格拉斯",
+        "number": 12,
+        "encounterIds": [
+          1108
+        ]
+      },
+      {
+        "sequence": 13,
+        "name": "塔迪乌斯",
+        "number": 13,
+        "encounterIds": [
+          1120
+        ]
+      },
+      {
+        "sequence": 14,
+        "name": "萨菲隆",
+        "number": 14,
+        "encounterIds": [
+          1119
+        ]
+      },
+      {
+        "sequence": 15,
+        "name": "克尔苏加德",
+        "number": 15,
+        "encounterIds": [
+          1114
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 603,
+    "name": "奥杜尔",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "明叶长老",
+        "number": 1,
+        "encounterIds": [
+          1164
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "铁枝长老",
+        "number": 2,
+        "encounterIds": [
+          1165
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "石树长老",
+        "number": 3,
+        "encounterIds": [
+          1166
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "烈焰巨兽",
+        "number": 4,
+        "encounterIds": [
+          1132
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "掌炉者伊格尼斯",
+        "number": 5,
+        "encounterIds": [
+          1136
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "锋鳞",
+        "number": 6,
+        "encounterIds": [
+          1139
+        ]
+      },
+      {
+        "sequence": 7,
+        "name": "XT-002拆解者",
+        "number": 7,
+        "encounterIds": [
+          1142
+        ]
+      },
+      {
+        "sequence": 8,
+        "name": "钢铁议会",
+        "number": 8,
+        "encounterIds": [
+          1140
+        ]
+      },
+      {
+        "sequence": 9,
+        "name": "科隆加恩",
+        "number": 9,
+        "encounterIds": [
+          1137
+        ]
+      },
+      {
+        "sequence": 10,
+        "name": "欧尔莉亚",
+        "number": 10,
+        "encounterIds": [
+          1131
+        ]
+      },
+      {
+        "sequence": 11,
+        "name": "霍迪尔",
+        "number": 11,
+        "encounterIds": [
+          1135
+        ]
+      },
+      {
+        "sequence": 12,
+        "name": "托里姆",
+        "number": 12,
+        "encounterIds": [
+          1141
+        ]
+      },
+      {
+        "sequence": 13,
+        "name": "弗蕾亚",
+        "number": 13,
+        "encounterIds": [
+          1133
+        ]
+      },
+      {
+        "sequence": 14,
+        "name": "米米尔隆",
+        "number": 14,
+        "encounterIds": [
+          1138
+        ]
+      },
+      {
+        "sequence": 15,
+        "name": "维扎克斯将军",
+        "number": 15,
+        "encounterIds": [
+          1134
+        ]
+      },
+      {
+        "sequence": 16,
+        "name": "尤格-萨隆",
+        "number": 16,
+        "encounterIds": [
+          1143
+        ]
+      },
+      {
+        "sequence": 17,
+        "name": "观察者奥尔加隆",
+        "number": 17,
+        "encounterIds": [
+          1130
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 615,
+    "name": "黑曜石圣殿",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "萨塔里奥",
+        "number": 1,
+        "encounterIds": [
+          1090
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "维斯匹隆",
+        "number": 2,
+        "encounterIds": [
+          1093
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "塔尼布隆",
+        "number": 3,
+        "encounterIds": [
+          1092
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "沙德隆",
+        "number": 4,
+        "encounterIds": [
+          1091
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 616,
+    "name": "永恒之眼",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "玛里苟斯",
+        "number": 1,
+        "encounterIds": [
+          1094
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 624,
+    "name": "阿尔卡冯的宝库",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "岩石看守者阿尔卡冯",
+        "number": 1,
+        "encounterIds": [
+          1126
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "风暴看守者埃玛尔隆",
+        "number": 2,
+        "encounterIds": [
+          1127
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "火焰看守者科拉隆",
+        "number": 3,
+        "encounterIds": [
+          1128
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "寒冰看守者图拉旺",
+        "number": 4,
+        "encounterIds": [
+          1129
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 649,
+    "name": "十字军的试炼",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "诺森德猛兽",
+        "number": 1,
+        "encounterIds": [
+          1088
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "加拉克苏斯大王",
+        "number": 2,
+        "encounterIds": [
+          1087
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "阵营冠军",
+        "number": 3,
+        "encounterIds": [
+          1086
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "瓦格里双子",
+        "number": 4,
+        "encounterIds": [
+          1089
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "阿努巴拉克",
+        "number": 5,
+        "encounterIds": [
+          1085
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 631,
+    "name": "冰冠堡垒",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "玛洛加尔领主",
+        "number": 1,
+        "encounterIds": [
+          1101
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "亡语者女士",
+        "number": 2,
+        "encounterIds": [
+          1100
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "冰冠冰川炮舰战",
+        "number": 3,
+        "encounterIds": [
+          1099
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "死亡使者萨鲁法尔",
+        "number": 4,
+        "encounterIds": [
+          1096
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "烂肠",
+        "number": 5,
+        "encounterIds": [
+          1097
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "腐面",
+        "number": 6,
+        "encounterIds": [
+          1104
+        ]
+      },
+      {
+        "sequence": 7,
+        "name": "普崔塞德教授",
+        "number": 7,
+        "encounterIds": [
+          1102
+        ]
+      },
+      {
+        "sequence": 8,
+        "name": "鲜血议会",
+        "number": 8,
+        "encounterIds": [
+          1095
+        ]
+      },
+      {
+        "sequence": 9,
+        "name": "兰娜瑟尔女王",
+        "number": 9,
+        "encounterIds": [
+          1103
+        ]
+      },
+      {
+        "sequence": 10,
+        "name": "踏梦者瓦莉瑟瑞娅",
+        "number": 10,
+        "encounterIds": [
+          1098
+        ]
+      },
+      {
+        "sequence": 11,
+        "name": "辛达苟萨",
+        "number": 11,
+        "encounterIds": [
+          1105
+        ]
+      },
+      {
+        "sequence": 12,
+        "name": "巫妖王",
+        "number": 12,
+        "encounterIds": [
+          1106
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 724,
+    "name": "红玉圣殿",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "战争之子巴尔萨鲁斯",
+        "number": 1,
+        "encounterIds": [
+          1147
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "海里昂",
+        "number": 2,
+        "encounterIds": [
+          1150
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "塞维娅娜·怒火",
+        "number": 3,
+        "encounterIds": [
+          1149
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "萨瑞瑟里安将军",
+        "number": 4,
+        "encounterIds": [
+          1148
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 669,
+    "name": "黑翼血环",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "全能金刚防御系统",
+        "number": 1,
+        "encounterIds": [
+          1027
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "熔喉",
+        "number": 2,
+        "encounterIds": [
+          1024
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "艾卓曼德斯",
+        "number": 3,
+        "encounterIds": [
+          1022
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "奇美隆",
+        "number": 4,
+        "encounterIds": [
+          1023
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "马洛拉克",
+        "number": 5,
+        "encounterIds": [
+          1025
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "奈法利安的末日",
+        "number": 6,
+        "encounterIds": [
+          1026
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 671,
+    "name": "暮光堡垒",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "哈尔弗斯·碎龙者",
+        "number": 1,
+        "encounterIds": [
+          1030
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "瑟纳利昂与瓦里昂娜",
+        "number": 2,
+        "encounterIds": [
+          1032
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "升腾者议会",
+        "number": 3,
+        "encounterIds": [
+          1028
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "古加尔",
+        "number": 4,
+        "encounterIds": [
+          1029
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "希奈丝特拉",
+        "number": 5,
+        "encounterIds": [
+          1082,
+          1083
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 757,
+    "name": "巴拉丁监狱",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "阿尔加洛斯",
+        "number": 1,
+        "encounterIds": [
+          1033
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "欧库塔尔",
+        "number": 2,
+        "encounterIds": [
+          1250
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "阿丽萨巴尔",
+        "number": 3,
+        "encounterIds": [
+          1332
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 754,
+    "name": "风神王座",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "风之议会",
+        "number": 1,
+        "encounterIds": [
+          1035
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "奥拉基尔",
+        "number": 2,
+        "encounterIds": [
+          1034
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 720,
+    "name": "火焰之地",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "贝丝缇拉克",
+        "number": 1,
+        "encounterIds": [
+          1197
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "雷奥利斯领主",
+        "number": 2,
+        "encounterIds": [
+          1204
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "奥利瑟拉佐尔",
+        "number": 3,
+        "encounterIds": [
+          1206
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "沙恩诺克斯",
+        "number": 4,
+        "encounterIds": [
+          1205
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "贝尔洛克",
+        "number": 5,
+        "encounterIds": [
+          1200
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "管理者鹿盔",
+        "number": 6,
+        "encounterIds": [
+          1185
+        ]
+      },
+      {
+        "sequence": 7,
+        "name": "拉格纳罗斯",
+        "number": 7,
+        "encounterIds": [
+          1203
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 967,
+    "name": "巨龙之魂",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "莫卓克",
+        "number": 1,
+        "encounterIds": [
+          1292
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "督军佐诺兹",
+        "number": 2,
+        "encounterIds": [
+          1294
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "不眠的约萨希",
+        "number": 3,
+        "encounterIds": [
+          1295
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "哈格拉",
+        "number": 4,
+        "encounterIds": [
+          1296
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "奥卓克希昂",
+        "number": 5,
+        "encounterIds": [
+          1297
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "战争大师黑角",
+        "number": 6,
+        "encounterIds": [
+          1298
+        ]
+      },
+      {
+        "sequence": 7,
+        "name": "死亡之翼的背脊",
+        "number": 7,
+        "encounterIds": [
+          1291
+        ]
+      },
+      {
+        "sequence": 8,
+        "name": "疯狂的死亡之翼",
+        "number": 8,
+        "encounterIds": [
+          1299
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 996,
+    "name": "永春台",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "无尽守护者",
+        "number": 1,
+        "encounterIds": [
+          1409
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "烛龙",
+        "number": 2,
+        "encounterIds": [
+          1505
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "雷施",
+        "number": 3,
+        "encounterIds": [
+          1506
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "惧之煞",
+        "number": 4,
+        "encounterIds": [
+          1431
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 1008,
+    "name": "魔古山宝库",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "石头守卫",
+        "number": 1,
+        "encounterIds": [
+          1395
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "受诅者魔封",
+        "number": 2,
+        "encounterIds": [
+          1390
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "缚灵者戈拉亚",
+        "number": 3,
+        "encounterIds": [
+          1434
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "先王之魂",
+        "number": 4,
+        "encounterIds": [
+          1436
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "伊拉贡",
+        "number": 5,
+        "encounterIds": [
+          1500
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "皇帝的意志",
+        "number": 6,
+        "encounterIds": [
+          1407
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 1009,
+    "name": "恐惧之心",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "皇家宰相佐尔洛克",
+        "number": 1,
+        "encounterIds": [
+          1507
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "刀锋领主塔亚克",
+        "number": 2,
+        "encounterIds": [
+          1504
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "加拉隆",
+        "number": 3,
+        "encounterIds": [
+          1463
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "风领主梅尔加拉克",
+        "number": 4,
+        "encounterIds": [
+          1498
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "琥珀塑形者昂舒克",
+        "number": 5,
+        "encounterIds": [
+          1499
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "大女皇夏柯希尔",
+        "number": 6,
+        "encounterIds": [
+          1501
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 1098,
+    "name": "雷电王座",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "击碎者金罗克",
+        "number": 1,
+        "encounterIds": [
+          1577
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "赫利东",
+        "number": 2,
+        "encounterIds": [
+          1575
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "长者议会",
+        "number": 3,
+        "encounterIds": [
+          1570
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "托多斯",
+        "number": 4,
+        "encounterIds": [
+          1565
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "墨格瑞拉",
+        "number": 5,
+        "encounterIds": [
+          1578
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "季鹍",
+        "number": 6,
+        "encounterIds": [
+          1573
+        ]
+      },
+      {
+        "sequence": 7,
+        "name": "遗忘者杜鲁姆",
+        "number": 7,
+        "encounterIds": [
+          1572
+        ]
+      },
+      {
+        "sequence": 8,
+        "name": "普利莫修斯",
+        "number": 8,
+        "encounterIds": [
+          1574
+        ]
+      },
+      {
+        "sequence": 9,
+        "name": "黑暗意志",
+        "number": 9,
+        "encounterIds": [
+          1576
+        ]
+      },
+      {
+        "sequence": 10,
+        "name": "铁穹",
+        "number": 10,
+        "encounterIds": [
+          1559
+        ]
+      },
+      {
+        "sequence": 11,
+        "name": "神女双天",
+        "number": 11,
+        "encounterIds": [
+          1560
+        ]
+      },
+      {
+        "sequence": 12,
+        "name": "雷神",
+        "number": 12,
+        "encounterIds": [
+          1579
+        ]
+      },
+      {
+        "sequence": 13,
+        "name": "莱登",
+        "number": 13,
+        "encounterIds": [
+          1580,
+          1581
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 1136,
+    "name": "决战奥格瑞玛",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "伊墨苏斯",
+        "number": 1,
+        "encounterIds": [
+          1602
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "堕落的守护者",
+        "number": 2,
+        "encounterIds": [
+          1598
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "诺鲁什",
+        "number": 3,
+        "encounterIds": [
+          1624
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "傲之煞",
+        "number": 4,
+        "encounterIds": [
+          1604
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "迦拉卡斯",
+        "number": 5,
+        "encounterIds": [
+          1622
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "钢铁战蝎",
+        "number": 6,
+        "encounterIds": [
+          1600
+        ]
+      },
+      {
+        "sequence": 7,
+        "name": "库卡隆黑暗萨满",
+        "number": 7,
+        "encounterIds": [
+          1606
+        ]
+      },
+      {
+        "sequence": 8,
+        "name": "纳兹戈林将军",
+        "number": 8,
+        "encounterIds": [
+          1603
+        ]
+      },
+      {
+        "sequence": 9,
+        "name": "马尔考罗克",
+        "number": 9,
+        "encounterIds": [
+          1595
+        ]
+      },
+      {
+        "sequence": 10,
+        "name": "潘达利亚战利品",
+        "number": 10,
+        "encounterIds": [
+          1594
+        ]
+      },
+      {
+        "sequence": 11,
+        "name": "嗜血的索克",
+        "number": 11,
+        "encounterIds": [
+          1599
+        ]
+      },
+      {
+        "sequence": 12,
+        "name": "攻城匠师黑索",
+        "number": 12,
+        "encounterIds": [
+          1601
+        ]
+      },
+      {
+        "sequence": 13,
+        "name": "卡拉克西英杰",
+        "number": 13,
+        "encounterIds": [
+          1593
+        ]
+      },
+      {
+        "sequence": 14,
+        "name": "加尔鲁什·地狱咆哮",
+        "number": 14,
+        "encounterIds": [
+          1623
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 1205,
+    "name": "黑石铸造厂",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "吞噬者奥尔高格",
+        "number": 1,
+        "encounterIds": [
+          1696
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "汉斯加尔与弗兰佐克",
+        "number": 2,
+        "encounterIds": [
+          1693
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "兽王达玛克",
+        "number": 3,
+        "encounterIds": [
+          1694
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "格鲁尔",
+        "number": 4,
+        "encounterIds": [
+          1691
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "缚火者卡格拉兹",
+        "number": 5,
+        "encounterIds": [
+          1689
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "主管索戈尔",
+        "number": 6,
+        "encounterIds": [
+          1692
+        ]
+      },
+      {
+        "sequence": 7,
+        "name": "爆裂熔炉",
+        "number": 7,
+        "encounterIds": [
+          1690
+        ]
+      },
+      {
+        "sequence": 8,
+        "name": "克罗莫格，远山传奇",
+        "number": 8,
+        "encounterIds": [
+          1713
+        ]
+      },
+      {
+        "sequence": 9,
+        "name": "钢铁女武神",
+        "number": 9,
+        "encounterIds": [
+          1695
+        ]
+      },
+      {
+        "sequence": 10,
+        "name": "黑手",
+        "number": 10,
+        "encounterIds": [
+          1704
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 1228,
+    "name": "悬槌堡",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "卡加斯·刃拳",
+        "number": 1,
+        "encounterIds": [
+          1721
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "屠夫",
+        "number": 2,
+        "encounterIds": [
+          1706
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "泰克图斯，活体之山",
+        "number": 3,
+        "encounterIds": [
+          1722
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "布兰肯斯波",
+        "number": 4,
+        "encounterIds": [
+          1720
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "独眼魔双子",
+        "number": 5,
+        "encounterIds": [
+          1719
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "克拉戈",
+        "number": 6,
+        "encounterIds": [
+          1723
+        ]
+      },
+      {
+        "sequence": 7,
+        "name": "元首马尔高克",
+        "number": 7,
+        "encounterIds": [
+          1705
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 1448,
+    "name": "地狱火堡垒",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "奇袭地狱火",
+        "number": 1,
+        "encounterIds": [
+          1778
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "钢铁掠夺者",
+        "number": 2,
+        "encounterIds": [
+          1785
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "考莫克",
+        "number": 3,
+        "encounterIds": [
+          1787
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "高阶地狱火议会",
+        "number": 4,
+        "encounterIds": [
+          1798
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "基尔罗格·死眼",
+        "number": 5,
+        "encounterIds": [
+          1786
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "血魔",
+        "number": 6,
+        "encounterIds": [
+          1783
+        ]
+      },
+      {
+        "sequence": 7,
+        "name": "暗影领主艾斯卡",
+        "number": 7,
+        "encounterIds": [
+          1788
+        ]
+      },
+      {
+        "sequence": 8,
+        "name": "永恒者索克雷萨",
+        "number": 8,
+        "encounterIds": [
+          1794
+        ]
+      },
+      {
+        "sequence": 9,
+        "name": "邪能领主扎昆",
+        "number": 9,
+        "encounterIds": [
+          1777
+        ]
+      },
+      {
+        "sequence": 10,
+        "name": "祖霍拉克",
+        "number": 10,
+        "encounterIds": [
+          1800
+        ]
+      },
+      {
+        "sequence": 11,
+        "name": "暴君维哈里",
+        "number": 11,
+        "encounterIds": [
+          1784
+        ]
+      },
+      {
+        "sequence": 12,
+        "name": "玛诺洛斯",
+        "number": 12,
+        "encounterIds": [
+          1795
+        ]
+      },
+      {
+        "sequence": 13,
+        "name": "阿克蒙德",
+        "number": 13,
+        "encounterIds": [
+          1799
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 1530,
+    "name": "暗夜要塞",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "斯考匹隆",
+        "number": 1,
+        "encounterIds": [
+          1849
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "时空畸体",
+        "number": 2,
+        "encounterIds": [
+          1865
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "崔利艾克斯",
+        "number": 3,
+        "encounterIds": [
+          1867
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "魔剑士奥鲁瑞尔",
+        "number": 4,
+        "encounterIds": [
+          1871
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "提克迪奥斯",
+        "number": 5,
+        "encounterIds": [
+          1862
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "克洛苏斯",
+        "number": 6,
+        "encounterIds": [
+          1842
+        ]
+      },
+      {
+        "sequence": 7,
+        "name": "高级植物学家特尔安",
+        "number": 7,
+        "encounterIds": [
+          1886
+        ]
+      },
+      {
+        "sequence": 8,
+        "name": "占星师艾塔乌斯",
+        "number": 8,
+        "encounterIds": [
+          1863
+        ]
+      },
+      {
+        "sequence": 9,
+        "name": "大魔导师艾利桑德",
+        "number": 9,
+        "encounterIds": [
+          1872
+        ]
+      },
+      {
+        "sequence": 10,
+        "name": "古尔丹",
+        "number": 10,
+        "encounterIds": [
+          1866
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 1520,
+    "name": "翡翠梦魇",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "尼珊德拉",
+        "number": 1,
+        "encounterIds": [
+          1853
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "伊格诺斯，腐蚀之心",
+        "number": 2,
+        "encounterIds": [
+          1873
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "艾乐瑞瑟·雷弗拉尔",
+        "number": 3,
+        "encounterIds": [
+          1876
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "乌索克",
+        "number": 4,
+        "encounterIds": [
+          1841
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "梦魇之龙",
+        "number": 5,
+        "encounterIds": [
+          1854
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "塞纳留斯",
+        "number": 6,
+        "encounterIds": [
+          1877
+        ]
+      },
+      {
+        "sequence": 7,
+        "name": "萨维斯",
+        "number": 7,
+        "encounterIds": [
+          1864
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 1648,
+    "name": "勇气试炼",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "奥丁",
+        "number": 1,
+        "encounterIds": [
+          1958
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "高姆",
+        "number": 2,
+        "encounterIds": [
+          1962
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "海拉",
+        "number": 3,
+        "encounterIds": [
+          2008
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 1676,
+    "name": "萨格拉斯之墓",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "格罗斯",
+        "number": 1,
+        "encounterIds": [
+          2032
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "恶魔审判庭",
+        "number": 2,
+        "encounterIds": [
+          2048
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "哈亚坦",
+        "number": 3,
+        "encounterIds": [
+          2036
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "月之姐妹",
+        "number": 4,
+        "encounterIds": [
+          2050
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "主母萨丝琳",
+        "number": 5,
+        "encounterIds": [
+          2037
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "绝望的聚合体",
+        "number": 6,
+        "encounterIds": [
+          2054
+        ]
+      },
+      {
+        "sequence": 7,
+        "name": "戒卫侍女",
+        "number": 7,
+        "encounterIds": [
+          2052
+        ]
+      },
+      {
+        "sequence": 8,
+        "name": "堕落的化身",
+        "number": 8,
+        "encounterIds": [
+          2038
+        ]
+      },
+      {
+        "sequence": 9,
+        "name": "基尔加丹",
+        "number": 9,
+        "encounterIds": [
+          2051
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 1712,
+    "name": "安托鲁斯，燃烧王座",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "加洛西灭世者",
+        "number": 1,
+        "encounterIds": [
+          2076
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "萨格拉斯的恶犬",
+        "number": 2,
+        "encounterIds": [
+          2074
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "安托兰统帅议会",
+        "number": 3,
+        "encounterIds": [
+          2070
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "传送门守护者哈萨贝尔",
+        "number": 4,
+        "encounterIds": [
+          2064
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "保卫艾欧娜尔",
+        "number": 5,
+        "encounterIds": [
+          2075
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "猎魂者伊墨纳尔",
+        "number": 6,
+        "encounterIds": [
+          2082
+        ]
+      },
+      {
+        "sequence": 7,
+        "name": "金加洛斯",
+        "number": 7,
+        "encounterIds": [
+          2088
+        ]
+      },
+      {
+        "sequence": 8,
+        "name": "瓦里玛萨斯",
+        "number": 8,
+        "encounterIds": [
+          2069
+        ]
+      },
+      {
+        "sequence": 9,
+        "name": "破坏魔女巫会",
+        "number": 9,
+        "encounterIds": [
+          2073
+        ]
+      },
+      {
+        "sequence": 10,
+        "name": "阿格拉玛",
+        "number": 10,
+        "encounterIds": [
+          2063
+        ]
+      },
+      {
+        "sequence": 11,
+        "name": "寂灭者阿古斯",
+        "number": 11,
+        "encounterIds": [
+          2092
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 1861,
+    "name": "奥迪尔",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "塔罗克",
+        "number": 1,
+        "encounterIds": [
+          2144
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "纯净圣母",
+        "number": 2,
+        "encounterIds": [
+          2141
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "腐臭吞噬者",
+        "number": 3,
+        "encounterIds": [
+          2128
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "泽克沃兹",
+        "number": 4,
+        "encounterIds": [
+          2136
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "维克提斯",
+        "number": 5,
+        "encounterIds": [
+          2134
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "祖尔",
+        "number": 6,
+        "encounterIds": [
+          2145
+        ]
+      },
+      {
+        "sequence": 7,
+        "name": "米斯拉克斯",
+        "number": 7,
+        "encounterIds": [
+          2135
+        ]
+      },
+      {
+        "sequence": 8,
+        "name": "戈霍恩",
+        "number": 8,
+        "encounterIds": [
+          2122
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2096,
+    "name": "风暴熔炉",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "无眠秘党",
+        "number": 1,
+        "encounterIds": [
+          2269
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "乌纳特，虚空先驱",
+        "number": 2,
+        "encounterIds": [
+          2273
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2070,
+    "name": "达萨罗之战",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "圣光勇士",
+        "number": 1,
+        "encounterIds": [
+          2265
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "格洛恩",
+        "number": 2,
+        "encounterIds": [
+          2263
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "还魂者格洛恩",
+        "number": 3,
+        "encounterIds": [
+          2284
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "玉火大师",
+        "number": 4,
+        "encounterIds": [
+          2266,
+          2285
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "丰灵",
+        "number": 5,
+        "encounterIds": [
+          2271
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "神选者教团",
+        "number": 6,
+        "encounterIds": [
+          2268
+        ]
+      },
+      {
+        "sequence": 7,
+        "name": "拉斯塔哈大王",
+        "number": 7,
+        "encounterIds": [
+          2272
+        ]
+      },
+      {
+        "sequence": 8,
+        "name": "梅卡托克",
+        "number": 8,
+        "encounterIds": [
+          2276
+        ]
+      },
+      {
+        "sequence": 9,
+        "name": "风暴之墙阻击战",
+        "number": 9,
+        "encounterIds": [
+          2280
+        ]
+      },
+      {
+        "sequence": 10,
+        "name": "吉安娜·普罗德摩尔",
+        "number": 10,
+        "encounterIds": [
+          2281
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2164,
+    "name": "永恒王宫",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "深渊指挥官西瓦拉",
+        "number": 1,
+        "encounterIds": [
+          2298
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "黑水巨鳗",
+        "number": 2,
+        "encounterIds": [
+          2289
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "艾萨拉之辉",
+        "number": 3,
+        "encounterIds": [
+          2305
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "艾什凡女勋爵",
+        "number": 4,
+        "encounterIds": [
+          2304
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "奥戈佐亚",
+        "number": 5,
+        "encounterIds": [
+          2303
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "女王法庭",
+        "number": 6,
+        "encounterIds": [
+          2311
+        ]
+      },
+      {
+        "sequence": 7,
+        "name": "扎库尔",
+        "number": 7,
+        "encounterIds": [
+          2293
+        ]
+      },
+      {
+        "sequence": 8,
+        "name": "艾萨拉女王",
+        "number": 8,
+        "encounterIds": [
+          2299
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2217,
+    "name": "尼奥罗萨，觉醒之城",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "拉希奥",
+        "number": 1,
+        "encounterIds": [
+          2329
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "玛乌特",
+        "number": 2,
+        "encounterIds": [
+          2327
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "先知斯基特拉",
+        "number": 3,
+        "encounterIds": [
+          2334
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "黑暗审判官夏奈什",
+        "number": 4,
+        "encounterIds": [
+          2328
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "主脑",
+        "number": 5,
+        "encounterIds": [
+          2333
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "无厌者夏德哈",
+        "number": 6,
+        "encounterIds": [
+          2335
+        ]
+      },
+      {
+        "sequence": 7,
+        "name": "德雷阿佳丝",
+        "number": 7,
+        "encounterIds": [
+          2343
+        ]
+      },
+      {
+        "sequence": 8,
+        "name": "伊格诺斯，重生之蚀",
+        "number": 8,
+        "encounterIds": [
+          2345
+        ]
+      },
+      {
+        "sequence": 9,
+        "name": "维克修娜",
+        "number": 9,
+        "encounterIds": [
+          2336
+        ]
+      },
+      {
+        "sequence": 10,
+        "name": "虚无者莱登",
+        "number": 10,
+        "encounterIds": [
+          2331
+        ]
+      },
+      {
+        "sequence": 11,
+        "name": "恩佐斯的外壳",
+        "number": 11,
+        "encounterIds": [
+          2337
+        ]
+      },
+      {
+        "sequence": 12,
+        "name": "腐蚀者恩佐斯",
+        "number": 12,
+        "encounterIds": [
+          2344
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2235,
+    "name": "时光之穴",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "艾泽拉斯的回忆：燃烧的远征",
+        "number": 1,
+        "encounterIds": [
+          2319
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "艾泽拉斯的回忆：巫妖王之怒",
+        "number": 2,
+        "encounterIds": [
+          2321
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "艾泽拉斯的回忆：大地的裂变",
+        "number": 3,
+        "encounterIds": [
+          2320
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2296,
+    "name": "纳斯利亚堡",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "啸翼",
+        "number": 1,
+        "encounterIds": [
+          2398
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "猎手阿尔迪莫",
+        "number": 2,
+        "encounterIds": [
+          2418
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "太阳之王的救赎",
+        "number": 3,
+        "encounterIds": [
+          2402
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "圣物匠赛·墨克斯",
+        "number": 4,
+        "encounterIds": [
+          2405
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "饥饿的毁灭者",
+        "number": 5,
+        "encounterIds": [
+          2383
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "伊涅瓦·暗脉女勋爵",
+        "number": 6,
+        "encounterIds": [
+          2406
+        ]
+      },
+      {
+        "sequence": 7,
+        "name": "猩红议会",
+        "number": 7,
+        "encounterIds": [
+          2412
+        ]
+      },
+      {
+        "sequence": 8,
+        "name": "泥拳",
+        "number": 8,
+        "encounterIds": [
+          2399
+        ]
+      },
+      {
+        "sequence": 9,
+        "name": "顽石军团干将",
+        "number": 9,
+        "encounterIds": [
+          2417
+        ]
+      },
+      {
+        "sequence": 10,
+        "name": "德纳修斯大帝",
+        "number": 10,
+        "encounterIds": [
+          2407
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2450,
+    "name": "统御圣所",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "塔拉格鲁",
+        "number": 1,
+        "encounterIds": [
+          2423
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "典狱长之眼",
+        "number": 2,
+        "encounterIds": [
+          2433
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "九武神",
+        "number": 3,
+        "encounterIds": [
+          2429
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "耐奥祖的残迹",
+        "number": 4,
+        "encounterIds": [
+          2432
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "裂魂者多尔玛赞",
+        "number": 5,
+        "encounterIds": [
+          2434
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "痛楚工匠莱兹纳尔",
+        "number": 6,
+        "encounterIds": [
+          2430
+        ]
+      },
+      {
+        "sequence": 7,
+        "name": "初诞者的卫士",
+        "number": 7,
+        "encounterIds": [
+          2436
+        ]
+      },
+      {
+        "sequence": 8,
+        "name": "命运撰写师罗-卡洛",
+        "number": 8,
+        "encounterIds": [
+          2431
+        ]
+      },
+      {
+        "sequence": 9,
+        "name": "克尔苏加德",
+        "number": 9,
+        "encounterIds": [
+          2422
+        ]
+      },
+      {
+        "sequence": 10,
+        "name": "希尔瓦娜斯·风行者",
+        "number": 10,
+        "encounterIds": [
+          2435
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2481,
+    "name": "初诞者圣墓",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "警戒卫士",
+        "number": 1,
+        "encounterIds": [
+          2512
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "司垢莱克斯，无穷噬灭者",
+        "number": 2,
+        "encounterIds": [
+          2542
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "圣物匠赛·墨克斯",
+        "number": 3,
+        "encounterIds": [
+          2553
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "道茜歌妮，堕落先知",
+        "number": 4,
+        "encounterIds": [
+          2540
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "死亡万神殿原型体",
+        "number": 5,
+        "encounterIds": [
+          2544
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "首席造物师利许威姆",
+        "number": 6,
+        "encounterIds": [
+          2539
+        ]
+      },
+      {
+        "sequence": 7,
+        "name": "回收者黑伦度斯",
+        "number": 7,
+        "encounterIds": [
+          2529
+        ]
+      },
+      {
+        "sequence": 8,
+        "name": "安度因·乌瑞恩",
+        "number": 8,
+        "encounterIds": [
+          2546
+        ]
+      },
+      {
+        "sequence": 9,
+        "name": "恐惧双王",
+        "number": 9,
+        "encounterIds": [
+          2543
+        ]
+      },
+      {
+        "sequence": 10,
+        "name": "莱葛隆",
+        "number": 10,
+        "encounterIds": [
+          2549
+        ]
+      },
+      {
+        "sequence": 11,
+        "name": "典狱长",
+        "number": 11,
+        "encounterIds": [
+          2537
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2522,
+    "name": "化身巨龙牢窟",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "艾拉诺格",
+        "number": 1,
+        "encounterIds": [
+          2587
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "泰洛斯",
+        "number": 2,
+        "encounterIds": [
+          2639
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "原始议会",
+        "number": 3,
+        "encounterIds": [
+          2590
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "瑟娜尔丝，冰冷之息",
+        "number": 4,
+        "encounterIds": [
+          2592
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "晋升者达瑟雅",
+        "number": 5,
+        "encounterIds": [
+          2635
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "库洛格·恐怖图腾",
+        "number": 6,
+        "encounterIds": [
+          2605
+        ]
+      },
+      {
+        "sequence": 7,
+        "name": "巢穴守护者迪乌尔娜",
+        "number": 7,
+        "encounterIds": [
+          2614
+        ]
+      },
+      {
+        "sequence": 8,
+        "name": "莱萨杰丝，噬雷之龙",
+        "number": 8,
+        "encounterIds": [
+          2607
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2549,
+    "name": "阿梅达希尔，梦境之愿",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "瘤根",
+        "number": 1,
+        "encounterIds": [
+          2820
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "残虐者艾姬拉",
+        "number": 2,
+        "encounterIds": [
+          2709
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "沃尔科罗斯",
+        "number": 3,
+        "encounterIds": [
+          2737
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "梦境议会",
+        "number": 4,
+        "encounterIds": [
+          2728
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "拉罗达尔，烈焰守护者",
+        "number": 5,
+        "encounterIds": [
+          2731
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "尼穆威，轮回编织者",
+        "number": 6,
+        "encounterIds": [
+          2708
+        ]
+      },
+      {
+        "sequence": 7,
+        "name": "斯莫德隆",
+        "number": 7,
+        "encounterIds": [
+          2824
+        ]
+      },
+      {
+        "sequence": 8,
+        "name": "丁达尔·迅贤，烈焰预言者",
+        "number": 8,
+        "encounterIds": [
+          2786
+        ]
+      },
+      {
+        "sequence": 9,
+        "name": "火光之龙菲莱克",
+        "number": 9,
+        "encounterIds": [
+          2677
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2569,
+    "name": "亚贝鲁斯，焰影熔炉",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "狱铸者卡扎拉",
+        "number": 1,
+        "encounterIds": [
+          2688
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "融合体密室",
+        "number": 2,
+        "encounterIds": [
+          2687
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "被遗忘的实验体",
+        "number": 3,
+        "encounterIds": [
+          2693
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "扎卡利突袭",
+        "number": 4,
+        "encounterIds": [
+          2682
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "长老莱修克",
+        "number": 5,
+        "encounterIds": [
+          2680
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "警戒管事兹斯卡恩",
+        "number": 6,
+        "encounterIds": [
+          2689
+        ]
+      },
+      {
+        "sequence": 7,
+        "name": "玛格莫莱克斯",
+        "number": 7,
+        "encounterIds": [
+          2683
+        ]
+      },
+      {
+        "sequence": 8,
+        "name": "奈萨里奥的回响",
+        "number": 8,
+        "encounterIds": [
+          2684
+        ]
+      },
+      {
+        "sequence": 9,
+        "name": "鳞长萨卡雷斯",
+        "number": 9,
+        "encounterIds": [
+          2685
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2657,
+    "name": "尼鲁巴尔王宫",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "噬灭者乌格拉克斯",
+        "number": 1,
+        "encounterIds": [
+          2902
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "血缚恐魔",
+        "number": 2,
+        "encounterIds": [
+          2917
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "苏雷吉队长席克兰",
+        "number": 3,
+        "encounterIds": [
+          2898
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "拉夏南",
+        "number": 4,
+        "encounterIds": [
+          2918
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "虫巢扭曲者欧维纳克斯",
+        "number": 5,
+        "encounterIds": [
+          2919
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "节点女亲王凯威扎",
+        "number": 6,
+        "encounterIds": [
+          2920
+        ]
+      },
+      {
+        "sequence": 7,
+        "name": "流丝之庭",
+        "number": 7,
+        "encounterIds": [
+          2921
+        ]
+      },
+      {
+        "sequence": 8,
+        "name": "安苏雷克女王",
+        "number": 8,
+        "encounterIds": [
+          2922
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2769,
+    "name": "解放安德麦",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "维克茜和磨轮",
+        "number": 1,
+        "encounterIds": [
+          3009
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "血腥大熔炉",
+        "number": 2,
+        "encounterIds": [
+          3010
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "里克·混响",
+        "number": 3,
+        "encounterIds": [
+          3011
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "斯提克斯·堆渣",
+        "number": 4,
+        "encounterIds": [
+          3012
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "链齿狂人洛肯斯多",
+        "number": 5,
+        "encounterIds": [
+          3013
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "独臂盗匪",
+        "number": 6,
+        "encounterIds": [
+          3014
+        ]
+      },
+      {
+        "sequence": 7,
+        "name": "穆格·兹伊，安保头子",
+        "number": 7,
+        "encounterIds": [
+          3015
+        ]
+      },
+      {
+        "sequence": 8,
+        "name": "铬武大王加里维克斯",
+        "number": 8,
+        "encounterIds": [
+          3016
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2792,
+    "name": "黑石深渊",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "洛考尔",
+        "number": 1,
+        "encounterIds": [
+          3042
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "贝尔加",
+        "number": 2,
+        "encounterIds": [
+          3044
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "伊森迪奥斯",
+        "number": 3,
+        "encounterIds": [
+          3043
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "傀儡统帅阿格曼奇",
+        "number": 4,
+        "encounterIds": [
+          3046
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "黑铁七贤",
+        "number": 5,
+        "encounterIds": [
+          3048
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "怒炉将军",
+        "number": 6,
+        "encounterIds": [
+          3045
+        ]
+      },
+      {
+        "sequence": 7,
+        "name": "弗莱拉斯大使",
+        "number": 7,
+        "encounterIds": [
+          3047
+        ]
+      },
+      {
+        "sequence": 8,
+        "name": "达格兰·索瑞森大帝",
+        "number": 8,
+        "encounterIds": [
+          3049
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2810,
+    "name": "法力熔炉：欧米伽",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "集能哨兵",
+        "number": 1,
+        "encounterIds": [
+          3129
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "卢米萨尔",
+        "number": 2,
+        "encounterIds": [
+          3131
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "缚魂者娜欣达利",
+        "number": 3,
+        "encounterIds": [
+          3130
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "熔炉编织者阿拉兹",
+        "number": 4,
+        "encounterIds": [
+          3132
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "狩魂猎手",
+        "number": 5,
+        "encounterIds": [
+          3122
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "弗兰克提鲁斯",
+        "number": 6,
+        "encounterIds": [
+          3133
+        ]
+      },
+      {
+        "sequence": 7,
+        "name": "节点之王萨哈达尔",
+        "number": 7,
+        "encounterIds": [
+          3134
+        ]
+      },
+      {
+        "sequence": 8,
+        "name": "诸界吞噬者迪门修斯",
+        "number": 8,
+        "encounterIds": [
+          3135
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2950,
+    "name": "化身巨龙牢窟（V2）",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "莱萨杰丝，噬雷之龙",
+        "number": 1,
+        "encounterIds": [
+          3297
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 1592,
+    "name": "孢陨幽境",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "腐沼",
+        "number": 1,
+        "encounterIds": [
+          3159
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2912,
+    "name": "虚影尖塔",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "元首阿福扎恩",
+        "number": 1,
+        "encounterIds": [
+          3176
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "弗拉希乌斯",
+        "number": 2,
+        "encounterIds": [
+          3177
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "陨落之王萨哈达尔",
+        "number": 3,
+        "encounterIds": [
+          3179
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "威厄高尔和艾佐拉克",
+        "number": 4,
+        "encounterIds": [
+          3178
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "光盲先锋军",
+        "number": 5,
+        "encounterIds": [
+          3180
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "宇宙之冕",
+        "number": 6,
+        "encounterIds": [
+          3181
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2913,
+    "name": "奎尔丹纳斯岛",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "贝洛朗，奥的子嗣",
+        "number": 1,
+        "encounterIds": [
+          3182
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "至暗之夜降临",
+        "number": 2,
+        "encounterIds": [
+          3183
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2939,
+    "name": "梦境裂隙",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "奇美鲁斯，未梦之神",
+        "number": 1,
+        "encounterIds": [
+          3306
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2987,
+    "name": "潮缚石窟",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "尼姆瑞莎·唤波者",
+        "number": 1,
+        "encounterIds": [
+          3379
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 3004,
+    "name": "烈毒之渊",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "盘魂者内克扎莉",
+        "number": 1,
+        "encounterIds": [
+          3470
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "陵寝哨兵",
+        "number": 2,
+        "encounterIds": [
+          3445
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "迷失的探险者",
+        "number": 3,
+        "encounterIds": [
+          3497
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "万毒邪祟者瓦什尼克",
+        "number": 4,
+        "encounterIds": [
+          3455
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "斯索拉克",
+        "number": 5,
+        "encounterIds": [
+          3420
+        ]
+      },
+      {
+        "sequence": 6,
+        "name": "双子毒牙",
+        "number": 6,
+        "encounterIds": [
+          3421
+        ]
+      },
+      {
+        "sequence": 7,
+        "name": "盘卷祭坛",
+        "number": 7,
+        "encounterIds": [
+          3429
+        ]
+      },
+      {
+        "sequence": 8,
+        "name": "乌拉特克",
+        "number": 8,
+        "encounterIds": [
+          3492
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 3095,
+    "name": "基希克斯破封",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "基希克斯",
+        "number": 1,
+        "encounterIds": [
+          3513
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 3105,
+    "name": "假人穹顶",
+    "type": "团队副本",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "阴险孤影",
+        "number": 1,
+        "encounterIds": [
+          3591
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "恶毒双煞",
+        "number": 2,
+        "encounterIds": [
+          3590
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "恐怖三灾",
+        "number": 3,
+        "encounterIds": [
+          3592
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "惊惧五魔",
+        "number": 4,
+        "encounterIds": [
+          3593
+        ]
+      },
+      {
+        "sequence": 5,
+        "name": "有害治疗者",
+        "number": 5,
+        "encounterIds": [
+          3594
+        ]
+      }
+    ]
+  },
+  {
+    "instanceId": 2930,
+    "name": "世界（至暗之夜）",
+    "type": "世界",
+    "bosses": [
+      {
+        "sequence": 1,
+        "name": "鲁阿夏尔",
+        "number": 1,
+        "encounterIds": [
+          3454
+        ]
+      },
+      {
+        "sequence": 2,
+        "name": "索姆贝兰",
+        "number": 2,
+        "encounterIds": [
+          3459
+        ]
+      },
+      {
+        "sequence": 3,
+        "name": "普雷达萨斯",
+        "number": 3,
+        "encounterIds": [
+          3431
+        ]
+      },
+      {
+        "sequence": 4,
+        "name": "克拉格平",
+        "number": 4,
+        "encounterIds": [
+          3436
         ]
       }
     ]

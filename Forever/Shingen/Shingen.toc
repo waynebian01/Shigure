@@ -1,7 +1,7 @@
 ## Interface: 16001
 
 ## Title: Shingen
-## Version: 1.2.1.36
+## Version: 1.2.1.37
 ## Author: Wayne
 ## IconTexture: Interface\AddOns\Shingen\core\Spell_Misc_EmotionHappy.blp
 ## OptionalDeps: LibRangeCheck-3.0

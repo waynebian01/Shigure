@@ -139,7 +139,8 @@ public sealed class StateBuilder : IRuntimeStateBuilder
             if (JsonHelpers.GetInt(JsonHelpers.Get(config, "castCountdownOffset"))
                 is > 0 and var castCountdownOffset && castCountdownOffset <= fieldCount)
             {
-                values[NameplateStateLayout.CastCountdownField] = ReadField(castCountdownOffset);
+                values[NameplateStateLayout.CastCountdownField] = TimeValueEncoding.Decode(
+                    ReadField(castCountdownOffset), TimeValueEncoding.Deciseconds);
             }
 
             if (auraConfigs is not null)
@@ -150,7 +151,7 @@ public sealed class StateBuilder : IRuntimeStateBuilder
                     var valueOffset = aura is null
                         ? auraStart + auraIndex
                         : JsonHelpers.GetInt(JsonHelpers.Get(aura, "valueOffset")) ?? auraStart + auraIndex;
-                    var value = ReadField(valueOffset);
+                    var value = TimeValueEncoding.Decode(ReadField(valueOffset), JsonHelpers.GetString(aura?["type"]));
                     var ordinalKey = $"光环{auraIndex + 1}";
                     values[ordinalKey] = value;
                     if (aura is not null)
@@ -416,7 +417,7 @@ public sealed class StateBuilder : IRuntimeStateBuilder
         {
             "bool" => raw.GetValueOrDefault() != 0,
             "string" => raw?.ToString() ?? string.Empty,
-            "deciseconds" => raw.GetValueOrDefault() / 10d,
+            TimeValueEncoding.Deciseconds or TimeValueEncoding.Centiseconds => TimeValueEncoding.Decode(raw.GetValueOrDefault(), type),
             _ => raw.GetValueOrDefault()
         };
     }

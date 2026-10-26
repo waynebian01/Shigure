@@ -330,7 +330,23 @@ function Shingen:BAG_UPDATE()
     self:UpdateItemCooldown()
 end
 
+-- 单位关系、死亡或复活变化只更新身份状态，不清空施法缓存。
+function Shingen:UNIT_FLAGS(_, unit)
+    self:RefreshTrackedUnitIdentityStates()
+end
+
+function Shingen:UNIT_FACTION(_, unit)
+    self:RefreshTrackedUnitIdentityStates()
+end
+
+function Shingen:RefreshTrackedUnitIdentityStates()
+    for _, unit in ipairs(COMBAT_UNIT_REFRESH_ORDER) do
+        self:RefreshUnitIdentityState(unit)
+    end
+end
+
 function Shingen:UNIT_HEALTH(_, unit)
+    self:RefreshUnitIdentityState(unit)
     if unit == "player" then
         self:UpdatePlayerHealth()
         self:UpdatePlayerStagger()
@@ -443,6 +459,7 @@ function Shingen:GROUP_ROSTER_UPDATE()
 end
 
 function Shingen:UNIT_DIED(_, unitGUID)
+    self:RefreshTrackedUnitIdentityStates()
     if not isSec(unitGUID) then
         self:RefreshGroupMemberDeath(unitGUID, "guid")
     end
@@ -617,6 +634,7 @@ function Shingen:OnUpdate(elapsed)
 
     self.timeElapsed = self.timeElapsed + elapsed
     if self.timeElapsed > 0.2 then
+        RunUpdateSafely(self, "RefreshTrackedUnitIdentityStates")
         RunUpdateSafely(self, "UpdateSpellCooldown")
         RunUpdateSafely(self, "RefreshOverrideSpells")
         RunUpdateSafely(self, "UpdateStateBlock", "状态", "生物类型")

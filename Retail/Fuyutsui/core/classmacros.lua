@@ -270,7 +270,7 @@ Fuyutsui.ClassMacros = {
         specialSpells = {
             "/castsequence reset=1 潜行,x", -- 潜行
             "/use 13", -- 饰品1
-            "/use 14", -- 饰品2
+            "/cast 死亡印记\n/use 13", -- 死亡饰品
         },
     },
 

@@ -888,6 +888,7 @@ public sealed class ClassConfigEditorControl : UserControl
             HeaderText = "spellIds（逗号分隔）",
             AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill
         });
+        _aurasGrid.Columns.Add(CreateSpellCheckColumn("HighPrecision", "高精度", 90));
         _aurasGrid.Columns.Add(new DataGridViewCheckBoxColumn
         {
             Name = "IsPlayer",
@@ -1075,6 +1076,7 @@ public sealed class ClassConfigEditorControl : UserControl
         _spellsGrid.Columns.Add(CreateSpellIconColumn(43));
         _spellsGrid.Columns.Add(CreateSpellTextColumn("Name", "名称", 160, fill: true));
         _spellsGrid.Columns.Add(CreateSpellTextColumn("SpellId", "法术 ID", 108));
+        _spellsGrid.Columns.Add(CreateSpellCheckColumn("HighPrecision", "高精度", 90));
         _spellsGrid.Columns.Add(CreateSpellCheckColumn("Charge", "显示充能", 99));
         _spellsGrid.Columns.Add(CreateSpellCheckColumn("CastCount", "显示施法次数", 110));
         _spellsGrid.Columns.Add(CreateSpellCheckColumn("ForcedKnown", "强制已学", 99));
@@ -1195,6 +1197,7 @@ public sealed class ClassConfigEditorControl : UserControl
             SortMode = DataGridViewColumnSortMode.NotSortable
         });
         _itemsGrid.Columns.Add(CreateSpellTextColumn("Name", "名称", 160, fill: true));
+        _itemsGrid.Columns.Add(CreateSpellCheckColumn("HighPrecision", "高精度", 90));
         _itemsGrid.Columns.Add(CreateSpellCheckColumn("IsEquipped", "是否装备中", 110));
         _itemsGrid.Columns.Add(CreateDeleteColumn());
         itemCard.Controls.Add(_itemsGrid, 0, 1);
@@ -1603,6 +1606,7 @@ public sealed class ClassConfigEditorControl : UserControl
         _groupAurasGrid.Columns.Add(CreateSpellIconColumn());
         _groupAurasGrid.Columns.Add(new DataGridViewTextBoxColumn { Name = "Name", HeaderText = "名称", Width = 160 });
         _groupAurasGrid.Columns.Add(new DataGridViewTextBoxColumn { Name = "SpellId", HeaderText = "spellId", Width = 110 });
+        _groupAurasGrid.Columns.Add(CreateSpellCheckColumn("HighPrecision", "高精度", 90));
         _groupAurasGrid.Columns.Add(CreateSpellCheckColumn("MaxApps", "显示层数", 90));
         _groupAurasGrid.Columns.Add(new DataGridViewTextBoxColumn
         {
@@ -1733,7 +1737,7 @@ public sealed class ClassConfigEditorControl : UserControl
                 UpdateNameplatePixelSummary();
             }
         };
-        const string castCountdownHint = "普通施法或引导的剩余时间；无施法时为 0。\n整数单位为 0.1 秒，10 ≈ 1 秒，最大 25.5 秒；启用后增加 40 格像素。";
+        const string castCountdownHint = "普通施法或引导的剩余时间；无施法时为 0。\n单位为秒，支持一位小数，最大 25.5 秒；启用后增加 40 格像素。";
         _toolTip.SetToolTip(_nameplateCastCountdownBox, castCountdownHint);
         var castCountdownCard = CreateGroupCard(NameplateStateLayout.CastCountdownField, _nameplateCastCountdownBox);
         _toolTip.SetToolTip(castCountdownCard, castCountdownHint);
@@ -1767,6 +1771,7 @@ public sealed class ClassConfigEditorControl : UserControl
             HeaderText = "spellIds（逗号分隔）",
             AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill
         });
+        _nameplateAurasGrid.Columns.Add(CreateSpellCheckColumn("HighPrecision", "高精度", 90));
         _nameplateAurasGrid.Columns.Add(new DataGridViewCheckBoxColumn
         {
             Name = "IsPlayer",
@@ -1814,6 +1819,7 @@ public sealed class ClassConfigEditorControl : UserControl
                     aura.SpellId?.ToString(CultureInfo.InvariantCulture) ?? "",
                     aura.MaxApps is > 0,
                     string.Join(", ", aura.SpellIds),
+                    aura.HighPrecision,
                     aura.IsPlayer,
                     "×");
                 _nameplateAurasGrid.Rows[rowIndex].Cells["MaxApps"].Tag = aura.MaxApps;
@@ -2518,6 +2524,7 @@ public sealed class ClassConfigEditorControl : UserControl
                 (item.ItemId is { } id ? Catalog.GetItem(id) : null)!,
                 item.ItemId?.ToString(CultureInfo.InvariantCulture) ?? string.Empty,
                 item.Name,
+                item.HighPrecision,
                 item.IsEquipped,
                 "×");
             _itemsGrid.Rows[rowIndex].Tag = item;
@@ -3181,6 +3188,7 @@ public sealed class ClassConfigEditorControl : UserControl
                 aura.Name,
                 aura.SpellId?.ToString(CultureInfo.InvariantCulture) ?? "",
                 string.Join(", ", aura.SpellIds),
+                aura.HighPrecision,
                 aura.IsPlayer,
                 aura.MaxApps is > 0,
                 "×");
@@ -3269,6 +3277,7 @@ public sealed class ClassConfigEditorControl : UserControl
                 Catalog.Get(spell.SpellId)!,
                 spell.Name,
                 spell.SpellId.ToString(CultureInfo.InvariantCulture),
+                spell.HighPrecision,
                 spell.Charge,
                 spell.CastCount is > 0,
                 spell.ForcedKnown,
@@ -3659,6 +3668,7 @@ public sealed class ClassConfigEditorControl : UserControl
                     icon!,
                     aura.Name,
                     aura.SpellId?.ToString(CultureInfo.InvariantCulture) ?? "",
+                    aura.HighPrecision,
                     aura.MaxApps is > 0,
                     string.Join(", ", aura.SpellIds),
                     "×");
@@ -4289,6 +4299,7 @@ public sealed class ClassConfigEditorControl : UserControl
 
             var entry = new ClassBlocksStore.AuraEntry
             {
+                HighPrecision = row.Cells["HighPrecision"].Value is true,
                 Name = name,
                 IsPlayer = row.Cells["IsPlayer"].Value is true
             };
@@ -4344,6 +4355,7 @@ public sealed class ClassConfigEditorControl : UserControl
             {
                 _currentSpec.Items.Add(new ClassBlocksStore.ItemEntry
                 {
+                    HighPrecision = row.Cells["HighPrecision"].Value is true,
                     ItemId = itemId,
                     Name = name,
                     IsEquipped = row.Cells["IsEquipped"].Value is true
@@ -4375,6 +4387,7 @@ public sealed class ClassConfigEditorControl : UserControl
 
             var entry = new ClassBlocksStore.SpellEntry
             {
+                HighPrecision = row.Cells["HighPrecision"].Value is true,
                 SpellId = spellId,
                 Name = row.Cells["Name"].Value?.ToString()?.Trim() ?? "",
                 Charge = row.Cells["Charge"].Value is true,
@@ -4423,6 +4436,7 @@ public sealed class ClassConfigEditorControl : UserControl
 
             var entry = new ClassBlocksStore.GroupAuraEntry
             {
+                HighPrecision = row.Cells["HighPrecision"].Value is true,
                 Name = row.Cells["Name"].Value?.ToString()?.Trim() ?? "",
                 MaxApps = ReadEnabledNumber(row, "MaxApps")
             };
@@ -4480,6 +4494,7 @@ public sealed class ClassConfigEditorControl : UserControl
             var spellIdsText = row.Cells["SpellIds"].Value?.ToString()?.Trim() ?? string.Empty;
             var entry = new ClassBlocksStore.AuraEntry
             {
+                HighPrecision = row.Cells["HighPrecision"].Value is true,
                 Name = name,
                 IsPlayer = row.Cells["IsPlayer"].Value is true,
                 MaxApps = ReadEnabledNumber(row, "MaxApps")
@@ -4821,6 +4836,7 @@ public sealed class ClassConfigEditorControl : UserControl
                 false,
                 false,
                 false,
+                false,
                 "×");
         }
         finally
@@ -4878,6 +4894,7 @@ public sealed class ClassConfigEditorControl : UserControl
                 Catalog.GetItem(sourceEntry.ItemId)!,
                 sourceEntry.ItemId.ToString(CultureInfo.InvariantCulture),
                 sourceEntry.Name,
+                false,
                 false,
                 "×");
         }

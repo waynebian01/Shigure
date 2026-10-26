@@ -92,7 +92,7 @@ public sealed class LogicRegistry : IRuntimeLogic
         }
         if (!runLogic) ResetTriggers();
         _triggerModuleId = module?.Id;
-        _soundInput?.Configure(module is null ? [] : SoundConditions.GetNames(module.Rules), runLogic);
+        _soundInput?.Configure(module is null ? [] : SoundConditions.GetNames(ModuleApl.Entries(module).Select(entry => entry.Rule)), runLogic);
         if (_pendingSound is not null
             && _timeProvider.GetUtcNow() - _pendingSound.DetectedAt >= TimeSpan.FromSeconds(1))
             _pendingSound = null;
@@ -113,11 +113,13 @@ public sealed class LogicRegistry : IRuntimeLogic
             var ruleMatches = new Dictionary<int, bool>();
             var ruleSoundEvents = new Dictionary<int, long>();
             // 独立检查持续命中和已有等待，前面的规则不能挡住失效取消。
-            for (var index = 0; index < module.Rules.Count; index++)
+            var reachable = ModuleApl.Reachable(module, state, _keymap);
+            foreach (var entry in ModuleApl.Entries(module))
             {
-                var key = $"{module.Id}:{index}";
-                var rule = module.Rules[index];
-                if (!rule.Enabled)
+                var index = entry.Index;
+                var key = entry.Key;
+                var rule = entry.Rule;
+                if (!rule.Enabled || !reachable.Contains(entry.LogicId) || ModuleApl.IsInvocation(rule))
                 {
                     _ruleMatches.Forget(key);
                     _sentKeyRules.Remove(key);

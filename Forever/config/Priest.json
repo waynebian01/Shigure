@@ -146,52 +146,189 @@
     "首领战": {
       "step": 19,
       "type": "int",
-      "category": "区域"
+      "category": "区域",
+      "pixelFormat": "rgb24",
+      "payloadStep": 20
     },
     "目标施法技能": {
-      "step": 20,
+      "step": 21,
       "type": "int",
       "category": "目标",
       "pixelFormat": "rgb24",
-      "payloadStep": 21
+      "payloadStep": 22
     },
     "目标类型": {
-      "step": 22,
-      "type": "int",
-      "category": "目标"
-    },
-    "目标生命值": {
       "step": 23,
       "type": "int",
       "category": "目标"
     },
-    "目标距离": {
+    "目标生命值": {
       "step": 24,
       "type": "int",
       "category": "目标"
     },
-    "目标NPCID": {
+    "目标距离": {
       "step": 25,
+      "type": "int",
+      "category": "目标"
+    },
+    "目标NPCID": {
+      "step": 26,
       "type": "int",
       "category": "目标",
       "pixelFormat": "rgb24",
-      "payloadStep": 26
+      "payloadStep": 27
+    },
+    "目标单位": {
+      "step": 28,
+      "type": "int",
+      "category": "目标"
+    },
+    "目标可攻击": {
+      "step": 29,
+      "type": "bool",
+      "category": "目标"
+    },
+    "目标可协助": {
+      "step": 30,
+      "type": "bool",
+      "category": "目标"
+    },
+    "目标存活": {
+      "step": 31,
+      "type": "bool",
+      "category": "目标"
     },
     "焦点施法技能": {
-      "step": 27,
+      "step": 32,
       "type": "int",
       "category": "焦点",
       "pixelFormat": "rgb24",
-      "payloadStep": 28
+      "payloadStep": 33
     },
     "焦点生命值": {
-      "step": 29,
+      "step": 34,
       "type": "int",
       "category": "焦点"
     },
+    "焦点单位": {
+      "step": 35,
+      "type": "int",
+      "category": "焦点"
+    },
+    "焦点可攻击": {
+      "step": 36,
+      "type": "bool",
+      "category": "焦点"
+    },
+    "焦点可协助": {
+      "step": 37,
+      "type": "bool",
+      "category": "焦点"
+    },
+    "焦点存活": {
+      "step": 38,
+      "type": "bool",
+      "category": "焦点"
+    },
+    "鼠标单位": {
+      "step": 39,
+      "type": "int",
+      "category": "鼠标"
+    },
+    "鼠标可攻击": {
+      "step": 40,
+      "type": "bool",
+      "category": "鼠标"
+    },
+    "鼠标可协助": {
+      "step": 41,
+      "type": "bool",
+      "category": "鼠标"
+    },
+    "鼠标存活": {
+      "step": 42,
+      "type": "bool",
+      "category": "鼠标"
+    },
+    "首领1可攻击": {
+      "step": 43,
+      "type": "bool",
+      "category": "首领1"
+    },
+    "首领1可协助": {
+      "step": 44,
+      "type": "bool",
+      "category": "首领1"
+    },
+    "首领1存活": {
+      "step": 45,
+      "type": "bool",
+      "category": "首领1"
+    },
+    "首领2可攻击": {
+      "step": 46,
+      "type": "bool",
+      "category": "首领2"
+    },
+    "首领2可协助": {
+      "step": 47,
+      "type": "bool",
+      "category": "首领2"
+    },
+    "首领2存活": {
+      "step": 48,
+      "type": "bool",
+      "category": "首领2"
+    },
+    "首领3可攻击": {
+      "step": 49,
+      "type": "bool",
+      "category": "首领3"
+    },
+    "首领3可协助": {
+      "step": 50,
+      "type": "bool",
+      "category": "首领3"
+    },
+    "首领3存活": {
+      "step": 51,
+      "type": "bool",
+      "category": "首领3"
+    },
+    "首领4可攻击": {
+      "step": 52,
+      "type": "bool",
+      "category": "首领4"
+    },
+    "首领4可协助": {
+      "step": 53,
+      "type": "bool",
+      "category": "首领4"
+    },
+    "首领4存活": {
+      "step": 54,
+      "type": "bool",
+      "category": "首领4"
+    },
+    "首领5可攻击": {
+      "step": 55,
+      "type": "bool",
+      "category": "首领5"
+    },
+    "首领5可协助": {
+      "step": 56,
+      "type": "bool",
+      "category": "首领5"
+    },
+    "首领5存活": {
+      "step": 57,
+      "type": "bool",
+      "category": "首领5"
+    },
     "spells": {
       "17.cooldown": {
-        "step": 30,
+        "step": 58,
         "type": "int",
         "displayName": "真言术：盾",
         "spellId": 17,
@@ -199,7 +336,7 @@
         "displayType": "冷却"
       },
       "586.cooldown": {
-        "step": 31,
+        "step": 59,
         "type": "int",
         "displayName": "渐隐术",
         "spellId": 586,
@@ -207,7 +344,7 @@
         "displayType": "冷却"
       },
       "8092.cooldown": {
-        "step": 32,
+        "step": 60,
         "type": "int",
         "displayName": "心灵震爆",
         "spellId": 8092,
@@ -215,7 +352,7 @@
         "displayType": "冷却"
       },
       "8122.cooldown": {
-        "step": 33,
+        "step": 61,
         "type": "int",
         "displayName": "心灵尖啸",
         "spellId": 8122,
@@ -223,7 +360,7 @@
         "displayType": "冷却"
       },
       "10060.cooldown": {
-        "step": 34,
+        "step": 62,
         "type": "int",
         "displayName": "能量灌注",
         "spellId": 10060,
@@ -231,7 +368,7 @@
         "displayType": "冷却"
       },
       "14752.cooldown": {
-        "step": 35,
+        "step": 63,
         "type": "int",
         "displayName": "神圣之灵",
         "spellId": 14752,
@@ -239,7 +376,7 @@
         "displayType": "冷却"
       },
       "15237.cooldown": {
-        "step": 36,
+        "step": 64,
         "type": "int",
         "displayName": "神圣新星",
         "spellId": 15237,
@@ -247,7 +384,7 @@
         "displayType": "冷却"
       },
       "15286.cooldown": {
-        "step": 37,
+        "step": 65,
         "type": "int",
         "displayName": "吸血鬼的拥抱",
         "spellId": 15286,
@@ -255,7 +392,7 @@
         "displayType": "冷却"
       },
       "15473.cooldown": {
-        "step": 38,
+        "step": 66,
         "type": "int",
         "displayName": "暗影形态",
         "spellId": 15473,
@@ -263,7 +400,7 @@
         "displayType": "冷却"
       },
       "15487.cooldown": {
-        "step": 39,
+        "step": 67,
         "type": "int",
         "displayName": "沉默",
         "spellId": 15487,
@@ -272,7 +409,7 @@
       }
     },
     "group": {
-      "start": 40,
+      "start": 68,
       "生命值": {
         "step": 1,
         "type": "int"

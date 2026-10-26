@@ -325,12 +325,13 @@ public sealed class ConditionFieldCatalog
                 if (JsonHelpers.GetInt(JsonHelpers.Get(nameplates, "castCountdownOffset")) is > 0)
                 {
                     AddField(fields, seen, prefix + NameplateStateLayout.CastCountdownField,
-                        $"姓名板{slot} / 施法(倒计时)", ConditionFieldType.Int, ConditionFieldCategory.State, "姓名板");
+                        $"姓名板{slot} / 施法(倒计时)", ConditionFieldType.Number, ConditionFieldCategory.State, "姓名板");
                 }
                 for (var auraIndex = 1; auraIndex <= auraCount; auraIndex++)
                 {
                     var name = $"光环{auraIndex}";
                     var hasApplications = false;
+                    var auraType = ConditionFieldType.Int;
                     if (JsonHelpers.Get(nameplates, "auras") is JsonArray auraList
                         && auraIndex - 1 < auraList.Count
                         && auraList[auraIndex - 1] is JsonObject aura)
@@ -338,9 +339,10 @@ public sealed class ConditionFieldCatalog
                         var configuredName = JsonHelpers.GetString(JsonHelpers.Get(aura, "name"));
                         if (!string.IsNullOrWhiteSpace(configuredName)) name = configuredName;
                         hasApplications = JsonHelpers.GetInt(JsonHelpers.Get(aura, "appsOffset")) is > 0;
+                        auraType = ReadType(aura);
                     }
 
-                    AddField(fields, seen, prefix + $"光环{auraIndex}", $"姓名板{slot} / {name}", ConditionFieldType.Int, ConditionFieldCategory.Aura, "姓名板");
+                    AddField(fields, seen, prefix + $"光环{auraIndex}", $"姓名板{slot} / {name}", auraType, ConditionFieldCategory.Aura, "姓名板");
                     if (hasApplications)
                     {
                         AddField(fields, seen, prefix + $"光环{auraIndex}层数", $"姓名板{slot} / {name}层数", ConditionFieldType.Int, ConditionFieldCategory.Aura, "姓名板");
@@ -500,7 +502,7 @@ public sealed class ConditionFieldCatalog
             fields.Add(new ConditionField(
                 SpellFieldKey.AuraMember(spellId.Value),
                 $"{(string.IsNullOrWhiteSpace(name) ? $"光环{index + 1}" : name)} / {spellId.Value}",
-                ConditionFieldType.Int,
+                ReadType(aura),
                 ConditionFieldCategory.Aura));
         }
 
@@ -720,7 +722,7 @@ public sealed class ConditionFieldCatalog
         {
             "bool" => ConditionFieldType.Bool,
             "string" => ConditionFieldType.String,
-            "deciseconds" => ConditionFieldType.Number,
+            TimeValueEncoding.Deciseconds or TimeValueEncoding.Centiseconds => ConditionFieldType.Number,
             _ => ConditionFieldType.Int
         };
     }

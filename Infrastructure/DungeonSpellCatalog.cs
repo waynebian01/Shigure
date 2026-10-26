@@ -20,7 +20,7 @@ internal sealed record DungeonSpellData(
 
 internal enum DungeonSpellFilter { Instance, Boss, Type, Npc, Class }
 
-/// <summary>技能按实例 ID、Encounter ID 关联新目录；界面显示副本编号和副本内首领序号。</summary>
+/// <summary>技能按实例 ID、Encounter ID 关联目录；首领显示实际战斗 ID，按副本内序号排序。</summary>
 internal static class DungeonSpellCatalog
 {
     public static DungeonSpellData Load(string baseDirectory)
@@ -29,7 +29,7 @@ internal static class DungeonSpellCatalog
         var dungeons = NumberCatalog.LoadDungeons("Retail", baseDirectory);
         var raids = NumberCatalog.LoadRaids("Retail", baseDirectory);
         var bossCatalog = BossCatalog.Load("Retail", baseDirectory);
-        var bosses = bossCatalog.Entries.SelectMany(entry => (entry.EncounterIds ?? [entry.SourceId])
+        var bosses = bossCatalog.Entries.SelectMany(entry => entry.GetEncounterIds()
             .Select(id => (Id: id, Entry: entry))).ToDictionary(pair => pair.Id, pair => pair.Entry);
         if (dungeons.Error is not null || raids.Error is not null || bossCatalog.Error is not null)
             return new([], instances, bosses, dungeons.Error ?? raids.Error ?? bossCatalog.Error);
@@ -133,7 +133,7 @@ internal static class DungeonSpellCatalog
 
     public static string DescribeBoss(int? encounterId, IReadOnlyDictionary<int, BossCatalogEntry> bosses)
         => encounterId is not { } id ? "未指定"
-            : bosses.TryGetValue(id, out var boss) ? $"{boss.Id} · {boss.Name}" : $"首领战 {id}";
+            : bosses.TryGetValue(id, out var boss) ? $"{id} · {boss.Name}" : $"首领战 {id}";
 
     public static int BossOrder(int? encounterId, IReadOnlyDictionary<int, BossCatalogEntry> bosses)
         => encounterId is { } id && bosses.TryGetValue(id, out var boss) ? boss.Id : int.MaxValue;

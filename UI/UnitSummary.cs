@@ -139,7 +139,7 @@ internal static class UnitSummary
                 3 => "输出",
                 _ => condition.Value.ToString()
             },
-            CountConditionFieldKind.Class => ClassNames.GetClassAndSpecName(condition.Value, null).ClassName
+            CountConditionFieldKind.Class => ClassNames.GetClassAndSpecName((int)condition.Value, null).ClassName
                 ?? condition.Value.ToString(),
             CountConditionFieldKind.Combat => condition.Value == 0 ? "不在战斗中" : "战斗中",
             CountConditionFieldKind.ImprovedGarrote => condition.Value switch

@@ -15,12 +15,15 @@ function Fuyutsui:RefreshPlayerState()
     self:RefreshPlayerCastStateBlocks()
     self:UpdatePlayerHealth()
     self:RefreshAssistedCombatSuggestion()
+    self:RefreshTrackedUnitIdentityStates()
     self:RefreshTargetTypeState()
     self:RefreshFocusTypeState()
     self:RefreshGroupTypeState()
     self:RefreshGroupCountState()
     self:UpdateHeroTalent()
     self:RefreshPlayerMapState()
+    self:UpdateStateBlock("区域", "首领战")
+    self:UpdateStateBlock("区域", "首领战难度")
     self:RefreshMythicPlusState()
     self:RefreshPlayerBars()
     self:RefreshShapeshiftFormState()
@@ -88,7 +91,7 @@ function Fuyutsui:LoadPlayerBlocks(specIndex)
                             local stateName = name == "难度" and "首领战难度" or name
                             local key = bareKeyCategories[category] and stateName or (category .. stateName)
                             blocks.state[key] = index
-                            local rgbState = (name == "地图" and category == "区域")
+                            local rgbState = ((name == "地图" or name == "首领战") and category == "区域")
                                 or name == "施法技能" and (category == "目标" or category == "焦点"
                                 or category == "首领1" or category == "首领2" or category == "首领3"
                                 or category == "首领4" or category == "首领5")
@@ -101,7 +104,7 @@ function Fuyutsui:LoadPlayerBlocks(specIndex)
             for _, name in ipairs(t.states) do
                 if name then
                     blocks.state[name == "难度" and "首领战难度" or name] = index
-                    index = index + (name == "地图" and 2 or 1)
+                    index = index + ((name == "地图" or name == "首领战") and 2 or 1)
                 end
             end
         end
@@ -125,6 +128,7 @@ function Fuyutsui:LoadPlayerBlocks(specIndex)
                         spellId = aura.spellId,
                         spellIds = aura.spellIds,
                         maxApps = hasApplications and aura.maxApps or nil,
+                        highPrecision = aura.highPrecision == true,
                         unit = unit,
                         filter = auraFilter,
                     }
@@ -173,9 +177,11 @@ function Fuyutsui:LoadPlayerBlocks(specIndex)
                 print("LoadPlayerBlocks: spell 缺少 spellId，已跳过")
             else
                 local spellId = spell.spellId
+                -- 同一技能的普通冷却和充能冷却共用精度。
                 if not blocks.spells[spellId] then
                     blocks.spells[spellId] = {}
                 end
+                blocks.spells[spellId].highPrecision = spell.highPrecision == true
                 if spell.charge then
                     blocks.spells[spellId].index = index
                     blocks.spells[spellId].charge = index + 1
@@ -254,6 +260,7 @@ function Fuyutsui:LoadPlayerBlocks(specIndex)
                     index = index,
                     name = info.name,
                     isEquipped = info.isEquipped == true,
+                    highPrecision = info.highPrecision == true,
                 }
                 index = index + 1
             end
@@ -363,6 +370,7 @@ function Fuyutsui:LoadPlayerBlocks(specIndex)
                         spellIds = aura.spellIds,
                         isPlayer = aura.isPlayer == true,
                         maxApps = maxApps,
+                        highPrecision = aura.highPrecision == true,
                         valueOffset = valueOffset,
                     })
                     if maxApps then blocks.nameplates.num = blocks.nameplates.num + 1 end

@@ -8,6 +8,11 @@ internal sealed record BossCatalogEntry(
     int? Expansion = null, string? ExpansionName = null, int InstanceNumber = 0)
 {
     public string DisplayName => $"{InstanceName} / {Name}";
+
+    // 同名首领可能有多个首领战 ID，条件必须保留事件返回的实际 ID。
+    public IEnumerable<int> GetEncounterIds()
+        => (EncounterIds is { Length: > 0 } ? EncounterIds : [SourceId])
+            .Where(id => id > 0).Distinct();
 }
 
 /// <summary>各版本的副本首领目录；Id 是副本内序号，SourceId 是客户端 Encounter ID。</summary>
@@ -39,15 +44,15 @@ internal sealed record BossCatalog(IReadOnlyList<BossCatalogEntry> Entries, stri
         }
     }
 
-    public string DescribeNumber(int number, int? instanceId = null)
+    public string DescribeNumber(int number)
     {
         if (number == 0) return "非首领战";
-        if (instanceId is null) return $"{number}号首领（副本内序号）";
-        var matches = Entries.Where(entry => entry.Id == number && (instanceId is null || entry.InstanceId == instanceId)).ToArray();
-        return matches.Length == 1 ? matches[0].Name : $"{number}号首领（副本内序号）";
+        var entry = Entries.FirstOrDefault(entry => entry.GetEncounterIds().Contains(number));
+        return entry is null ? number.ToString(System.Globalization.CultureInfo.InvariantCulture)
+            : $"{number} · {entry.DisplayName}";
     }
 
-    // 只有全部“且”且明确选中一个副本时，才能把局部序号解释为具体首领。
+    // 只有全部“且”且明确选中一个副本时，才缩小首领下拉的范围。
     public static int? ResolveInstance(string version, IReadOnlyList<ConditionTerm> terms)
     {
         if (terms.Any(term => term.OrWithPrevious)) return null;

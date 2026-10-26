@@ -15,11 +15,15 @@ internal enum ModuleComputationStage
 // 编辑器和运行时共用阶段依赖检查，不能用尚未生成的字段默认值提前命中条件。
 internal sealed class ModuleComputationStages
 {
+    private readonly ModuleDefinition _module;
+    private ModuleDerivedComputation? _derived;
+    private ModuleDerivedComputation Derived => _derived ??= new(_module);
     private readonly Dictionary<string, ModuleComputationStage> _fields = new(StringComparer.Ordinal);
     private readonly HashSet<string> _units = new(StringComparer.Ordinal);
 
     internal ModuleComputationStages(ModuleDefinition module)
     {
+        _module = module;
         foreach (var unit in module.Units)
         {
             Add(unit.Name, ModuleComputationStage.DynamicValue);
@@ -44,6 +48,8 @@ internal sealed class ModuleComputationStages
 
     internal bool IsAvailable(string field, ModuleComputationStage stage)
     {
+        if (stage is ModuleComputationStage.DynamicValue or ModuleComputationStage.Formula or ModuleComputationStage.Custom)
+            return true;
         var name = field.Trim();
         if (name.StartsWith("state.", StringComparison.OrdinalIgnoreCase)) name = name[6..];
         if (_fields.TryGetValue(name, out var source)) return source <= stage;
@@ -53,6 +59,7 @@ internal sealed class ModuleComputationStages
 
     internal string? ExpressionError(string expression, ModuleComputationStage stage, bool formula = false)
     {
+        if (stage is ModuleComputationStage.DynamicValue or ModuleComputationStage.Formula or ModuleComputationStage.Custom) return null;
         if (formula) expression = FormulaEvaluator.NormalizeExpression(expression);
         // 引号内是字面量，命名列表是静态数据，不属于跨阶段字段引用。
         expression = Regex.Replace(expression, "\"(?:\\\\.|[^\"\\\\])*\"|'(?:\\\\.|[^'\\\\])*'", " ");
@@ -97,6 +104,7 @@ internal sealed class ModuleComputationStages
                 && (!value.TryGetOperand(out var number) || number is not int))
                 return "动态数值和公式结果只能调整为整数。";
         }
+        if (stage is ModuleComputationStage.Formula or ModuleComputationStage.Custom) return Derived.ErrorFor(value.Field);
         return ExpressionError(value.Condition, stage)
             ?? ExpressionError(value.Formula, stage, formula: true);
     }
@@ -105,8 +113,7 @@ internal sealed class ModuleComputationStages
     {
         foreach (var value in groups.SelectMany(group => group.Conditions)
                      .Where(value => value.Enabled && value.ValueKind == CountConditionValueKind.StateField))
-            if (!IsAvailable(value.ValueField ?? string.Empty, ModuleComputationStage.DynamicValue))
-                return $"字段“{value.ValueField}”在动态数值之后计算，不能作为筛选阈值。";
+            if (Derived.ErrorFor(value.ValueField ?? string.Empty) is { } error) return error;
         return null;
     }
 }

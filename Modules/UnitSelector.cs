@@ -168,7 +168,7 @@ public static class UnitSelector
         bool shortest)
     {
         string? bestKey = null;
-        var bestValue = shortest ? int.MaxValue : int.MinValue;
+        var bestValue = shortest ? double.PositiveInfinity : double.NegativeInfinity;
         foreach (var candidate in candidates)
         {
             var duration = GetAuraDuration(candidate.Data, auraSpellId);
@@ -381,6 +381,10 @@ public static class UnitSelector
                     or CountConditionFieldKind.Class
                     or CountConditionFieldKind.Aura
                     || GroupDispelCatalog.Find(condition.Field) is not null;
+            if (condition.ValueKind == CountConditionValueKind.Constant
+                && (!double.IsFinite(condition.Value)
+                    || condition.Field is not (CountConditionFieldKind.Aura or CountConditionFieldKind.CastCountdown)
+                        && condition.Value != Math.Truncate(condition.Value))) return false;
             if (!allowed
                 || condition.Field == CountConditionFieldKind.Aura && condition.AuraSpellId is not > 0
                 || condition.Field != CountConditionFieldKind.Aura && condition.AuraSpellId is not null
@@ -469,13 +473,14 @@ public static class UnitSelector
                 || arraysValue is not IReadOnlyDictionary<string, IReadOnlySet<long>> arrays
                 || !arrays.TryGetValue(condition.ValueField ?? string.Empty, out var numbers))
                 return false;
-            var contains = numbers.Contains(actual);
+            if (actual != Math.Truncate(actual) || actual < long.MinValue || actual >= (double)long.MaxValue) return false;
+            var contains = numbers.Contains((long)actual);
             return condition.Comparison == CountConditionComparisonKind.In ? contains : !contains;
         }
 
-        var expected = condition.ValueKind == CountConditionValueKind.StateField
-            ? ReadReferencedValue(state, condition.ValueField ?? string.Empty)
-            : condition.Value;
+        var expected = condition.Value;
+        if (condition.ValueKind == CountConditionValueKind.StateField
+            && !TryReadReferencedValue(state, condition.ValueField ?? string.Empty, out expected)) return false;
         if (condition.Field == CountConditionFieldKind.Aura && actual == 0)
         {
             return condition.Comparison == CountConditionComparisonKind.Equal && expected == 0;
@@ -494,20 +499,22 @@ public static class UnitSelector
     }
 
     // 公式动态数值写在 $dynamicvalues；数量和单位值名称分别在 $counts / $unithealth。
-    private static int ReadReferencedValue(GameState state, string field)
+    private static bool TryReadReferencedValue(GameState state, string field, out double number)
     {
+        number = 0;
+        if (ModuleDerivedComputation.UnavailableReference(state, field) is not null) return false;
         var key = field.Trim();
-        if (TryReadNamedInt(state, "$dynamicvalues", key, out var number)
-            || TryReadNamedInt(state, "$counts", key, out number)
-            || TryReadNamedInt(state, "$unithealth", key, out number))
+        if (TryReadNamedNumber(state, "$dynamicvalues", key, out number)
+            || TryReadNamedNumber(state, "$counts", key, out number)
+            || TryReadNamedNumber(state, "$unithealth", key, out number))
         {
-            return number;
+            return true;
         }
 
-        return state.GetInt(key);
+        return ModuleConditionEvaluator.TryResolveDouble(state, key, out number);
     }
 
-    private static bool TryReadNamedInt(GameState state, string dictionaryKey, string field, out int value)
+    private static bool TryReadNamedNumber(GameState state, string dictionaryKey, string field, out double value)
     {
         value = 0;
         if (field.Length == 0 || !state.Values.TryGetValue(dictionaryKey, out var obj))
@@ -515,23 +522,24 @@ public static class UnitSelector
             return false;
         }
 
-        if (obj is IReadOnlyDictionary<string, int> ints && ints.TryGetValue(field, out value))
+        if (obj is IReadOnlyDictionary<string, int> ints && ints.TryGetValue(field, out var count))
         {
+            value = count;
             return true;
         }
 
         return obj is IReadOnlyDictionary<string, object?> values
             && values.TryGetValue(field, out var raw)
-            && TryInt(raw, out value);
+            && TryNumber(raw, out value);
     }
 
     private static bool TryReadCountConditionValue(
         IReadOnlyDictionary<string, object?> data,
         ModuleCountCondition condition,
-        out int value)
+        out double value)
     {
         if (GroupDispelCatalog.Find(condition.Field) is { } dispelField)
-            return TryInt(GetField(data, dispelField.FieldName), out value);
+            return TryNumber(GetField(data, dispelField.FieldName), out value);
 
         if (condition.Field == CountConditionFieldKind.Aura)
         {
@@ -565,7 +573,7 @@ public static class UnitSelector
             return false;
         }
 
-        if (TryInt(GetField(data, field), out value))
+        if (TryNumber(GetField(data, field), out value))
         {
             return condition.Field switch
             {
@@ -581,8 +589,8 @@ public static class UnitSelector
         return condition.Field == CountConditionFieldKind.Dispel;
     }
 
-    private static int GetAuraDuration(IReadOnlyDictionary<string, object?> data, long auraSpellId)
-        => TryInt(GetField(data, SpellFieldKey.AuraMember(auraSpellId)), out var duration) ? duration : 0;
+    private static double GetAuraDuration(IReadOnlyDictionary<string, object?> data, long auraSpellId)
+        => TryNumber(GetField(data, SpellFieldKey.AuraMember(auraSpellId)), out var duration) ? duration : 0;
 
     // 职责为 None/无法解析时视为不跳过(返回 true), 与 utils.py 的 _role_not_zero 一致。
     internal static bool IsValidTeammate(IReadOnlyDictionary<string, object?> data) => RoleNotZero(data);
@@ -610,6 +618,18 @@ public static class UnitSelector
     private static object? GetField(IReadOnlyDictionary<string, object?> data, string field)
     {
         return data.TryGetValue(field, out var value) ? value : null;
+    }
+
+    private static bool TryNumber(object? value, out double result)
+    {
+        if (value is bool flag)
+        {
+            result = flag ? 1 : 0;
+            return true;
+        }
+        return double.TryParse(Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture),
+            System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out result)
+            && double.IsFinite(result);
     }
 
     // 模仿 Python int() 的 try/except: null 或无法解析返回 false, 调用侧据此跳过。

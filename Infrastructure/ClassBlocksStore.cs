@@ -107,6 +107,7 @@ internal static class ClassBlocksStore
 
     public sealed class AuraEntry
     {
+        public bool HighPrecision { get; set; }
         public string Name { get; set; } = string.Empty;
         public long? SpellId { get; set; }
         public List<long> SpellIds { get; } = new();
@@ -123,6 +124,7 @@ internal static class ClassBlocksStore
 
     public sealed class SpellEntry
     {
+        public bool HighPrecision { get; set; }
         public string Name { get; set; } = string.Empty;
         public long SpellId { get; set; }
         public bool Charge { get; set; }
@@ -139,6 +141,7 @@ internal static class ClassBlocksStore
 
     public sealed class GroupAuraEntry
     {
+        public bool HighPrecision { get; set; }
         public string Name { get; set; } = string.Empty;
         public long? SpellId { get; set; }
         public List<long> SpellIds { get; } = new();
@@ -379,6 +382,7 @@ internal static class ClassBlocksStore
 
     public sealed class ItemEntry
     {
+        public bool HighPrecision { get; set; }
         public long? ItemId { get; set; }
         public string Name { get; set; } = string.Empty;
         public bool IsEquipped { get; set; }
@@ -710,6 +714,7 @@ internal static class ClassBlocksStore
                 result.Spells.Add(new SpellEntry
                 {
                     SpellId = (long)spellId.Value,
+                    HighPrecision = spell.GetBool("highPrecision") == true,
                     Name = spell.GetString("name")?.Trim() ?? string.Empty,
                     Charge = spell.GetBool("charge") == true,
                     CastCount = ReadEnabledFlag(spell, "castCount"),
@@ -744,6 +749,7 @@ internal static class ClassBlocksStore
                     var entry = new GroupAuraEntry
                     {
                         Name = auraInfo.GetString("name")?.Trim() ?? string.Empty,
+                        HighPrecision = auraInfo.GetBool("highPrecision") == true,
                         MaxApps = ReadEnabledFlag(auraInfo, "maxApps")
                     };
                     if (auraInfo.GetNumber("spellId") is { } sid)
@@ -810,6 +816,7 @@ internal static class ClassBlocksStore
             {
                 ItemId = itemId,
                 Name = name,
+                HighPrecision = itemTable.GetBool("highPrecision") == true,
                 IsEquipped = itemTable.GetBool("isEquipped") == true
             });
         }
@@ -843,6 +850,7 @@ internal static class ClassBlocksStore
             var entry = new AuraEntry
             {
                 Name = aura.GetString("name")?.Trim() ?? string.Empty,
+                HighPrecision = aura.GetBool("highPrecision") == true,
                 MaxApps = ReadEnabledFlag(aura, "maxApps"),
                 IsPlayer = aura.GetBool("isPlayer") == true
             };
@@ -950,6 +958,7 @@ internal static class ClassBlocksStore
                     sb.Append(", name = \"").Append(Escape(spell.Name)).Append('"');
                 }
 
+                if (spell.HighPrecision) sb.Append(", highPrecision = true");
                 if (spell.Charge)
                 {
                     sb.Append(", charge = true");
@@ -1008,7 +1017,9 @@ internal static class ClassBlocksStore
 
                 sb.Append(indent).Append("    [").Append(itemId).Append("] = { name = \"")
                     .Append(Escape(item.Name)).Append("\", isEquipped = ")
-                    .Append(item.IsEquipped ? "true" : "false").AppendLine(" },");
+                    .Append(item.IsEquipped ? "true" : "false");
+                if (item.HighPrecision) sb.Append(", highPrecision = true");
+                sb.AppendLine(" },");
             }
 
             sb.Append(indent).AppendLine("},");
@@ -1037,6 +1048,7 @@ internal static class ClassBlocksStore
                     }
 
                     WriteSpellIdFields(sb, aura.SpellId, aura.SpellIds);
+                    if (aura.HighPrecision) sb.Append(" highPrecision = true,");
                     if (aura.MaxApps is > 0)
                     {
                         sb.Append(" maxApps = true,");
@@ -1255,6 +1267,7 @@ internal static class ClassBlocksStore
         }
 
         WriteSpellIdFields(sb, aura.SpellId, aura.SpellIds);
+        if (aura.HighPrecision) sb.Append(" highPrecision = true,");
         if (aura.MaxApps is > 0)
         {
             sb.Append(" maxApps = true,");

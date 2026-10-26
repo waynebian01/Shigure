@@ -7,7 +7,7 @@ internal sealed record NumberCatalogEntry(string Name, long Id, long SourceId, s
     public string DisplayName => string.IsNullOrWhiteSpace(Note) ? Name : $"{Name}（{Note}）";
 }
 
-internal sealed record NumberCatalog(IReadOnlyList<NumberCatalogEntry> Entries, string? Error, bool UsesBossSequence = false)
+internal sealed record NumberCatalog(IReadOnlyList<NumberCatalogEntry> Entries, string? Error)
 {
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -20,8 +20,9 @@ internal sealed record NumberCatalog(IReadOnlyList<NumberCatalogEntry> Entries, 
     public static NumberCatalog LoadBosses(string version = "Retail")
     {
         var bosses = BossCatalog.Load(version);
-        return new(bosses.Entries.Select(entry => new NumberCatalogEntry(entry.Name, entry.Id,
-            entry.SourceId, entry.InstanceName)).ToArray(), bosses.Error, UsesBossSequence: true);
+        return new(bosses.Entries.SelectMany(entry => entry.GetEncounterIds()
+            .Select(id => new NumberCatalogEntry(entry.Name, id, id, entry.InstanceName)))
+            .DistinctBy(entry => entry.Id).ToArray(), bosses.Error);
     }
 
     public static NumberCatalog LoadDungeons(string version = "Retail", string? baseDirectory = null)
@@ -31,8 +32,7 @@ internal sealed record NumberCatalog(IReadOnlyList<NumberCatalogEntry> Entries, 
         => Load("raids.json", version, baseDirectory);
 
     public string? FindName(long id)
-        => UsesBossSequence ? $"{id}号首领（副本内序号）"
-            : Entries.FirstOrDefault(entry => entry.Id == id)?.DisplayName;
+        => Entries.FirstOrDefault(entry => entry.Id == id)?.DisplayName;
 
     private static NumberCatalog Load(string fileName, string version = "Retail", string? baseDirectory = null)
     {

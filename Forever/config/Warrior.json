@@ -129,52 +129,189 @@
     "首领战": {
       "step": 19,
       "type": "int",
-      "category": "区域"
+      "category": "区域",
+      "pixelFormat": "rgb24",
+      "payloadStep": 20
     },
     "目标施法技能": {
-      "step": 20,
+      "step": 21,
       "type": "int",
       "category": "目标",
       "pixelFormat": "rgb24",
-      "payloadStep": 21
+      "payloadStep": 22
     },
     "目标类型": {
-      "step": 22,
-      "type": "int",
-      "category": "目标"
-    },
-    "目标生命值": {
       "step": 23,
       "type": "int",
       "category": "目标"
     },
-    "目标距离": {
+    "目标生命值": {
       "step": 24,
       "type": "int",
       "category": "目标"
     },
-    "目标NPCID": {
+    "目标距离": {
       "step": 25,
+      "type": "int",
+      "category": "目标"
+    },
+    "目标NPCID": {
+      "step": 26,
       "type": "int",
       "category": "目标",
       "pixelFormat": "rgb24",
-      "payloadStep": 26
+      "payloadStep": 27
+    },
+    "目标单位": {
+      "step": 28,
+      "type": "int",
+      "category": "目标"
+    },
+    "目标可攻击": {
+      "step": 29,
+      "type": "bool",
+      "category": "目标"
+    },
+    "目标可协助": {
+      "step": 30,
+      "type": "bool",
+      "category": "目标"
+    },
+    "目标存活": {
+      "step": 31,
+      "type": "bool",
+      "category": "目标"
     },
     "焦点施法技能": {
-      "step": 27,
+      "step": 32,
       "type": "int",
       "category": "焦点",
       "pixelFormat": "rgb24",
-      "payloadStep": 28
+      "payloadStep": 33
     },
     "焦点生命值": {
-      "step": 29,
+      "step": 34,
       "type": "int",
       "category": "焦点"
     },
+    "焦点单位": {
+      "step": 35,
+      "type": "int",
+      "category": "焦点"
+    },
+    "焦点可攻击": {
+      "step": 36,
+      "type": "bool",
+      "category": "焦点"
+    },
+    "焦点可协助": {
+      "step": 37,
+      "type": "bool",
+      "category": "焦点"
+    },
+    "焦点存活": {
+      "step": 38,
+      "type": "bool",
+      "category": "焦点"
+    },
+    "鼠标单位": {
+      "step": 39,
+      "type": "int",
+      "category": "鼠标"
+    },
+    "鼠标可攻击": {
+      "step": 40,
+      "type": "bool",
+      "category": "鼠标"
+    },
+    "鼠标可协助": {
+      "step": 41,
+      "type": "bool",
+      "category": "鼠标"
+    },
+    "鼠标存活": {
+      "step": 42,
+      "type": "bool",
+      "category": "鼠标"
+    },
+    "首领1可攻击": {
+      "step": 43,
+      "type": "bool",
+      "category": "首领1"
+    },
+    "首领1可协助": {
+      "step": 44,
+      "type": "bool",
+      "category": "首领1"
+    },
+    "首领1存活": {
+      "step": 45,
+      "type": "bool",
+      "category": "首领1"
+    },
+    "首领2可攻击": {
+      "step": 46,
+      "type": "bool",
+      "category": "首领2"
+    },
+    "首领2可协助": {
+      "step": 47,
+      "type": "bool",
+      "category": "首领2"
+    },
+    "首领2存活": {
+      "step": 48,
+      "type": "bool",
+      "category": "首领2"
+    },
+    "首领3可攻击": {
+      "step": 49,
+      "type": "bool",
+      "category": "首领3"
+    },
+    "首领3可协助": {
+      "step": 50,
+      "type": "bool",
+      "category": "首领3"
+    },
+    "首领3存活": {
+      "step": 51,
+      "type": "bool",
+      "category": "首领3"
+    },
+    "首领4可攻击": {
+      "step": 52,
+      "type": "bool",
+      "category": "首领4"
+    },
+    "首领4可协助": {
+      "step": 53,
+      "type": "bool",
+      "category": "首领4"
+    },
+    "首领4存活": {
+      "step": 54,
+      "type": "bool",
+      "category": "首领4"
+    },
+    "首领5可攻击": {
+      "step": 55,
+      "type": "bool",
+      "category": "首领5"
+    },
+    "首领5可协助": {
+      "step": 56,
+      "type": "bool",
+      "category": "首领5"
+    },
+    "首领5存活": {
+      "step": 57,
+      "type": "bool",
+      "category": "首领5"
+    },
     "spells": {
       "100.cooldown": {
-        "step": 30,
+        "step": 58,
         "type": "int",
         "displayName": "冲锋",
         "spellId": 100,
@@ -182,7 +319,7 @@
         "displayType": "冷却"
       },
       "355.cooldown": {
-        "step": 31,
+        "step": 59,
         "type": "int",
         "displayName": "嘲讽",
         "spellId": 355,
@@ -190,7 +327,7 @@
         "displayType": "冷却"
       },
       "7384.cooldown": {
-        "step": 32,
+        "step": 60,
         "type": "int",
         "displayName": "压制",
         "spellId": 7384,
@@ -198,7 +335,7 @@
         "displayType": "冷却"
       },
       "72.cooldown": {
-        "step": 33,
+        "step": 61,
         "type": "int",
         "displayName": "盾击",
         "spellId": 72,
@@ -206,7 +343,7 @@
         "displayType": "冷却"
       },
       "2565.cooldown": {
-        "step": 34,
+        "step": 62,
         "type": "int",
         "displayName": "盾牌格挡",
         "spellId": 2565,
@@ -214,7 +351,7 @@
         "displayType": "冷却"
       },
       "676.cooldown": {
-        "step": 35,
+        "step": 63,
         "type": "int",
         "displayName": "缴械",
         "spellId": 676,
@@ -222,7 +359,7 @@
         "displayType": "冷却"
       },
       "20230.cooldown": {
-        "step": 36,
+        "step": 64,
         "type": "int",
         "displayName": "反击风暴",
         "spellId": 20230,
@@ -230,7 +367,7 @@
         "displayType": "冷却"
       },
       "5246.cooldown": {
-        "step": 37,
+        "step": 65,
         "type": "int",
         "displayName": "破胆怒吼",
         "spellId": 5246,
@@ -238,7 +375,7 @@
         "displayType": "冷却"
       },
       "1161.cooldown": {
-        "step": 38,
+        "step": 66,
         "type": "int",
         "displayName": "挑战怒吼",
         "spellId": 1161,
@@ -246,7 +383,7 @@
         "displayType": "冷却"
       },
       "871.cooldown": {
-        "step": 39,
+        "step": 67,
         "type": "int",
         "displayName": "盾墙",
         "spellId": 871,
@@ -254,7 +391,7 @@
         "displayType": "冷却"
       },
       "20252.cooldown": {
-        "step": 40,
+        "step": 68,
         "type": "int",
         "displayName": "拦截",
         "spellId": 20252,
@@ -262,7 +399,7 @@
         "displayType": "冷却"
       },
       "18499.cooldown": {
-        "step": 41,
+        "step": 69,
         "type": "int",
         "displayName": "狂暴之怒",
         "spellId": 18499,
@@ -270,7 +407,7 @@
         "displayType": "冷却"
       },
       "6552.cooldown": {
-        "step": 42,
+        "step": 70,
         "type": "int",
         "displayName": "拳击",
         "spellId": 6552,
@@ -278,7 +415,7 @@
         "displayType": "冷却"
       },
       "1719.cooldown": {
-        "step": 43,
+        "step": 71,
         "type": "int",
         "displayName": "鲁莽",
         "spellId": 1719,
@@ -286,7 +423,7 @@
         "displayType": "冷却"
       },
       "12294.cooldown": {
-        "step": 44,
+        "step": 72,
         "type": "int",
         "displayName": "致死打击",
         "spellId": 12294,
@@ -294,7 +431,7 @@
         "displayType": "冷却"
       },
       "23881.cooldown": {
-        "step": 45,
+        "step": 73,
         "type": "int",
         "displayName": "嗜血",
         "spellId": 23881,
@@ -302,7 +439,7 @@
         "displayType": "冷却"
       },
       "23922.cooldown": {
-        "step": 46,
+        "step": 74,
         "type": "int",
         "displayName": "盾牌猛击",
         "spellId": 23922,
@@ -310,7 +447,7 @@
         "displayType": "冷却"
       },
       "12975.cooldown": {
-        "step": 47,
+        "step": 75,
         "type": "int",
         "displayName": "破釜沉舟",
         "spellId": 12975,
@@ -318,7 +455,7 @@
         "displayType": "冷却"
       },
       "12323.cooldown": {
-        "step": 48,
+        "step": 76,
         "type": "int",
         "displayName": "刺耳怒吼",
         "spellId": 12323,
@@ -326,7 +463,7 @@
         "displayType": "冷却"
       },
       "12328.cooldown": {
-        "step": 49,
+        "step": 77,
         "type": "int",
         "displayName": "死亡之愿",
         "spellId": 12328,
@@ -334,7 +471,7 @@
         "displayType": "冷却"
       },
       "12292.cooldown": {
-        "step": 50,
+        "step": 78,
         "type": "int",
         "displayName": "横扫攻击",
         "spellId": 12292,
@@ -343,7 +480,7 @@
       }
     },
     "group": {
-      "start": 51,
+      "start": 79,
       "生命值": {
         "step": 1,
         "type": "int"

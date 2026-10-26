@@ -252,12 +252,13 @@ function Fuyutsui:UpdateSpellCooldown()
     local curve255 = self.curve255
     for spellID, info in pairs(spells) do
         local index = info.index
+        local curve = info.highPrecision and self.castCurve or curve255
         -- charge-only 条目只有 .charge，没有冷却像素索引
         if index then
             local cdDurationObj = GetSpellCooldownDuration(spellID)
             local cdInfo = GetSpellCooldown(spellID)
             if cdDurationObj and cdInfo then
-                local result = cdDurationObj:EvaluateRemainingDuration(curve255, 1)
+                local result = cdDurationObj:EvaluateRemainingDuration(curve, 1)
                 ColorValue255:SetRGBA(0, index / 255, 254 / 255)
                 ---@diagnostic disable-next-line: param-type-mismatch
                 local value = EvaluateColorFromBoolean(cdInfo.isEnabled, result, ColorValue255)
@@ -273,7 +274,7 @@ function Fuyutsui:UpdateSpellCooldown()
         if chargeIndex then
             local chDurationObj = GetSpellChargeDuration(spellID)
             if chDurationObj then
-                local result = chDurationObj:EvaluateRemainingDuration(curve255)
+                local result = chDurationObj:EvaluateRemainingDuration(curve)
                 ---@diagnostic disable-next-line: param-type-mismatch
                 local _, _, b = result:GetRGB()
                 self:CreateTexture(chargeIndex, b)
@@ -284,7 +285,7 @@ function Fuyutsui:UpdateSpellCooldown()
     end
 end
 
-function Fuyutsui:GetItemRemainingTime(itemID, isEquipped)
+function Fuyutsui:GetItemRemainingTime(itemID, isEquipped, highPrecision)
     local itemExists
     if isEquipped then
         itemExists = itemID and C_Item.IsEquippedItem(itemID)
@@ -305,14 +306,16 @@ function Fuyutsui:GetItemRemainingTime(itemID, isEquipped)
     end
     local remainingTime = durationSeconds - (GetTime() - startTimeSeconds)
     if remainingTime <= 0 then return 0 end
-    return math.min(254, math.ceil(remainingTime))
+    -- 254/255 保留原有不可用协议；普通精度仍向上取整。
+    local encoded = highPrecision and math.floor(remainingTime * 10 + 0.5) or math.ceil(remainingTime)
+    return math.min(254, encoded)
 end
 
 function Fuyutsui:UpdateItemCooldown()
     local items = self.blocks and self.blocks.items
     if not items then return end
     for itemID, info in pairs(items) do
-        self:CreateTexture(info.index, self:GetItemRemainingTime(itemID, info.isEquipped) / 255)
+        self:CreateTexture(info.index, self:GetItemRemainingTime(itemID, info.isEquipped, info.highPrecision) / 255)
     end
 end
 

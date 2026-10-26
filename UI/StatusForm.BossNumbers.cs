@@ -8,13 +8,13 @@ public sealed partial class StatusForm
     {
         var version = _resolveProfile().Version;
         var catalog = BossCatalog.Load(version);
-        var list = UiTheme.CreateListView(Font, "boss-numbers-instance-v2",
+        var list = UiTheme.CreateListView(Font, "boss-numbers-encounter-v3",
             new UiTheme.ListColumn("类型", 80, 100),
             new UiTheme.ListColumn("副本编号", 80, 96, FixedWidth: true),
             new UiTheme.ListColumn("副本", 150, 300),
-            new UiTheme.ListColumn("首领编号", 80, 96, FixedWidth: true),
+            new UiTheme.ListColumn("副本内序号", 80, 96, FixedWidth: true),
             new UiTheme.ListColumn("首领", 180, 1000, FillRemaining: true),
-            new UiTheme.ListColumn("游戏首领战 ID", 100, 130));
+            new UiTheme.ListColumn("首领战 ID", 100, 150));
         list.Name = "boss-numbers-list";
         list.Disposed += (_, _) => _listCounts.Remove(list);
 
@@ -48,7 +48,7 @@ public sealed partial class StatusForm
         list.Margin = Padding.Empty;
         content.Controls.Add(list, 0, 1);
         var page = BuildFixedWidthSectionPage("首领", content,
-            catalog.Error ?? $"{version} · 每个副本从 1 开始编号；结合地下城／团队副本条件使用，0 表示未匹配首领战。",
+            catalog.Error ?? $"{version} · 首领战输出游戏原始 Encounter ID；副本内序号仅用于排序，0 表示非首领战。",
             list, UiTheme.ReferencePageWidth, scaleHeader: true);
 
         var updatingFilters = false;
@@ -114,10 +114,10 @@ public sealed partial class StatusForm
                 .Select(entry => new ListViewItem([entry.InstanceType,
                     entry.InstanceNumber > 0 ? entry.InstanceNumber.ToString(CultureInfo.InvariantCulture) : "-",
                     entry.InstanceName, entry.Id.ToString(),
-                    entry.Name, entry.SourceId > 0 ? entry.SourceId.ToString() : "待核实"])
+                    entry.Name, string.Join(", ", entry.GetEncounterIds())])
                 {
                     Tag = entry,
-                    ToolTipText = $"{entry.DisplayName} · {ExpansionName(entry)} · 副本内序号 {entry.Id}\n{entry.Note}"
+                    ToolTipText = $"{entry.DisplayName} · {ExpansionName(entry)} · 副本内序号 {entry.Id}\n首领战 ID：{string.Join(", ", entry.GetEncounterIds())}\n{entry.Note}"
                 }).ToArray());
         }
 

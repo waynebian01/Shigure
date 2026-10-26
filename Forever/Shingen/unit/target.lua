@@ -100,6 +100,33 @@ local function GetUnitIdentityIndex(unit)
     return 56
 end
 
+-- 新字段独立于旧类型缓存；保留原始布尔值，由原生颜色求值处理秘密值。
+function Shingen:RefreshUnitIdentityState(unit)
+    local cache = GetUnitState(unit)
+    local category = unitZHMap[unit]
+    if not cache or not category or unit == "pet" then return end
+
+    if UnitExists(unit) then
+        if not (boss and boss[unit]) then
+            cache.unit = GetUnitIdentityIndex(unit) / 255
+        end
+        cache.attackable = UnitCanAttack("player", unit)
+        cache.assistable = UnitCanAssist("player", unit)
+        cache.deadOrGhost = UnitIsDeadOrGhost(unit)
+    else
+        cache.unit = 0
+        cache.attackable = false
+        cache.assistable = false
+        cache.deadOrGhost = true
+    end
+    if not (boss and boss[unit]) then
+        self:UpdateStateBlock(category, "单位")
+    end
+    self:UpdateStateBlock(category, "可攻击")
+    self:UpdateStateBlock(category, "可协助")
+    self:UpdateStateBlock(category, "存活")
+end
+
 local function EncodeUnitType(unit)
     if not UnitExists(unit) then return 0 end
 
@@ -115,6 +142,7 @@ local function EncodeUnitType(unit)
 end
 
 function Shingen:RefreshUnitTypeState(unit)
+    self:RefreshUnitIdentityState(unit)
     local cache = GetUnitState(unit)
     local category = unitZHMap[unit]
     if not cache or not category then return end
@@ -238,6 +266,14 @@ end
 
 function Shingen:RefreshUnitState(unit)
     self:ResetTrackedUnitCastState(unit)
+    -- 切换单位时可能错过读条开始事件，按当前时长对象恢复标记，继续逐帧刷新。
+    local cache = GetUnitState(unit)
+    if cache and UnitExists(unit) then
+        cache.casting = UnitCastingDuration(unit) ~= nil
+        cache.empowering = UnitEmpoweredChannelDuration(unit) ~= nil
+        cache.channeling = not cache.empowering and UnitChannelDuration(unit) ~= nil
+        self:RefreshUnitCastStateBlocks(unit)
+    end
     self:RefreshUnitReactionState(unit)
     self:RefreshUnitDeathState(unit)
     self:RefreshUnitHealthState(unit)

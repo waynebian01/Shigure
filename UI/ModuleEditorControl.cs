@@ -226,7 +226,7 @@ public sealed partial class ModuleEditorControl : UserControl
             AverageHealthFields = _averageHealthFields,
             ValueAdjustments = _valueAdjustments,
             NumberArrays = _numberArrays,
-            Rules = GridRows(_rulesGrid),
+            Apls = AplFingerprint(),
             Adjustments = GridRows(_adjustmentsGrid),
             PostAdjustments = GridRows(_postAdjustmentsGrid),
             CustomConditions = GridRows(_customConditionsGrid),
@@ -868,7 +868,7 @@ public sealed partial class ModuleEditorControl : UserControl
 
     private Control BuildRulesPanel()
     {
-        var page = CreateEditorCardPage("逻辑规则", BuildRulesGrid());
+        var page = CreateEditorCardPage("逻辑规则", BuildAplRulesPanel());
         _rulesGrid.ScrollBars = ScrollBars.Both;
         return page;
     }
@@ -1339,6 +1339,8 @@ public sealed partial class ModuleEditorControl : UserControl
         _rulesGrid.CellPainting += OnRulesGridCellPainting;
         _rulesGrid.RowPrePaint += OnRulesGridRowPrePaint;
         _rulesGrid.RowsAdded += OnRulesGridRowsAdded;
+        _rulesGrid.RowsAdded += (_, _) => _aplValidationGraph = null;
+        _rulesGrid.RowsRemoved += (_, _) => _aplValidationGraph = null;
         _rulesGrid.Scroll += (_, _) => QueueRelaxedCommentSync();
         _rulesGrid.CellMouseEnter += OnRulesGridCellMouseEnter;
         _rulesGrid.CellMouseLeave += OnRulesGridCellMouseLeave;
@@ -1461,6 +1463,13 @@ public sealed partial class ModuleEditorControl : UserControl
         _spellColumn.Items.Add(ModuleSpecialActions.FailedSpell);
         _spellColumn.Items.Add(ModuleSpecialActions.FailedItem);
         _spellColumn.Items.Add(ModuleSpecialActions.OneKeySpell);
+        var graph = AplGraph();
+        foreach (var logic in _subLogics)
+            if (ModuleApl.CallError(graph, _activeAplId, logic.Id) is null)
+            {
+                _spellColumn.Items.Add(AplCallPrefix + logic.Name);
+                _spellColumn.Items.Add(AplRunPrefix + logic.Name);
+            }
         foreach (var spell in _keymapCatalog.GetSpells(classId))
         {
             if (!_spellColumn.Items.Contains(spell))
@@ -1521,6 +1530,7 @@ public sealed partial class ModuleEditorControl : UserControl
         var spell = row.Cells["Spell"].Value?.ToString();
         cell.Items.Clear();
         cell.Items.Add(string.Empty);
+        cell.ReadOnly = IsAplAction(spell);
 
         if (ModuleSpecialActions.IsKeyPress(spell))
         {
@@ -1532,7 +1542,7 @@ public sealed partial class ModuleEditorControl : UserControl
         }
         cell.ToolTipText = string.Empty;
 
-        if (ModuleSpecialActions.IsPauseSpell(spell))
+        if (ModuleSpecialActions.IsPauseSpell(spell) || cell.ReadOnly)
         {
             cell.Value = string.Empty;
             return;
@@ -1613,7 +1623,7 @@ public sealed partial class ModuleEditorControl : UserControl
         var desired = MacroConditionText.ToDisplayText(desiredValue);
         var spell = row.Cells["Spell"].Value?.ToString();
         var unitText = row.Cells["Unit"].Value?.ToString();
-        cell.ReadOnly = ModuleSpecialActions.IsKeyPress(spell);
+        cell.ReadOnly = ModuleSpecialActions.IsKeyPress(spell) || IsAplAction(spell);
         if (cell.ReadOnly)
         {
             cell.Items.Clear();
@@ -1665,10 +1675,12 @@ public sealed partial class ModuleEditorControl : UserControl
             return;
         }
 
+        _aplValidationGraph = null;
         var columnName = _rulesGrid.Columns[e.ColumnIndex].Name;
         // 技能改变时联动刷新该行"目标"，技能或目标改变时再刷新"宏条件"。
         if (columnName == "Spell")
         {
+            UpdateAplAction(_rulesGrid.Rows[e.RowIndex]);
             _rulesGrid.Rows[e.RowIndex].Cells["SpellIcon"].Value =
                 GetRuleSpellIcon(CellText(_rulesGrid.Rows[e.RowIndex], "Spell"));
             if (ModuleSpecialActions.IsKeyPress(CellText(_rulesGrid.Rows[e.RowIndex], "Spell")))
@@ -2083,7 +2095,7 @@ public sealed partial class ModuleEditorControl : UserControl
 
     private IReadOnlyList<ConditionField> GetTeammateAdjustmentFields()
         => _fieldCatalog.GetGroupFields(ReadMatchCombo(_classBox), ReadMatchCombo(_specBox), includeDerived: false)
-            .Where(field => field.Type is ConditionFieldType.Int or ConditionFieldType.Bool).ToArray();
+            .Where(field => field.Type is ConditionFieldType.Int or ConditionFieldType.Number or ConditionFieldType.Bool).ToArray();
 
     private List<UiDropDownOption> GetTeammateTargetOptions(bool includeDynamicUnits = false)
         => Enumerable.Range(1, GroupStateLayout.SlotCount)
@@ -2290,10 +2302,10 @@ public sealed partial class ModuleEditorControl : UserControl
         var seen = new HashSet<string>(StringComparer.Ordinal);
         foreach (var field in _fieldCatalog.GetFields(ReadMatchCombo(_classBox), ReadMatchCombo(_specBox)))
         {
-            // 状态支持整数运算与布尔赋值；技能/光环保留其原有类型。
+            // 数值调整沿用整数操作数，时间字段保留当前秒数的小数部分。
             if (field.Category is ConditionFieldCategory.State or ConditionFieldCategory.Timeline
                 && !EncounterTimelineStateLayout.IsAnyField(field.Name)
-                && field.Type is ConditionFieldType.Int or ConditionFieldType.Bool)
+                && field.Type is ConditionFieldType.Int or ConditionFieldType.Number or ConditionFieldType.Bool)
             {
                 // 固定槽保留原有数值调整能力；任意事件只在条件求值期间有绑定。
                 AddAdjustmentField(fields, seen, field.Name,
@@ -2305,9 +2317,9 @@ public sealed partial class ModuleEditorControl : UserControl
                          field.Classification,
                          CooldownConditionClassifications.Item,
                          StringComparison.Ordinal)
-                     && field.Type == ConditionFieldType.Int)
+                     && field.Type is ConditionFieldType.Int or ConditionFieldType.Number)
             {
-                AddAdjustmentField(fields, seen, field.Name, field.DisplayName, ConditionFieldCategory.State);
+                AddAdjustmentField(fields, seen, field.Name, field.DisplayName, ConditionFieldCategory.State, field.Type);
             }
             else if (field.Category is ConditionFieldCategory.Spell or ConditionFieldCategory.Aura)
             {
@@ -2327,7 +2339,7 @@ public sealed partial class ModuleEditorControl : UserControl
                     seen,
                     unit.ValueName,
                     $"{unit.ValueName} ({fieldLabel})",
-                    ConditionFieldCategory.DynamicUnit);
+                    ConditionFieldCategory.DynamicUnit, GetUnitValueType(unit));
             }
         }
 
@@ -2433,7 +2445,7 @@ public sealed partial class ModuleEditorControl : UserControl
             GetAuraFields(),
             GetNameplateAuraFields(),
             GetThresholdFields(),
-            Array.Empty<string>(),
+            GetThresholdFields(),
             CollectTakenNames(),
             null,
             null,
@@ -2494,7 +2506,7 @@ public sealed partial class ModuleEditorControl : UserControl
             GetAuraFields(),
             GetNameplateAuraFields(),
             GetThresholdFields(),
-            Array.Empty<string>(),
+            GetThresholdFields(),
             CollectTakenNames(ownName, ownValueName),
             existingUnit,
             existingCount,
@@ -2746,6 +2758,12 @@ public sealed partial class ModuleEditorControl : UserControl
             .Where(field => GroupDispelCatalog.Entries.Any(entry => entry.FieldName == field.Name))
             .Select(field => field.Name).ToArray();
 
+    private ConditionFieldType GetUnitValueType(ModuleUnit unit)
+        => unit.TargetField == UnitTargetFieldKind.Aura
+            ? GetAuraFields().FirstOrDefault(field => field.Name == SpellFieldKey.AuraMember(unit.TargetAuraSpellId ?? 0))?.Type
+                ?? ConditionFieldType.Number
+            : ConditionFieldType.Int;
+
     private IReadOnlyList<ConditionField> GetAuraFields()
     {
         return _fieldCatalog
@@ -2787,14 +2805,14 @@ public sealed partial class ModuleEditorControl : UserControl
 
     private IReadOnlyList<string> GetThresholdFields()
     {
-        // 动态数值阈值只提供本阶段及之前可用的整数，排除后续公式和自定义。
+        // 三类计算字段可互相引用；布尔自定义作为数值阈值时按 true=1 / false=0。
         var stages = GetEditorStages();
         return BuildAdjustmentFields()
             .Where(field => stages.IsAvailable(field.Name, ModuleComputationStage.DynamicValue))
-            .Where(field => field.Type == ConditionFieldType.Int && field.Category is ConditionFieldCategory.State
-                or ConditionFieldCategory.DynamicUnit
-                or ConditionFieldCategory.DynamicValue
-                or ConditionFieldCategory.Shigure)
+            .Where(field => (field.Type is ConditionFieldType.Int or ConditionFieldType.Number
+                    || field.Type == ConditionFieldType.Bool && field.Category == ConditionFieldCategory.Custom)
+                && field.Category is ConditionFieldCategory.State or ConditionFieldCategory.DynamicUnit
+                    or ConditionFieldCategory.DynamicValue or ConditionFieldCategory.Shigure or ConditionFieldCategory.Custom)
             .Select(field => field.Name)
             .Where(name => !string.IsNullOrWhiteSpace(name))
             .ToList();
@@ -2890,7 +2908,9 @@ public sealed partial class ModuleEditorControl : UserControl
         int? LogicDelayMs,
         bool? ContinueLogic,
         int? MatchDelayMs = null,
-        int? HitDelayMs = null);
+        int? HitDelayMs = null,
+        string? CallTargetId = null,
+        string? CallTargetName = null);
 
     private sealed class RuleRowMetadata(
         IEnumerable<string>? subConditions = null,
@@ -2898,8 +2918,12 @@ public sealed partial class ModuleEditorControl : UserControl
         int? logicDelayMs = null,
         bool? continueLogic = null,
         int? matchDelayMs = null,
-        int? hitDelayMs = null)
+        int? hitDelayMs = null,
+        string? callTargetId = null,
+        string? callTargetName = null)
     {
+        public string? CallTargetId { get; set; } = callTargetId;
+        public string? CallTargetName { get; set; } = callTargetName;
         public List<string> SubConditions { get; } = subConditions?.ToList() ?? new List<string>();
         public int? DelayMs { get; set; } = delayMs;
         public int? LogicDelayMs { get; set; } = logicDelayMs;
@@ -2987,6 +3011,7 @@ public sealed partial class ModuleEditorControl : UserControl
             return;
         }
 
+        if (IsAplAction(CellText(row, "Spell")) && _rulesGrid.Columns[columnIndex].Name is "Unit" or "MacroCondition") return;
         _rulesGrid.CurrentCell = cell;
         if (ModuleSpecialActions.IsKeyPress(CellText(row, "Spell")))
         {
@@ -3018,8 +3043,15 @@ public sealed partial class ModuleEditorControl : UserControl
                 .Distinct(StringComparer.Ordinal));
         }
 
+        if (cell.OwningColumn?.Name == "Spell")
+        {
+            var graph = AplGraph();
+            values.RemoveAll(IsAplAction);
+            values.AddRange(_subLogics.Where(logic => ModuleApl.CallError(graph, _activeAplId, logic.Id) is null)
+                .SelectMany(logic => new[] { AplCallPrefix + logic.Name, AplRunPrefix + logic.Name }));
+        }
         var currentValue = cell.Value?.ToString() ?? string.Empty;
-        if (!values.Contains(currentValue, StringComparer.Ordinal))
+        if (!IsAplAction(currentValue) && !values.Contains(currentValue, StringComparer.Ordinal))
         {
             values.Insert(0, currentValue);
         }
@@ -3074,7 +3106,7 @@ public sealed partial class ModuleEditorControl : UserControl
         }
 
         if (!row.IsNewRow
-            && (GetMissingConditionFields(row).Count > 0
+            && (AplRowError(row) is not null || GetMissingConditionFields(row).Count > 0
                 || GetMissingConditionSpells(row).Count > 0
                 || GetMissingConditionItems(row).Count > 0))
         {
@@ -3120,8 +3152,11 @@ public sealed partial class ModuleEditorControl : UserControl
         foreach (var expression in new[] { CellText(row, "Condition") }.Concat(metadata.SubConditions))
         {
             foreach (var term in ConditionExpression.Parse(expression))
+            foreach (var operand in ConditionOperand.TryReference(term.Value, out var rightReference)
+                ? new[] { term.Field, rightReference } : new[] { term.Field })
             {
-                var original = term.Field.Trim();
+                var original = operand.Trim();
+                if (ConditionOperand.TryNumber(original, out _)) continue;
                 var normalized = NormalizeConditionFieldName(original);
                 if (normalized.Length == 0 || available.Contains(normalized))
                 {
@@ -3166,6 +3201,7 @@ public sealed partial class ModuleEditorControl : UserControl
 
                 if (ConditionExpression.IsInOperator(term.Op)) continue;
 
+                if (ConditionOperand.TryReference(term.Value, out _)) continue;
                 var value = term.Value.Trim();
                 if (long.TryParse(value, out var spellId)
                     && spellId > 0
@@ -3202,6 +3238,7 @@ public sealed partial class ModuleEditorControl : UserControl
                     continue;
                 }
 
+                if (ConditionOperand.TryReference(term.Value, out _)) continue;
                 var value = term.Value.Trim();
                 if (long.TryParse(value, out var itemId)
                     && itemId > 0
@@ -3371,7 +3408,6 @@ public sealed partial class ModuleEditorControl : UserControl
             return source;
         }
 
-        var bossInstanceId = BossCatalog.ResolveInstance(_resolveProfile().Version, terms);
         return ConditionExpression.Build(terms.Select(term =>
         {
             var field = FormatConditionFieldForDisplay(term.Field);
@@ -3381,7 +3417,7 @@ public sealed partial class ModuleEditorControl : UserControl
                 : ItemIdConditionFields.Contains(term.Field)
                     ? FormatConditionItemValueForDisplay(term.Value)
                 : string.Equals(NormalizeConditionFieldName(term.Field), "首领战", StringComparison.Ordinal)
-                    ? FormatBossValueForDisplay(term.Value, bossInstanceId)
+                    ? FormatBossValueForDisplay(term.Value)
                 : term.Value;
             return term with { Field = field, Value = value };
         }));
@@ -3440,7 +3476,7 @@ public sealed partial class ModuleEditorControl : UserControl
         return string.IsNullOrWhiteSpace(name) ? value : name;
     }
 
-    private string FormatBossValueForDisplay(string value, int? instanceId)
+    private string FormatBossValueForDisplay(string value)
     {
         var normalized = value.Trim();
         if (!int.TryParse(normalized, NumberStyles.Integer, CultureInfo.InvariantCulture, out var bossNumber))
@@ -3453,7 +3489,7 @@ public sealed partial class ModuleEditorControl : UserControl
             return "非首领战";
         }
 
-        return BossCatalog.Load(_resolveProfile().Version).DescribeNumber(bossNumber, instanceId);
+        return BossCatalog.Load(_resolveProfile().Version).DescribeNumber(bossNumber);
     }
 
     private string? ResolveConditionSpellName(long spellId, string? normalizedField)
@@ -3716,7 +3752,7 @@ public sealed partial class ModuleEditorControl : UserControl
     }
 
     private bool RuleRowHasMissingReferences(DataGridViewRow row)
-        => GetMissingConditionFields(row).Count > 0
+        => AplRowError(row) is not null || GetMissingConditionFields(row).Count > 0
            || GetMissingConditionSpells(row).Count > 0
            || GetMissingConditionItems(row).Count > 0;
 
@@ -4508,6 +4544,7 @@ public sealed partial class ModuleEditorControl : UserControl
             return comment.Length == 0 ? "点击编辑注释" : comment;
         }
 
+        if (AplRowError(_rulesGrid.Rows[rowIndex]) is { } callError) return callError;
         var missingFields = GetMissingConditionFields(_rulesGrid.Rows[rowIndex]);
         var missingSpells = GetMissingConditionSpells(_rulesGrid.Rows[rowIndex]);
         var missingItems = GetMissingConditionItems(_rulesGrid.Rows[rowIndex]);
@@ -5303,7 +5340,8 @@ public sealed partial class ModuleEditorControl : UserControl
             GetRuleMetadata(row).DelayMs,
             GetRuleMetadata(row).LogicDelayMs,
             GetRuleMetadata(row).ContinueLogic,
-            GetRuleMetadata(row).MatchDelayMs, GetRuleMetadata(row).HitDelayMs);
+            GetRuleMetadata(row).MatchDelayMs, GetRuleMetadata(row).HitDelayMs,
+            GetRuleMetadata(row).CallTargetId, GetRuleMetadata(row).CallTargetName);
     }
 
     private void WriteRuleRow(DataGridViewRow row, RuleRowValues values)
@@ -5319,9 +5357,10 @@ public sealed partial class ModuleEditorControl : UserControl
             values.DelayMs,
             values.LogicDelayMs,
             values.ContinueLogic,
-            values.MatchDelayMs, values.HitDelayMs);
+            values.MatchDelayMs, values.HitDelayMs, values.CallTargetId, values.CallTargetName);
         RebuildUnitCell(row, values.UnitText);
         RebuildMacroConditionCell(row, values.MacroCondition);
+        _aplValidationGraph = null;
     }
 
     private void OpenConditionEditor(int rowIndex)
@@ -5329,7 +5368,8 @@ public sealed partial class ModuleEditorControl : UserControl
         var row = _rulesGrid.Rows[rowIndex];
         var current = row.IsNewRow ? string.Empty : CellText(row, "Condition");
         var currentMetadata = row.IsNewRow ? new RuleRowMetadata() : GetRuleMetadata(row);
-        var fields = RefreshAndBuildConditionFields(includeRuleSettings: true);
+        var allowRuleSettings = !IsAplAction(CellText(row, "Spell"));
+        var fields = RefreshAndBuildConditionFields(includeRuleSettings: allowRuleSettings);
         var spells = RefreshAndBuildConditionSpells();
         var items = RefreshAndBuildConditionItems();
 
@@ -5343,8 +5383,8 @@ public sealed partial class ModuleEditorControl : UserControl
             matchDelayMs: currentMetadata.MatchDelayMs,
             hitDelayMs: currentMetadata.HitDelayMs,
             continueLogic: currentMetadata.ContinueLogic,
-            allowRuleSettings: true,
-            conditionFieldsProvider: () => RefreshAndBuildConditionFields(includeRuleSettings: true),
+            allowRuleSettings: allowRuleSettings,
+            conditionFieldsProvider: () => RefreshAndBuildConditionFields(includeRuleSettings: allowRuleSettings),
             spells: spells,
             conditionSpellsProvider: () => RefreshAndBuildConditionSpells(),
             items: items,
@@ -5380,7 +5420,7 @@ public sealed partial class ModuleEditorControl : UserControl
         }
 
         row.Cells["Condition"].Value = editor.ConditionText;
-        row.Tag = new RuleRowMetadata(subs, editor.DelayMs, editor.LogicDelayMs, editor.ContinueLogic, editor.MatchDelayMs, editor.HitDelayMs);
+        row.Tag = new RuleRowMetadata(subs, editor.DelayMs, editor.LogicDelayMs, editor.ContinueLogic, editor.MatchDelayMs, editor.HitDelayMs, currentMetadata.CallTargetId, currentMetadata.CallTargetName);
         // 让「条件」列的装饰显示(主条件 且任一(…))立即刷新。
         _rulesGrid.InvalidateRow(rowIndex);
     }
@@ -5490,7 +5530,7 @@ public sealed partial class ModuleEditorControl : UserControl
                 fields.Add(new ConditionField(
                     unit.ValueName,
                     $"{unit.ValueName} ({fieldLabel})",
-                    ConditionFieldType.Int,
+                    GetUnitValueType(unit),
                     ConditionFieldCategory.DynamicUnit));
             }
         }
@@ -5842,37 +5882,7 @@ public sealed partial class ModuleEditorControl : UserControl
 
         RefreshAdjustmentFieldColumn();
 
-        HideRelaxedCommentEditors();
-        _rulesGrid.Rows.Clear();
-        RefreshKeymapColumns();
-
-        foreach (var rule in module.Rules)
-        {
-            var ruleSpellDisplay = DisplayRuleSpell(rule.Spell);
-            // 动态目标优先显示单位名；保留单位显示中文，其余团队槽位显示数字。
-            var unitText = !string.IsNullOrWhiteSpace(rule.UnitName)
-                ? rule.UnitName!
-                : rule.Unit is { } unit ? ReservedUnit.ToDisplayText(unit) : string.Empty;
-            if (ModuleSpecialActions.IsKeyPress(rule.Spell)) unitText = rule.Hotkey;
-            EnsureComboItem(_spellColumn, ruleSpellDisplay);
-            // 先加行(目标先留空), 再按技能重建目标选项并写回目标值, 避免值不在选项内被吞掉。
-            var index = _rulesGrid.Rows.Add(
-                rule.Enabled,
-                GetRuleSpellIcon(ruleSpellDisplay)!,
-                ruleSpellDisplay,
-                string.Empty,
-                string.Empty,
-                rule.Condition,
-                rule.Comment);
-            _rulesGrid.Rows[index].Tag = new RuleRowMetadata(
-                rule.SubConditions,
-                rule.DelayMs,
-                rule.LogicDelayMs,
-                rule.ContinueLogic,
-                rule.MatchDelayMs, rule.HitDelayMs);
-            RebuildUnitCell(_rulesGrid.Rows[index], unitText);
-            RebuildMacroConditionCell(_rulesGrid.Rows[index], rule.MacroCondition);
-        }
+        LoadAplEditor(module);
         _editorBaseline = CaptureEditorFingerprint();
     }
 
@@ -5881,6 +5891,10 @@ public sealed partial class ModuleEditorControl : UserControl
         CloseRulesComboDropDown();
         CloseAdjustmentComboDropDown();
         _selectedModule = null;
+        _subLogics.Clear();
+        _aplDrafts.Clear();
+        _activeAplId = "";
+        RefreshAplCards();
         _nameBox.Clear();
         _authorBox.Clear();
         _recommendedTalentBox.Clear();
@@ -6057,6 +6071,8 @@ public sealed partial class ModuleEditorControl : UserControl
         {
             try
             {
+                if (ModuleApl.ValidationError(module) is { } aplError)
+                    throw new InvalidOperationException(aplError);
                 if (!TryValidateNumberArrayReferences(module, out var arrayError))
                 {
                     throw new InvalidOperationException(arrayError);
@@ -6180,13 +6196,12 @@ public sealed partial class ModuleEditorControl : UserControl
             MessageBox.Show($"动态数值“{name}”：{stageError}", "Shigure", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             return false;
         }
-        if (!TryReadRules(out var rules, out var rulesError))
+        if (!TryReadAplRules(module, out var rulesError))
         {
             MessageBox.Show(rulesError, "Shigure", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             return false;
         }
 
-        module.Rules = rules;
         if (!TryValidateNumberArrayReferences(module, out var arrayError))
         {
             MessageBox.Show(arrayError, "Shigure", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -6224,17 +6239,18 @@ public sealed partial class ModuleEditorControl : UserControl
             return null;
         }
 
-        for (var i = 0; i < module.Rules.Count; i++)
+        foreach (var entry in ModuleApl.Entries(module))
         {
-            if (MissingName(module.Rules[i].Condition, names) is { } missing)
+            var rowLabel = $"{entry.LogicName}第 {entry.LocalIndex + 1} 行";
+            if (MissingName(entry.Rule.Condition, names) is { } missing)
             {
-                error = $"规则第 {i + 1} 行引用的数组“{missing}”不存在。";
+                error = $"{rowLabel}引用的数组“{missing}”不存在。";
                 return false;
             }
-            foreach (var sub in module.Rules[i].SubConditions ?? [])
+            foreach (var sub in entry.Rule.SubConditions ?? [])
             {
                 if (MissingName(sub, names) is not { } subMissing) continue;
-                error = $"规则第 {i + 1} 行子条件引用的数组“{subMissing}”不存在。";
+                error = $"{rowLabel}子条件引用的数组“{subMissing}”不存在。";
                 return false;
             }
         }
@@ -6328,10 +6344,10 @@ public sealed partial class ModuleEditorControl : UserControl
             .Distinct(StringComparer.Ordinal)
             .ToArray();
 
-        for (var ruleIndex = 0; ruleIndex < module.Rules.Count; ruleIndex++)
+        foreach (var entry in ModuleApl.Entries(module))
         {
-            var rule = module.Rules[ruleIndex];
-            var rowLabel = $"规则第 {ruleIndex + 1} 行";
+            var rule = entry.Rule;
+            var rowLabel = $"{entry.LogicName}第 {entry.LocalIndex + 1} 行";
             if (!TryReplace(rule.Condition, $"{rowLabel}主条件", out var condition)
                 || rule.SubConditions is not null
                 && !TryReplaceList(rule.SubConditions, index => $"{rowLabel}子条件第 {index + 1} 行"))
@@ -6427,9 +6443,9 @@ public sealed partial class ModuleEditorControl : UserControl
             {
                 result = ReplaceFieldReference(result, pair.Key, pair.Value);
             }
-            if (Regex.IsMatch(result, @"\b(?:auras|spells)\.[^\s&|<>=!+\-*/()]+"))
+            if (Regex.IsMatch(result, @"\b(?:auras|spells)\.[^\s&|<>=!+\-*/()\]]+"))
             {
-                var unresolved = Regex.Match(result, @"\b(?:auras|spells)\.[^\s&|<>=!+\-*/()]+").Value;
+                var unresolved = Regex.Match(result, @"\b(?:auras|spells)\.[^\s&|<>=!+\-*/()\]]+").Value;
                 if (!SpellFieldKey.TryParseAura(unresolved, out _, out _, out _)
                     && !SpellFieldKey.TryParseAuraMember(unresolved, out _, out _)
                     && !SpellFieldKey.TryParseSpell(unresolved, out _, out _))
@@ -6646,30 +6662,26 @@ public sealed partial class ModuleEditorControl : UserControl
         }
     }
 
-    private bool TryReadRules(out List<ModuleRule> rules, out string error)
+    private bool TryReadRules(IReadOnlyList<RuleRowValues> rows, out List<ModuleRule> rules, out string error)
     {
         error = string.Empty;
         var unitNames = new HashSet<string>(
             _units.Where(unit => !string.IsNullOrWhiteSpace(unit.Name)).Select(unit => unit.Name),
             StringComparer.Ordinal);
         rules = new List<ModuleRule>();
-        foreach (DataGridViewRow row in _rulesGrid.Rows)
+        for (var rowIndex = 0; rowIndex < rows.Count; rowIndex++)
         {
-            if (row.IsNewRow)
-            {
-                continue;
-            }
-
-            var condition = CellText(row, "Condition");
-            var comment = CellText(row, RuleCommentColumnName);
-            var spell = CellText(row, "Spell");
-            var unitText = CellText(row, "Unit");
-            var macroCondition = CellText(row, "MacroCondition");
-            var metadata = GetRuleMetadata(row);
+            var row = rows[rowIndex];
+            var condition = row.Condition;
+            var comment = row.Comment;
+            var spell = row.Spell;
+            var unitText = row.UnitText;
+            var macroCondition = row.MacroCondition;
+            var metadata = row;
             var isKeyPress = ModuleSpecialActions.IsKeyPress(spell);
             if (isKeyPress && !KeySender.IsValidHotkey(unitText))
             {
-                error = $"规则第 {row.Index + 1} 行：请点击目标格录制按键。";
+                error = $"规则第 {rowIndex + 1} 行：请点击目标格录制按键。";
                 return false;
             }
             if (string.IsNullOrWhiteSpace(condition)
@@ -6695,12 +6707,14 @@ public sealed partial class ModuleEditorControl : UserControl
                 .ToList();
             rules.Add(new ModuleRule
             {
-                Enabled = CellBool(row, "Enabled", defaultValue: true),
+                Enabled = row.Enabled,
                 Condition = condition,
                 Comment = comment,
                 Unit = isKeyPress || isDynamic ? null : ReservedUnit.ParseDisplayText(unitText),
                 UnitName = !isKeyPress && isDynamic ? unitText : null,
-                Spell = spell,
+                Spell = IsAplAction(spell) ? AplStoredAction(spell) : spell,
+                CallTargetId = row.CallTargetId,
+                CallTargetName = row.CallTargetName,
                 MacroCondition = MacroConditionText.ParseDisplayText(macroCondition),
                 Hotkey = isKeyPress ? unitText : string.Empty,
                 Step = string.Empty,
@@ -6711,6 +6725,7 @@ public sealed partial class ModuleEditorControl : UserControl
                 MatchDelayMs = metadata.MatchDelayMs,
                 ContinueLogic = metadata.ContinueLogic
             });
+            if (ModuleApl.IsInvocation(rules[^1])) ModuleApl.ClearCallSettings(rules[^1]);
         }
 
         return true;
@@ -6991,7 +7006,11 @@ public sealed partial class ModuleEditorControl : UserControl
 
     private static string CellText(DataGridViewRow row, string columnName)
     {
-        return row.Cells[columnName].Value?.ToString()?.Trim() ?? string.Empty;
+        var cell = row.Cells[columnName];
+        var grid = row.DataGridView;
+        var value = grid is not null && ReferenceEquals(grid.CurrentCell, cell) && grid.IsCurrentCellInEditMode
+            ? cell.EditedFormattedValue : cell.Value;
+        return value?.ToString()?.Trim() ?? string.Empty;
     }
 
     private static bool CellBool(DataGridViewRow row, string columnName, bool defaultValue)

@@ -145,7 +145,7 @@ public sealed class ModuleCountCondition
     public long? AuraSpellId { get; set; }
     public CountConditionComparisonKind Comparison { get; set; }
     public CountConditionValueKind ValueKind { get; set; }
-    public int Value { get; set; }
+    public double Value { get; set; }
     public string? ValueField { get; set; }
 
     public ModuleCountCondition Clone()

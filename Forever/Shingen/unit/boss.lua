@@ -41,9 +41,7 @@ function Shingen:RefreshBossCastStateBlocks(refreshSafely)
 end
 
 function Shingen:SetEncounterState(encounterID, difficultyID)
-    state.encounterID = encounterID
-    local bossIndex = self.bossID and self.bossID[encounterID] or 0
-    state.bossID = bossIndex / 255
+    state.encounterID = encounterID or 0
     self:UpdateStateBlock("区域", "首领战")
 
     state.encounterDifficultyID = difficultyID

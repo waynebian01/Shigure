@@ -166,22 +166,22 @@
     },
     "施法(正计时)": {
       "step": 12,
-      "type": "int",
+      "type": "deciseconds",
       "category": "状态"
     },
     "施法(倒计时)": {
       "step": 13,
-      "type": "int",
+      "type": "deciseconds",
       "category": "状态"
     },
     "引导": {
       "step": 14,
-      "type": "int",
+      "type": "deciseconds",
       "category": "状态"
     },
     "蓄力": {
       "step": 15,
-      "type": "int",
+      "type": "deciseconds",
       "category": "状态"
     },
     "蓄力层数": {
@@ -229,205 +229,342 @@
     "首领战": {
       "step": 25,
       "type": "int",
-      "category": "区域"
+      "category": "区域",
+      "pixelFormat": "rgb24",
+      "payloadStep": 26
     },
     "首领战难度": {
-      "step": 26,
-      "type": "int",
-      "category": "区域"
-    },
-    "大秘境层数": {
       "step": 27,
       "type": "int",
       "category": "区域"
     },
-    "大秘境时间(分)": {
+    "大秘境层数": {
       "step": 28,
       "type": "int",
       "category": "区域"
     },
-    "大秘境时间(秒)": {
+    "大秘境时间(分)": {
       "step": 29,
       "type": "int",
       "category": "区域"
     },
-    "目标施法技能": {
+    "大秘境时间(秒)": {
       "step": 30,
+      "type": "int",
+      "category": "区域"
+    },
+    "目标施法技能": {
+      "step": 31,
       "type": "int",
       "category": "目标",
       "pixelFormat": "rgb24",
-      "payloadStep": 31
+      "payloadStep": 32
     },
     "目标类型": {
-      "step": 32,
-      "type": "int",
-      "category": "目标"
-    },
-    "目标施法(倒计时)": {
       "step": 33,
       "type": "int",
       "category": "目标"
     },
-    "目标施法(正计时)": {
+    "目标施法(倒计时)": {
       "step": 34,
-      "type": "int",
+      "type": "deciseconds",
+      "category": "目标"
+    },
+    "目标施法(正计时)": {
+      "step": 35,
+      "type": "deciseconds",
       "category": "目标"
     },
     "目标施法可打断": {
-      "step": 35,
-      "type": "int",
-      "category": "目标"
-    },
-    "目标引导": {
       "step": 36,
       "type": "int",
       "category": "目标"
     },
-    "目标引导可打断": {
+    "目标引导": {
       "step": 37,
+      "type": "deciseconds",
+      "category": "目标"
+    },
+    "目标引导可打断": {
+      "step": 38,
       "type": "int",
       "category": "目标"
     },
+    "目标单位": {
+      "step": 39,
+      "type": "int",
+      "category": "目标"
+    },
+    "目标可攻击": {
+      "step": 40,
+      "type": "bool",
+      "category": "目标"
+    },
+    "目标可协助": {
+      "step": 41,
+      "type": "bool",
+      "category": "目标"
+    },
+    "目标存活": {
+      "step": 42,
+      "type": "bool",
+      "category": "目标"
+    },
     "焦点施法技能": {
-      "step": 38,
+      "step": 43,
       "type": "int",
       "category": "焦点",
       "pixelFormat": "rgb24",
-      "payloadStep": 39
+      "payloadStep": 44
     },
     "焦点施法(倒计时)": {
-      "step": 40,
-      "type": "int",
+      "step": 45,
+      "type": "deciseconds",
       "category": "焦点"
     },
     "焦点施法(正计时)": {
-      "step": 41,
-      "type": "int",
+      "step": 46,
+      "type": "deciseconds",
       "category": "焦点"
     },
     "焦点施法可打断": {
-      "step": 42,
+      "step": 47,
       "type": "int",
       "category": "焦点"
     },
     "焦点引导": {
-      "step": 43,
-      "type": "int",
+      "step": 48,
+      "type": "deciseconds",
       "category": "焦点"
     },
     "焦点引导可打断": {
-      "step": 44,
+      "step": 49,
       "type": "int",
       "category": "焦点"
     },
+    "焦点单位": {
+      "step": 50,
+      "type": "int",
+      "category": "焦点"
+    },
+    "焦点可攻击": {
+      "step": 51,
+      "type": "bool",
+      "category": "焦点"
+    },
+    "焦点可协助": {
+      "step": 52,
+      "type": "bool",
+      "category": "焦点"
+    },
+    "焦点存活": {
+      "step": 53,
+      "type": "bool",
+      "category": "焦点"
+    },
     "鼠标类型": {
-      "step": 45,
+      "step": 54,
       "type": "int",
       "category": "鼠标"
     },
     "鼠标驱散类型": {
-      "step": 46,
+      "step": 55,
       "type": "int",
       "category": "鼠标"
     },
     "鼠标生命值": {
-      "step": 47,
+      "step": 56,
       "type": "int",
       "category": "鼠标"
     },
     "鼠标距离": {
-      "step": 48,
+      "step": 57,
       "type": "int",
       "category": "鼠标"
     },
     "鼠标施法(倒计时)": {
-      "step": 49,
-      "type": "int",
+      "step": 58,
+      "type": "deciseconds",
       "category": "鼠标"
     },
     "鼠标施法(正计时)": {
-      "step": 50,
-      "type": "int",
+      "step": 59,
+      "type": "deciseconds",
       "category": "鼠标"
     },
     "鼠标施法可打断": {
-      "step": 51,
+      "step": 60,
       "type": "int",
       "category": "鼠标"
     },
     "鼠标引导": {
-      "step": 52,
-      "type": "int",
+      "step": 61,
+      "type": "deciseconds",
       "category": "鼠标"
     },
     "鼠标引导可打断": {
-      "step": 53,
+      "step": 62,
       "type": "int",
       "category": "鼠标"
     },
-    "时间轴1技能ID": {
+    "鼠标单位": {
+      "step": 63,
+      "type": "int",
+      "category": "鼠标"
+    },
+    "鼠标可攻击": {
+      "step": 64,
+      "type": "bool",
+      "category": "鼠标"
+    },
+    "鼠标可协助": {
       "step": 65,
+      "type": "bool",
+      "category": "鼠标"
+    },
+    "鼠标存活": {
+      "step": 66,
+      "type": "bool",
+      "category": "鼠标"
+    },
+    "首领1可攻击": {
+      "step": 67,
+      "type": "bool",
+      "category": "首领1"
+    },
+    "首领1可协助": {
+      "step": 68,
+      "type": "bool",
+      "category": "首领1"
+    },
+    "首领1存活": {
+      "step": 69,
+      "type": "bool",
+      "category": "首领1"
+    },
+    "首领2可攻击": {
+      "step": 70,
+      "type": "bool",
+      "category": "首领2"
+    },
+    "首领2可协助": {
+      "step": 71,
+      "type": "bool",
+      "category": "首领2"
+    },
+    "首领2存活": {
+      "step": 72,
+      "type": "bool",
+      "category": "首领2"
+    },
+    "首领3可攻击": {
+      "step": 73,
+      "type": "bool",
+      "category": "首领3"
+    },
+    "首领3可协助": {
+      "step": 74,
+      "type": "bool",
+      "category": "首领3"
+    },
+    "首领3存活": {
+      "step": 75,
+      "type": "bool",
+      "category": "首领3"
+    },
+    "首领4可攻击": {
+      "step": 76,
+      "type": "bool",
+      "category": "首领4"
+    },
+    "首领4可协助": {
+      "step": 77,
+      "type": "bool",
+      "category": "首领4"
+    },
+    "首领4存活": {
+      "step": 78,
+      "type": "bool",
+      "category": "首领4"
+    },
+    "首领5可攻击": {
+      "step": 79,
+      "type": "bool",
+      "category": "首领5"
+    },
+    "首领5可协助": {
+      "step": 80,
+      "type": "bool",
+      "category": "首领5"
+    },
+    "首领5存活": {
+      "step": 81,
+      "type": "bool",
+      "category": "首领5"
+    },
+    "时间轴1技能ID": {
+      "step": 93,
       "type": "int",
       "category": "时间轴",
       "pixelFormat": "rgb24",
-      "payloadStep": 66
+      "payloadStep": 94
     },
     "时间轴1剩余时间": {
-      "step": 67,
+      "step": 95,
       "type": "deciseconds",
       "category": "时间轴"
     },
     "时间轴2技能ID": {
-      "step": 68,
+      "step": 96,
       "type": "int",
       "category": "时间轴",
       "pixelFormat": "rgb24",
-      "payloadStep": 69
+      "payloadStep": 97
     },
     "时间轴2剩余时间": {
-      "step": 70,
+      "step": 98,
       "type": "deciseconds",
       "category": "时间轴"
     },
     "时间轴3技能ID": {
-      "step": 71,
+      "step": 99,
       "type": "int",
       "category": "时间轴",
       "pixelFormat": "rgb24",
-      "payloadStep": 72
+      "payloadStep": 100
     },
     "时间轴3剩余时间": {
-      "step": 73,
+      "step": 101,
       "type": "deciseconds",
       "category": "时间轴"
     },
     "时间轴4技能ID": {
-      "step": 74,
+      "step": 102,
       "type": "int",
       "category": "时间轴",
       "pixelFormat": "rgb24",
-      "payloadStep": 75
+      "payloadStep": 103
     },
     "时间轴4剩余时间": {
-      "step": 76,
+      "step": 104,
       "type": "deciseconds",
       "category": "时间轴"
     },
     "时间轴5技能ID": {
-      "step": 77,
+      "step": 105,
       "type": "int",
       "category": "时间轴",
       "pixelFormat": "rgb24",
-      "payloadStep": 78
+      "payloadStep": 106
     },
     "时间轴5剩余时间": {
-      "step": 79,
+      "step": 107,
       "type": "deciseconds",
       "category": "时间轴"
     },
     "auras": {
       "player.1242974.value": {
-        "step": 54,
+        "step": 82,
         "type": "int",
         "category": "玩家",
         "displayName": "奥数齐射",
@@ -439,7 +576,7 @@
         ]
       },
       "player.1242974.apps": {
-        "step": 55,
+        "step": 83,
         "type": "int",
         "category": "玩家",
         "displayName": "奥数齐射层数",
@@ -451,7 +588,7 @@
         ]
       },
       "player.394195.value": {
-        "step": 56,
+        "step": 84,
         "type": "int",
         "category": "玩家",
         "displayName": "溢流能量",
@@ -463,7 +600,7 @@
         ]
       },
       "player.394195.apps": {
-        "step": 57,
+        "step": 85,
         "type": "int",
         "category": "玩家",
         "displayName": "溢流能量层数",
@@ -475,7 +612,7 @@
         ]
       },
       "player.263725.value": {
-        "step": 58,
+        "step": 86,
         "type": "int",
         "category": "玩家",
         "displayName": "节能施法",
@@ -487,7 +624,7 @@
         ]
       },
       "player.263725.apps": {
-        "step": 59,
+        "step": 87,
         "type": "int",
         "category": "玩家",
         "displayName": "节能施法层数",
@@ -499,7 +636,7 @@
         ]
       },
       "player.1277009.value": {
-        "step": 60,
+        "step": 88,
         "type": "int",
         "category": "玩家",
         "displayName": "过载飞弹",
@@ -511,7 +648,7 @@
         ]
       },
       "player.1223797.value": {
-        "step": 61,
+        "step": 89,
         "type": "int",
         "category": "玩家",
         "displayName": "敏锐直觉",
@@ -523,7 +660,7 @@
         ]
       },
       "player.451038.value": {
-        "step": 62,
+        "step": 90,
         "type": "int",
         "category": "玩家",
         "displayName": "奥术之魂",
@@ -535,7 +672,7 @@
         ]
       },
       "player.365362.value": {
-        "step": 63,
+        "step": 91,
         "type": "int",
         "category": "玩家",
         "displayName": "奥术涌动",
@@ -547,7 +684,7 @@
         ]
       },
       "player.235450.value": {
-        "step": 64,
+        "step": 92,
         "type": "int",
         "category": "玩家",
         "displayName": "棱光护体",
@@ -603,22 +740,22 @@
     },
     "施法(正计时)": {
       "step": 12,
-      "type": "int",
+      "type": "deciseconds",
       "category": "状态"
     },
     "施法(倒计时)": {
       "step": 13,
-      "type": "int",
+      "type": "deciseconds",
       "category": "状态"
     },
     "引导": {
       "step": 14,
-      "type": "int",
+      "type": "deciseconds",
       "category": "状态"
     },
     "蓄力": {
       "step": 15,
-      "type": "int",
+      "type": "deciseconds",
       "category": "状态"
     },
     "蓄力层数": {
@@ -666,199 +803,336 @@
     "首领战": {
       "step": 25,
       "type": "int",
-      "category": "区域"
+      "category": "区域",
+      "pixelFormat": "rgb24",
+      "payloadStep": 26
     },
     "首领战难度": {
-      "step": 26,
-      "type": "int",
-      "category": "区域"
-    },
-    "大秘境层数": {
       "step": 27,
       "type": "int",
       "category": "区域"
     },
-    "大秘境时间(分)": {
+    "大秘境层数": {
       "step": 28,
       "type": "int",
       "category": "区域"
     },
-    "大秘境时间(秒)": {
+    "大秘境时间(分)": {
       "step": 29,
       "type": "int",
       "category": "区域"
     },
-    "目标施法技能": {
+    "大秘境时间(秒)": {
       "step": 30,
+      "type": "int",
+      "category": "区域"
+    },
+    "目标施法技能": {
+      "step": 31,
       "type": "int",
       "category": "目标",
       "pixelFormat": "rgb24",
-      "payloadStep": 31
+      "payloadStep": 32
     },
     "目标类型": {
-      "step": 32,
-      "type": "int",
-      "category": "目标"
-    },
-    "目标施法(倒计时)": {
       "step": 33,
       "type": "int",
       "category": "目标"
     },
-    "目标施法(正计时)": {
+    "目标施法(倒计时)": {
       "step": 34,
-      "type": "int",
+      "type": "deciseconds",
+      "category": "目标"
+    },
+    "目标施法(正计时)": {
+      "step": 35,
+      "type": "deciseconds",
       "category": "目标"
     },
     "目标施法可打断": {
-      "step": 35,
-      "type": "int",
-      "category": "目标"
-    },
-    "目标引导": {
       "step": 36,
       "type": "int",
       "category": "目标"
     },
-    "目标引导可打断": {
+    "目标引导": {
       "step": 37,
+      "type": "deciseconds",
+      "category": "目标"
+    },
+    "目标引导可打断": {
+      "step": 38,
       "type": "int",
       "category": "目标"
     },
+    "目标单位": {
+      "step": 39,
+      "type": "int",
+      "category": "目标"
+    },
+    "目标可攻击": {
+      "step": 40,
+      "type": "bool",
+      "category": "目标"
+    },
+    "目标可协助": {
+      "step": 41,
+      "type": "bool",
+      "category": "目标"
+    },
+    "目标存活": {
+      "step": 42,
+      "type": "bool",
+      "category": "目标"
+    },
     "焦点施法技能": {
-      "step": 38,
+      "step": 43,
       "type": "int",
       "category": "焦点",
       "pixelFormat": "rgb24",
-      "payloadStep": 39
+      "payloadStep": 44
     },
     "焦点施法(倒计时)": {
-      "step": 40,
-      "type": "int",
+      "step": 45,
+      "type": "deciseconds",
       "category": "焦点"
     },
     "焦点施法(正计时)": {
-      "step": 41,
-      "type": "int",
+      "step": 46,
+      "type": "deciseconds",
       "category": "焦点"
     },
     "焦点施法可打断": {
-      "step": 42,
+      "step": 47,
       "type": "int",
       "category": "焦点"
     },
     "焦点引导": {
-      "step": 43,
-      "type": "int",
+      "step": 48,
+      "type": "deciseconds",
       "category": "焦点"
     },
     "焦点引导可打断": {
-      "step": 44,
+      "step": 49,
       "type": "int",
       "category": "焦点"
     },
+    "焦点单位": {
+      "step": 50,
+      "type": "int",
+      "category": "焦点"
+    },
+    "焦点可攻击": {
+      "step": 51,
+      "type": "bool",
+      "category": "焦点"
+    },
+    "焦点可协助": {
+      "step": 52,
+      "type": "bool",
+      "category": "焦点"
+    },
+    "焦点存活": {
+      "step": 53,
+      "type": "bool",
+      "category": "焦点"
+    },
     "鼠标类型": {
-      "step": 45,
+      "step": 54,
       "type": "int",
       "category": "鼠标"
     },
     "鼠标驱散类型": {
-      "step": 46,
+      "step": 55,
       "type": "int",
       "category": "鼠标"
     },
     "鼠标生命值": {
-      "step": 47,
+      "step": 56,
       "type": "int",
       "category": "鼠标"
     },
     "鼠标距离": {
-      "step": 48,
+      "step": 57,
       "type": "int",
       "category": "鼠标"
     },
     "鼠标施法(倒计时)": {
-      "step": 49,
-      "type": "int",
+      "step": 58,
+      "type": "deciseconds",
       "category": "鼠标"
     },
     "鼠标施法(正计时)": {
-      "step": 50,
-      "type": "int",
+      "step": 59,
+      "type": "deciseconds",
       "category": "鼠标"
     },
     "鼠标施法可打断": {
-      "step": 51,
+      "step": 60,
       "type": "int",
       "category": "鼠标"
     },
     "鼠标引导": {
-      "step": 52,
-      "type": "int",
+      "step": 61,
+      "type": "deciseconds",
       "category": "鼠标"
     },
     "鼠标引导可打断": {
-      "step": 53,
+      "step": 62,
       "type": "int",
       "category": "鼠标"
     },
+    "鼠标单位": {
+      "step": 63,
+      "type": "int",
+      "category": "鼠标"
+    },
+    "鼠标可攻击": {
+      "step": 64,
+      "type": "bool",
+      "category": "鼠标"
+    },
+    "鼠标可协助": {
+      "step": 65,
+      "type": "bool",
+      "category": "鼠标"
+    },
+    "鼠标存活": {
+      "step": 66,
+      "type": "bool",
+      "category": "鼠标"
+    },
+    "首领1可攻击": {
+      "step": 67,
+      "type": "bool",
+      "category": "首领1"
+    },
+    "首领1可协助": {
+      "step": 68,
+      "type": "bool",
+      "category": "首领1"
+    },
+    "首领1存活": {
+      "step": 69,
+      "type": "bool",
+      "category": "首领1"
+    },
+    "首领2可攻击": {
+      "step": 70,
+      "type": "bool",
+      "category": "首领2"
+    },
+    "首领2可协助": {
+      "step": 71,
+      "type": "bool",
+      "category": "首领2"
+    },
+    "首领2存活": {
+      "step": 72,
+      "type": "bool",
+      "category": "首领2"
+    },
+    "首领3可攻击": {
+      "step": 73,
+      "type": "bool",
+      "category": "首领3"
+    },
+    "首领3可协助": {
+      "step": 74,
+      "type": "bool",
+      "category": "首领3"
+    },
+    "首领3存活": {
+      "step": 75,
+      "type": "bool",
+      "category": "首领3"
+    },
+    "首领4可攻击": {
+      "step": 76,
+      "type": "bool",
+      "category": "首领4"
+    },
+    "首领4可协助": {
+      "step": 77,
+      "type": "bool",
+      "category": "首领4"
+    },
+    "首领4存活": {
+      "step": 78,
+      "type": "bool",
+      "category": "首领4"
+    },
+    "首领5可攻击": {
+      "step": 79,
+      "type": "bool",
+      "category": "首领5"
+    },
+    "首领5可协助": {
+      "step": 80,
+      "type": "bool",
+      "category": "首领5"
+    },
+    "首领5存活": {
+      "step": 81,
+      "type": "bool",
+      "category": "首领5"
+    },
     "时间轴1技能ID": {
-      "step": 54,
+      "step": 82,
       "type": "int",
       "category": "时间轴",
       "pixelFormat": "rgb24",
-      "payloadStep": 55
+      "payloadStep": 83
     },
     "时间轴1剩余时间": {
-      "step": 56,
+      "step": 84,
       "type": "deciseconds",
       "category": "时间轴"
     },
     "时间轴2技能ID": {
-      "step": 57,
+      "step": 85,
       "type": "int",
       "category": "时间轴",
       "pixelFormat": "rgb24",
-      "payloadStep": 58
+      "payloadStep": 86
     },
     "时间轴2剩余时间": {
-      "step": 59,
+      "step": 87,
       "type": "deciseconds",
       "category": "时间轴"
     },
     "时间轴3技能ID": {
-      "step": 60,
+      "step": 88,
       "type": "int",
       "category": "时间轴",
       "pixelFormat": "rgb24",
-      "payloadStep": 61
+      "payloadStep": 89
     },
     "时间轴3剩余时间": {
-      "step": 62,
+      "step": 90,
       "type": "deciseconds",
       "category": "时间轴"
     },
     "时间轴4技能ID": {
-      "step": 63,
+      "step": 91,
       "type": "int",
       "category": "时间轴",
       "pixelFormat": "rgb24",
-      "payloadStep": 64
+      "payloadStep": 92
     },
     "时间轴4剩余时间": {
-      "step": 65,
+      "step": 93,
       "type": "deciseconds",
       "category": "时间轴"
     },
     "时间轴5技能ID": {
-      "step": 66,
+      "step": 94,
       "type": "int",
       "category": "时间轴",
       "pixelFormat": "rgb24",
-      "payloadStep": 67
+      "payloadStep": 95
     },
     "时间轴5剩余时间": {
-      "step": 68,
+      "step": 96,
       "type": "deciseconds",
       "category": "时间轴"
     }
@@ -906,22 +1180,22 @@
     },
     "施法(正计时)": {
       "step": 12,
-      "type": "int",
+      "type": "deciseconds",
       "category": "状态"
     },
     "施法(倒计时)": {
       "step": 13,
-      "type": "int",
+      "type": "deciseconds",
       "category": "状态"
     },
     "引导": {
       "step": 14,
-      "type": "int",
+      "type": "deciseconds",
       "category": "状态"
     },
     "蓄力": {
       "step": 15,
-      "type": "int",
+      "type": "deciseconds",
       "category": "状态"
     },
     "蓄力层数": {
@@ -974,199 +1248,336 @@
     "首领战": {
       "step": 26,
       "type": "int",
-      "category": "区域"
+      "category": "区域",
+      "pixelFormat": "rgb24",
+      "payloadStep": 27
     },
     "首领战难度": {
-      "step": 27,
-      "type": "int",
-      "category": "区域"
-    },
-    "大秘境层数": {
       "step": 28,
       "type": "int",
       "category": "区域"
     },
-    "大秘境时间(分)": {
+    "大秘境层数": {
       "step": 29,
       "type": "int",
       "category": "区域"
     },
-    "大秘境时间(秒)": {
+    "大秘境时间(分)": {
       "step": 30,
       "type": "int",
       "category": "区域"
     },
-    "目标施法技能": {
+    "大秘境时间(秒)": {
       "step": 31,
+      "type": "int",
+      "category": "区域"
+    },
+    "目标施法技能": {
+      "step": 32,
       "type": "int",
       "category": "目标",
       "pixelFormat": "rgb24",
-      "payloadStep": 32
+      "payloadStep": 33
     },
     "目标类型": {
-      "step": 33,
-      "type": "int",
-      "category": "目标"
-    },
-    "目标施法(倒计时)": {
       "step": 34,
       "type": "int",
       "category": "目标"
     },
-    "目标施法(正计时)": {
+    "目标施法(倒计时)": {
       "step": 35,
-      "type": "int",
+      "type": "deciseconds",
+      "category": "目标"
+    },
+    "目标施法(正计时)": {
+      "step": 36,
+      "type": "deciseconds",
       "category": "目标"
     },
     "目标施法可打断": {
-      "step": 36,
-      "type": "int",
-      "category": "目标"
-    },
-    "目标引导": {
       "step": 37,
       "type": "int",
       "category": "目标"
     },
-    "目标引导可打断": {
+    "目标引导": {
       "step": 38,
+      "type": "deciseconds",
+      "category": "目标"
+    },
+    "目标引导可打断": {
+      "step": 39,
       "type": "int",
       "category": "目标"
     },
+    "目标单位": {
+      "step": 40,
+      "type": "int",
+      "category": "目标"
+    },
+    "目标可攻击": {
+      "step": 41,
+      "type": "bool",
+      "category": "目标"
+    },
+    "目标可协助": {
+      "step": 42,
+      "type": "bool",
+      "category": "目标"
+    },
+    "目标存活": {
+      "step": 43,
+      "type": "bool",
+      "category": "目标"
+    },
     "焦点施法技能": {
-      "step": 39,
+      "step": 44,
       "type": "int",
       "category": "焦点",
       "pixelFormat": "rgb24",
-      "payloadStep": 40
+      "payloadStep": 45
     },
     "焦点施法(倒计时)": {
-      "step": 41,
-      "type": "int",
+      "step": 46,
+      "type": "deciseconds",
       "category": "焦点"
     },
     "焦点施法(正计时)": {
-      "step": 42,
-      "type": "int",
+      "step": 47,
+      "type": "deciseconds",
       "category": "焦点"
     },
     "焦点施法可打断": {
-      "step": 43,
+      "step": 48,
       "type": "int",
       "category": "焦点"
     },
     "焦点引导": {
-      "step": 44,
-      "type": "int",
+      "step": 49,
+      "type": "deciseconds",
       "category": "焦点"
     },
     "焦点引导可打断": {
-      "step": 45,
+      "step": 50,
       "type": "int",
       "category": "焦点"
     },
+    "焦点单位": {
+      "step": 51,
+      "type": "int",
+      "category": "焦点"
+    },
+    "焦点可攻击": {
+      "step": 52,
+      "type": "bool",
+      "category": "焦点"
+    },
+    "焦点可协助": {
+      "step": 53,
+      "type": "bool",
+      "category": "焦点"
+    },
+    "焦点存活": {
+      "step": 54,
+      "type": "bool",
+      "category": "焦点"
+    },
     "鼠标类型": {
-      "step": 46,
+      "step": 55,
       "type": "int",
       "category": "鼠标"
     },
     "鼠标驱散类型": {
-      "step": 47,
+      "step": 56,
       "type": "int",
       "category": "鼠标"
     },
     "鼠标生命值": {
-      "step": 48,
+      "step": 57,
       "type": "int",
       "category": "鼠标"
     },
     "鼠标距离": {
-      "step": 49,
+      "step": 58,
       "type": "int",
       "category": "鼠标"
     },
     "鼠标施法(倒计时)": {
-      "step": 50,
-      "type": "int",
+      "step": 59,
+      "type": "deciseconds",
       "category": "鼠标"
     },
     "鼠标施法(正计时)": {
-      "step": 51,
-      "type": "int",
+      "step": 60,
+      "type": "deciseconds",
       "category": "鼠标"
     },
     "鼠标施法可打断": {
-      "step": 52,
+      "step": 61,
       "type": "int",
       "category": "鼠标"
     },
     "鼠标引导": {
-      "step": 53,
-      "type": "int",
+      "step": 62,
+      "type": "deciseconds",
       "category": "鼠标"
     },
     "鼠标引导可打断": {
-      "step": 54,
+      "step": 63,
       "type": "int",
       "category": "鼠标"
     },
+    "鼠标单位": {
+      "step": 64,
+      "type": "int",
+      "category": "鼠标"
+    },
+    "鼠标可攻击": {
+      "step": 65,
+      "type": "bool",
+      "category": "鼠标"
+    },
+    "鼠标可协助": {
+      "step": 66,
+      "type": "bool",
+      "category": "鼠标"
+    },
+    "鼠标存活": {
+      "step": 67,
+      "type": "bool",
+      "category": "鼠标"
+    },
+    "首领1可攻击": {
+      "step": 68,
+      "type": "bool",
+      "category": "首领1"
+    },
+    "首领1可协助": {
+      "step": 69,
+      "type": "bool",
+      "category": "首领1"
+    },
+    "首领1存活": {
+      "step": 70,
+      "type": "bool",
+      "category": "首领1"
+    },
+    "首领2可攻击": {
+      "step": 71,
+      "type": "bool",
+      "category": "首领2"
+    },
+    "首领2可协助": {
+      "step": 72,
+      "type": "bool",
+      "category": "首领2"
+    },
+    "首领2存活": {
+      "step": 73,
+      "type": "bool",
+      "category": "首领2"
+    },
+    "首领3可攻击": {
+      "step": 74,
+      "type": "bool",
+      "category": "首领3"
+    },
+    "首领3可协助": {
+      "step": 75,
+      "type": "bool",
+      "category": "首领3"
+    },
+    "首领3存活": {
+      "step": 76,
+      "type": "bool",
+      "category": "首领3"
+    },
+    "首领4可攻击": {
+      "step": 77,
+      "type": "bool",
+      "category": "首领4"
+    },
+    "首领4可协助": {
+      "step": 78,
+      "type": "bool",
+      "category": "首领4"
+    },
+    "首领4存活": {
+      "step": 79,
+      "type": "bool",
+      "category": "首领4"
+    },
+    "首领5可攻击": {
+      "step": 80,
+      "type": "bool",
+      "category": "首领5"
+    },
+    "首领5可协助": {
+      "step": 81,
+      "type": "bool",
+      "category": "首领5"
+    },
+    "首领5存活": {
+      "step": 82,
+      "type": "bool",
+      "category": "首领5"
+    },
     "时间轴1技能ID": {
-      "step": 55,
+      "step": 83,
       "type": "int",
       "category": "时间轴",
       "pixelFormat": "rgb24",
-      "payloadStep": 56
+      "payloadStep": 84
     },
     "时间轴1剩余时间": {
-      "step": 57,
+      "step": 85,
       "type": "deciseconds",
       "category": "时间轴"
     },
     "时间轴2技能ID": {
-      "step": 58,
+      "step": 86,
       "type": "int",
       "category": "时间轴",
       "pixelFormat": "rgb24",
-      "payloadStep": 59
+      "payloadStep": 87
     },
     "时间轴2剩余时间": {
-      "step": 60,
+      "step": 88,
       "type": "deciseconds",
       "category": "时间轴"
     },
     "时间轴3技能ID": {
-      "step": 61,
+      "step": 89,
       "type": "int",
       "category": "时间轴",
       "pixelFormat": "rgb24",
-      "payloadStep": 62
+      "payloadStep": 90
     },
     "时间轴3剩余时间": {
-      "step": 63,
+      "step": 91,
       "type": "deciseconds",
       "category": "时间轴"
     },
     "时间轴4技能ID": {
-      "step": 64,
+      "step": 92,
       "type": "int",
       "category": "时间轴",
       "pixelFormat": "rgb24",
-      "payloadStep": 65
+      "payloadStep": 93
     },
     "时间轴4剩余时间": {
-      "step": 66,
+      "step": 94,
       "type": "deciseconds",
       "category": "时间轴"
     },
     "时间轴5技能ID": {
-      "step": 67,
+      "step": 95,
       "type": "int",
       "category": "时间轴",
       "pixelFormat": "rgb24",
-      "payloadStep": 68
+      "payloadStep": 96
     },
     "时间轴5剩余时间": {
-      "step": 69,
+      "step": 97,
       "type": "deciseconds",
       "category": "时间轴"
     }

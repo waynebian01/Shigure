@@ -53,9 +53,13 @@ internal static class TeammateValueAdjustment
         object? value;
         if (adjustment.EffectiveOperation == "=")
             value = adjustment.IsConditionBoolean ? matched : operand;
+        else if (operand is int secondsDelta && current is double seconds)
+            value = adjustment.EffectiveOperation == "-" ? seconds - secondsDelta : seconds + secondsDelta;
         else if (operand is int delta && TryInt(current, out var number))
             value = adjustment.EffectiveOperation == "-" ? number - delta : number + delta;
         else return false;
+
+        if (current is double && value is int wholeSeconds) value = (double)wholeSeconds;
 
         // 复制后替换成员，支持只读来源且不修改扫描器持有的数据。
         var updated = new Dictionary<string, object?>(member, StringComparer.Ordinal) { [adjustment.Field] = value };

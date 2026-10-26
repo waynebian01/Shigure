@@ -107,6 +107,7 @@ public sealed class ModuleNameplateSnapshot
 
 public sealed class ModuleItemSnapshot
 {
+    public bool HighPrecision { get; set; }
     public long ItemId { get; set; }
     public string Name { get; set; } = string.Empty;
     public bool IsEquipped { get; set; }
@@ -116,6 +117,7 @@ public sealed class ModuleItemSnapshot
 
 public sealed class ModuleAuraSnapshot
 {
+    public bool HighPrecision { get; set; }
     private int? _maxApps;
     public string Name { get; set; } = string.Empty;
     public long? SpellId { get; set; }
@@ -129,6 +131,7 @@ public sealed class ModuleAuraSnapshot
         Name = Name,
         SpellId = SpellId,
         SpellIds = new List<long>(SpellIds ?? []),
+        HighPrecision = HighPrecision,
         MaxApps = MaxApps,
         IsPlayer = IsPlayer
     };
@@ -150,6 +153,7 @@ public sealed class ModuleOverrideSnapshot
 
 public sealed class ModuleSpellSnapshot
 {
+    public bool HighPrecision { get; set; }
     private int? _castCount;
     public string Name { get; set; } = string.Empty;
     public long SpellId { get; set; }
@@ -201,6 +205,7 @@ public sealed class ModuleGroupSnapshot
 
 public sealed class ModuleGroupAuraSnapshot
 {
+    public bool HighPrecision { get; set; }
     private int? _maxApps;
     public string Name { get; set; } = string.Empty;
     public long? SpellId { get; set; }
@@ -212,6 +217,7 @@ public sealed class ModuleGroupAuraSnapshot
         Name = Name,
         SpellId = SpellId,
         SpellIds = new List<long>(SpellIds ?? []),
+        HighPrecision = HighPrecision,
         MaxApps = MaxApps
     };
 }

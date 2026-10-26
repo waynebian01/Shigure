@@ -424,7 +424,7 @@ internal static class FuyutsuiConfigConverter
                         index,
                         skipCommon: true,
                         ClassStateCatalog.FindCategory(stateName) ?? ClassStateCatalog.CategoryState);
-                    if (stateName is "目标NPCID" or "地图" && result[stateName] is JsonObject rgbField)
+                    if (stateName is "目标NPCID" or "地图" or "首领战" && result[stateName] is JsonObject rgbField)
                     {
                         if (stateName == "目标NPCID") rgbField["category"] = ClassStateCatalog.CategoryTarget;
                         rgbField["pixelFormat"] = "rgb24";
@@ -511,7 +511,7 @@ internal static class FuyutsuiConfigConverter
                     name,
                     id,
                     SpellFieldKey.SpellCooldown,
-                    "冷却");
+                    "冷却", spell.GetBool("highPrecision") == true);
                 index++;
 
                 var charge = spell.GetBool("charge") == true;
@@ -522,7 +522,7 @@ internal static class FuyutsuiConfigConverter
                         EnsureSuffix(name, "充能"),
                         id,
                         SpellFieldKey.SpellChargeCooldown,
-                        "充能");
+                        "充能", spell.GetBool("highPrecision") == true);
                     index++;
                 }
 
@@ -585,7 +585,7 @@ internal static class FuyutsuiConfigConverter
                 }
                 else
                 {
-                    var field = Field(index, "int", ClassStateCatalog.CategoryItem);
+                    var field = Field(index, item.HighPrecision ? TimeValueEncoding.Deciseconds : "int", ClassStateCatalog.CategoryItem);
                     field["itemId"] = item.ItemId;
                     field["isEquipped"] = item.IsEquipped;
                     result[item.Name] = field;
@@ -661,7 +661,7 @@ internal static class FuyutsuiConfigConverter
                         canonicalId.Value,
                         "group",
                         SpellFieldKey.AuraValue,
-                        ids);
+                        ids, highPrecision: auraInfo.GetBool("highPrecision") == true);
                     if (auraInfo.GetBool("maxApps") == true)
                     {
                         groupJson[$"auras.{canonicalId}.{SpellFieldKey.AuraApplications}"] = AuraField(
@@ -730,6 +730,7 @@ internal static class FuyutsuiConfigConverter
                     {
                         ["name"] = aura.GetString("name")?.Trim() ?? string.Empty,
                         ["spellId"] = ids[0],
+                        ["type"] = aura.GetBool("highPrecision") == true ? TimeValueEncoding.Deciseconds : "int",
                         ["valueOffset"] = ++fieldCount
                     };
                     if (aura.GetBool("maxApps") == true)
@@ -801,12 +802,12 @@ internal static class FuyutsuiConfigConverter
         return (result, warnings);
     }
 
-    private static List<(long ItemId, string Name, bool IsEquipped)> ReadItems(
+    private static List<(long ItemId, string Name, bool IsEquipped, bool HighPrecision)> ReadItems(
         TableValue list,
         List<string> warnings,
         string label)
     {
-        var result = new List<(long ItemId, string Name, bool IsEquipped)>();
+        var result = new List<(long ItemId, string Name, bool IsEquipped, bool HighPrecision)>();
         var seenIds = new HashSet<long>();
         foreach (var (key, value) in list.Entries)
         {
@@ -829,7 +830,8 @@ internal static class FuyutsuiConfigConverter
             result.Add((
                 itemId,
                 name,
-                itemTable.GetBool("isEquipped") == true));
+                itemTable.GetBool("isEquipped") == true,
+                itemTable.GetBool("highPrecision") == true));
         }
 
         result.Sort((left, right) => left.ItemId.CompareTo(right.ItemId));
@@ -900,7 +902,7 @@ internal static class FuyutsuiConfigConverter
                 scope,
                 SpellFieldKey.AuraValue,
                 ids,
-                classification);
+                classification, aura.GetBool("highPrecision") == true);
             index++;
 
             if (aura.GetBool("maxApps") == true)
@@ -947,7 +949,7 @@ internal static class FuyutsuiConfigConverter
     }
 
     private static bool IsRgbState(string category, string stateName)
-        => (stateName == "地图" && category == ClassStateCatalog.CategoryRegion)
+        => (stateName is "地图" or "首领战" && category == ClassStateCatalog.CategoryRegion)
            || (stateName == "NPCID" && category == ClassStateCatalog.CategoryTarget)
            || (stateName == "施法技能" && category is
             ClassStateCatalog.CategoryTarget or ClassStateCatalog.CategoryFocus or
@@ -967,7 +969,12 @@ internal static class FuyutsuiConfigConverter
             return;
         }
 
-        result[name] = Field(step, BoolFieldNames.Contains(name) ? "bool" : "int", classification);
+        var isUnitBoolean = ClassStateCatalog.IsUnitPrefixCategory(classification)
+            && (name == classification + "可攻击"
+                || name == classification + "可协助"
+                || name == classification + "存活");
+        result[name] = Field(step, BoolFieldNames.Contains(name) || isUnitBoolean
+            ? "bool" : TimeValueEncoding.StateType(name) ?? "int", classification);
     }
 
     private static void AddGroupOffset(JsonObject groupJson, double? offset, string name)
@@ -1000,9 +1007,10 @@ internal static class FuyutsuiConfigConverter
         string displayName,
         long spellId,
         string metric,
-        string displayType)
+        string displayType,
+        bool highPrecision = false)
     {
-        var field = Field(step, "int");
+        var field = Field(step, highPrecision ? TimeValueEncoding.Deciseconds : "int");
         AddSpellMetadata(field, displayName, spellId, metric, displayType);
         return field;
     }
@@ -1027,9 +1035,10 @@ internal static class FuyutsuiConfigConverter
         string scope,
         string metric,
         IEnumerable<long> aliases,
-        string? classification = null)
+        string? classification = null,
+        bool highPrecision = false)
     {
-        var field = Field(step, "int", classification);
+        var field = Field(step, highPrecision ? TimeValueEncoding.Deciseconds : "int", classification);
         field["displayName"] = displayName;
         field["spellId"] = spellId;
         field["scope"] = scope;

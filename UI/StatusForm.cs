@@ -2383,7 +2383,8 @@ public sealed partial class StatusForm : Form
                         overrideName, UiTheme.FormatValue(value) }) { Tag = OverrideSpellLayout.Category });
                     continue;
                 }
-                items.Add(CreateStateRow(index, key, UiTheme.FormatValue(value)));
+                items.Add(CreateStateRow(index, key, TimeValueEncoding.StateType(key) is { } timeType
+                    ? TimeValueEncoding.Format(value, timeType == TimeValueEncoding.Centiseconds) : UiTheme.FormatValue(value)));
             }
         }
 
@@ -2505,12 +2506,11 @@ public sealed partial class StatusForm : Form
     }
 
     internal static IReadOnlyList<BossNumberOption> GetBossNumberOptions(string version = "Retail", int? instanceId = null)
-        => instanceId is { } id
-            ? BossCatalog.Load(version).Entries.Where(entry => entry.InstanceId == id)
-                .Select(entry => new BossNumberOption(entry.Id, entry.InstanceName, entry.Name)).ToArray()
-            : BossCatalog.Load(version).Entries.Select(entry => entry.Id).Distinct().Order()
-            .Select(number => new BossNumberOption(number, "副本内序号", $"{number}号首领"))
-            .ToArray();
+        => BossCatalog.Load(version).Entries
+            .Where(entry => instanceId is null || entry.InstanceId == instanceId)
+            .SelectMany(entry => entry.GetEncounterIds()
+                .Select(id => new BossNumberOption(id, entry.InstanceName, entry.Name)))
+            .DistinctBy(option => option.Number).ToArray();
 
     private StateFieldDisplay DescribeAuraState(string key)
     {
@@ -2570,7 +2570,7 @@ public sealed partial class StatusForm : Form
             display.Name,
             display.SpellId,
             display.Type,
-            UiTheme.FormatValue(value)
+            TimeValueEncoding.Format(value)
         });
         row.Tag = new StatusListIcon(display.IconId, display.IsItem);
         return row;
@@ -2664,7 +2664,7 @@ public sealed partial class StatusForm : Form
         row.ToolTipText = string.Join("  ", listView.Columns.Cast<ColumnHeader>()
             .Where(column => column.Width > 0)
             .Select(column => isNameplate && column.Text == NameplateCastCountdownColumnTitle
-                ? $"{NameplateStateLayout.CastCountdownField}: {cells[column.Index]}（单位 0.1 秒，10 ≈ 1 秒）"
+                ? $"{NameplateStateLayout.CastCountdownField}: {cells[column.Index]}（单位：秒）"
                 : $"{column.Text}: {cells[column.Index]}"));
         return row;
     }
@@ -2688,7 +2688,7 @@ public sealed partial class StatusForm : Form
             return name is null ? classId.ToString() : $"{name} ({classId})";
         }
 
-        return UiTheme.FormatValue(value);
+        return TimeValueEncoding.Format(value);
     }
 
     private void UpdateUnitInfoList(RenderSnapshot snapshot)

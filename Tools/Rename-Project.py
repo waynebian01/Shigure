@@ -34,8 +34,8 @@ TEXT_FILENAMES = {"LICENSE", "NOTICE", ".gitignore", ".gitattributes", ".editorc
 SKIP_FILENAMES = {"提示词帮助.md", "spell_id_bytes.py"}
 URL_PATTERN = re.compile(r"(?:https?|ftp)://[^\s<>\"'`]+")
 COMMAND_PATTERN = re.compile(r"(?<![\w/])/(fuyutsui|no)(?![\w/-])")
-SLASH_IDENTIFIER_PATTERN = re.compile(r"\bSLASH_NOWAKI([12])\b")
-SLASH_KEY_PATTERN = re.compile(r"(\bSlashCmdList\s*\[\s*)([\"'])NOWAKI\2(\s*\])")
+SLASH_IDENTIFIER_PATTERN = re.compile(r"\bSLASH_FUYUTSUI([12])\b")
+SLASH_KEY_PATTERN = re.compile(r"(\bSlashCmdList\s*\[\s*)([\"'])FUYUTSUI\2(\s*\])")
 
 
 @dataclass(frozen=True)

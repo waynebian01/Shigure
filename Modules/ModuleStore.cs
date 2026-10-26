@@ -29,6 +29,7 @@ public sealed class ModuleDefinition
     public List<ModuleValueAdjustment> ValueAdjustments { get; set; } = new();
     public List<ModuleNumberArray> NumberArrays { get; set; } = new();
     public List<ModuleRule> Rules { get; set; } = new();
+    public List<ModuleSubLogic> SubLogics { get; set; } = new();
     public ModuleDependencySnapshot? Dependencies { get; set; }
 
     [JsonIgnore]
@@ -73,6 +74,7 @@ public sealed class ModuleDefinition
             ValueAdjustments = ValueAdjustments.Select(adjustment => adjustment.Clone()).ToList(),
             NumberArrays = NumberArrays.Select(array => array.Clone()).ToList(),
             Rules = Rules.Select(rule => rule.Clone()).ToList(),
+            SubLogics = SubLogics.Select(logic => logic.Clone()).ToList(),
             Dependencies = Dependencies?.Clone()
         };
     }
@@ -254,6 +256,8 @@ public sealed class ModuleRule
     public int? Unit { get; set; }
     public string? UnitName { get; set; }
     public string Spell { get; set; } = string.Empty;
+    public string? CallTargetId { get; set; }
+    public string? CallTargetName { get; set; }
     // null 表示升级前的旧模块（运行时沿用原二元匹配）；空字符串表示明确选择无宏条件。
     public string? MacroCondition { get; set; }
     public string Hotkey { get; set; } = string.Empty;
@@ -279,6 +283,8 @@ public sealed class ModuleRule
             Unit = Unit,
             UnitName = UnitName,
             Spell = Spell,
+            CallTargetId = CallTargetId,
+            CallTargetName = CallTargetName,
             MacroCondition = MacroCondition,
             Hotkey = Hotkey,
             Step = Step,
@@ -872,10 +878,23 @@ public sealed class ModuleStore
         }
 
         module.Rules ??= new List<ModuleRule>();
+        module.SubLogics ??= [];
+        var logicIds = new HashSet<string>(StringComparer.Ordinal);
+        var logicNames = new HashSet<string>(StringComparer.Ordinal) { "主逻辑" };
+        foreach (var logic in module.SubLogics)
+        {
+            if (string.IsNullOrWhiteSpace(logic.Id)) logic.Id = Guid.NewGuid().ToString("N");
+            if (!logicIds.Add(logic.Id)) throw new InvalidOperationException("次逻辑的 ID 重复。");
+            logic.Name = logic.Name?.Trim() ?? string.Empty;
+            if (logic.Name.Length == 0 || !logicNames.Add(logic.Name))
+                throw new InvalidOperationException($"次逻辑名称“{logic.Name}”为空、重复或使用了保留名称。");
+            logic.Rules ??= [];
+        }
+        var allRules = ModuleApl.Entries(module).Select(entry => entry.Rule).ToArray();
         var unitMappingVersion = module.UnitMappingVersion.GetValueOrDefault();
         if (unitMappingVersion < 2)
         {
-            foreach (var rule in module.Rules)
+            foreach (var rule in allRules)
             {
                 rule.Unit = rule.Unit switch
                 {
@@ -889,7 +908,7 @@ public sealed class ModuleStore
 
         if (unitMappingVersion < 3)
         {
-            foreach (var rule in module.Rules)
+            foreach (var rule in allRules)
             {
                 if (rule.Unit is 36 or 37)
                 {
@@ -902,7 +921,7 @@ public sealed class ModuleStore
 
         if (unitMappingVersion < 4)
         {
-            foreach (var rule in module.Rules)
+            foreach (var rule in allRules)
             {
                 rule.Unit = rule.Unit switch
                 {
@@ -918,8 +937,15 @@ public sealed class ModuleStore
 
         module.UnitMappingVersion = ModuleDefinition.CurrentUnitMappingVersion;
 
-        foreach (var rule in module.Rules)
+        foreach (var rule in allRules)
         {
+            if (ModuleApl.IsInvocation(rule))
+            {
+                ModuleApl.ClearCallSettings(rule);
+                var target = module.SubLogics.FirstOrDefault(logic => logic.Id == rule.CallTargetId);
+                if (target is null) rule.Enabled = false;
+                else rule.CallTargetName = target.Name;
+            }
             rule.Comment = rule.Comment?.Trim() ?? string.Empty;
             rule.Spell = ModuleSpecialActions.NormalizeSpellAction(rule.Spell);
             if (rule.MacroCondition is not null)
@@ -1056,238 +1082,274 @@ public static class ModuleLogic
         var itemNames = keymap.GetCurrentItemNames();
         var decisions = new List<LogicDecision>();
 
-        for (var ruleIndex = 0; ruleIndex < module.Rules.Count; ruleIndex++)
+        var entries = ModuleApl.Entries(module).ToDictionary(entry => (entry.LogicId, entry.LocalIndex));
+        var active = new HashSet<string>(StringComparer.Ordinal) { "" };
+        EvaluateRules(module.Rules, "", "主逻辑");
+
+        bool EvaluateRules(List<ModuleRule> rules, string logicId, string path)
         {
-            var rule = module.Rules[ruleIndex];
-            var rateLimitKey = $"{module.Id}:{ruleIndex}";
-            if (!rule.Enabled || hitDelays?.CanEvaluate(rateLimitKey) == false)
+            for (var ruleIndex = 0; ruleIndex < rules.Count; ruleIndex++)
             {
-                continue;
-            }
-            // 已执行的持续命中规则独占后续轮次，上方规则也不能抢占。
-            if (matchTracker?.LockedRuleKey is { } lockedKey && lockedKey != rateLimitKey)
-                continue;
+                var rule = rules[ruleIndex];
+                var entry = entries[(logicId, ruleIndex)];
+                var rateLimitKey = entry.Key;
+                var isCall = ModuleApl.IsInvocation(rule);
+                info["所属逻辑"] = entry.LogicName;
+                info["调用路径"] = path;
+                if (!rule.Enabled || !isCall && hitDelays?.CanEvaluate(rateLimitKey) == false)
+                {
+                    continue;
+                }
+                // 已执行的持续命中规则独占后续轮次，上方规则也不能抢占。
+                if (!isCall && matchTracker?.LockedRuleKey is { } lockedKey && lockedKey != rateLimitKey)
+                    continue;
 
-            if (!ModuleConditionEvaluator.TryEvaluateRule(
-                    rule,
-                    state,
-                    out var conditionMatched,
-                    out var error,
-                    failedSpells,
-                    spellIndices,
-                    itemIndices,
-                    insertItems))
-            {
-                info["条件错误"] = error;
-                info["规则条件"] = rule.DescribeCondition();
-                AddRuleLogInfo(info, rule, ruleIndex, rateLimitKey, null);
-                hitDelays?.Clear();
-                return [new LogicDecision(null, $"{module.Name}: 条件错误", SnapshotInfo(info), module.Name)];
-            }
+                if (!ModuleConditionEvaluator.TryEvaluateRule(
+                        rule,
+                        state,
+                        out var conditionMatched,
+                        out var error,
+                        failedSpells,
+                        spellIndices,
+                        itemIndices,
+                        insertItems))
+                {
+                    info["条件错误"] = error;
+                    info["规则条件"] = rule.DescribeCondition();
+                    AddRuleLogInfo(info, rule, ruleIndex, rateLimitKey, null);
+                    hitDelays?.Clear();
+                    decisions.Clear();
+                    decisions.Add(new LogicDecision(null, $"{module.Name}: 条件错误", SnapshotInfo(info), module.Name));
+                    return true;
+                }
 
-            if (ruleMatches is not null && ruleMatches.TryGetValue(ruleIndex, out var trackedMatch))
-                conditionMatched = trackedMatch;
-            if (!conditionMatched)
-            {
-                hitDelays?.Forget(rateLimitKey);
-                continue;
-            }
+                if (ruleMatches is not null && ruleMatches.TryGetValue(entry.Index, out var trackedMatch))
+                    conditionMatched = trackedMatch;
+                if (!conditionMatched)
+                {
+                    hitDelays?.Forget(rateLimitKey);
+                    continue;
+                }
 
-            var soundEventId = SoundConditions.UsesSound(rule)
-                && state.Values.TryGetValue("$soundEventId", out var eventValue) && eventValue is long eventId
-                    ? eventId : 0L;
-            if (ruleSoundEvents is not null && ruleSoundEvents.TryGetValue(ruleIndex, out var trackedEventId))
-                soundEventId = trackedEventId;
-            var sendOnce = ModuleSpecialActions.IsKeyPress(rule.Spell) || soundEventId > 0;
-            if (sendOnce && sentKeyRules is not null
-                && sentKeyRules.TryGetValue(rateLimitKey, out var sentEventId) && sentEventId == soundEventId)
-            {
-                hitDelays?.Forget(rateLimitKey);
-                if (rule.MatchDelayMs is > 0 && rule.ContinueLogic is not true)
+                if (isCall)
+                {
+                    var callError = ModuleApl.CallError(module, logicId, rule.CallTargetId);
+                    if (callError is not null || active.Contains(rule.CallTargetId ?? ""))
+                    {
+                        info["调用错误"] = callError ?? "不允许循环调用";
+                        info["动作技能"] = $"{(ModuleApl.IsRun(rule) ? "运行" : "调用")}：{rule.CallTargetName}";
+                        AddRuleLogInfo(info, rule, ruleIndex, rateLimitKey, null);
+                        decisions.Add(new LogicDecision(null, $"{module.Name}: 次逻辑调用错误", SnapshotInfo(info), module.Name));
+                        info.Remove("调用错误");
+                        continue;
+                    }
+                    var target = module.SubLogics.First(logic => logic.Id == rule.CallTargetId);
+                    active.Add(target.Id);
+                    var stop = EvaluateRules(target.Rules, target.Id, $"{path} → {target.Name}");
+                    active.Remove(target.Id);
+                    // 运行列表耗尽也结束整轮，由下一轮从主逻辑顶部重新判断，避免原地空转。
+                    if (stop || ModuleApl.IsRun(rule)) return true;
+                    continue;
+                }
+
+                var soundEventId = SoundConditions.UsesSound(rule)
+                    && state.Values.TryGetValue("$soundEventId", out var eventValue) && eventValue is long eventId
+                        ? eventId : 0L;
+                if (ruleSoundEvents is not null && ruleSoundEvents.TryGetValue(entry.Index, out var trackedEventId))
+                    soundEventId = trackedEventId;
+                var sendOnce = ModuleSpecialActions.IsKeyPress(rule.Spell) || soundEventId > 0;
+                if (sendOnce && sentKeyRules is not null
+                    && sentKeyRules.TryGetValue(rateLimitKey, out var sentEventId) && sentEventId == soundEventId)
+                {
+                    hitDelays?.Forget(rateLimitKey);
+                    if (rule.MatchDelayMs is > 0 && rule.ContinueLogic is not true)
+                    {
+                        LockMatchedRule();
+                        AddRuleLogInfo(info, rule, ruleIndex, rateLimitKey, null);
+                        info["命中条件"] = rule.DescribeCondition();
+                        info["动作技能"] = rule.Spell;
+                        decisions.Add(new LogicDecision(null, $"{module.Name}: 持续命中（已发送）",
+                            SnapshotInfo(info), module.Name));
+                        return true;
+                    }
+                    continue;
+                }
+                if (ModuleSpecialActions.IsKeyPress(rule.Spell) && string.IsNullOrWhiteSpace(rule.Hotkey)) continue;
+
+                if (ModuleSpecialActions.IsPauseSpell(rule.Spell))
                 {
                     LockMatchedRule();
+                    if (AddHitDelayWait(null))
+                    {
+                        if (rule.ContinueLogic is not true) return true;
+                        continue;
+                    }
+                    hitDelays?.Forget(rateLimitKey);
+                    info["命中条件"] = string.IsNullOrWhiteSpace(rule.DescribeCondition()) ? "始终" : rule.DescribeCondition();
+                    info["动作技能"] = ModuleSpecialActions.PauseSpell;
+                    info["动作按键"] = "-";
+                    info["动作单位"] = "-";
                     AddRuleLogInfo(info, rule, ruleIndex, rateLimitKey, null);
-                    info["命中条件"] = rule.DescribeCondition();
+                    decisions.Add(new LogicDecision(null, $"{module.Name}: 暂停", SnapshotInfo(info), module.Name));
+                    return true;
+                }
+
+                var resolvedUnit = rule.Unit;
+                if (!string.IsNullOrWhiteSpace(rule.UnitName))
+                {
+                    // 动态目标: 选择器没选中任何单位时跳过该规则(等同条件未命中)。
+                    var slot = unitSlots.TryGetValue(rule.UnitName, out var s) ? s : null;
+                    if (slot is null)
+                    {
+                        hitDelays?.Forget(rateLimitKey);
+                        continue;
+                    }
+
+                    resolvedUnit = int.TryParse(slot, out var slotUnit) ? slotUnit : 0;
+                }
+
+                long? actionSpellId = null;
+                var actionSpellName = rule.Spell.Trim();
+                var isOneKeySpell = false;
+                var isFailedItem = false;
+                if (ModuleSpecialActions.IsFailedSpell(rule.Spell))
+                {
+                    actionSpellId = ModuleSpecialActions.GetFailedSpell(state, failedSpells);
+                    if (actionSpellId is null)
+                    {
+                        hitDelays?.Forget(rateLimitKey);
+                        continue;
+                    }
+                    if (!spellNames.TryGetValue(actionSpellId.Value, out actionSpellName))
+                    {
+                        hitDelays?.Forget(rateLimitKey);
+                        continue;
+                    }
+                }
+                else if (ModuleSpecialActions.IsFailedItem(rule.Spell))
+                {
+                    isFailedItem = true;
+                    actionSpellId = ModuleSpecialActions.GetFailedItem(state, insertItems);
+                    if (actionSpellId is null)
+                    {
+                        hitDelays?.Forget(rateLimitKey);
+                        continue;
+                    }
+                    if (!itemNames.TryGetValue(actionSpellId.Value, out actionSpellName))
+                    {
+                        hitDelays?.Forget(rateLimitKey);
+                        continue;
+                    }
+                }
+                else if (ModuleSpecialActions.IsOneKeySpell(rule.Spell))
+                {
+                    isOneKeySpell = true;
+                    actionSpellId = ModuleSpecialActions.GetOneKeySpell(state, oneKeySpells);
+                    if (actionSpellId is null)
+                    {
+                        hitDelays?.Forget(rateLimitKey);
+                        continue;
+                    }
+                    if (!spellNames.TryGetValue(actionSpellId.Value, out actionSpellName))
+                    {
+                        hitDelays?.Forget(rateLimitKey);
+                        continue;
+                    }
+
+                    resolvedUnit = 0;
+                }
+                else if (long.TryParse(actionSpellName, NumberStyles.Integer, CultureInfo.InvariantCulture, out var legacySpellId)
+                         && legacySpellId > 0
+                         && spellNames.TryGetValue(legacySpellId, out var legacySpellName))
+                {
+                    // 兼容曾以 spellId 保存的普通动作；编辑器再次保存时会落回技能名称。
+                    actionSpellName = legacySpellName;
+                }
+
+                var resolvedMacroCondition = rule.MacroCondition;
+                var hotkey = string.IsNullOrWhiteSpace(rule.Hotkey)
+                    ? actionSpellId is { } id && !isFailedItem
+                        ? keymap.GetHotkey(resolvedUnit, id, resolvedMacroCondition)
+                        : keymap.GetHotkey(resolvedUnit, actionSpellName, resolvedMacroCondition)
+                    : rule.Hotkey.Trim();
+                if (isOneKeySpell
+                    && string.IsNullOrWhiteSpace(rule.Hotkey)
+                    && string.IsNullOrWhiteSpace(hotkey)
+                    && actionSpellId is not null)
+                {
+                    hotkey = keymap.GetHotkey(ReservedUnit.None, actionSpellId.Value, MacroConditionText.NoChanneling);
+                    if (!string.IsNullOrWhiteSpace(hotkey))
+                    {
+                        resolvedUnit = ReservedUnit.None;
+                        resolvedMacroCondition = MacroConditionText.NoChanneling;
+                    }
+                }
+
+                if (string.IsNullOrWhiteSpace(hotkey) || !KeySender.IsValidHotkey(hotkey))
+                {
+                    hitDelays?.Forget(rateLimitKey);
+                    continue;
+                }
+                else
+                {
+                    LockMatchedRule();
+                    if (AddHitDelayWait(hotkey))
+                    {
+                        if (rule.ContinueLogic is not true) return true;
+                        continue;
+                    }
+                }
+
+                var step = BuildStep(module, rule, hotkey, actionSpellName);
+                info["命中条件"] = string.IsNullOrWhiteSpace(rule.Condition) ? "始终" : rule.Condition;
+                info["动作技能"] = string.IsNullOrWhiteSpace(actionSpellName)
+                    ? "-"
+                    : actionSpellId is null ? actionSpellName : $"{actionSpellName} / {actionSpellId}";
+                info["宏条件"] = string.IsNullOrWhiteSpace(resolvedMacroCondition)
+                    ? "-"
+                    : MacroConditionText.ToDisplayText(resolvedMacroCondition);
+                info["动作按键"] = string.IsNullOrWhiteSpace(hotkey) ? "-" : hotkey;
+                info["动作单位"] = string.IsNullOrWhiteSpace(rule.UnitName)
+                    ? resolvedUnit.GetValueOrDefault()
+                    : $"{rule.UnitName} → {resolvedUnit.GetValueOrDefault()}";
+                AddRuleLogInfo(info, rule, ruleIndex, rateLimitKey, hotkey);
+                decisions.Add(new LogicDecision(
+                    hotkey,
+                    step,
+                    SnapshotInfo(info),
+                    module.Name,
+                    rule.DelayMs.GetValueOrDefault(),
+                    rateLimitKey,
+                    rule.LogicDelayMs.GetValueOrDefault(),
+                    sendOnce,
+                    soundEventId));
+                if (rule.ContinueLogic is not true)
+                {
+                    return true;
+                }
+
+                void LockMatchedRule()
+                {
+                    if (rule.MatchDelayMs is > 0 && rule.ContinueLogic is not true)
+                        matchTracker?.Lock(rateLimitKey);
+                }
+
+                bool AddHitDelayWait(string? actionHotkey)
+                {
+                    var remaining = hitDelays?.WaitRemaining(rateLimitKey, rule.HitDelayMs, soundEventId) ?? 0;
+                    if (remaining <= 0) return false;
+                    AddRuleLogInfo(info, rule, ruleIndex, rateLimitKey, actionHotkey);
+                    info["命中条件"] = string.IsNullOrWhiteSpace(rule.DescribeCondition()) ? "始终" : rule.DescribeCondition();
                     info["动作技能"] = rule.Spell;
-                    decisions.Add(new LogicDecision(null, $"{module.Name}: 持续命中（已发送）",
+                    info["动作单位"] = rule.UnitName ?? rule.Unit?.ToString(CultureInfo.InvariantCulture) ?? "-";
+                    info["延迟命中剩余"] = $"{remaining} ms";
+                    decisions.Add(new LogicDecision(null, $"{module.Name}: 等待延迟命中 {remaining} ms",
                         SnapshotInfo(info), module.Name));
-                    return decisions;
-                }
-                continue;
-            }
-            if (ModuleSpecialActions.IsKeyPress(rule.Spell) && string.IsNullOrWhiteSpace(rule.Hotkey)) continue;
-
-            if (ModuleSpecialActions.IsPauseSpell(rule.Spell))
-            {
-                LockMatchedRule();
-                if (AddHitDelayWait(null))
-                {
-                    if (rule.ContinueLogic is not true) return decisions;
-                    continue;
-                }
-                hitDelays?.Forget(rateLimitKey);
-                info["命中条件"] = string.IsNullOrWhiteSpace(rule.DescribeCondition()) ? "始终" : rule.DescribeCondition();
-                info["动作技能"] = ModuleSpecialActions.PauseSpell;
-                info["动作按键"] = "-";
-                info["动作单位"] = "-";
-                AddRuleLogInfo(info, rule, ruleIndex, rateLimitKey, null);
-                decisions.Add(new LogicDecision(null, $"{module.Name}: 暂停", SnapshotInfo(info), module.Name));
-                return decisions;
-            }
-
-            var resolvedUnit = rule.Unit;
-            if (!string.IsNullOrWhiteSpace(rule.UnitName))
-            {
-                // 动态目标: 选择器没选中任何单位时跳过该规则(等同条件未命中)。
-                var slot = unitSlots.TryGetValue(rule.UnitName, out var s) ? s : null;
-                if (slot is null)
-                {
-                    hitDelays?.Forget(rateLimitKey);
-                    continue;
-                }
-
-                resolvedUnit = int.TryParse(slot, out var slotUnit) ? slotUnit : 0;
-            }
-
-            long? actionSpellId = null;
-            var actionSpellName = rule.Spell.Trim();
-            var isOneKeySpell = false;
-            var isFailedItem = false;
-            if (ModuleSpecialActions.IsFailedSpell(rule.Spell))
-            {
-                actionSpellId = ModuleSpecialActions.GetFailedSpell(state, failedSpells);
-                if (actionSpellId is null)
-                {
-                    hitDelays?.Forget(rateLimitKey);
-                    continue;
-                }
-                if (!spellNames.TryGetValue(actionSpellId.Value, out actionSpellName))
-                {
-                    hitDelays?.Forget(rateLimitKey);
-                    continue;
+                    info.Remove("延迟命中剩余");
+                    return true;
                 }
             }
-            else if (ModuleSpecialActions.IsFailedItem(rule.Spell))
-            {
-                isFailedItem = true;
-                actionSpellId = ModuleSpecialActions.GetFailedItem(state, insertItems);
-                if (actionSpellId is null)
-                {
-                    hitDelays?.Forget(rateLimitKey);
-                    continue;
-                }
-                if (!itemNames.TryGetValue(actionSpellId.Value, out actionSpellName))
-                {
-                    hitDelays?.Forget(rateLimitKey);
-                    continue;
-                }
-            }
-            else if (ModuleSpecialActions.IsOneKeySpell(rule.Spell))
-            {
-                isOneKeySpell = true;
-                actionSpellId = ModuleSpecialActions.GetOneKeySpell(state, oneKeySpells);
-                if (actionSpellId is null)
-                {
-                    hitDelays?.Forget(rateLimitKey);
-                    continue;
-                }
-                if (!spellNames.TryGetValue(actionSpellId.Value, out actionSpellName))
-                {
-                    hitDelays?.Forget(rateLimitKey);
-                    continue;
-                }
-
-                resolvedUnit = 0;
-            }
-            else if (long.TryParse(actionSpellName, NumberStyles.Integer, CultureInfo.InvariantCulture, out var legacySpellId)
-                     && legacySpellId > 0
-                     && spellNames.TryGetValue(legacySpellId, out var legacySpellName))
-            {
-                // 兼容曾以 spellId 保存的普通动作；编辑器再次保存时会落回技能名称。
-                actionSpellName = legacySpellName;
-            }
-
-            var resolvedMacroCondition = rule.MacroCondition;
-            var hotkey = string.IsNullOrWhiteSpace(rule.Hotkey)
-                ? actionSpellId is { } id && !isFailedItem
-                    ? keymap.GetHotkey(resolvedUnit, id, resolvedMacroCondition)
-                    : keymap.GetHotkey(resolvedUnit, actionSpellName, resolvedMacroCondition)
-                : rule.Hotkey.Trim();
-            if (isOneKeySpell
-                && string.IsNullOrWhiteSpace(rule.Hotkey)
-                && string.IsNullOrWhiteSpace(hotkey)
-                && actionSpellId is not null)
-            {
-                hotkey = keymap.GetHotkey(ReservedUnit.None, actionSpellId.Value, MacroConditionText.NoChanneling);
-                if (!string.IsNullOrWhiteSpace(hotkey))
-                {
-                    resolvedUnit = ReservedUnit.None;
-                    resolvedMacroCondition = MacroConditionText.NoChanneling;
-                }
-            }
-
-            if (string.IsNullOrWhiteSpace(hotkey))
-            {
-                hitDelays?.Forget(rateLimitKey);
-            }
-            else
-            {
-                LockMatchedRule();
-                if (AddHitDelayWait(hotkey))
-                {
-                    if (rule.ContinueLogic is not true) return decisions;
-                    continue;
-                }
-            }
-
-            var step = BuildStep(module, rule, hotkey, actionSpellName);
-            info["命中条件"] = string.IsNullOrWhiteSpace(rule.Condition) ? "始终" : rule.Condition;
-            info["动作技能"] = string.IsNullOrWhiteSpace(actionSpellName)
-                ? "-"
-                : actionSpellId is null ? actionSpellName : $"{actionSpellName} / {actionSpellId}";
-            info["宏条件"] = string.IsNullOrWhiteSpace(resolvedMacroCondition)
-                ? "-"
-                : MacroConditionText.ToDisplayText(resolvedMacroCondition);
-            info["动作按键"] = string.IsNullOrWhiteSpace(hotkey) ? "-" : hotkey;
-            info["动作单位"] = string.IsNullOrWhiteSpace(rule.UnitName)
-                ? resolvedUnit.GetValueOrDefault()
-                : $"{rule.UnitName} → {resolvedUnit.GetValueOrDefault()}";
-            AddRuleLogInfo(info, rule, ruleIndex, rateLimitKey, hotkey);
-            decisions.Add(new LogicDecision(
-                hotkey,
-                step,
-                SnapshotInfo(info),
-                module.Name,
-                rule.DelayMs.GetValueOrDefault(),
-                rateLimitKey,
-                rule.LogicDelayMs.GetValueOrDefault(),
-                sendOnce,
-                soundEventId));
-            if (rule.ContinueLogic is not true)
-            {
-                return decisions;
-            }
-
-            void LockMatchedRule()
-            {
-                if (rule.MatchDelayMs is > 0 && rule.ContinueLogic is not true)
-                    matchTracker?.Lock(rateLimitKey);
-            }
-
-            bool AddHitDelayWait(string? actionHotkey)
-            {
-                var remaining = hitDelays?.WaitRemaining(rateLimitKey, rule.HitDelayMs, soundEventId) ?? 0;
-                if (remaining <= 0) return false;
-                AddRuleLogInfo(info, rule, ruleIndex, rateLimitKey, actionHotkey);
-                info["命中条件"] = string.IsNullOrWhiteSpace(rule.DescribeCondition()) ? "始终" : rule.DescribeCondition();
-                info["动作技能"] = rule.Spell;
-                info["动作单位"] = rule.UnitName ?? rule.Unit?.ToString(CultureInfo.InvariantCulture) ?? "-";
-                info["延迟命中剩余"] = $"{remaining} ms";
-                decisions.Add(new LogicDecision(null, $"{module.Name}: 等待延迟命中 {remaining} ms",
-                    SnapshotInfo(info), module.Name));
-                info.Remove("延迟命中剩余");
-                return true;
-            }
+            return false;
         }
 
         if (decisions.Count > 0)
@@ -1347,15 +1409,7 @@ public static class ModuleLogic
         var stages = new ModuleComputationStages(module);
         ApplyValueAdjustments(module, state, spellIndices, itemIndices,
             value => !value.IsCustom && !value.IsPostAdjustment && string.IsNullOrWhiteSpace(value.Formula), stages);
-        var unitSlots = ResolveUnits(module, state, stages);
-        ResolveCounts(module, state, stages);
-        ApplyValueAdjustments(module, state, spellIndices, itemIndices,
-            value => !string.IsNullOrWhiteSpace(value.Formula), stages);
-        // 自定义每帧从默认值开始，禁止把默认值暴露给前面的计算阶段。
-        foreach (var value in module.ValueAdjustments.Where(value => value.IsCustom && string.IsNullOrWhiteSpace(value.Formula)))
-            SetDynamicValue(state, value.Field, false);
-        ApplyValueAdjustments(module, state, spellIndices, itemIndices,
-            value => value.IsCustom && string.IsNullOrWhiteSpace(value.Formula), stages);
+        var unitSlots = new ModuleDerivedComputation(module).Resolve(state, spellIndices, itemIndices);
         ApplyValueAdjustments(module, state, spellIndices, itemIndices,
             value => value.IsPostAdjustment && !value.IsCustom && string.IsNullOrWhiteSpace(value.Formula), stages);
         state.Values["$dynamicModuleId"] = module.Id;
@@ -1366,62 +1420,6 @@ public static class ModuleLogic
     {
         return state.Values.TryGetValue("$dynamicModuleId", out var value)
             && string.Equals(value?.ToString(), module.Id, StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static Dictionary<string, string?> ResolveUnits(ModuleDefinition module, GameState state, ModuleComputationStages stages)
-    {
-        var unitSlots = new Dictionary<string, string?>(StringComparer.Ordinal);
-        // 值名称 → 所选单位目标字段值(未解析则为 null), 供条件直接按名引用。
-        var unitHealth = new Dictionary<string, object?>(StringComparer.Ordinal);
-        foreach (var unit in module.Units)
-        {
-            if (string.IsNullOrWhiteSpace(unit.Name))
-            {
-                continue;
-            }
-
-            var slot = stages.FilterError(unit.FilterGroups) is null ? UnitSelector.Resolve(unit, state) : null;
-            unitSlots[unit.Name] = slot;
-
-            if (!string.IsNullOrWhiteSpace(unit.ValueName))
-            {
-                unitHealth[unit.ValueName] = UnitSelector.ResolveValue(unit, slot, state);
-            }
-        }
-
-        state.Values["$units"] = unitSlots;
-        state.Values["$unithealth"] = unitHealth;
-        return unitSlots;
-    }
-
-    private static void ResolveCounts(ModuleDefinition module, GameState state, ModuleComputationStages stages)
-    {
-        var counts = new Dictionary<string, int>(StringComparer.Ordinal);
-        foreach (var count in module.Counts)
-        {
-            if (!string.IsNullOrWhiteSpace(count.Name))
-            {
-                counts[count.Name] = stages.FilterError(count.FilterGroups) is null ? UnitSelector.Resolve(count, state) : 0;
-            }
-        }
-
-        foreach (var count in module.EnemyCounts)
-        {
-            if (!string.IsNullOrWhiteSpace(count.Name))
-            {
-                counts[count.Name] = stages.FilterError(count.FilterGroups) is null ? UnitSelector.Resolve(count, state) : 0;
-            }
-        }
-
-        foreach (var field in module.AverageHealthFields)
-        {
-            if (!string.IsNullOrWhiteSpace(field.Name))
-            {
-                counts[field.Name] = stages.FilterError(field.FilterGroups) is null ? UnitSelector.Resolve(field, state) : 0;
-            }
-        }
-
-        state.Values["$counts"] = counts;
     }
 
     private static void ApplyValueAdjustments(
@@ -1493,6 +1491,9 @@ public static class ModuleLogic
         if (number != 0)
         {
             var current = ModuleConditionEvaluator.ResolveValue(state, adjustment.Field);
+            if (current is double seconds)
+                return SetAdjustedValue(state, adjustment.Field,
+                    adjustment.EffectiveOperation == "-" ? seconds - number : seconds + number, adjustment.IsCustom);
             var result = TryToInt(current, out var existing) ? existing : 0;
             result = adjustment.EffectiveOperation == "-" ? result - number : result + number;
             return SetAdjustedValue(state, adjustment.Field, result, adjustment.IsCustom);
@@ -1507,6 +1508,10 @@ public static class ModuleLogic
         {
             key = key["state.".Length..];
         }
+        // 对已有时间字段赋整数时也保留秒值类型，避免实时显示丢失精度标记。
+        if (!isCustom && value is int wholeSeconds
+            && ModuleConditionEvaluator.ResolveValue(state, field) is double)
+            value = (double)wholeSeconds;
         if (isCustom)
         {
             GetOrCreateDynamicValues(state)[key] = value;
@@ -1550,7 +1555,7 @@ public static class ModuleLogic
         return true;
     }
 
-    private static void SetDynamicValue(GameState state, string field, object? value)
+    internal static void SetDynamicValue(GameState state, string field, object? value)
     {
         var key = field.Trim();
         if (key.Length == 0)
@@ -1626,7 +1631,7 @@ public static class ModuleLogic
             ["专精"] = module.Match.SpecId?.ToString() ?? "*",
             ["队伍类型"] = state.GetInt("队伍类型"),
             ["英雄天赋"] = state.GetInt("英雄天赋"),
-            ["规则数"] = module.Rules.Count
+            ["规则数"] = ModuleApl.Entries(module).Count()
         };
     }
 
@@ -1690,6 +1695,39 @@ public static class ModuleConditionEvaluator
         @"^\s*(?<field>.+?)\s*(?<op>==|!=|>=|<=|>|<)\s*(?<value>.+?)\s*$",
         RegexOptions.Compiled);
 
+    internal static IEnumerable<string> ReferencedFields(string? expression)
+    {
+        foreach (var term in Regex.Split(expression ?? string.Empty, @"\s*(?:\|\||&&)\s*"))
+        {
+            var inMatch = InRegex.Match(term);
+            if (inMatch.Success)
+            {
+                var inField = inMatch.Groups["field"].Value.Trim();
+                if (!ConditionOperand.TryNumber(inField, out _)) yield return inField;
+                continue;
+            }
+            var comparison = ComparisonRegex.Match(term);
+            if (!comparison.Success)
+            {
+                var field = term.Trim().TrimStart('!').Trim();
+                if (field.Length > 0) yield return field;
+                continue;
+            }
+            var left = comparison.Groups["field"].Value.Trim();
+            if (!ConditionOperand.TryNumber(left, out _)) yield return left;
+            var right = comparison.Groups["value"].Value.Trim();
+            if (ConditionOperand.TryReference(right, out var explicitReference))
+            {
+                yield return explicitReference;
+                continue;
+            }
+            if (!SpellIdConditionFields.Contains(left) && !ItemIdConditionFields.Contains(left)
+                && left is not (ShigureConditionFields.SoundRecognition or "state.声音识别")
+                && !right.StartsWith('"') && !right.StartsWith('\'') && ParseLiteral(right) is string name)
+                yield return name;
+        }
+    }
+
     public static bool TryEvaluate(
         string? expression,
         GameState state,
@@ -1732,6 +1770,13 @@ public static class ModuleConditionEvaluator
         {
             matched = true;
             return true;
+        }
+
+        foreach (var reference in ReferencedFields(expression))
+        {
+            if (ModuleDerivedComputation.UnavailableReference(state, reference) is not { } unavailable) continue;
+            error = $"引用字段“{reference}”不可用：{unavailable}";
+            return false;
         }
 
         foreach (var orPart in Regex.Split(expression, @"\s*\|\|\s*"))
@@ -1873,8 +1918,10 @@ public static class ModuleConditionEvaluator
             var comparison = ComparisonRegex.Match(term);
             if (comparison.Success)
             {
+                var right = comparison.Groups["value"].Value;
+                if (ConditionOperand.TryReference(right, out var reference)) right = reference;
                 if (EncounterTimelineStateLayout.IsAnyField(comparison.Groups["field"].Value)
-                    || EncounterTimelineStateLayout.IsAnyField(comparison.Groups["value"].Value)) return true;
+                    || EncounterTimelineStateLayout.IsAnyField(right)) return true;
             }
             else if (EncounterTimelineStateLayout.IsAnyField(term.Trim().TrimStart('!'))) return true;
         }
@@ -1926,7 +1973,8 @@ public static class ModuleConditionEvaluator
                 return false;
             }
 
-            var inLeft = ResolveValue(state, inField, failedSpells, insertItems, timelineSlot);
+            var inLeft = ConditionOperand.TryNumber(inField, out var inNumber) ? inNumber
+                : ResolveValue(state, inField, failedSpells, insertItems, timelineSlot);
             if (inLeft is null && (inField is ShigureConditionFields.VolumeRecognition or "state.音量识别"
                 || IsStructuredSpellReference(inField)
                 || NameplateStateLayout.IsComputedTtdField(inField)
@@ -1998,7 +2046,8 @@ public static class ModuleConditionEvaluator
         }
 
         var comparisonField = comparison.Groups["field"].Value.Trim();
-        var left = ResolveValue(state, comparisonField, failedSpells, insertItems, timelineSlot);
+        var left = ConditionOperand.TryNumber(comparisonField, out var constant) ? constant
+            : ResolveValue(state, comparisonField, failedSpells, insertItems, timelineSlot);
         if (left is null && (comparisonField is ShigureConditionFields.VolumeRecognition or "state.音量识别"
             || IsStructuredSpellReference(comparisonField)
             || NameplateStateLayout.IsComputedTtdField(comparisonField)
@@ -2012,6 +2061,16 @@ public static class ModuleConditionEvaluator
         var rawRight = comparison.Groups["value"].Value.Trim();
         if (EncounterTimelineStateLayout.IsAnyField(rawRight)
             && ResolveValue(state, rawRight, failedSpells, insertItems, timelineSlot) is null) return true;
+        if (ConditionOperand.TryReference(rawRight, out var rightField))
+        {
+            var fieldValue = ResolveValue(state, rightField, failedSpells, insertItems, timelineSlot);
+            // 技能列表索引与目标施法的原始 ID 先统一，避免相同法术因编码不同而不相等。
+            var comparableLeft = ComparableFieldValue(comparisonField, left, spellIndices, itemIndices);
+            fieldValue = ComparableFieldValue(rightField, fieldValue, spellIndices, itemIndices);
+            // 任一字段缺失时不命中，避免 null != 数值 意外放行。
+            if (comparableLeft is null || fieldValue is null) return true;
+            return TryCompare(comparableLeft, op, fieldValue, out matched, out error);
+        }
         var right = ParseLiteral(rawRight);
         if (comparisonField is ShigureConditionFields.SoundRecognition or "state.声音识别")
         {
@@ -2068,6 +2127,19 @@ public static class ModuleConditionEvaluator
         return TryCompare(left, op, right, out matched, out error);
     }
 
+    private static object? ComparableFieldValue(string name, object? value,
+        IReadOnlyDictionary<long, int>? spellIndices, IReadOnlyDictionary<long, int>? itemIndices)
+    {
+        if (!SpellIdConditionFields.Contains(name) && !ItemIdConditionFields.Contains(name)) return value;
+        if (!TryToInt64(value, out var index)) return null;
+        if (index == 0) return 0L;
+        var indices = SpellIdConditionFields.Contains(name) ? spellIndices : itemIndices;
+        if (indices is null) return null;
+        foreach (var pair in indices)
+            if (pair.Value == index) return pair.Key;
+        return null;
+    }
+
     // 比较式右侧允许引用另一个数值字段(如动态单位的数量), 让 "无痛敌人 <= 有效敌人数量" 这类字段间比较可用。
     // 仅当右侧是未加引号、也未被解析成数字/布尔/空的裸名称, 且能解析出数值时才替换; 否则保持原有字面量语义。
     private static bool TryResolveValueReference(
@@ -2081,8 +2153,8 @@ public static class ModuleConditionEvaluator
         out object? value)
     {
         value = null;
-        // 左侧不是数值时(字符串状态、未解析字段等)保持原样, 右侧继续按字面量比较。
-        if (left is null or bool
+        // 字符串状态和未解析字段保持字面量语义；数字/布尔可引用同类字段。
+        if (left is null
             || !TryToDouble(left, out _)
             || literal is not string name
             || name.Length == 0
@@ -2093,8 +2165,8 @@ public static class ModuleConditionEvaluator
         }
 
         var resolved = ResolveValue(state, name, failedSpells, insertItems, timelineSlot);
-        // 布尔量除外: 右侧写状态名时仍按原来的字符串比较处理。
-        if (resolved is null or bool || !TryToDouble(resolved, out _))
+        // 布尔字段只与布尔字段比较；数字字段继续引用数字字段。
+        if (resolved is null || (left is bool) != (resolved is bool) || !TryToDouble(resolved, out _))
         {
             return false;
         }
@@ -2146,6 +2218,7 @@ public static class ModuleConditionEvaluator
         IReadOnlyDictionary<int, long>? insertItems = null,
         int? timelineSlot = null)
     {
+        if (ModuleDerivedComputation.UnavailableReference(state, fieldName) is not null) return null;
         var key = fieldName.Trim();
         if (key.StartsWith("state.", StringComparison.OrdinalIgnoreCase))
         {

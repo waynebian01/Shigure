@@ -30,8 +30,9 @@ local ColorValue0 = CreateColor(0, 0, 0, 1)
 local ColorValue1 = CreateColor(0, 0, 1 / 255, 1)
 
 -- 布尔结果直接交给原生颜色求值，蓝通道用 1/0 编码。
-local function GetBooleanPixel(value)
-    local color = EvaluateColorFromBoolean(value, ColorValue1, ColorValue0)
+local function GetBooleanPixel(value, inverted)
+    local color = EvaluateColorFromBoolean(value,
+        inverted and ColorValue0 or ColorValue1, inverted and ColorValue1 or ColorValue0)
     local _, _, b = color:GetRGB()
     return b
 end
@@ -150,7 +151,6 @@ local stateBlockGetters = {
         ["大秘境时间(秒)"] = function() return state.mythicPlusSeconds or 0 end,
         ["首领战难度"] = function() return (state.encounterDifficultyID or 0) / 255 end,
         ["副本难度"] = function() return (state.instanceDifficultyID or 0) / 255 end,
-        ["首领战"] = function() return state.bossID or 0 end,
         ["地下城"] = function() return (state.dungeonIndex or 0) / 255 end,
         ["团队副本"] = function() return (state.raidIndex or 0) / 255 end,
     },
@@ -273,6 +273,10 @@ local stateBlockGetters = {
     },
     ["目标"] = {
         ["类型"] = function() return target.type or 0 end,
+        ["单位"] = function() return target.unit or 0 end,
+        ["可攻击"] = function() return GetBooleanPixel(target.attackable) end,
+        ["可协助"] = function() return GetBooleanPixel(target.assistable) end,
+        ["存活"] = function() return GetBooleanPixel(target.deadOrGhost, true) end,
         ["驱散类型"] = function() return 0 end,
         ["生命值"] = function() return GetHealthChannel(target) end,
         ["能量值"] = function() return GetUnitPowerChannel("target") end,
@@ -288,6 +292,10 @@ local stateBlockGetters = {
     },
     ["焦点"] = {
         ["类型"] = function() return focus.type or 0 end,
+        ["单位"] = function() return focus.unit or 0 end,
+        ["可攻击"] = function() return GetBooleanPixel(focus.attackable) end,
+        ["可协助"] = function() return GetBooleanPixel(focus.assistable) end,
+        ["存活"] = function() return GetBooleanPixel(focus.deadOrGhost, true) end,
         ["驱散类型"] = function() return 0 end,
         ["生命值"] = function() return GetHealthChannel(focus) end,
         ["能量值"] = function() return GetUnitPowerChannel("focus") end,
@@ -303,6 +311,10 @@ local stateBlockGetters = {
     },
     ["鼠标"] = {
         ["类型"] = function() return mouseover.type or 0 end,
+        ["单位"] = function() return mouseover.unit or 0 end,
+        ["可攻击"] = function() return GetBooleanPixel(mouseover.attackable) end,
+        ["可协助"] = function() return GetBooleanPixel(mouseover.assistable) end,
+        ["存活"] = function() return GetBooleanPixel(mouseover.deadOrGhost, true) end,
         ["驱散类型"] = function() return 0 end,
         ["生命值"] = function() return GetHealthChannel(mouseover) end,
         ["能量值"] = function() return GetUnitPowerChannel("mouseover") end,
@@ -335,6 +347,9 @@ for index = 1, 5 do
 
     stateBlockGetters[category] = {
         ["类型"] = function() return cache.type or 0 end,
+        ["可攻击"] = function() return GetBooleanPixel(cache.attackable) end,
+        ["可协助"] = function() return GetBooleanPixel(cache.assistable) end,
+        ["存活"] = function() return GetBooleanPixel(cache.deadOrGhost, true) end,
         ["驱散类型"] = function() return 0 end,
         ["生命值"] = function() return GetHealthChannel(cache) end,
         ["能量值"] = function() return GetUnitPowerChannel(unit) end,
@@ -373,10 +388,11 @@ local rgbSpellUnits = {
 }
 
 function Fuyutsui:UpdateStateBlock(category, name)
-    if category == "区域" and name == "地图" then
+    if category == "区域" and (name == "地图" or name == "首领战") then
         local blocks = self.blocks
         local index = blocks and blocks.state and blocks.state[name]
-        if index then self:CreateNumberTexture(index, state.mapID or 0) end
+        local value = state[name == "地图" and "mapID" or "encounterID"]
+        if index then self:CreateNumberTexture(index, value or 0) end
         return
     end
     if category == "状态" and name == "等级" then

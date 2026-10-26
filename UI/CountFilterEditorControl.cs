@@ -916,13 +916,11 @@ internal sealed class CountFilterEditorControl : UserControl
                 cell.ToolTipText = ReadComparison(_grid.Rows[e.RowIndex].Cells[ComparisonColumn].Value)
                     is CountConditionComparisonKind.In or CountConditionComparisonKind.NotIn
                     ? $"数组: {text}"
-                    : _owner.IsFormulaValueName(text) ? $"公式动态数值: {text}" : string.Empty;
+                    : _owner.IsFormulaValueName(text) ? $"引用字段: {text}" : string.Empty;
                 if (ParseFieldKey(_grid.Rows[e.RowIndex].Cells[FieldColumn].Value?.ToString()).Kind
                     == CountConditionFieldKind.CastCountdown)
                 {
-                    var timeHint = int.TryParse(text, out var ticks)
-                        ? $"约 {(ticks / 10m).ToString("0.#", CultureInfo.InvariantCulture)} 秒"
-                        : "整数单位为 0.1 秒，10 ≈ 1 秒";
+                    var timeHint = "单位为秒，支持小数；例如 0.5 表示半秒";
                     cell.ToolTipText = string.IsNullOrEmpty(cell.ToolTipText)
                         ? timeHint : $"{cell.ToolTipText}；{timeHint}";
                 }
@@ -999,7 +997,7 @@ internal sealed class CountFilterEditorControl : UserControl
                 }
                 if (option.Kind == CountConditionFieldKind.CastCountdown)
                 {
-                    valueCell.ToolTipText = "普通施法或引导的剩余时间，整数单位为 0.1 秒，10 ≈ 1 秒；无施法时为 0。";
+                    valueCell.ToolTipText = "普通施法或引导的剩余秒数，支持小数；无施法时为 0。";
                 }
             }
             finally
@@ -1033,8 +1031,10 @@ internal sealed class CountFilterEditorControl : UserControl
                 };
             }
             var isFormulaValue = _owner.IsFormulaValueName(rawValue);
-            var constant = 0;
-            var typedValue = !isFormulaValue && TryReadInt(row.Cells[ValueColumn].Value, out constant);
+            var constant = 0d;
+            var typedValue = !isFormulaValue && TryReadNumber(row.Cells[ValueColumn].Value, out constant);
+            if (typedValue && option.Kind is not (CountConditionFieldKind.Aura or CountConditionFieldKind.CastCountdown)
+                && constant != Math.Truncate(constant)) return null;
             var isStateField = isFormulaValue
                 || (!typedValue && _owner._thresholdFields.Contains(rawValue));
             if (!typedValue && !isStateField)
@@ -1071,8 +1071,8 @@ internal sealed class CountFilterEditorControl : UserControl
             var currentValue = cell.Value?.ToString()?.Trim() ?? string.Empty;
             var arrayComparison = ReadComparison(_grid.Rows[rowIndex].Cells[ComparisonColumn].Value)
                 is CountConditionComparisonKind.In or CountConditionComparisonKind.NotIn;
-            var manualValue = currentValue.Length > 0 && int.TryParse(currentValue, out var number)
-                ? number.ToString()
+            var manualValue = currentValue.Length > 0 && TryReadNumber(currentValue, out var number)
+                ? number.ToString(CultureInfo.InvariantCulture)
                 : "0";
             var options = arrayComparison
                 ? _owner._numberArrayNames.Select(name => new UiDropDownOption(name, name)).ToList()
@@ -1298,7 +1298,7 @@ internal sealed class CountFilterEditorControl : UserControl
         private static string FormatValue(ModuleCountCondition condition)
             => condition.ValueKind is CountConditionValueKind.StateField or CountConditionValueKind.NumberArray
                 ? condition.ValueField ?? string.Empty
-                : condition.Value.ToString();
+                : condition.Value.ToString(CultureInfo.InvariantCulture);
 
         private static object DefaultValue(CountConditionFieldKind kind)
             => kind switch
@@ -1310,6 +1310,10 @@ internal sealed class CountFilterEditorControl : UserControl
                 CountConditionFieldKind.ImprovedGarrote => 1,
                 _ => "0"
             };
+
+        private static bool TryReadNumber(object? value, out double result)
+            => double.TryParse(Convert.ToString(value, CultureInfo.InvariantCulture), NumberStyles.Float,
+                CultureInfo.InvariantCulture, out result) && double.IsFinite(result);
 
         private static bool TryReadInt(object? value, out int result)
         {

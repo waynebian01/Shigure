@@ -74,7 +74,7 @@ local function CreateNameplateAuraContainer(slot, unit, config)
         end
         local index = PixelIndex(config, slot, aura.valueOffset)
         Fuyutsui:AddNameplateAuraPixelSlots(
-            container, "nameplate_" .. slot .. "_aura_" .. auraIndex, includeSpellIDs, index, aura.isPlayer, aura.maxApps
+            container, "nameplate_" .. slot .. "_aura_" .. auraIndex, includeSpellIDs, index, aura.isPlayer, aura.maxApps, aura.highPrecision
         )
     end
     if config.improvedGarroteOffset then

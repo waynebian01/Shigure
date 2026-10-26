@@ -1,9 +1,21 @@
 using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace Shigure;
 
 public static class FormulaEvaluator
 {
+    internal static IEnumerable<string> ReferencedFields(string? expression)
+    {
+        var text = NormalizeExpression(expression);
+        foreach (Match match in Regex.Matches(text, @"[_$\p{L}][_$\p{L}\p{N}.]*"))
+        {
+            var end = match.Index + match.Length;
+            while (end < text.Length && char.IsWhiteSpace(text[end])) end++;
+            if (end == text.Length || text[end] != '(') yield return match.Value;
+        }
+    }
+
     public static bool TryEvaluateInt(string? expression, GameState state, out int value, out string? error)
     {
         value = 0;

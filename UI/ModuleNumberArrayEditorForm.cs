@@ -660,7 +660,7 @@ public sealed class ModuleNumberArrayEditorForm : Form
                 row.Cells["Name"].Value = Catalog.GetSpellName(number) ?? string.Empty;
                 break;
             case ModuleNumberArrayKind.Boss:
-                row.Cells["Name"].Value = _bossCatalog.FindName(number) ?? string.Empty;
+                row.Cells["Name"].Value = number == 0 ? "非首领战" : _bossCatalog.FindName(number) ?? string.Empty;
                 break;
             case ModuleNumberArrayKind.Map:
                 row.Cells["Name"].Value = _dungeonCatalog.FindName(number) ?? string.Empty;
@@ -691,7 +691,7 @@ public sealed class ModuleNumberArrayEditorForm : Form
         var numberColumn = _grid.Columns["Number"]!;
         numberColumn.HeaderText = kind switch
         {
-            ModuleNumberArrayKind.Boss => "索引ID",
+            ModuleNumberArrayKind.Boss => "首领战 ID",
             ModuleNumberArrayKind.Map => "地下城编号",
             ModuleNumberArrayKind.Raid => "团队副本编号",
             _ => "数字"
@@ -709,7 +709,7 @@ public sealed class ModuleNumberArrayEditorForm : Form
         _lookupGrid.Columns["Icon"]!.Visible = spellLike;
         _lookupGrid.Columns["SpellId"]!.HeaderText = kind switch
         {
-            ModuleNumberArrayKind.Boss => "索引ID",
+            ModuleNumberArrayKind.Boss => "首领战 ID",
             ModuleNumberArrayKind.Map => "地下城编号",
             ModuleNumberArrayKind.Raid => "团队副本编号",
             _ => "spellId"
@@ -727,7 +727,7 @@ public sealed class ModuleNumberArrayEditorForm : Form
         addColumn.HeaderText = addText;
         _lookupFilterBox.PlaceholderText = kind switch
         {
-            ModuleNumberArrayKind.Boss => "名称或索引ID",
+            ModuleNumberArrayKind.Boss => "名称或首领战 ID",
             ModuleNumberArrayKind.Map => "名称或地下城编号",
             ModuleNumberArrayKind.Raid => "名称或团队副本编号",
             _ => "spellId 或名称"
@@ -778,7 +778,7 @@ public sealed class ModuleNumberArrayEditorForm : Form
                 ? catalog.Entries.Where(entry =>
                     entry.Id.ToString(CultureInfo.InvariantCulture).StartsWith(query, StringComparison.Ordinal))
                 : catalog.Entries.Where(entry =>
-                    entry.Name.Contains(query, StringComparison.OrdinalIgnoreCase));
+                    entry.DisplayName.Contains(query, StringComparison.OrdinalIgnoreCase));
         }
 
         var matched = matches.ToArray();

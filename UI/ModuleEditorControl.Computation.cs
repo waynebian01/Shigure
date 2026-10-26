@@ -77,6 +77,15 @@ public sealed partial class ModuleEditorControl
             RefreshAdjustmentFieldColumn();
         };
         grid.CellEndEdit += (_, _) => RefreshAdjustmentFieldColumn();
+        grid.CellFormatting += (_, e) =>
+        {
+            if (e.RowIndex < 0 || e.ColumnIndex < 0 || grid.Rows[e.RowIndex].IsNewRow
+                || grid.Columns[e.ColumnIndex].Name != "Condition") return;
+
+            // 复用规则表的名称化显示，底层仍保留原始条件供编辑、保存和执行。
+            e.Value = FormatConditionExpressionForDisplay(e.Value?.ToString());
+            e.FormattingApplied = true;
+        };
         grid.DataError += (_, e) => e.ThrowException = false;
         grid.CellClick += (_, e) =>
         {
@@ -118,7 +127,12 @@ public sealed partial class ModuleEditorControl
         if (row.DataGridView == _formulaAdjustmentsGrid)
         {
             TryGetAdjustmentField(CellText(row, "Field"), CellText(row, "Formula"), out var field);
-            return new() { Field = field, Formula = FormulaEvaluator.NormalizeExpression(CellText(row, "Formula")) };
+            return new()
+            {
+                Enabled = CellBool(row, "Enabled", defaultValue: true),
+                Field = field,
+                Formula = FormulaEvaluator.NormalizeExpression(CellText(row, "Formula"))
+            };
         }
         return new()
         {

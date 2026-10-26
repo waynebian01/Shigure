@@ -174,22 +174,22 @@
     },
     "施法(正计时)": {
       "step": 12,
-      "type": "int",
+      "type": "deciseconds",
       "category": "状态"
     },
     "施法(倒计时)": {
       "step": 13,
-      "type": "int",
+      "type": "deciseconds",
       "category": "状态"
     },
     "引导": {
       "step": 14,
-      "type": "int",
+      "type": "deciseconds",
       "category": "状态"
     },
     "蓄力": {
       "step": 15,
-      "type": "int",
+      "type": "deciseconds",
       "category": "状态"
     },
     "蓄力层数": {
@@ -209,7 +209,7 @@
     },
     "公共冷却": {
       "step": 19,
-      "type": "int",
+      "type": "centiseconds",
       "category": "状态"
     },
     "施法技能": {
@@ -262,320 +262,457 @@
     "首领战": {
       "step": 30,
       "type": "int",
-      "category": "区域"
+      "category": "区域",
+      "pixelFormat": "rgb24",
+      "payloadStep": 31
     },
     "首领战难度": {
-      "step": 31,
-      "type": "int",
-      "category": "区域"
-    },
-    "大秘境层数": {
       "step": 32,
       "type": "int",
       "category": "区域"
     },
-    "大秘境时间(分)": {
+    "大秘境层数": {
       "step": 33,
       "type": "int",
       "category": "区域"
     },
-    "大秘境时间(秒)": {
+    "大秘境时间(分)": {
       "step": 34,
       "type": "int",
       "category": "区域"
     },
-    "爆发开关": {
+    "大秘境时间(秒)": {
       "step": 35,
       "type": "int",
-      "category": "配置开关"
+      "category": "区域"
     },
-    "延迟": {
+    "爆发开关": {
       "step": 36,
       "type": "int",
       "category": "配置开关"
     },
-    "次要爆发": {
+    "延迟": {
       "step": 37,
       "type": "int",
       "category": "配置开关"
     },
-    "自定义模式": {
+    "次要爆发": {
       "step": 38,
       "type": "int",
       "category": "配置开关"
     },
-    "爆发药水开关": {
+    "自定义模式": {
       "step": 39,
       "type": "int",
       "category": "配置开关"
     },
-    "目标施法技能": {
+    "爆发药水开关": {
       "step": 40,
+      "type": "int",
+      "category": "配置开关"
+    },
+    "目标施法技能": {
+      "step": 41,
       "type": "int",
       "category": "目标",
       "pixelFormat": "rgb24",
-      "payloadStep": 41
+      "payloadStep": 42
     },
     "目标类型": {
-      "step": 42,
-      "type": "int",
-      "category": "目标"
-    },
-    "目标生命值": {
       "step": 43,
       "type": "int",
       "category": "目标"
     },
-    "目标施法(倒计时)": {
+    "目标生命值": {
       "step": 44,
       "type": "int",
       "category": "目标"
     },
-    "目标施法(正计时)": {
+    "目标施法(倒计时)": {
       "step": 45,
-      "type": "int",
+      "type": "deciseconds",
+      "category": "目标"
+    },
+    "目标施法(正计时)": {
+      "step": 46,
+      "type": "deciseconds",
       "category": "目标"
     },
     "目标施法可打断": {
-      "step": 46,
-      "type": "int",
-      "category": "目标"
-    },
-    "目标引导": {
       "step": 47,
       "type": "int",
       "category": "目标"
     },
-    "目标引导可打断": {
+    "目标引导": {
       "step": 48,
-      "type": "int",
+      "type": "deciseconds",
       "category": "目标"
     },
-    "目标距离": {
+    "目标引导可打断": {
       "step": 49,
       "type": "int",
       "category": "目标"
     },
-    "目标驱散类型": {
+    "目标距离": {
       "step": 50,
       "type": "int",
       "category": "目标"
     },
-    "焦点施法技能": {
+    "目标驱散类型": {
       "step": 51,
+      "type": "int",
+      "category": "目标"
+    },
+    "目标单位": {
+      "step": 52,
+      "type": "int",
+      "category": "目标"
+    },
+    "目标可攻击": {
+      "step": 53,
+      "type": "bool",
+      "category": "目标"
+    },
+    "目标可协助": {
+      "step": 54,
+      "type": "bool",
+      "category": "目标"
+    },
+    "目标存活": {
+      "step": 55,
+      "type": "bool",
+      "category": "目标"
+    },
+    "焦点施法技能": {
+      "step": 56,
       "type": "int",
       "category": "焦点",
       "pixelFormat": "rgb24",
-      "payloadStep": 52
+      "payloadStep": 57
     },
     "焦点施法(倒计时)": {
-      "step": 53,
-      "type": "int",
+      "step": 58,
+      "type": "deciseconds",
       "category": "焦点"
     },
     "焦点施法(正计时)": {
-      "step": 54,
-      "type": "int",
+      "step": 59,
+      "type": "deciseconds",
       "category": "焦点"
     },
     "焦点施法可打断": {
-      "step": 55,
+      "step": 60,
       "type": "int",
       "category": "焦点"
     },
     "焦点引导": {
-      "step": 56,
-      "type": "int",
+      "step": 61,
+      "type": "deciseconds",
       "category": "焦点"
     },
     "焦点引导可打断": {
-      "step": 57,
+      "step": 62,
       "type": "int",
       "category": "焦点"
     },
+    "焦点单位": {
+      "step": 63,
+      "type": "int",
+      "category": "焦点"
+    },
+    "焦点可攻击": {
+      "step": 64,
+      "type": "bool",
+      "category": "焦点"
+    },
+    "焦点可协助": {
+      "step": 65,
+      "type": "bool",
+      "category": "焦点"
+    },
+    "焦点存活": {
+      "step": 66,
+      "type": "bool",
+      "category": "焦点"
+    },
     "鼠标类型": {
-      "step": 58,
+      "step": 67,
       "type": "int",
       "category": "鼠标"
     },
     "鼠标驱散类型": {
-      "step": 59,
+      "step": 68,
       "type": "int",
       "category": "鼠标"
     },
     "鼠标生命值": {
-      "step": 60,
+      "step": 69,
       "type": "int",
       "category": "鼠标"
     },
     "鼠标距离": {
-      "step": 61,
+      "step": 70,
       "type": "int",
       "category": "鼠标"
     },
     "鼠标施法(倒计时)": {
-      "step": 62,
-      "type": "int",
+      "step": 71,
+      "type": "deciseconds",
       "category": "鼠标"
     },
     "鼠标施法(正计时)": {
-      "step": 63,
-      "type": "int",
+      "step": 72,
+      "type": "deciseconds",
       "category": "鼠标"
     },
     "鼠标施法可打断": {
-      "step": 64,
+      "step": 73,
       "type": "int",
       "category": "鼠标"
     },
     "鼠标引导": {
-      "step": 65,
-      "type": "int",
+      "step": 74,
+      "type": "deciseconds",
       "category": "鼠标"
     },
     "鼠标引导可打断": {
-      "step": 66,
+      "step": 75,
       "type": "int",
       "category": "鼠标"
     },
-    "首领1施法(倒计时)": {
-      "step": 67,
+    "鼠标单位": {
+      "step": 76,
       "type": "int",
+      "category": "鼠标"
+    },
+    "鼠标可攻击": {
+      "step": 77,
+      "type": "bool",
+      "category": "鼠标"
+    },
+    "鼠标可协助": {
+      "step": 78,
+      "type": "bool",
+      "category": "鼠标"
+    },
+    "鼠标存活": {
+      "step": 79,
+      "type": "bool",
+      "category": "鼠标"
+    },
+    "首领1施法(倒计时)": {
+      "step": 80,
+      "type": "deciseconds",
       "category": "首领1"
     },
     "首领1施法(正计时)": {
-      "step": 68,
-      "type": "int",
+      "step": 81,
+      "type": "deciseconds",
+      "category": "首领1"
+    },
+    "首领1可攻击": {
+      "step": 82,
+      "type": "bool",
+      "category": "首领1"
+    },
+    "首领1可协助": {
+      "step": 83,
+      "type": "bool",
+      "category": "首领1"
+    },
+    "首领1存活": {
+      "step": 84,
+      "type": "bool",
       "category": "首领1"
     },
     "首领2施法(倒计时)": {
-      "step": 69,
-      "type": "int",
+      "step": 85,
+      "type": "deciseconds",
       "category": "首领2"
     },
     "首领2施法(正计时)": {
-      "step": 70,
-      "type": "int",
+      "step": 86,
+      "type": "deciseconds",
       "category": "首领2"
     },
+    "首领2可攻击": {
+      "step": 87,
+      "type": "bool",
+      "category": "首领2"
+    },
+    "首领2可协助": {
+      "step": 88,
+      "type": "bool",
+      "category": "首领2"
+    },
+    "首领2存活": {
+      "step": 89,
+      "type": "bool",
+      "category": "首领2"
+    },
+    "首领3可攻击": {
+      "step": 90,
+      "type": "bool",
+      "category": "首领3"
+    },
+    "首领3可协助": {
+      "step": 91,
+      "type": "bool",
+      "category": "首领3"
+    },
+    "首领3存活": {
+      "step": 92,
+      "type": "bool",
+      "category": "首领3"
+    },
+    "首领4可攻击": {
+      "step": 93,
+      "type": "bool",
+      "category": "首领4"
+    },
+    "首领4可协助": {
+      "step": 94,
+      "type": "bool",
+      "category": "首领4"
+    },
+    "首领4存活": {
+      "step": 95,
+      "type": "bool",
+      "category": "首领4"
+    },
+    "首领5可攻击": {
+      "step": 96,
+      "type": "bool",
+      "category": "首领5"
+    },
+    "首领5可协助": {
+      "step": 97,
+      "type": "bool",
+      "category": "首领5"
+    },
+    "首领5存活": {
+      "step": 98,
+      "type": "bool",
+      "category": "首领5"
+    },
     "时间轴1技能ID": {
-      "step": 130,
+      "step": 158,
       "type": "int",
       "category": "时间轴",
       "pixelFormat": "rgb24",
-      "payloadStep": 131
+      "payloadStep": 159
     },
     "时间轴1剩余时间": {
-      "step": 132,
+      "step": 160,
       "type": "deciseconds",
       "category": "时间轴"
     },
     "时间轴2技能ID": {
-      "step": 133,
+      "step": 161,
       "type": "int",
       "category": "时间轴",
       "pixelFormat": "rgb24",
-      "payloadStep": 134
+      "payloadStep": 162
     },
     "时间轴2剩余时间": {
-      "step": 135,
+      "step": 163,
       "type": "deciseconds",
       "category": "时间轴"
     },
     "时间轴3技能ID": {
-      "step": 136,
+      "step": 164,
       "type": "int",
       "category": "时间轴",
       "pixelFormat": "rgb24",
-      "payloadStep": 137
+      "payloadStep": 165
     },
     "时间轴3剩余时间": {
-      "step": 138,
+      "step": 166,
       "type": "deciseconds",
       "category": "时间轴"
     },
     "时间轴4技能ID": {
-      "step": 139,
+      "step": 167,
       "type": "int",
       "category": "时间轴",
       "pixelFormat": "rgb24",
-      "payloadStep": 140
+      "payloadStep": 168
     },
     "时间轴4剩余时间": {
-      "step": 141,
+      "step": 169,
       "type": "deciseconds",
       "category": "时间轴"
     },
     "时间轴5技能ID": {
-      "step": 142,
+      "step": 170,
       "type": "int",
       "category": "时间轴",
       "pixelFormat": "rgb24",
-      "payloadStep": 143
+      "payloadStep": 171
     },
     "时间轴5剩余时间": {
-      "step": 144,
+      "step": 172,
       "type": "deciseconds",
       "category": "时间轴"
     },
     "治疗石": {
-      "step": 145,
+      "step": 173,
       "type": "int",
       "category": "物品",
       "itemId": 5512,
       "isEquipped": false
     },
     "鲁莽药水": {
-      "step": 146,
+      "step": 174,
       "type": "int",
       "category": "物品",
       "itemId": 241288,
       "isEquipped": false
     },
     "治疗药水": {
-      "step": 147,
+      "step": 175,
       "type": "int",
       "category": "物品",
       "itemId": 241304,
       "isEquipped": false
     },
     "圣光潜力": {
-      "step": 148,
+      "step": 176,
       "type": "int",
       "category": "物品",
       "itemId": 241308,
       "isEquipped": false
     },
     "货运者水壶": {
-      "step": 149,
+      "step": 177,
       "type": "int",
       "category": "物品",
       "itemId": 250215,
       "isEquipped": false
     },
     "动荡的邪心水晶": {
-      "step": 150,
+      "step": 178,
       "type": "int",
       "category": "物品",
       "itemId": 250255,
       "isEquipped": false
     },
     "妖术领主的厄运神像": {
-      "step": 151,
+      "step": 179,
       "type": "int",
       "category": "物品",
       "itemId": 270169,
       "isEquipped": true
     },
     "浓缩银月城治疗药水": {
-      "step": 152,
+      "step": 180,
       "type": "int",
       "category": "物品",
       "itemId": 271883,
       "isEquipped": false
     },
     "一瓶肮脏的烈性毒液": {
-      "step": 153,
+      "step": 181,
       "type": "int",
       "category": "物品",
       "itemId": 273796,
@@ -583,7 +720,7 @@
     },
     "auras": {
       "player.462854.value": {
-        "step": 71,
+        "step": 99,
         "type": "int",
         "category": "玩家",
         "displayName": "天怒",
@@ -595,7 +732,7 @@
         ]
       },
       "player.77762.value": {
-        "step": 72,
+        "step": 100,
         "type": "int",
         "category": "玩家",
         "displayName": "熔岩奔腾",
@@ -607,7 +744,7 @@
         ]
       },
       "player.191634.value": {
-        "step": 73,
+        "step": 101,
         "type": "int",
         "category": "玩家",
         "displayName": "风暴守护者",
@@ -619,7 +756,7 @@
         ]
       },
       "player.191634.apps": {
-        "step": 74,
+        "step": 102,
         "type": "int",
         "category": "玩家",
         "displayName": "风暴守护者层数",
@@ -631,7 +768,7 @@
         ]
       },
       "player.454015.value": {
-        "step": 75,
+        "step": 103,
         "type": "int",
         "category": "玩家",
         "displayName": "暴风",
@@ -643,7 +780,7 @@
         ]
       },
       "player.454015.apps": {
-        "step": 76,
+        "step": 104,
         "type": "int",
         "category": "玩家",
         "displayName": "暴风层数",
@@ -655,7 +792,7 @@
         ]
       },
       "player.267344.value": {
-        "step": 77,
+        "step": 105,
         "type": "int",
         "category": "玩家",
         "displayName": "元素宗师",
@@ -667,7 +804,7 @@
         ]
       },
       "player.1259491.value": {
-        "step": 78,
+        "step": 106,
         "type": "int",
         "category": "玩家",
         "displayName": "净化烈焰",
@@ -679,7 +816,7 @@
         ]
       },
       "player.263806.value": {
-        "step": 79,
+        "step": 107,
         "type": "int",
         "category": "玩家",
         "displayName": "风之爆发",
@@ -691,7 +828,7 @@
         ]
       },
       "player.263806.apps": {
-        "step": 80,
+        "step": 108,
         "type": "int",
         "category": "玩家",
         "displayName": "风之爆发层数",
@@ -703,7 +840,7 @@
         ]
       },
       "player.447244.value": {
-        "step": 81,
+        "step": 109,
         "type": "int",
         "category": "玩家",
         "displayName": "先祖召唤",
@@ -715,7 +852,7 @@
         ]
       },
       "player.1219480.value": {
-        "step": 82,
+        "step": 110,
         "type": "int",
         "category": "玩家",
         "displayName": "升腾",
@@ -727,7 +864,7 @@
         ]
       },
       "player.188592.value": {
-        "step": 83,
+        "step": 111,
         "type": "int",
         "category": "玩家",
         "displayName": "火元素",
@@ -739,7 +876,7 @@
         ]
       },
       "player.157299.value": {
-        "step": 84,
+        "step": 112,
         "type": "int",
         "category": "玩家",
         "displayName": "风暴元素",
@@ -751,7 +888,7 @@
         ]
       },
       "player.191877.value": {
-        "step": 85,
+        "step": 113,
         "type": "int",
         "category": "玩家",
         "displayName": "漩涡之力",
@@ -763,7 +900,7 @@
         ]
       },
       "player.191877.apps": {
-        "step": 86,
+        "step": 114,
         "type": "int",
         "category": "玩家",
         "displayName": "漩涡之力层数",
@@ -775,7 +912,7 @@
         ]
       },
       "player.118522.value": {
-        "step": 87,
+        "step": 115,
         "type": "int",
         "category": "玩家",
         "displayName": "元素冲击暴击",
@@ -787,7 +924,7 @@
         ]
       },
       "player.173183.value": {
-        "step": 88,
+        "step": 116,
         "type": "int",
         "category": "玩家",
         "displayName": "元素冲击急速",
@@ -799,7 +936,7 @@
         ]
       },
       "player.173184.value": {
-        "step": 89,
+        "step": 117,
         "type": "int",
         "category": "玩家",
         "displayName": "元素冲击精通",
@@ -811,7 +948,7 @@
         ]
       },
       "player.192106.value": {
-        "step": 90,
+        "step": 118,
         "type": "int",
         "category": "玩家",
         "displayName": "闪电之盾",
@@ -823,7 +960,7 @@
         ]
       },
       "player.443454.value": {
-        "step": 91,
+        "step": 119,
         "type": "int",
         "category": "玩家",
         "displayName": "先祖迅捷",
@@ -835,7 +972,7 @@
         ]
       },
       "player.1300219.value": {
-        "step": 92,
+        "step": 120,
         "type": "int",
         "category": "玩家",
         "displayName": "元素奔涌",
@@ -847,7 +984,7 @@
         ]
       },
       "player.1300222.value": {
-        "step": 93,
+        "step": 121,
         "type": "int",
         "category": "玩家",
         "displayName": "过载！",
@@ -859,7 +996,7 @@
         ]
       },
       "player.260734.value": {
-        "step": 94,
+        "step": 122,
         "type": "int",
         "category": "玩家",
         "displayName": "元素宗师",
@@ -871,7 +1008,7 @@
         ]
       },
       "player.1307470.value": {
-        "step": 95,
+        "step": 123,
         "type": "int",
         "category": "玩家",
         "displayName": "妖术领主的厄运",
@@ -883,7 +1020,7 @@
         ]
       },
       "player.1307470.apps": {
-        "step": 96,
+        "step": 124,
         "type": "int",
         "category": "玩家",
         "displayName": "妖术领主的厄运层数",
@@ -895,7 +1032,7 @@
         ]
       },
       "target.harmful.188389.value": {
-        "step": 97,
+        "step": 125,
         "type": "int",
         "category": "目标减益",
         "displayName": "烈焰震击",
@@ -907,7 +1044,7 @@
         ]
       },
       "target.harmful.197209.value": {
-        "step": 98,
+        "step": 126,
         "type": "int",
         "category": "目标减益",
         "displayName": "引雷针",
@@ -921,7 +1058,7 @@
     },
     "spells": {
       "57994.cooldown": {
-        "step": 99,
+        "step": 127,
         "type": "int",
         "displayName": "风剪",
         "spellId": 57994,
@@ -929,7 +1066,7 @@
         "displayType": "冷却"
       },
       "198103.cooldown": {
-        "step": 100,
+        "step": 128,
         "type": "int",
         "displayName": "土元素",
         "spellId": 198103,
@@ -937,7 +1074,7 @@
         "displayType": "冷却"
       },
       "192058.cooldown": {
-        "step": 101,
+        "step": 129,
         "type": "int",
         "displayName": "电能图腾",
         "spellId": 192058,
@@ -945,7 +1082,7 @@
         "displayType": "冷却"
       },
       "378081.cooldown": {
-        "step": 102,
+        "step": 130,
         "type": "int",
         "displayName": "自然迅捷",
         "spellId": 378081,
@@ -953,7 +1090,7 @@
         "displayType": "冷却"
       },
       "108287.cooldown": {
-        "step": 103,
+        "step": 131,
         "type": "int",
         "displayName": "图腾投射",
         "spellId": 108287,
@@ -961,7 +1098,7 @@
         "displayType": "冷却"
       },
       "51514.cooldown": {
-        "step": 104,
+        "step": 132,
         "type": "int",
         "displayName": "妖术",
         "spellId": 51514,
@@ -969,7 +1106,7 @@
         "displayType": "冷却"
       },
       "378773.cooldown": {
-        "step": 105,
+        "step": 133,
         "type": "int",
         "displayName": "强化净化术",
         "spellId": 378773,
@@ -977,7 +1114,7 @@
         "displayType": "冷却"
       },
       "8143.cooldown": {
-        "step": 106,
+        "step": 134,
         "type": "int",
         "displayName": "战栗图腾",
         "spellId": 8143,
@@ -985,7 +1122,7 @@
         "displayType": "冷却"
       },
       "383013.cooldown": {
-        "step": 107,
+        "step": 135,
         "type": "int",
         "displayName": "清毒图腾",
         "spellId": 383013,
@@ -993,7 +1130,7 @@
         "displayType": "冷却"
       },
       "192063.cooldown": {
-        "step": 108,
+        "step": 136,
         "type": "int",
         "displayName": "阵风",
         "spellId": 192063,
@@ -1001,7 +1138,7 @@
         "displayType": "冷却"
       },
       "58875.cooldown": {
-        "step": 109,
+        "step": 137,
         "type": "int",
         "displayName": "幽魂步",
         "spellId": 58875,
@@ -1009,7 +1146,7 @@
         "displayType": "冷却"
       },
       "73920.cooldown": {
-        "step": 110,
+        "step": 138,
         "type": "int",
         "displayName": "治疗之雨",
         "spellId": 73920,
@@ -1017,7 +1154,7 @@
         "displayType": "冷却"
       },
       "114050.cooldown": {
-        "step": 111,
+        "step": 139,
         "type": "int",
         "displayName": "升腾",
         "spellId": 114050,
@@ -1025,7 +1162,7 @@
         "displayType": "冷却"
       },
       "51490.cooldown": {
-        "step": 112,
+        "step": 140,
         "type": "int",
         "displayName": "雷霆风暴",
         "spellId": 51490,
@@ -1033,7 +1170,7 @@
         "displayType": "冷却"
       },
       "192077.cooldown": {
-        "step": 113,
+        "step": 141,
         "type": "int",
         "displayName": "狂风图腾",
         "spellId": 192077,
@@ -1041,7 +1178,7 @@
         "displayType": "冷却"
       },
       "77130.cooldown": {
-        "step": 114,
+        "step": 142,
         "type": "int",
         "displayName": "净化灵魂",
         "spellId": 77130,
@@ -1049,7 +1186,7 @@
         "displayType": "冷却"
       },
       "51505.cooldown": {
-        "step": 115,
+        "step": 143,
         "type": "int",
         "displayName": "熔岩爆裂",
         "spellId": 51505,
@@ -1057,7 +1194,7 @@
         "displayType": "冷却"
       },
       "51505.chargeCooldown": {
-        "step": 116,
+        "step": 144,
         "type": "int",
         "displayName": "熔岩爆裂充能",
         "spellId": 51505,
@@ -1065,7 +1202,7 @@
         "displayType": "充能"
       },
       "51505.count": {
-        "step": 117,
+        "step": 145,
         "type": "int",
         "displayName": "熔岩爆裂层数",
         "spellId": 51505,
@@ -1073,7 +1210,7 @@
         "displayType": "充能层数"
       },
       "470057.cooldown": {
-        "step": 118,
+        "step": 146,
         "type": "int",
         "displayName": "流电炽焰",
         "spellId": 470057,
@@ -1081,7 +1218,7 @@
         "displayType": "冷却"
       },
       "191634.cooldown": {
-        "step": 119,
+        "step": 147,
         "type": "int",
         "displayName": "风暴守护者",
         "spellId": 191634,
@@ -1089,7 +1226,7 @@
         "displayType": "冷却"
       },
       "443454.cooldown": {
-        "step": 120,
+        "step": 148,
         "type": "int",
         "displayName": "先祖迅捷",
         "spellId": 443454,
@@ -1097,7 +1234,7 @@
         "displayType": "冷却"
       },
       "117014.cooldown": {
-        "step": 121,
+        "step": 149,
         "type": "int",
         "displayName": "元素冲击",
         "spellId": 117014,
@@ -1105,7 +1242,7 @@
         "displayType": "冷却"
       },
       "61882.cooldown": {
-        "step": 122,
+        "step": 150,
         "type": "int",
         "displayName": "地震术",
         "spellId": 61882,
@@ -1113,7 +1250,7 @@
         "displayType": "冷却"
       },
       "8042.cooldown": {
-        "step": 123,
+        "step": 151,
         "type": "int",
         "displayName": "大地震击",
         "spellId": 8042,
@@ -1121,7 +1258,7 @@
         "displayType": "冷却"
       },
       "188443.cooldown": {
-        "step": 124,
+        "step": 152,
         "type": "int",
         "displayName": "闪电链",
         "spellId": 188443,
@@ -1129,7 +1266,7 @@
         "displayType": "冷却"
       },
       "188196.cooldown": {
-        "step": 125,
+        "step": 153,
         "type": "int",
         "displayName": "闪电箭",
         "spellId": 188196,
@@ -1137,7 +1274,7 @@
         "displayType": "冷却"
       },
       "470411.cooldown": {
-        "step": 126,
+        "step": 154,
         "type": "int",
         "displayName": "烈焰震击",
         "spellId": 470411,
@@ -1145,7 +1282,7 @@
         "displayType": "冷却"
       },
       "1259471.cooldown": {
-        "step": 127,
+        "step": 155,
         "type": "int",
         "displayName": "净化烈焰",
         "spellId": 1259471,
@@ -1153,7 +1290,7 @@
         "displayType": "冷却"
       },
       "16166.cooldown": {
-        "step": 128,
+        "step": 156,
         "type": "int",
         "displayName": "元素宗师",
         "spellId": 16166,
@@ -1161,7 +1298,7 @@
         "displayType": "冷却"
       },
       "370.cooldown": {
-        "step": 129,
+        "step": 157,
         "type": "int",
         "displayName": "净化术",
         "spellId": 370,
@@ -1170,7 +1307,7 @@
       }
     },
     "group": {
-      "start": 154,
+      "start": 182,
       "生命值": {
         "step": 1,
         "type": "int"
@@ -1185,42 +1322,42 @@
       }
     },
     "姓名板目标": {
-      "step": 275,
+      "step": 303,
       "type": "int",
       "category": "姓名板"
     },
     "姓名板焦点": {
-      "step": 276,
+      "step": 304,
       "type": "int",
       "category": "姓名板"
     },
     "姓名板首领1": {
-      "step": 277,
+      "step": 305,
       "type": "int",
       "category": "姓名板"
     },
     "姓名板首领2": {
-      "step": 278,
+      "step": 306,
       "type": "int",
       "category": "姓名板"
     },
     "姓名板首领3": {
-      "step": 279,
+      "step": 307,
       "type": "int",
       "category": "姓名板"
     },
     "姓名板首领4": {
-      "step": 280,
+      "step": 308,
       "type": "int",
       "category": "姓名板"
     },
     "姓名板首领5": {
-      "step": 281,
+      "step": 309,
       "type": "int",
       "category": "姓名板"
     },
     "nameplates": {
-      "start": 275,
+      "start": 303,
       "mappingCount": 7,
       "healthPercent": 1,
       "range": 2,
@@ -1230,6 +1367,7 @@
         {
           "name": "烈焰震击",
           "spellId": 188389,
+          "type": "int",
           "valueOffset": 4
         }
       ],
@@ -1279,22 +1417,22 @@
     },
     "施法(正计时)": {
       "step": 12,
-      "type": "int",
+      "type": "deciseconds",
       "category": "状态"
     },
     "施法(倒计时)": {
       "step": 13,
-      "type": "int",
+      "type": "deciseconds",
       "category": "状态"
     },
     "引导": {
       "step": 14,
-      "type": "int",
+      "type": "deciseconds",
       "category": "状态"
     },
     "蓄力": {
       "step": 15,
-      "type": "int",
+      "type": "deciseconds",
       "category": "状态"
     },
     "蓄力层数": {
@@ -1342,240 +1480,377 @@
     "首领战": {
       "step": 25,
       "type": "int",
-      "category": "区域"
+      "category": "区域",
+      "pixelFormat": "rgb24",
+      "payloadStep": 26
     },
     "首领战难度": {
-      "step": 26,
-      "type": "int",
-      "category": "区域"
-    },
-    "大秘境层数": {
       "step": 27,
       "type": "int",
       "category": "区域"
     },
-    "大秘境时间(分)": {
+    "大秘境层数": {
       "step": 28,
       "type": "int",
       "category": "区域"
     },
-    "大秘境时间(秒)": {
+    "大秘境时间(分)": {
       "step": 29,
       "type": "int",
       "category": "区域"
     },
-    "爆发开关": {
+    "大秘境时间(秒)": {
       "step": 30,
       "type": "int",
-      "category": "配置开关"
+      "category": "区域"
     },
-    "自定义模式": {
+    "爆发开关": {
       "step": 31,
       "type": "int",
       "category": "配置开关"
     },
-    "次要爆发": {
+    "自定义模式": {
       "step": 32,
       "type": "int",
       "category": "配置开关"
     },
-    "爆发药水开关": {
+    "次要爆发": {
       "step": 33,
       "type": "int",
       "category": "配置开关"
     },
-    "延迟": {
+    "爆发药水开关": {
       "step": 34,
       "type": "int",
       "category": "配置开关"
     },
-    "目标施法技能": {
+    "延迟": {
       "step": 35,
+      "type": "int",
+      "category": "配置开关"
+    },
+    "目标施法技能": {
+      "step": 36,
       "type": "int",
       "category": "目标",
       "pixelFormat": "rgb24",
-      "payloadStep": 36
+      "payloadStep": 37
     },
     "目标类型": {
-      "step": 37,
-      "type": "int",
-      "category": "目标"
-    },
-    "目标生命值": {
       "step": 38,
       "type": "int",
       "category": "目标"
     },
-    "目标施法(倒计时)": {
+    "目标生命值": {
       "step": 39,
       "type": "int",
       "category": "目标"
     },
-    "目标施法(正计时)": {
+    "目标施法(倒计时)": {
       "step": 40,
-      "type": "int",
+      "type": "deciseconds",
+      "category": "目标"
+    },
+    "目标施法(正计时)": {
+      "step": 41,
+      "type": "deciseconds",
       "category": "目标"
     },
     "目标施法可打断": {
-      "step": 41,
-      "type": "int",
-      "category": "目标"
-    },
-    "目标引导": {
       "step": 42,
       "type": "int",
       "category": "目标"
     },
-    "目标引导可打断": {
+    "目标引导": {
       "step": 43,
-      "type": "int",
+      "type": "deciseconds",
       "category": "目标"
     },
-    "目标距离": {
+    "目标引导可打断": {
       "step": 44,
       "type": "int",
       "category": "目标"
     },
-    "焦点施法技能": {
+    "目标距离": {
       "step": 45,
+      "type": "int",
+      "category": "目标"
+    },
+    "目标单位": {
+      "step": 46,
+      "type": "int",
+      "category": "目标"
+    },
+    "目标可攻击": {
+      "step": 47,
+      "type": "bool",
+      "category": "目标"
+    },
+    "目标可协助": {
+      "step": 48,
+      "type": "bool",
+      "category": "目标"
+    },
+    "目标存活": {
+      "step": 49,
+      "type": "bool",
+      "category": "目标"
+    },
+    "焦点施法技能": {
+      "step": 50,
       "type": "int",
       "category": "焦点",
       "pixelFormat": "rgb24",
-      "payloadStep": 46
+      "payloadStep": 51
     },
     "焦点施法(倒计时)": {
-      "step": 47,
-      "type": "int",
+      "step": 52,
+      "type": "deciseconds",
       "category": "焦点"
     },
     "焦点施法(正计时)": {
-      "step": 48,
-      "type": "int",
+      "step": 53,
+      "type": "deciseconds",
       "category": "焦点"
     },
     "焦点施法可打断": {
-      "step": 49,
+      "step": 54,
       "type": "int",
       "category": "焦点"
     },
     "焦点引导": {
-      "step": 50,
-      "type": "int",
+      "step": 55,
+      "type": "deciseconds",
       "category": "焦点"
     },
     "焦点引导可打断": {
-      "step": 51,
+      "step": 56,
       "type": "int",
       "category": "焦点"
     },
+    "焦点单位": {
+      "step": 57,
+      "type": "int",
+      "category": "焦点"
+    },
+    "焦点可攻击": {
+      "step": 58,
+      "type": "bool",
+      "category": "焦点"
+    },
+    "焦点可协助": {
+      "step": 59,
+      "type": "bool",
+      "category": "焦点"
+    },
+    "焦点存活": {
+      "step": 60,
+      "type": "bool",
+      "category": "焦点"
+    },
     "鼠标类型": {
-      "step": 52,
+      "step": 61,
       "type": "int",
       "category": "鼠标"
     },
     "鼠标驱散类型": {
-      "step": 53,
+      "step": 62,
       "type": "int",
       "category": "鼠标"
     },
     "鼠标生命值": {
-      "step": 54,
+      "step": 63,
       "type": "int",
       "category": "鼠标"
     },
     "鼠标距离": {
-      "step": 55,
+      "step": 64,
       "type": "int",
       "category": "鼠标"
     },
     "鼠标施法(倒计时)": {
-      "step": 56,
-      "type": "int",
+      "step": 65,
+      "type": "deciseconds",
       "category": "鼠标"
     },
     "鼠标施法(正计时)": {
-      "step": 57,
-      "type": "int",
+      "step": 66,
+      "type": "deciseconds",
       "category": "鼠标"
     },
     "鼠标施法可打断": {
-      "step": 58,
+      "step": 67,
       "type": "int",
       "category": "鼠标"
     },
     "鼠标引导": {
-      "step": 59,
-      "type": "int",
+      "step": 68,
+      "type": "deciseconds",
       "category": "鼠标"
     },
     "鼠标引导可打断": {
-      "step": 60,
+      "step": 69,
       "type": "int",
       "category": "鼠标"
     },
-    "时间轴1技能ID": {
+    "鼠标单位": {
+      "step": 70,
+      "type": "int",
+      "category": "鼠标"
+    },
+    "鼠标可攻击": {
+      "step": 71,
+      "type": "bool",
+      "category": "鼠标"
+    },
+    "鼠标可协助": {
+      "step": 72,
+      "type": "bool",
+      "category": "鼠标"
+    },
+    "鼠标存活": {
+      "step": 73,
+      "type": "bool",
+      "category": "鼠标"
+    },
+    "首领1可攻击": {
+      "step": 74,
+      "type": "bool",
+      "category": "首领1"
+    },
+    "首领1可协助": {
+      "step": 75,
+      "type": "bool",
+      "category": "首领1"
+    },
+    "首领1存活": {
+      "step": 76,
+      "type": "bool",
+      "category": "首领1"
+    },
+    "首领2可攻击": {
+      "step": 77,
+      "type": "bool",
+      "category": "首领2"
+    },
+    "首领2可协助": {
+      "step": 78,
+      "type": "bool",
+      "category": "首领2"
+    },
+    "首领2存活": {
+      "step": 79,
+      "type": "bool",
+      "category": "首领2"
+    },
+    "首领3可攻击": {
       "step": 80,
+      "type": "bool",
+      "category": "首领3"
+    },
+    "首领3可协助": {
+      "step": 81,
+      "type": "bool",
+      "category": "首领3"
+    },
+    "首领3存活": {
+      "step": 82,
+      "type": "bool",
+      "category": "首领3"
+    },
+    "首领4可攻击": {
+      "step": 83,
+      "type": "bool",
+      "category": "首领4"
+    },
+    "首领4可协助": {
+      "step": 84,
+      "type": "bool",
+      "category": "首领4"
+    },
+    "首领4存活": {
+      "step": 85,
+      "type": "bool",
+      "category": "首领4"
+    },
+    "首领5可攻击": {
+      "step": 86,
+      "type": "bool",
+      "category": "首领5"
+    },
+    "首领5可协助": {
+      "step": 87,
+      "type": "bool",
+      "category": "首领5"
+    },
+    "首领5存活": {
+      "step": 88,
+      "type": "bool",
+      "category": "首领5"
+    },
+    "时间轴1技能ID": {
+      "step": 108,
       "type": "int",
       "category": "时间轴",
       "pixelFormat": "rgb24",
-      "payloadStep": 81
+      "payloadStep": 109
     },
     "时间轴1剩余时间": {
-      "step": 82,
+      "step": 110,
       "type": "deciseconds",
       "category": "时间轴"
     },
     "时间轴2技能ID": {
-      "step": 83,
+      "step": 111,
       "type": "int",
       "category": "时间轴",
       "pixelFormat": "rgb24",
-      "payloadStep": 84
+      "payloadStep": 112
     },
     "时间轴2剩余时间": {
-      "step": 85,
+      "step": 113,
       "type": "deciseconds",
       "category": "时间轴"
     },
     "时间轴3技能ID": {
-      "step": 86,
+      "step": 114,
       "type": "int",
       "category": "时间轴",
       "pixelFormat": "rgb24",
-      "payloadStep": 87
+      "payloadStep": 115
     },
     "时间轴3剩余时间": {
-      "step": 88,
+      "step": 116,
       "type": "deciseconds",
       "category": "时间轴"
     },
     "时间轴4技能ID": {
-      "step": 89,
+      "step": 117,
       "type": "int",
       "category": "时间轴",
       "pixelFormat": "rgb24",
-      "payloadStep": 90
+      "payloadStep": 118
     },
     "时间轴4剩余时间": {
-      "step": 91,
+      "step": 119,
       "type": "deciseconds",
       "category": "时间轴"
     },
     "时间轴5技能ID": {
-      "step": 92,
+      "step": 120,
       "type": "int",
       "category": "时间轴",
       "pixelFormat": "rgb24",
-      "payloadStep": 93
+      "payloadStep": 121
     },
     "时间轴5剩余时间": {
-      "step": 94,
+      "step": 122,
       "type": "deciseconds",
       "category": "时间轴"
     },
     "spells": {
       "57994.cooldown": {
-        "step": 61,
+        "step": 89,
         "type": "int",
         "displayName": "风剪",
         "spellId": 57994,
@@ -1583,7 +1858,7 @@
         "displayType": "冷却"
       },
       "198103.cooldown": {
-        "step": 62,
+        "step": 90,
         "type": "int",
         "displayName": "土元素",
         "spellId": 198103,
@@ -1591,7 +1866,7 @@
         "displayType": "冷却"
       },
       "192058.cooldown": {
-        "step": 63,
+        "step": 91,
         "type": "int",
         "displayName": "电能图腾",
         "spellId": 192058,
@@ -1599,7 +1874,7 @@
         "displayType": "冷却"
       },
       "378081.cooldown": {
-        "step": 64,
+        "step": 92,
         "type": "int",
         "displayName": "自然迅捷",
         "spellId": 378081,
@@ -1607,7 +1882,7 @@
         "displayType": "冷却"
       },
       "108287.cooldown": {
-        "step": 65,
+        "step": 93,
         "type": "int",
         "displayName": "图腾投射",
         "spellId": 108287,
@@ -1615,7 +1890,7 @@
         "displayType": "冷却"
       },
       "51514.cooldown": {
-        "step": 66,
+        "step": 94,
         "type": "int",
         "displayName": "妖术",
         "spellId": 51514,
@@ -1623,7 +1898,7 @@
         "displayType": "冷却"
       },
       "378773.cooldown": {
-        "step": 67,
+        "step": 95,
         "type": "int",
         "displayName": "强化净化术",
         "spellId": 378773,
@@ -1631,7 +1906,7 @@
         "displayType": "冷却"
       },
       "8143.cooldown": {
-        "step": 68,
+        "step": 96,
         "type": "int",
         "displayName": "战栗图腾",
         "spellId": 8143,
@@ -1639,7 +1914,7 @@
         "displayType": "冷却"
       },
       "383013.cooldown": {
-        "step": 69,
+        "step": 97,
         "type": "int",
         "displayName": "清毒图腾",
         "spellId": 383013,
@@ -1647,7 +1922,7 @@
         "displayType": "冷却"
       },
       "192063.cooldown": {
-        "step": 70,
+        "step": 98,
         "type": "int",
         "displayName": "阵风",
         "spellId": 192063,
@@ -1655,7 +1930,7 @@
         "displayType": "冷却"
       },
       "58875.cooldown": {
-        "step": 71,
+        "step": 99,
         "type": "int",
         "displayName": "幽魂步",
         "spellId": 58875,
@@ -1663,7 +1938,7 @@
         "displayType": "冷却"
       },
       "187874.cooldown": {
-        "step": 72,
+        "step": 100,
         "type": "int",
         "displayName": "毁灭闪电",
         "spellId": 187874,
@@ -1671,7 +1946,7 @@
         "displayType": "冷却"
       },
       "60103.cooldown": {
-        "step": 73,
+        "step": 101,
         "type": "int",
         "displayName": "熔岩猛击",
         "spellId": 60103,
@@ -1679,7 +1954,7 @@
         "displayType": "冷却"
       },
       "17364.cooldown": {
-        "step": 74,
+        "step": 102,
         "type": "int",
         "displayName": "风暴打击",
         "spellId": 17364,
@@ -1687,7 +1962,7 @@
         "displayType": "冷却"
       },
       "470057.cooldown": {
-        "step": 75,
+        "step": 103,
         "type": "int",
         "displayName": "流电炽焰",
         "spellId": 470057,
@@ -1695,7 +1970,7 @@
         "displayType": "冷却"
       },
       "196884.cooldown": {
-        "step": 76,
+        "step": 104,
         "type": "int",
         "displayName": "狂野扑击",
         "spellId": 196884,
@@ -1703,7 +1978,7 @@
         "displayType": "冷却"
       },
       "108271.cooldown": {
-        "step": 77,
+        "step": 105,
         "type": "int",
         "displayName": "星界转移",
         "spellId": 108271,
@@ -1711,7 +1986,7 @@
         "displayType": "冷却"
       },
       "8004.cooldown": {
-        "step": 78,
+        "step": 106,
         "type": "int",
         "displayName": "溢流漩涡",
         "spellId": 8004,
@@ -1719,7 +1994,7 @@
         "displayType": "冷却"
       },
       "8004.count": {
-        "step": 79,
+        "step": 107,
         "type": "int",
         "displayName": "溢流漩涡层数",
         "spellId": 8004,
@@ -1771,22 +2046,22 @@
     },
     "施法(正计时)": {
       "step": 12,
-      "type": "int",
+      "type": "deciseconds",
       "category": "状态"
     },
     "施法(倒计时)": {
       "step": 13,
-      "type": "int",
+      "type": "deciseconds",
       "category": "状态"
     },
     "引导": {
       "step": 14,
-      "type": "int",
+      "type": "deciseconds",
       "category": "状态"
     },
     "蓄力": {
       "step": 15,
-      "type": "int",
+      "type": "deciseconds",
       "category": "状态"
     },
     "蓄力层数": {
@@ -1816,7 +2091,7 @@
     },
     "公共冷却": {
       "step": 21,
-      "type": "int",
+      "type": "centiseconds",
       "category": "状态"
     },
     "风暴涌流图腾": {
@@ -1874,271 +2149,408 @@
     "首领战": {
       "step": 33,
       "type": "int",
-      "category": "区域"
+      "category": "区域",
+      "pixelFormat": "rgb24",
+      "payloadStep": 34
     },
     "首领战难度": {
-      "step": 34,
-      "type": "int",
-      "category": "区域"
-    },
-    "大秘境层数": {
       "step": 35,
       "type": "int",
       "category": "区域"
     },
-    "大秘境时间(分)": {
+    "大秘境层数": {
       "step": 36,
       "type": "int",
       "category": "区域"
     },
-    "大秘境时间(秒)": {
+    "大秘境时间(分)": {
       "step": 37,
       "type": "int",
       "category": "区域"
     },
-    "延迟": {
+    "大秘境时间(秒)": {
       "step": 38,
+      "type": "int",
+      "category": "区域"
+    },
+    "延迟": {
+      "step": 39,
       "type": "int",
       "category": "配置开关"
     },
     "目标施法技能": {
-      "step": 39,
+      "step": 40,
       "type": "int",
       "category": "目标",
       "pixelFormat": "rgb24",
-      "payloadStep": 40
+      "payloadStep": 41
     },
     "目标类型": {
-      "step": 41,
-      "type": "int",
-      "category": "目标"
-    },
-    "目标施法(倒计时)": {
       "step": 42,
       "type": "int",
       "category": "目标"
     },
-    "目标施法(正计时)": {
+    "目标施法(倒计时)": {
       "step": 43,
-      "type": "int",
+      "type": "deciseconds",
+      "category": "目标"
+    },
+    "目标施法(正计时)": {
+      "step": 44,
+      "type": "deciseconds",
       "category": "目标"
     },
     "目标施法可打断": {
-      "step": 44,
-      "type": "int",
-      "category": "目标"
-    },
-    "目标引导": {
       "step": 45,
       "type": "int",
       "category": "目标"
     },
-    "目标引导可打断": {
+    "目标引导": {
       "step": 46,
-      "type": "int",
+      "type": "deciseconds",
       "category": "目标"
     },
-    "目标驱散类型": {
+    "目标引导可打断": {
       "step": 47,
       "type": "int",
       "category": "目标"
     },
-    "目标距离": {
+    "目标驱散类型": {
       "step": 48,
       "type": "int",
       "category": "目标"
     },
-    "焦点施法技能": {
+    "目标距离": {
       "step": 49,
+      "type": "int",
+      "category": "目标"
+    },
+    "目标单位": {
+      "step": 50,
+      "type": "int",
+      "category": "目标"
+    },
+    "目标可攻击": {
+      "step": 51,
+      "type": "bool",
+      "category": "目标"
+    },
+    "目标可协助": {
+      "step": 52,
+      "type": "bool",
+      "category": "目标"
+    },
+    "目标存活": {
+      "step": 53,
+      "type": "bool",
+      "category": "目标"
+    },
+    "焦点施法技能": {
+      "step": 54,
       "type": "int",
       "category": "焦点",
       "pixelFormat": "rgb24",
-      "payloadStep": 50
+      "payloadStep": 55
     },
     "焦点施法(倒计时)": {
-      "step": 51,
-      "type": "int",
+      "step": 56,
+      "type": "deciseconds",
       "category": "焦点"
     },
     "焦点施法(正计时)": {
-      "step": 52,
-      "type": "int",
+      "step": 57,
+      "type": "deciseconds",
       "category": "焦点"
     },
     "焦点施法可打断": {
-      "step": 53,
+      "step": 58,
       "type": "int",
       "category": "焦点"
     },
     "焦点引导": {
-      "step": 54,
-      "type": "int",
+      "step": 59,
+      "type": "deciseconds",
       "category": "焦点"
     },
     "焦点引导可打断": {
-      "step": 55,
+      "step": 60,
       "type": "int",
       "category": "焦点"
     },
+    "焦点单位": {
+      "step": 61,
+      "type": "int",
+      "category": "焦点"
+    },
+    "焦点可攻击": {
+      "step": 62,
+      "type": "bool",
+      "category": "焦点"
+    },
+    "焦点可协助": {
+      "step": 63,
+      "type": "bool",
+      "category": "焦点"
+    },
+    "焦点存活": {
+      "step": 64,
+      "type": "bool",
+      "category": "焦点"
+    },
     "鼠标类型": {
-      "step": 56,
+      "step": 65,
       "type": "int",
       "category": "鼠标"
     },
     "鼠标驱散类型": {
-      "step": 57,
+      "step": 66,
       "type": "int",
       "category": "鼠标"
     },
     "鼠标生命值": {
-      "step": 58,
+      "step": 67,
       "type": "int",
       "category": "鼠标"
     },
     "鼠标距离": {
-      "step": 59,
+      "step": 68,
       "type": "int",
       "category": "鼠标"
     },
     "鼠标施法(倒计时)": {
-      "step": 60,
-      "type": "int",
+      "step": 69,
+      "type": "deciseconds",
       "category": "鼠标"
     },
     "鼠标施法(正计时)": {
-      "step": 61,
-      "type": "int",
+      "step": 70,
+      "type": "deciseconds",
       "category": "鼠标"
     },
     "鼠标施法可打断": {
-      "step": 62,
+      "step": 71,
       "type": "int",
       "category": "鼠标"
     },
     "鼠标引导": {
-      "step": 63,
-      "type": "int",
+      "step": 72,
+      "type": "deciseconds",
       "category": "鼠标"
     },
     "鼠标引导可打断": {
-      "step": 64,
+      "step": 73,
       "type": "int",
       "category": "鼠标"
     },
-    "首领1施法(正计时)": {
-      "step": 65,
+    "鼠标单位": {
+      "step": 74,
       "type": "int",
+      "category": "鼠标"
+    },
+    "鼠标可攻击": {
+      "step": 75,
+      "type": "bool",
+      "category": "鼠标"
+    },
+    "鼠标可协助": {
+      "step": 76,
+      "type": "bool",
+      "category": "鼠标"
+    },
+    "鼠标存活": {
+      "step": 77,
+      "type": "bool",
+      "category": "鼠标"
+    },
+    "首领1施法(正计时)": {
+      "step": 78,
+      "type": "deciseconds",
+      "category": "首领1"
+    },
+    "首领1可攻击": {
+      "step": 79,
+      "type": "bool",
+      "category": "首领1"
+    },
+    "首领1可协助": {
+      "step": 80,
+      "type": "bool",
+      "category": "首领1"
+    },
+    "首领1存活": {
+      "step": 81,
+      "type": "bool",
       "category": "首领1"
     },
     "首领2施法(正计时)": {
-      "step": 66,
-      "type": "int",
+      "step": 82,
+      "type": "deciseconds",
       "category": "首领2"
     },
+    "首领2可攻击": {
+      "step": 83,
+      "type": "bool",
+      "category": "首领2"
+    },
+    "首领2可协助": {
+      "step": 84,
+      "type": "bool",
+      "category": "首领2"
+    },
+    "首领2存活": {
+      "step": 85,
+      "type": "bool",
+      "category": "首领2"
+    },
+    "首领3可攻击": {
+      "step": 86,
+      "type": "bool",
+      "category": "首领3"
+    },
+    "首领3可协助": {
+      "step": 87,
+      "type": "bool",
+      "category": "首领3"
+    },
+    "首领3存活": {
+      "step": 88,
+      "type": "bool",
+      "category": "首领3"
+    },
+    "首领4可攻击": {
+      "step": 89,
+      "type": "bool",
+      "category": "首领4"
+    },
+    "首领4可协助": {
+      "step": 90,
+      "type": "bool",
+      "category": "首领4"
+    },
+    "首领4存活": {
+      "step": 91,
+      "type": "bool",
+      "category": "首领4"
+    },
+    "首领5可攻击": {
+      "step": 92,
+      "type": "bool",
+      "category": "首领5"
+    },
+    "首领5可协助": {
+      "step": 93,
+      "type": "bool",
+      "category": "首领5"
+    },
+    "首领5存活": {
+      "step": 94,
+      "type": "bool",
+      "category": "首领5"
+    },
     "时间轴1技能ID": {
-      "step": 117,
+      "step": 145,
       "type": "int",
       "category": "时间轴",
       "pixelFormat": "rgb24",
-      "payloadStep": 118
+      "payloadStep": 146
     },
     "时间轴1剩余时间": {
-      "step": 119,
+      "step": 147,
       "type": "deciseconds",
       "category": "时间轴"
     },
     "时间轴2技能ID": {
-      "step": 120,
+      "step": 148,
       "type": "int",
       "category": "时间轴",
       "pixelFormat": "rgb24",
-      "payloadStep": 121
+      "payloadStep": 149
     },
     "时间轴2剩余时间": {
-      "step": 122,
+      "step": 150,
       "type": "deciseconds",
       "category": "时间轴"
     },
     "时间轴3技能ID": {
-      "step": 123,
+      "step": 151,
       "type": "int",
       "category": "时间轴",
       "pixelFormat": "rgb24",
-      "payloadStep": 124
+      "payloadStep": 152
     },
     "时间轴3剩余时间": {
-      "step": 125,
+      "step": 153,
       "type": "deciseconds",
       "category": "时间轴"
     },
     "时间轴4技能ID": {
-      "step": 126,
+      "step": 154,
       "type": "int",
       "category": "时间轴",
       "pixelFormat": "rgb24",
-      "payloadStep": 127
+      "payloadStep": 155
     },
     "时间轴4剩余时间": {
-      "step": 128,
+      "step": 156,
       "type": "deciseconds",
       "category": "时间轴"
     },
     "时间轴5技能ID": {
-      "step": 129,
+      "step": 157,
       "type": "int",
       "category": "时间轴",
       "pixelFormat": "rgb24",
-      "payloadStep": 130
+      "payloadStep": 158
     },
     "时间轴5剩余时间": {
-      "step": 131,
+      "step": 159,
       "type": "deciseconds",
       "category": "时间轴"
     },
     "治疗石": {
-      "step": 132,
+      "step": 160,
       "type": "int",
       "category": "物品",
       "itemId": 5512,
       "isEquipped": false
     },
     "银月城生命药水": {
-      "step": 133,
+      "step": 161,
       "type": "int",
       "category": "物品",
       "itemId": 241304,
       "isEquipped": false
     },
     "货运者水壶": {
-      "step": 134,
+      "step": 162,
       "type": "int",
       "category": "物品",
       "itemId": 250215,
       "isEquipped": true
     },
     "动荡的邪心水晶": {
-      "step": 135,
+      "step": 163,
       "type": "int",
       "category": "物品",
       "itemId": 250255,
       "isEquipped": true
     },
     "盘魂者仪式容器": {
-      "step": 136,
+      "step": 164,
       "type": "int",
       "category": "物品",
       "itemId": 270162,
       "isEquipped": true
     },
     "妖术领主的厄运神像": {
-      "step": 137,
+      "step": 165,
       "type": "int",
       "category": "物品",
       "itemId": 270169,
       "isEquipped": true
     },
     "浓缩银月城治疗药水": {
-      "step": 138,
+      "step": 166,
       "type": "int",
       "category": "物品",
       "itemId": 271884,
@@ -2146,7 +2558,7 @@
     },
     "auras": {
       "player.383648.value": {
-        "step": 67,
+        "step": 95,
         "type": "int",
         "category": "玩家",
         "displayName": "大地之盾",
@@ -2158,7 +2570,7 @@
         ]
       },
       "player.52127.value": {
-        "step": 68,
+        "step": 96,
         "type": "int",
         "category": "玩家",
         "displayName": "水之护盾",
@@ -2170,7 +2582,7 @@
         ]
       },
       "player.1307888.value": {
-        "step": 69,
+        "step": 97,
         "type": "int",
         "category": "玩家",
         "displayName": "治疗之雨",
@@ -2182,7 +2594,7 @@
         ]
       },
       "player.453406.value": {
-        "step": 70,
+        "step": 98,
         "type": "int",
         "category": "玩家",
         "displayName": "飞旋之土",
@@ -2194,7 +2606,7 @@
         ]
       },
       "player.453407.value": {
-        "step": 71,
+        "step": 99,
         "type": "int",
         "category": "玩家",
         "displayName": "飞旋之水",
@@ -2206,7 +2618,7 @@
         ]
       },
       "player.453409.value": {
-        "step": 72,
+        "step": 100,
         "type": "int",
         "category": "玩家",
         "displayName": "飞旋之风",
@@ -2218,7 +2630,7 @@
         ]
       },
       "player.53390.value": {
-        "step": 73,
+        "step": 101,
         "type": "int",
         "category": "玩家",
         "displayName": "潮汐奔涌",
@@ -2230,7 +2642,7 @@
         ]
       },
       "player.53390.apps": {
-        "step": 74,
+        "step": 102,
         "type": "int",
         "category": "玩家",
         "displayName": "潮汐奔涌层数",
@@ -2242,7 +2654,7 @@
         ]
       },
       "player.61295.value": {
-        "step": 75,
+        "step": 103,
         "type": "int",
         "category": "玩家",
         "displayName": "激流",
@@ -2254,7 +2666,7 @@
         ]
       },
       "player.470077.value": {
-        "step": 76,
+        "step": 104,
         "type": "int",
         "category": "玩家",
         "displayName": "聚合水流",
@@ -2266,7 +2678,7 @@
         ]
       },
       "player.114052.value": {
-        "step": 77,
+        "step": 105,
         "type": "int",
         "category": "玩家",
         "displayName": "升腾",
@@ -2278,7 +2690,7 @@
         ]
       },
       "player.73685.value": {
-        "step": 78,
+        "step": 106,
         "type": "int",
         "category": "玩家",
         "displayName": "生命释放",
@@ -2290,7 +2702,7 @@
         ]
       },
       "player.1267089.value": {
-        "step": 79,
+        "step": 107,
         "type": "int",
         "category": "玩家",
         "displayName": "风暴涌流图腾",
@@ -2302,7 +2714,7 @@
         ]
       },
       "player.1267089.apps": {
-        "step": 80,
+        "step": 108,
         "type": "int",
         "category": "玩家",
         "displayName": "风暴涌流图腾层数",
@@ -2314,7 +2726,7 @@
         ]
       },
       "player.462603.value": {
-        "step": 81,
+        "step": 109,
         "type": "int",
         "category": "玩家",
         "displayName": "倾盆大雨",
@@ -2326,7 +2738,7 @@
         ]
       },
       "player.378081.value": {
-        "step": 82,
+        "step": 110,
         "type": "int",
         "category": "玩家",
         "displayName": "自然迅捷",
@@ -2338,7 +2750,7 @@
         ]
       },
       "player.1307470.value": {
-        "step": 83,
+        "step": 111,
         "type": "int",
         "category": "玩家",
         "displayName": "妖术领主的厄运",
@@ -2350,7 +2762,7 @@
         ]
       },
       "player.1307470.apps": {
-        "step": 84,
+        "step": 112,
         "type": "int",
         "category": "玩家",
         "displayName": "妖术领主的厄运层数",
@@ -2362,7 +2774,7 @@
         ]
       },
       "target.helpful.61295.value": {
-        "step": 85,
+        "step": 113,
         "type": "int",
         "category": "目标增益",
         "displayName": "激流",
@@ -2376,7 +2788,7 @@
     },
     "spells": {
       "57994.cooldown": {
-        "step": 86,
+        "step": 114,
         "type": "int",
         "displayName": "风剪",
         "spellId": 57994,
@@ -2384,7 +2796,7 @@
         "displayType": "冷却"
       },
       "198103.cooldown": {
-        "step": 87,
+        "step": 115,
         "type": "int",
         "displayName": "土元素",
         "spellId": 198103,
@@ -2392,7 +2804,7 @@
         "displayType": "冷却"
       },
       "192058.cooldown": {
-        "step": 88,
+        "step": 116,
         "type": "int",
         "displayName": "电能图腾",
         "spellId": 192058,
@@ -2400,7 +2812,7 @@
         "displayType": "冷却"
       },
       "378081.cooldown": {
-        "step": 89,
+        "step": 117,
         "type": "int",
         "displayName": "自然迅捷",
         "spellId": 378081,
@@ -2408,7 +2820,7 @@
         "displayType": "冷却"
       },
       "108287.cooldown": {
-        "step": 90,
+        "step": 118,
         "type": "int",
         "displayName": "图腾投射",
         "spellId": 108287,
@@ -2416,7 +2828,7 @@
         "displayType": "冷却"
       },
       "51514.cooldown": {
-        "step": 91,
+        "step": 119,
         "type": "int",
         "displayName": "妖术",
         "spellId": 51514,
@@ -2424,7 +2836,7 @@
         "displayType": "冷却"
       },
       "378773.cooldown": {
-        "step": 92,
+        "step": 120,
         "type": "int",
         "displayName": "强化净化术",
         "spellId": 378773,
@@ -2432,7 +2844,7 @@
         "displayType": "冷却"
       },
       "8143.cooldown": {
-        "step": 93,
+        "step": 121,
         "type": "int",
         "displayName": "战栗图腾",
         "spellId": 8143,
@@ -2440,7 +2852,7 @@
         "displayType": "冷却"
       },
       "383013.cooldown": {
-        "step": 94,
+        "step": 122,
         "type": "int",
         "displayName": "清毒图腾",
         "spellId": 383013,
@@ -2448,7 +2860,7 @@
         "displayType": "冷却"
       },
       "192063.cooldown": {
-        "step": 95,
+        "step": 123,
         "type": "int",
         "displayName": "阵风",
         "spellId": 192063,
@@ -2456,7 +2868,7 @@
         "displayType": "冷却"
       },
       "58875.cooldown": {
-        "step": 96,
+        "step": 124,
         "type": "int",
         "displayName": "幽魂步",
         "spellId": 58875,
@@ -2464,7 +2876,7 @@
         "displayType": "冷却"
       },
       "51505.cooldown": {
-        "step": 97,
+        "step": 125,
         "type": "int",
         "displayName": "熔岩爆裂",
         "spellId": 51505,
@@ -2472,7 +2884,7 @@
         "displayType": "冷却"
       },
       "51505.chargeCooldown": {
-        "step": 98,
+        "step": 126,
         "type": "int",
         "displayName": "熔岩爆裂充能",
         "spellId": 51505,
@@ -2480,7 +2892,7 @@
         "displayType": "充能"
       },
       "51505.count": {
-        "step": 99,
+        "step": 127,
         "type": "int",
         "displayName": "熔岩爆裂层数",
         "spellId": 51505,
@@ -2488,7 +2900,7 @@
         "displayType": "充能层数"
       },
       "61295.cooldown": {
-        "step": 100,
+        "step": 128,
         "type": "int",
         "displayName": "激流",
         "spellId": 61295,
@@ -2496,7 +2908,7 @@
         "displayType": "冷却"
       },
       "61295.chargeCooldown": {
-        "step": 101,
+        "step": 129,
         "type": "int",
         "displayName": "激流充能",
         "spellId": 61295,
@@ -2504,7 +2916,7 @@
         "displayType": "充能"
       },
       "61295.count": {
-        "step": 102,
+        "step": 130,
         "type": "int",
         "displayName": "激流层数",
         "spellId": 61295,
@@ -2512,7 +2924,7 @@
         "displayType": "充能层数"
       },
       "5394.cooldown": {
-        "step": 103,
+        "step": 131,
         "type": "int",
         "displayName": "治疗之泉图腾",
         "spellId": 5394,
@@ -2520,7 +2932,7 @@
         "displayType": "冷却"
       },
       "5394.chargeCooldown": {
-        "step": 104,
+        "step": 132,
         "type": "int",
         "displayName": "治疗之泉图腾充能",
         "spellId": 5394,
@@ -2528,7 +2940,7 @@
         "displayType": "充能"
       },
       "5394.count": {
-        "step": 105,
+        "step": 133,
         "type": "int",
         "displayName": "治疗之泉图腾层数",
         "spellId": 5394,
@@ -2536,7 +2948,7 @@
         "displayType": "充能层数"
       },
       "470411.cooldown": {
-        "step": 106,
+        "step": 134,
         "type": "int",
         "displayName": "烈焰震击",
         "spellId": 470411,
@@ -2544,7 +2956,7 @@
         "displayType": "冷却"
       },
       "77130.cooldown": {
-        "step": 107,
+        "step": 135,
         "type": "int",
         "displayName": "净化灵魂",
         "spellId": 77130,
@@ -2552,7 +2964,7 @@
         "displayType": "冷却"
       },
       "73685.cooldown": {
-        "step": 108,
+        "step": 136,
         "type": "int",
         "displayName": "生命释放",
         "spellId": 73685,
@@ -2560,7 +2972,7 @@
         "displayType": "冷却"
       },
       "443454.cooldown": {
-        "step": 109,
+        "step": 137,
         "type": "int",
         "displayName": "先祖迅捷",
         "spellId": 443454,
@@ -2568,7 +2980,7 @@
         "displayType": "冷却"
       },
       "444995.cooldown": {
-        "step": 110,
+        "step": 138,
         "type": "int",
         "displayName": "涌动图腾",
         "spellId": 444995,
@@ -2576,7 +2988,7 @@
         "displayType": "冷却"
       },
       "98008.cooldown": {
-        "step": 111,
+        "step": 139,
         "type": "int",
         "displayName": "灵魂链接图腾",
         "spellId": 98008,
@@ -2584,7 +2996,7 @@
         "displayType": "冷却"
       },
       "114052.cooldown": {
-        "step": 112,
+        "step": 140,
         "type": "int",
         "displayName": "升腾",
         "spellId": 114052,
@@ -2592,7 +3004,7 @@
         "displayType": "冷却"
       },
       "108280.cooldown": {
-        "step": 113,
+        "step": 141,
         "type": "int",
         "displayName": "治疗之潮图腾",
         "spellId": 108280,
@@ -2600,7 +3012,7 @@
         "displayType": "冷却"
       },
       "73920.cooldown": {
-        "step": 114,
+        "step": 142,
         "type": "int",
         "displayName": "治疗之雨",
         "spellId": 73920,
@@ -2608,7 +3020,7 @@
         "displayType": "冷却"
       },
       "370.cooldown": {
-        "step": 115,
+        "step": 143,
         "type": "int",
         "displayName": "净化术",
         "spellId": 370,
@@ -2616,7 +3028,7 @@
         "displayType": "冷却"
       },
       "192077.cooldown": {
-        "step": 116,
+        "step": 144,
         "type": "int",
         "displayName": "狂风图腾",
         "spellId": 192077,
@@ -2625,7 +3037,7 @@
       }
     },
     "group": {
-      "start": 139,
+      "start": 167,
       "生命值": {
         "step": 1,
         "type": "int"

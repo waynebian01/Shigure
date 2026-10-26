@@ -145,10 +145,10 @@ public static class ConditionExpression
 }
 
 /// <summary>
-/// 条件可视化编辑弹窗: 每行一个比较项(连接/类型/字段/判断/值/删除),
-/// 字段下拉按类型过滤, 值控件按字段类型自适应。
+/// 条件可视化编辑弹窗: 每行一个比较项(连接/字段/判断/字段/删除),
+/// 字段通过类别、分类、字段级联选择，支持两侧字段比较和数值常数。
 /// </summary>
-public sealed class ConditionEditorForm : Form
+public sealed partial class ConditionEditorForm : Form
 {
     private VersionedSpellIconCatalog Catalog => SpellIconCatalog.ForVersion(_dataVersion);
     private readonly string _dataVersion;
@@ -629,10 +629,14 @@ public sealed class ConditionEditorForm : Form
         _conditionsGrid.Columns.Add(CreateComboColumn(ConnectorColumn, "连接", 82, 64));
         _conditionsGrid.Columns.Add(CreateComboColumn(TypeColumn, "类型", 118, 90));
         _conditionsGrid.Columns.Add(CreateComboColumn(ClassificationColumn, "分类", 130, 100));
+        // 保留分类元数据供旧条件往返读取，界面统一通过字段级联菜单选择。
+        _conditionsGrid.Columns[TypeColumn]!.Visible = false;
+        _conditionsGrid.Columns[ClassificationColumn]!.Visible = false;
 
         var fieldColumn = CreateComboColumn(FieldColumn, "字段", 260, 260);
         // 窗口宽度变化时由字段列占用剩余空间，便于显示完整字段名称。
         fieldColumn.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+        fieldColumn.FillWeight = 50;
         // 字段列始终保存唯一字段名，显示名称只负责界面文本。
         // 避免 DataGridView 在对象值与格式化字符串之间切换，导致预览丢行或跨行串值。
         fieldColumn.DisplayMember = nameof(FieldItem.Display);
@@ -644,10 +648,11 @@ public sealed class ConditionEditorForm : Form
         _conditionsGrid.Columns.Add(new DataGridViewTextBoxColumn
         {
             Name = ValueColumn,
-            HeaderText = "值",
-            Width = 140,
-            MinimumWidth = 100,
-            AutoSizeMode = DataGridViewAutoSizeColumnMode.None,
+            HeaderText = "字段",
+            Width = 260,
+            MinimumWidth = 180,
+            FillWeight = 50,
+            AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill,
             SortMode = DataGridViewColumnSortMode.NotSortable
         });
         _conditionsGrid.Columns.Add(new DataGridViewButtonColumn
@@ -706,7 +711,7 @@ public sealed class ConditionEditorForm : Form
             }
         };
         _conditionsGrid.DataError += (_, e) => e.ThrowException = false;
-        UiTheme.CacheDataGridViewColumnWidths(_conditionsGrid, "condition-editor");
+        UiTheme.CacheDataGridViewColumnWidths(_conditionsGrid, "condition-editor-operands");
     }
 
     private void OnConditionsGridCellFormatting(object? sender, DataGridViewCellFormattingEventArgs e)
@@ -718,6 +723,16 @@ public sealed class ConditionEditorForm : Form
 
         var cell = _conditionsGrid.Rows[e.RowIndex].Cells[e.ColumnIndex];
         cell.ToolTipText = string.Empty;
+        if (cell is FieldReferenceValueCell && ConditionOperand.TryReference(cell.Value?.ToString(), out var referenceName))
+        {
+            var definition = FindField(referenceName);
+            e.Value = definition?.DisplayName ?? referenceName + "（字段不存在）";
+            e.FormattingApplied = true;
+            cell.ToolTipText = definition?.DisplayName ?? $"字段不存在：{referenceName}";
+            if (definition is null) e.CellStyle.ForeColor = UiTheme.Danger;
+            return;
+        }
+        if (cell is ConstantOperandCell) cell.ToolTipText = "常数：可输入整数或小数，点击右侧箭头重新选择字段。";
         var missingSpell = GetMissingSpellMessage(_conditionsGrid.Rows[e.RowIndex]);
         var missingItem = GetMissingItemMessage(_conditionsGrid.Rows[e.RowIndex]);
         var missingMessage = missingSpell ?? missingItem;
@@ -776,7 +791,7 @@ public sealed class ConditionEditorForm : Form
                 CultureInfo.InvariantCulture,
                 out var value))
         {
-            cell.ToolTipText = $"约{(value / 10m).ToString("0.#", CultureInfo.InvariantCulture)}秒";
+            cell.ToolTipText = $"{value.ToString("0.##", CultureInfo.InvariantCulture)}秒";
         }
     }
 
@@ -785,7 +800,8 @@ public sealed class ConditionEditorForm : Form
         var name = field?.Name;
         return name?.EndsWith("施法(正计时)", StringComparison.Ordinal) == true
             || name?.EndsWith("施法(倒计时)", StringComparison.Ordinal) == true
-            || name?.EndsWith("引导", StringComparison.Ordinal) == true;
+            || name?.EndsWith("引导", StringComparison.Ordinal) == true
+            || name is "蓄力" or "公共冷却";
     }
 
     private static DataGridViewComboBoxColumn CreateComboColumn(
@@ -813,26 +829,14 @@ public sealed class ConditionEditorForm : Form
         }
 
         var cell = _conditionsGrid.Rows[e.RowIndex].Cells[e.ColumnIndex];
-        if (cell is BossValueCell or InstanceValueCell or ReferenceValueCell)
+        var columnName = _conditionsGrid.Columns[e.ColumnIndex].Name;
+        if (columnName is FieldColumn or ValueColumn)
         {
-            var buttonBounds = UiTheme.GetDropDownButtonBounds(
-                _conditionsGrid,
+            var button = UiTheme.GetDropDownButtonBounds(_conditionsGrid,
                 new Rectangle(0, 0, cell.Size.Width, cell.Size.Height));
-            if (buttonBounds.Contains(e.X, e.Y))
-            {
-                if (cell is BossValueCell)
-                {
-                    ShowBossNumberDropDown(e.RowIndex, e.ColumnIndex);
-                }
-                else if (cell is InstanceValueCell)
-                {
-                    ShowInstanceNumberDropDown(e.RowIndex, e.ColumnIndex);
-                }
-                else
-                {
-                    ShowValueReferenceDropDown(e.RowIndex, e.ColumnIndex);
-                }
-            }
+            if (columnName == FieldColumn && cell is not ConstantOperandCell
+                || cell is DataGridViewComboBoxCell or FieldReferenceValueCell || button.Contains(e.X, e.Y))
+                ShowOperandMenu(e.RowIndex, e.ColumnIndex);
             else if (!cell.ReadOnly)
             {
                 CloseConditionComboDropDown();
@@ -841,7 +845,6 @@ public sealed class ConditionEditorForm : Form
             }
             return;
         }
-
         if (cell is DataGridViewComboBoxCell combo
             && !combo.ReadOnly
             && combo.DisplayStyle != DataGridViewComboBoxDisplayStyle.Nothing)
@@ -860,31 +863,23 @@ public sealed class ConditionEditorForm : Form
 
     private void OnConditionsGridKeyDown(object? sender, KeyEventArgs e)
     {
-        if (_conditionsGrid.CurrentCell is InstanceValueCell instanceCell
-            && (e.KeyCode == Keys.F4 || e.KeyCode == Keys.Down && e.Alt))
+        if (_conditionsGrid.CurrentCell is { } operand
+            && operand.OwningColumn?.Name is FieldColumn or ValueColumn)
         {
-            e.Handled = true;
-            e.SuppressKeyPress = true;
-            ShowInstanceNumberDropDown(instanceCell.RowIndex, instanceCell.ColumnIndex);
-            return;
-        }
-
-        if (_conditionsGrid.CurrentCell is BossValueCell bossCell
-            && (e.KeyCode == Keys.F4 || e.KeyCode == Keys.Down && e.Alt))
-        {
-            e.Handled = true;
-            e.SuppressKeyPress = true;
-            ShowBossNumberDropDown(bossCell.RowIndex, bossCell.ColumnIndex);
-            return;
-        }
-
-        if (_conditionsGrid.CurrentCell is ReferenceValueCell referenceCell
-            && (e.KeyCode == Keys.F4 || e.KeyCode == Keys.Down && e.Alt))
-        {
-            e.Handled = true;
-            e.SuppressKeyPress = true;
-            ShowValueReferenceDropDown(referenceCell.RowIndex, referenceCell.ColumnIndex);
-            return;
+            if (e.KeyCode == Keys.F4 || e.KeyCode == Keys.Down && e.Alt
+                || (operand is DataGridViewComboBoxCell or FieldReferenceValueCell)
+                    && e.KeyCode is Keys.Enter or Keys.Space)
+            {
+                e.Handled = e.SuppressKeyPress = true;
+                ShowOperandMenu(operand.RowIndex, operand.ColumnIndex);
+                return;
+            }
+            if (!operand.ReadOnly && operand is not DataGridViewComboBoxCell && e.KeyCode is Keys.F2 or Keys.Enter)
+            {
+                e.Handled = e.SuppressKeyPress = true;
+                _conditionsGrid.BeginEdit(selectAll: true);
+                return;
+            }
         }
 
         if (_conditionsGrid.CurrentCell is not DataGridViewComboBoxCell cell
@@ -907,6 +902,13 @@ public sealed class ConditionEditorForm : Form
 
     private void ShowConditionComboDropDown(int rowIndex, int columnIndex)
     {
+        var columnName = _conditionsGrid.Columns[columnIndex].Name;
+        if (columnName is FieldColumn or ValueColumn or TypeColumn or ClassificationColumn)
+        {
+            ShowOperandMenu(rowIndex, columnName is TypeColumn or ClassificationColumn
+                ? _conditionsGrid.Columns[FieldColumn]!.Index : columnIndex);
+            return;
+        }
         CloseConditionComboDropDown();
         _conditionsGrid.EndEdit();
 
@@ -1039,52 +1041,6 @@ public sealed class ConditionEditorForm : Form
         _conditionComboDropDown = dropDown;
     }
 
-    private void ShowBossNumberDropDown(int rowIndex, int columnIndex)
-    {
-        CloseConditionComboDropDown();
-        _conditionsGrid.EndEdit();
-        if (rowIndex < 0 || rowIndex >= _conditionsGrid.Rows.Count
-            || _conditionsGrid.Rows[rowIndex].Cells[columnIndex] is not BossValueCell cell)
-        {
-            return;
-        }
-
-        _conditionsGrid.CurrentCell = cell;
-        var options = new List<UiDropDownOption>
-        {
-            new("0", "非首领战 / -", LeadingText: "0")
-        };
-        var instanceId = BossCatalog.ResolveInstance(_dataVersion, CollectTerms());
-        options.AddRange(StatusForm.GetBossNumberOptions(_dataVersion, instanceId).Select(boss => new UiDropDownOption(
-            boss.Number.ToString(CultureInfo.InvariantCulture),
-            $"{boss.Dungeon} / {boss.Name}",
-            LeadingText: boss.Number.ToString(CultureInfo.InvariantCulture))));
-
-        var currentValue = cell.Value?.ToString()?.Trim() ?? string.Empty;
-        var cellBounds = _conditionsGrid.GetCellDisplayRectangle(columnIndex, rowIndex, cutOverflow: true);
-        ToolStripDropDown? dropDown = null;
-        dropDown = UiDropDownPopup.Show(
-            _conditionsGrid,
-            cellBounds,
-            options,
-            currentValue,
-            selected =>
-            {
-                cell.Value = selected.Value?.ToString() ?? string.Empty;
-                _conditionsGrid.InvalidateCell(cell);
-                UpdatePreview();
-            },
-            preferredWidth: 390,
-            closed: () =>
-            {
-                if (ReferenceEquals(_conditionComboDropDown, dropDown))
-                {
-                    _conditionComboDropDown = null;
-                }
-            });
-        _conditionComboDropDown = dropDown;
-    }
-
     private Image? ResolveFieldIcon(FieldItem field)
     {
         if (field.ItemId is > 0)
@@ -1123,6 +1079,12 @@ public sealed class ConditionEditorForm : Form
 
 
         var cell = _conditionsGrid.Rows[e.RowIndex].Cells[e.ColumnIndex];
+        if (_conditionsGrid.Columns[e.ColumnIndex].Name is FieldColumn or ValueColumn
+            && cell is not DataGridViewComboBoxCell)
+        {
+            UiTheme.PaintDataGridViewComboBoxCell(_conditionsGrid, e, showButton: true);
+            return;
+        }
         if (cell is BossValueCell or InstanceValueCell or ReferenceValueCell)
         {
             UiTheme.PaintDataGridViewComboBoxCell(_conditionsGrid, e, showButton: true);
@@ -1301,6 +1263,7 @@ public sealed class ConditionEditorForm : Form
     private void TryConfirm()
     {
         _conditionsGrid.EndEdit();
+        if (!TryValidateConstants()) return;
         var text = CurrentConditionText();
         var incomplete = _advancedConditionText is null
             ? _conditionsGrid.Rows.Cast<DataGridViewRow>().Count(IsRowIncomplete)
@@ -1514,40 +1477,7 @@ public sealed class ConditionEditorForm : Form
             return;
         }
 
-        var options = category == ConditionFieldCategory.Timeline
-            ? EncounterTimelineStateLayout.Classifications.ToList()
-            : category == ConditionFieldCategory.State
-            ? ClassStateCatalog.TopCategories.ToList()
-            : category == ConditionFieldCategory.Spell
-                ? new List<string>
-                {
-                    CooldownConditionClassifications.Spell,
-                    CooldownConditionClassifications.Item
-                }
-                : _fields
-                    .Where(field => field.Category == category)
-                    .Select(field => NormalizeClassification(field.Classification))
-                    .Distinct(StringComparer.Ordinal)
-                    .ToList();
-        if (category is ConditionFieldCategory.State or ConditionFieldCategory.Spell)
-        {
-            // 固定分类之后仍保留配置中出现的扩展分类。
-            foreach (var classification in _fields
-                         .Where(field => field.Category == category)
-                         .Select(field => NormalizeClassification(field.Classification))
-                         .Distinct(StringComparer.Ordinal))
-            {
-                if (!options.Contains(classification, StringComparer.Ordinal))
-                {
-                    options.Add(classification);
-                }
-            }
-        }
-
-        if (options.Count == 0)
-        {
-            options.Add(Unclassified);
-        }
+        var options = ClassificationOptions(category);
 
         cell.Items.AddRange(options
             .Select(option => GetClassificationDisplayName(category, option))
@@ -1573,6 +1503,17 @@ public sealed class ConditionEditorForm : Form
         var classification = GetClassificationStorageName(
             category,
             row.Cells[ClassificationColumn].Value?.ToString());
+        if (ConditionOperand.TryNumber(currentField, out _))
+        {
+            row.Cells[FieldColumn] = new ConstantOperandCell { Value = currentField };
+            return;
+        }
+        if (row.Cells[FieldColumn] is not DataGridViewComboBoxCell)
+            row.Cells[FieldColumn] = new DataGridViewComboBoxCell
+            {
+                FlatStyle = FlatStyle.Flat, DisplayStyle = DataGridViewComboBoxDisplayStyle.DropDownButton,
+                DisplayMember = nameof(FieldItem.Display), ValueMember = nameof(FieldItem.Name), ValueType = typeof(string)
+            };
         var cell = (DataGridViewComboBoxCell)row.Cells[FieldColumn];
         cell.Items.Clear();
 
@@ -1643,6 +1584,7 @@ public sealed class ConditionEditorForm : Form
 
     private ConditionFieldCategory ResolveCategory(string? fieldName)
     {
+        if (ConditionOperand.TryNumber(fieldName, out _)) return ConditionFieldCategory.Custom;
         if (EncounterTimelineStateLayout.TryParseField(fieldName, out _, out _)) return ConditionFieldCategory.Timeline;
         if (string.IsNullOrWhiteSpace(fieldName))
         {
@@ -1728,6 +1670,13 @@ public sealed class ConditionEditorForm : Form
     private void ConfigureValueCell(DataGridViewRow row, string? rawValue, bool preserveRaw)
     {
         var field = SelectedField(row);
+        if (ConditionOperand.TryReference(rawValue, out _) && !IsRuleSettingField(field)
+            && !ConditionExpression.IsInOperator(row.Cells[OperatorColumn].Value?.ToString()))
+        {
+            row.Cells[ValueColumn] = new FieldReferenceValueCell { Value = rawValue };
+            row.Cells[ValueColumn].ReadOnly = true;
+            return;
+        }
         if (field?.Name == ShigureConditionFields.SoundRecognition)
         {
             // 音效直接显示文件名，留出下拉按钮和扩展名的空间。
@@ -1820,9 +1769,10 @@ public sealed class ConditionEditorForm : Form
             text = "0";
         }
 
-        row.Cells[ValueColumn] = SupportsValueReference(row, field)
-            ? new ReferenceValueCell { Value = text }
-            : new DataGridViewTextBoxCell { Value = text };
+        row.Cells[ValueColumn] = !ConditionExpression.IsInOperator(row.Cells[OperatorColumn].Value?.ToString())
+            && ConditionOperand.TryNumber(text, out _)
+                ? new ConstantOperandCell { Value = text }
+                : new ReferenceValueCell { Value = text };
         if (field?.Name == ShigureConditionFields.VolumeRecognition)
             row.Cells[ValueColumn].ToolTipText = "目标程序当前的音频峰值：0–100，支持小数；无声音时为 0。";
         if (ConditionExpression.IsInOperator(row.Cells[OperatorColumn].Value?.ToString())
@@ -1830,102 +1780,6 @@ public sealed class ConditionEditorForm : Form
         {
             row.Cells[ValueColumn].ToolTipText = "可输入数组名：" + string.Join("、", _numberArrayNames) + "；或输入逗号分隔的数字";
         }
-    }
-
-    // in/fut in 可以从下拉选择模块数组，也可手填原有字面量列表。
-    private bool SupportsValueReference(DataGridViewRow row, FieldItem? field)
-    {
-        if (ConditionExpression.IsInOperator(row.Cells[OperatorColumn].Value?.ToString()))
-            return _numberArrayNames.Count > 0;
-        return _valueReferenceFields.Count > 0
-            && field is not null
-            && (field.IsCustom || field.Type is ConditionFieldType.Int or ConditionFieldType.Number)
-            && !IsRuleSettingField(field)
-            && !ConditionExpression.IsInOperator(row.Cells[OperatorColumn].Value?.ToString());
-    }
-
-    private void ShowValueReferenceDropDown(int rowIndex, int columnIndex)
-    {
-        CloseConditionComboDropDown();
-        _conditionsGrid.EndEdit();
-        if (rowIndex < 0 || rowIndex >= _conditionsGrid.Rows.Count
-            || _conditionsGrid.Rows[rowIndex].Cells[columnIndex] is not ReferenceValueCell cell)
-        {
-            return;
-        }
-
-        _conditionsGrid.CurrentCell = cell;
-        var currentValue = cell.Value?.ToString()?.Trim() ?? string.Empty;
-        if (ConditionExpression.IsInOperator(_conditionsGrid.Rows[rowIndex].Cells[OperatorColumn].Value?.ToString()))
-        {
-            var arrayOptions = new List<UiDropDownOption>
-            {
-                new(currentValue, "手动输入列表", LeadingText: currentValue)
-            };
-            arrayOptions.AddRange(_numberArrayNames.Select(name => new UiDropDownOption(name, name)));
-            var bounds = _conditionsGrid.GetCellDisplayRectangle(columnIndex, rowIndex, cutOverflow: true);
-            ToolStripDropDown? arrayDropDown = null;
-            arrayDropDown = UiDropDownPopup.Show(
-                _conditionsGrid,
-                bounds,
-                arrayOptions,
-                currentValue,
-                selected =>
-                {
-                    var value = selected.Value?.ToString() ?? string.Empty;
-                    cell.Value = value;
-                    _conditionsGrid.InvalidateCell(cell);
-                    UpdatePreview();
-                    if (ReferenceEquals(selected, arrayOptions[0]))
-                        BeginInvoke(() => BeginEditValueCell(cell));
-                },
-                preferredWidth: 300,
-                closed: () =>
-                {
-                    if (ReferenceEquals(_conditionComboDropDown, arrayDropDown))
-                        _conditionComboDropDown = null;
-                });
-            _conditionComboDropDown = arrayDropDown;
-            return;
-        }
-        // 首项回到手动数字: 当前填的是数字就保留, 填的是引用名则回落到 0。
-        var manualValue = currentValue.Length > 0 && TryParseIntegerText(currentValue, out var number)
-            ? number.ToString("0", CultureInfo.InvariantCulture)
-            : "0";
-        var options = new List<UiDropDownOption>
-        {
-            new(manualValue, "手动输入数字", LeadingText: manualValue)
-        };
-        options.AddRange(_valueReferenceFields.Select(field =>
-            new UiDropDownOption(field.Name, field.DisplayName)));
-
-        var cellBounds = _conditionsGrid.GetCellDisplayRectangle(columnIndex, rowIndex, cutOverflow: true);
-        ToolStripDropDown? dropDown = null;
-        dropDown = UiDropDownPopup.Show(
-            _conditionsGrid,
-            cellBounds,
-            options,
-            currentValue,
-            selected =>
-            {
-                var value = selected.Value?.ToString() ?? string.Empty;
-                cell.Value = value;
-                _conditionsGrid.InvalidateCell(cell);
-                UpdatePreview();
-                if (string.Equals(value, manualValue, StringComparison.Ordinal))
-                {
-                    BeginInvoke(() => BeginEditValueCell(cell));
-                }
-            },
-            preferredWidth: 300,
-            closed: () =>
-            {
-                if (ReferenceEquals(_conditionComboDropDown, dropDown))
-                {
-                    _conditionComboDropDown = null;
-                }
-            });
-        _conditionComboDropDown = dropDown;
     }
 
     private void BeginEditValueCell(DataGridViewCell cell)
@@ -2050,6 +1904,7 @@ public sealed class ConditionEditorForm : Form
         }
 
         var value = row.Cells[ValueColumn].Value?.ToString()?.Trim() ?? string.Empty;
+        if (ConditionOperand.TryReference(value, out _)) return null;
         if (!long.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var spellId)
             || spellId <= 0
             || !_spells.Any(spell => spell.SpellId == spellId))
@@ -2069,6 +1924,7 @@ public sealed class ConditionEditorForm : Form
         }
 
         var value = row.Cells[ValueColumn].Value?.ToString()?.Trim() ?? string.Empty;
+        if (ConditionOperand.TryReference(value, out _)) return null;
         if (!long.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var itemId)
             || itemId <= 0
             || !_items.Any(item => item.ItemId == itemId))
@@ -2113,10 +1969,12 @@ public sealed class ConditionEditorForm : Form
 
     private static string ReadRowValue(DataGridViewRow row)
     {
-        var value = row.Cells[ValueColumn].Value?.ToString() ?? string.Empty;
+        var cell = row.Cells[ValueColumn];
+        var value = cell.Value?.ToString() ?? string.Empty;
+        if (cell is FieldReferenceValueCell or ConstantOperandCell) return value.Trim();
         if (SelectedField(row)?.Name == ShigureConditionFields.SoundRecognition)
             return "\"" + value.Trim().Trim('"', '\'') + "\"";
-        return SelectedField(row) is { IsCustom: false, Type: ConditionFieldType.Bool }
+        return cell is DataGridViewComboBoxCell && SelectedField(row) is { IsCustom: false, Type: ConditionFieldType.Bool }
             ? value.StartsWith("否", StringComparison.Ordinal) ? "false" : "true"
             : ConditionExpression.IsInOperator(row.Cells[OperatorColumn].Value?.ToString())
                 ? ConditionExpression.NormalizeInValue(value)
@@ -2126,6 +1984,9 @@ public sealed class ConditionEditorForm : Form
     private static FieldItem? SelectedField(DataGridViewRow row)
     {
         var cell = row.Cells[FieldColumn];
+        if (cell is ConstantOperandCell)
+            return new FieldItem(cell.Value?.ToString()?.Trim() ?? "", "常数", ConditionFieldType.Number,
+                ConditionFieldCategory.Custom, null, IsCustom: false);
         if (cell.Value is FieldItem selected)
         {
             return selected;

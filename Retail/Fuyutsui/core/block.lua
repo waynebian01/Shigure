@@ -127,7 +127,7 @@ function Fuyutsui:CreateTexture(i, b)
     end
 end
 
--- 普通整数沿用两格 RGB 协议，避免地图 ID 被单个蓝通道截断。
+-- 普通整数沿用两格 RGB 协议，避免地图、首领战 ID 被单个蓝通道截断。
 function Fuyutsui:CreateNumberTexture(index, value)
     if not index or index < 1 or index + 1 > BLOCK_FIX_CONFIG.capacity then return end
     value = math.max(0, math.min(0xFFFFFF, math.floor(tonumber(value) or 0)))
@@ -664,6 +664,7 @@ local function CollectAuraSpellSlots(unitFilter)
                         index = index,
                         includeSpellIDs = includeSpellIDs,
                         maxApps = info.maxApps,
+                        highPrecision = info.highPrecision == true,
                         name = info.name,
                         unit = unit,
                         filter = info.filter or "HELPFUL",
@@ -786,13 +787,19 @@ local function SetupAuraApplicationPixel(button, index)
 end
 
 --- 对齐 CreateTexture(i, b)：绿通道编码索引，蓝通道将不足 1 秒钳为 1，其余编码到 255
-local function MakeDurationColorCurve(index)
+local function MakeDurationColorCurve(index, highPrecision)
     local curve = C_CurveUtil.CreateColorCurve()
     curve:SetType(Enum.LuaCurveType.Linear)
     local r, g = EncodeBlockChannels(index)
-    curve:AddPoint(0, CreateColor(r, g, 1 / 255, 1))
-    curve:AddPoint(1, CreateColor(r, g, 1 / 255, 1))
-    curve:AddPoint(255, CreateColor(r, g, 1, 1))
+    if highPrecision then
+        -- 与 castCurve 相同的 0–25.5 秒映射，同时保留定位用的 R/G 通道。
+        curve:AddPoint(0, CreateColor(r, g, 0, 1))
+        curve:AddPoint(25.5, CreateColor(r, g, 1, 1))
+    else
+        curve:AddPoint(0, CreateColor(r, g, 1 / 255, 1))
+        curve:AddPoint(1, CreateColor(r, g, 1 / 255, 1))
+        curve:AddPoint(255, CreateColor(r, g, 1, 1))
+    end
     return curve
 end
 
@@ -816,7 +823,7 @@ local function SetupZeroAuraPixel(button, index)
 end
 
 --- 限时光环槽：底层 b=0，█ 用剩余时间曲线；叠在永久槽之上
-local function SetupTimedAuraDuration(button, index, hasApplications)
+local function SetupTimedAuraDuration(button, index, hasApplications, highPrecision)
     AnchorAuraPixelButton(button, index, hasApplications)
     button:SetFrameLevel((button:GetFrameLevel() or 0) + 2)
 
@@ -832,7 +839,7 @@ local function SetupTimedAuraDuration(button, index, hasApplications)
             components = {},
         },
         textColor = {
-            curve = MakeDurationColorCurve(index),
+            curve = MakeDurationColorCurve(index, highPrecision),
             property = Enum.DurationTextBindingProperty.RemainingDuration,
         },
     })
@@ -847,9 +854,9 @@ local function MakePermanentSlotInitializer(index, hasApplications)
     end
 end
 
-local function MakeTimedSlotInitializer(index, hasApplications)
+local function MakeTimedSlotInitializer(index, hasApplications, highPrecision)
     return function(button)
-        SetupTimedAuraDuration(button, index, hasApplications)
+        SetupTimedAuraDuration(button, index, hasApplications, highPrecision)
     end
 end
 
@@ -874,7 +881,7 @@ local function MakeGarroteIconSlotInitializer(index)
     end
 end
 
-local function AddDurationAuraSlotPair(container, slotKeyPrefix, filter, includeSpellIDs, index, maxApps)
+local function AddDurationAuraSlotPair(container, slotKeyPrefix, filter, includeSpellIDs, index, maxApps, highPrecision)
     local hasApplications = maxApps == true
     -- 先限时后永久：若容器对 auraInstance 互斥分配，避免限时光环被永久槽抢走。
     -- 限时槽：maxDuration 排除永久；底层 b=0 + █ 曲线
@@ -882,7 +889,7 @@ local function AddDurationAuraSlotPair(container, slotKeyPrefix, filter, include
         candidateFilters = AuraSlotFilters(includeSpellIDs, AURA_TIMED_MAX_DURATION),
         sortMethod = AuraContainerSortMethod.Expiration,
         sortDirection = AuraContainerSortDirection.Normal,
-        initializeFrame = MakeTimedSlotInitializer(index, hasApplications),
+        initializeFrame = MakeTimedSlotInitializer(index, hasApplications, highPrecision),
     })
     -- 永久槽：无 maxDuration；永久命中时整格 b=1（限时若也命中则被上层限时槽盖住）
     container:AddAuraSlot(slotKeyPrefix .. "_permanent_" .. index, filter, {
@@ -901,9 +908,9 @@ local function AddDurationAuraSlotPair(container, slotKeyPrefix, filter, include
     })
 end
 
-function Fuyutsui:AddNameplateAuraPixelSlots(container, slotKeyPrefix, includeSpellIDs, index, isPlayer, maxApps)
+function Fuyutsui:AddNameplateAuraPixelSlots(container, slotKeyPrefix, includeSpellIDs, index, isPlayer, maxApps, highPrecision)
     local filter = isPlayer == true and "HARMFUL|PLAYER" or "HARMFUL"
-    AddDurationAuraSlotPair(container, slotKeyPrefix, filter, includeSpellIDs, index, maxApps)
+    AddDurationAuraSlotPair(container, slotKeyPrefix, filter, includeSpellIDs, index, maxApps, highPrecision)
 end
 
 local function ApplyUnitAuraReactionFilters(container, unit)
@@ -1227,7 +1234,7 @@ local function CreateUnitAuraDurationSlots(unit, spellSlots, dispelIndex, garrot
 
     for _, info in ipairs(spellSlots) do
         local filter = info.filter or "HELPFUL"
-        AddDurationAuraSlotPair(durationSlots, "duration_index", filter, info.includeSpellIDs, info.index, info.maxApps)
+        AddDurationAuraSlotPair(durationSlots, "duration_index", filter, info.includeSpellIDs, info.index, info.maxApps, info.highPrecision)
     end
 
     AddUnitDispelSlots(durationSlots, unit, dispelIndex)
@@ -1294,6 +1301,7 @@ local function CollectGroupAuraDefs(auraTable)
                     includeSpellIDs = includeSpellIDs,
                     name = info.name,
                     maxApps = info.maxApps,
+                    highPrecision = info.highPrecision == true,
                 })
             end
         end
@@ -1381,7 +1389,8 @@ local function CreateGroupMemberAuraContainer(memberIndex, groups, auraDefs, dis
                 filter,
                 def.includeSpellIDs,
                 pixelIndex,
-                def.maxApps
+                def.maxApps,
+                def.highPrecision
             )
         end
     end

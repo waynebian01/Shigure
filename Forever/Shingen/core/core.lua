@@ -120,6 +120,8 @@ function Shingen:OnEnable()
     self:RegisterEvent("UNIT_POWER_UPDATE")
     self:RegisterEvent("UNIT_MAXPOWER")
     self:RegisterEvent("UNIT_POWER_POINT_CHARGE")
+    self:RegisterEvent("UNIT_FLAGS")
+    self:RegisterEvent("UNIT_FACTION")
     self:RegisterEvent("UNIT_HEALTH")
     self:RegisterEvent("UNIT_MAXHEALTH")
     self:RegisterEvent("UNIT_HEAL_ABSORB_AMOUNT_CHANGED")
@@ -176,6 +178,10 @@ Shingen.state = {
 
 local function CreateUnitState()
     return {
+        unit = 0,
+        attackable = false,
+        assistable = false,
+        deadOrGhost = true,
         casting = false,
         channeling = false,
         empowering = false,

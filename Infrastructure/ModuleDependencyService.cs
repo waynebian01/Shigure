@@ -448,6 +448,7 @@ internal sealed class ModuleDependencyService
             {
                 ItemId = item.ItemId!.Value,
                 Name = item.Name,
+                HighPrecision = item.HighPrecision,
                 IsEquipped = item.IsEquipped
             })
             .ToList(),
@@ -464,6 +465,7 @@ internal sealed class ModuleDependencyService
         Spells = spec.Spells.Select(entry => new ModuleSpellSnapshot
         {
             Name = entry.Name,
+            HighPrecision = entry.HighPrecision,
             SpellId = entry.SpellId,
             Charge = entry.Charge,
             CastCount = entry.CastCount,
@@ -482,6 +484,7 @@ internal sealed class ModuleDependencyService
             Auras = spec.Group.Auras.Select(entry => new ModuleGroupAuraSnapshot
             {
                 Name = entry.Name,
+                HighPrecision = entry.HighPrecision,
                 SpellId = entry.SpellId,
                 SpellIds = new List<long>(entry.SpellIds),
                 MaxApps = entry.MaxApps
@@ -500,6 +503,7 @@ internal sealed class ModuleDependencyService
     private static ModuleAuraSnapshot CaptureAura(ClassBlocksStore.AuraEntry entry) => new()
     {
         Name = entry.Name,
+        HighPrecision = entry.HighPrecision,
         SpellId = entry.SpellId,
         SpellIds = new List<long>(entry.SpellIds),
         MaxApps = entry.MaxApps,
@@ -626,6 +630,7 @@ internal sealed class ModuleDependencyService
                 var added = new ClassBlocksStore.GroupAuraEntry
                 {
                     Name = aura.Name,
+                    HighPrecision = aura.HighPrecision,
                     SpellId = aura.SpellId,
                     MaxApps = aura.MaxApps
                 };
@@ -642,13 +647,14 @@ internal sealed class ModuleDependencyService
             var merged = new ClassBlocksStore.AuraEntry
             {
                 Name = existing.Name,
+                HighPrecision = existing.HighPrecision,
                 SpellId = existing.SpellId ?? existing.SpellIds.Cast<long?>().FirstOrDefault(),
                 MaxApps = existing.MaxApps,
                 IsPlayer = true
             };
             merged.SpellIds.AddRange(existing.SpellIds);
             MergeAuraMetadataCore(merged, aura.Name, aura.SpellId, aura.SpellIds, aura.MaxApps,
-                incomingIsPlayer: true, "队伍光环", counters);
+                incomingIsPlayer: true, aura.HighPrecision, "队伍光环", counters);
             existing.Name = merged.Name;
             existing.SpellId = merged.SpellId;
             existing.MaxApps = merged.MaxApps;
@@ -719,6 +725,7 @@ internal sealed class ModuleDependencyService
             var added = new ClassBlocksStore.AuraEntry
             {
                 Name = entry.Name,
+                HighPrecision = entry.HighPrecision,
                 SpellId = entry.SpellId,
                 MaxApps = entry.MaxApps,
                 IsPlayer = entry.IsPlayer ?? true
@@ -784,6 +791,7 @@ internal sealed class ModuleDependencyService
             incoming.SpellIds,
             incoming.MaxApps,
             incoming.IsPlayer,
+            incoming.HighPrecision,
             label,
             counters);
     }
@@ -801,6 +809,7 @@ internal sealed class ModuleDependencyService
             incoming.SpellIds,
             incoming.MaxApps,
             incoming.IsPlayer ?? true,
+            incoming.HighPrecision,
             label,
             counters);
     }
@@ -812,6 +821,7 @@ internal sealed class ModuleDependencyService
         IEnumerable<long>? incomingSpellIds,
         int? incomingMaxApps,
         bool incomingIsPlayer,
+        bool incomingHighPrecision,
         string label,
         MergeCounters counters)
     {
@@ -850,6 +860,8 @@ internal sealed class ModuleDependencyService
             target.Name = incomingName;
             changed = true;
         }
+
+        ReportPrecisionConflict(target.HighPrecision, incomingHighPrecision, label, counters);
 
         if (target.IsPlayer != incomingIsPlayer)
         {
@@ -929,6 +941,7 @@ internal sealed class ModuleDependencyService
             local.Add(new ClassBlocksStore.SpellEntry
             {
                 Name = entry.Name,
+                HighPrecision = entry.HighPrecision,
                 SpellId = entry.SpellId,
                 Charge = entry.Charge,
                 CastCount = entry.CastCount,
@@ -999,6 +1012,7 @@ internal sealed class ModuleDependencyService
             {
                 ItemId = item.ItemId,
                 Name = item.Name,
+                HighPrecision = item.HighPrecision,
                 IsEquipped = item.IsEquipped
             });
             counters.ConfigAdded++;
@@ -1035,21 +1049,23 @@ internal sealed class ModuleDependencyService
         ClassBlocksStore.ItemEntry target,
         ModuleItemSnapshot incoming,
         MergeCounters counters)
-        => MergeItemMetadataCore(target, incoming.Name, incoming.IsEquipped, counters);
+        => MergeItemMetadataCore(target, incoming.Name, incoming.IsEquipped, incoming.HighPrecision, counters);
 
     private static void MergeItemMetadata(
         ClassBlocksStore.ItemEntry target,
         ClassBlocksStore.ItemEntry incoming,
         MergeCounters counters)
-        => MergeItemMetadataCore(target, incoming.Name, incoming.IsEquipped, counters);
+        => MergeItemMetadataCore(target, incoming.Name, incoming.IsEquipped, incoming.HighPrecision, counters);
 
     private static void MergeItemMetadataCore(
         ClassBlocksStore.ItemEntry target,
         string? incomingName,
         bool incomingIsEquipped,
+        bool incomingHighPrecision,
         MergeCounters counters)
     {
         var changed = false;
+        ReportPrecisionConflict(target.HighPrecision, incomingHighPrecision, $"物品 {target.ItemId}", counters);
         if (!target.IsEquipped && incomingIsEquipped)
         {
             target.IsEquipped = true;
@@ -1087,6 +1103,7 @@ internal sealed class ModuleDependencyService
             incoming.CastCount,
             incoming.ForcedKnown,
             incoming.InSpellBook,
+            incoming.HighPrecision,
             name,
             counters);
 
@@ -1102,6 +1119,7 @@ internal sealed class ModuleDependencyService
             incoming.CastCount,
             incoming.ForcedKnown,
             incoming.InSpellBook,
+            incoming.HighPrecision,
             name,
             counters);
 
@@ -1112,10 +1130,12 @@ internal sealed class ModuleDependencyService
         int? incomingCastCount,
         bool incomingForcedKnown,
         bool incomingInSpellBook,
+        bool incomingHighPrecision,
         string name,
         MergeCounters counters)
     {
         var changed = false;
+        ReportPrecisionConflict(target.HighPrecision, incomingHighPrecision, $"技能 {name}", counters);
         if (!target.Charge && incomingCharge)
         {
             target.Charge = true;
@@ -1593,10 +1613,17 @@ internal sealed class ModuleDependencyService
 
     private static bool SpellEquals(ClassBlocksStore.SpellEntry left, ModuleSpellSnapshot right)
         => left.SpellId == right.SpellId
+           && left.HighPrecision == right.HighPrecision
            && left.Charge == right.Charge
            && left.CastCount == right.CastCount
            && left.ForcedKnown == right.ForcedKnown
            && left.InSpellBook == right.InSpellBook;
+
+    private static void ReportPrecisionConflict(bool local, bool incoming, string label, MergeCounters counters)
+    {
+        if (local != incoming)
+            counters.Conflicts.Add($"{label}的高精度设置存在差异：本地 {local}、模块 {incoming}，已保留本地。");
+    }
 
     private sealed class MergeCounters
     {
